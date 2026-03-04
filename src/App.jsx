@@ -10,9 +10,11 @@ export default function App() {
 
     return (
         <div className="bg-background-light text-[#1d150c] font-display min-h-screen flex flex-col overflow-hidden">
-            <Header />
+            <Header currentView={currentView} setCurrentView={setCurrentView} />
             <div className="flex flex-1 overflow-hidden">
-                <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+                {currentView === 'dashboard' && (
+                    <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+                )}
                 {currentView === 'dashboard' ? <Dashboard /> : <ServicesDirectory />}
             </div>
         </div>

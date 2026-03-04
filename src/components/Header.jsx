@@ -1,9 +1,20 @@
-// Header: barra superior com logo, busca, notificações e perfil do usuário
-export default function Header() {
+// Header: barra superior com logo, busca, notificações, perfil do usuário e navegação condicional
+export default function Header({ currentView, setCurrentView }) {
+    const headerMenuItems = [
+        { id: 'dashboard', label: 'Dashboard' },
+        { id: 'services', label: 'Serviços' },
+        { id: 'coverage', label: 'Cobertura' },
+        { id: 'directory', label: 'Diretório' },
+        { id: 'sectors', label: 'Setores' },
+        { id: 'schedule', label: 'Plantão' },
+        { id: 'offices', label: 'Escritórios' },
+        { id: 'processes', label: 'Processos' },
+    ];
+
     return (
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-[#eaddcd] bg-white px-6 py-3 shrink-0 h-16 z-20 shadow-sm">
-            {/* Logo + Busca */}
-            <div className="flex items-center gap-8">
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-[#eaddcd] bg-white px-6 py-3 shrink-0 h-16 z-20 shadow-sm relative">
+            {/* Logo + Busca + Navegação Condicional */}
+            <div className="flex items-center gap-8 flex-1">
                 {/* Logo */}
                 <div className="flex items-center gap-3">
                     <div className="size-8 rounded bg-primary flex items-center justify-center text-white">
@@ -26,6 +37,44 @@ export default function Header() {
                         />
                     </div>
                 </label>
+
+                {/* Navegação Horizontal (Visível apenas fora do dashboard) */}
+                {currentView !== 'dashboard' && (
+                    <nav className="hidden xl:flex items-center gap-1 ml-4 animate-in fade-in slide-in-from-left-4 duration-300">
+                        {headerMenuItems.map(item => {
+                            // Tratamento especial para o botão de voltar ao Dashboard
+                            if (item.id === 'dashboard') {
+                                return (
+                                    <div key={item.id} className="flex items-center pr-2 mr-2 border-r border-slate-200">
+                                        <button
+                                            onClick={() => setCurrentView(item.id)}
+                                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-bold rounded-lg transition-all duration-200 bg-primary/10 text-primary hover:bg-primary/20"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px]">dashboard</span>
+                                            {item.label}
+                                        </button>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setCurrentView(item.id)}
+                                    className={`px-4 py-2 text-sm font-semibold rounded-full transition-all duration-200 relative ${currentView === item.id
+                                        ? 'text-primary bg-primary/5'
+                                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    {item.label}
+                                    {currentView === item.id && (
+                                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[3px] bg-primary rounded-t-full"></span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </nav>
+                )}
             </div>
 
             {/* Ações + Perfil */}
