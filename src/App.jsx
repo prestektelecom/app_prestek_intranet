@@ -5,6 +5,8 @@ import Dashboard from './components/Dashboard'
 import ServicesDirectory from './components/ServicesDirectory'
 import Coverage from './components/Coverage'
 import Directory from './components/Directory'
+import Sectors from './components/Sectors'
+import Schedule from './components/Schedule'
 
 // Componente raiz que monta a estrutura principal da aplicação
 export default function App() {
@@ -22,11 +24,14 @@ export default function App() {
                 {currentView === 'services' && <ServicesDirectory />}
                 {currentView === 'coverage' && <Coverage />}
                 {currentView === 'directory' && <Directory />}
-                {/* Fallback para outros menus n implementados, exibe ServicesDirectory apenas como placeholder se nao for coverage/dashboard/directory */}
-                {!['dashboard', 'services', 'coverage', 'directory'].includes(currentView) && <ServicesDirectory />}
+                {currentView === 'sectors' && <Sectors />}
+                {currentView === 'schedule' && <Schedule />}
+                {/* Fallback para outros menus n implementados, exibe ServicesDirectory apenas como placeholder se nao for nenhuma das acimas */}
+                {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule'].includes(currentView) && <ServicesDirectory />}
             </div>
         </div>
     )
 }
+
 
 
