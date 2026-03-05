@@ -119,8 +119,19 @@ export default function Header({ currentView, setCurrentView }) {
                     <span className="absolute top-2 right-2 size-2 bg-primary rounded-full border border-white"></span>
                 </button>
 
+                {/* Painel Admin */}
+                <button
+                    onClick={() => setCurrentView('admin')}
+                    title="Painel Administrativo"
+                    className="flex items-center justify-center size-10 rounded-full bg-white hover:bg-[#f4eee6] text-primary transition-colors">
+                    <span className="material-symbols-outlined text-[24px]">admin_panel_settings</span>
+                </button>
+
                 {/* Configurações */}
-                <button className="flex items-center justify-center size-10 rounded-full bg-white hover:bg-[#f4eee6] text-[#1d150c] transition-colors">
+                <button
+                    onClick={() => setCurrentView('settings')}
+                    title="Configurações"
+                    className="flex items-center justify-center size-10 rounded-full bg-white hover:bg-[#f4eee6] text-[#1d150c] transition-colors">
                     <span className="material-symbols-outlined text-[24px]">settings</span>
                 </button>
 

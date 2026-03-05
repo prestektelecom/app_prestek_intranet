@@ -12,6 +12,7 @@ const menuItems = [
 const systemItems = [
     { id: 'announcements', icon: 'campaign', label: 'Comunicados', badge: '3' },
     { id: 'settings', icon: 'settings', label: 'Configurações' },
+    { id: 'admin', icon: 'admin_panel_settings', label: 'Painel Admin' },
 ]
 
 // Sidebar: menu de navegação lateral (visível apenas em lg+)
