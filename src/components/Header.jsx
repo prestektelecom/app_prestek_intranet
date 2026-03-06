@@ -127,13 +127,6 @@ export default function Header({ currentView, setCurrentView }) {
                     <span className="material-symbols-outlined text-[24px]">admin_panel_settings</span>
                 </button>
 
-                {/* Configurações */}
-                <button
-                    onClick={() => setCurrentView('settings')}
-                    title="Configurações"
-                    className="flex items-center justify-center size-10 rounded-full bg-white hover:bg-[#f4eee6] text-[#1d150c] transition-colors">
-                    <span className="material-symbols-outlined text-[24px]">settings</span>
-                </button>
 
                 <div className="h-8 w-px bg-[#eaddcd] mx-1"></div>
 

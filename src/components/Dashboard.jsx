@@ -2,6 +2,7 @@ import StatCard from './StatCard'
 import AnnouncementsList from './AnnouncementsList'
 import QuickShortcuts from './QuickShortcuts'
 import TeamAvailability from './TeamAvailability'
+import { useState, useEffect } from 'react'
 
 // Dados dos cards de estatísticas do topo
 const stats = [
@@ -40,6 +41,45 @@ const stats = [
 
 // Página principal do Dashboard
 export default function Dashboard() {
+    const [currentDateTime, setCurrentDateTime] = useState('');
+
+    useEffect(() => {
+        const updateDateTime = () => {
+            const now = new Date();
+
+            let diaSemana = new Intl.DateTimeFormat('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
+                weekday: 'long'
+            }).format(now);
+            diaSemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+
+            let data = new Intl.DateTimeFormat('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            }).format(now);
+            data = data.replace(/ de /g, ' ').replace(/\./g, '');
+            const partesData = data.split(' ');
+            if (partesData.length >= 2) {
+                partesData[1] = partesData[1].charAt(0).toUpperCase() + partesData[1].slice(1);
+            }
+            data = partesData.join(' ');
+
+            const hora = new Intl.DateTimeFormat('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(now);
+
+            setCurrentDateTime(`Hoje é ${diaSemana}, ${data} às ${hora}`);
+        };
+
+        updateDateTime();
+        const intervalId = setInterval(updateDateTime, 60000);
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <main className="flex-1 overflow-y-auto bg-background-light p-6 md:p-10">
             <div className="max-w-6xl mx-auto space-y-8">
@@ -56,7 +96,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-sm text-[#635c55] bg-white px-4 py-2 rounded-lg border border-[#eaddcd] shadow-sm flex items-center gap-2">
                         <span className="material-symbols-outlined text-lg">calendar_today</span>
-                        <span>Hoje é Terça-feira, 24 Out 2023</span>
+                        <span>{currentDateTime || "Carregando..."}</span>
                     </div>
                 </div>
 
