@@ -23,7 +23,7 @@ const stats = [
         label: 'Próximo Plantão',
         value: '01/03/2025',
         badge: '09:00 - 17:00',
-        badgeClassName: 'text-[#635c55]',
+        badgeClassName: 'text-[#635c55] dark:text-gray-300',
     },
     {
         icon: 'folder_open',
@@ -81,20 +81,20 @@ export default function Dashboard({ setCurrentView }) {
     }, []);
 
     return (
-        <main className="flex-1 overflow-y-auto bg-background-light p-6 md:p-10">
+        <main className="flex-1 overflow-y-auto w-full bg-background-light dark:bg-background-dark p-6 md:p-10 transition-colors duration-200">
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* Saudação + Data */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                     <div>
-                        <h1 className="text-3xl font-extrabold tracking-tight text-[#1d150c] mb-2">
+                        <h1 className="text-3xl font-extrabold tracking-tight text-[#1d150c] dark:text-[#f8f7f5] mb-2 transition-colors">
                             Bem-vindo de volta, Alex!
                         </h1>
-                        <p className="text-[#635c55]">
+                        <p className="text-[#635c55] dark:text-gray-400 transition-colors">
                             Aqui está o que está acontecendo no seu setor hoje.
                         </p>
                     </div>
-                    <div className="text-sm text-[#635c55] bg-white px-4 py-2 rounded-lg border border-[#eaddcd] shadow-sm flex items-center gap-2">
+                    <div className="text-sm text-[#635c55] dark:text-gray-300 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-700 shadow-sm flex items-center gap-2 transition-colors">
                         <span className="material-symbols-outlined text-lg">calendar_today</span>
                         <span>{currentDateTime || "Carregando..."}</span>
                     </div>
@@ -112,14 +112,14 @@ export default function Dashboard({ setCurrentView }) {
                     <AnnouncementsList />
 
                     <div className="space-y-4">
-                        <h2 className="text-xl font-bold text-[#1d150c]">Atalhos Rápidos</h2>
+                        <h2 className="text-xl font-bold text-[#1d150c] dark:text-[#f8f7f5] transition-colors">Atalhos Rápidos</h2>
                         <QuickShortcuts setCurrentView={setCurrentView} />
                         <TeamAvailability />
                     </div>
                 </div>
 
                 {/* Rodapé */}
-                <div className="border-t border-[#eaddcd] pt-6 flex justify-between items-center text-xs text-[#635c55]">
+                <div className="border-t border-[#eaddcd] dark:border-gray-800 pt-6 flex justify-between items-center text-xs text-[#635c55] dark:text-gray-400 transition-colors">
                     <p>© 2026 Prestek Inc. Portal Interno. Confidencial.</p>
                     <div className="flex gap-4">
                         <a href="#" className="hover:text-primary">Política de Privacidade</a>

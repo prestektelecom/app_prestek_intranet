@@ -11,10 +11,12 @@ import Processos from './components/Processos'
 import Comunicados from './components/Comunicados'
 import Configuracoes from './components/Configuracoes'
 import AdminDashboard from './components/AdminDashboard'
+import { useTheme } from './hooks/useTheme'
 
 // Componente raiz que monta a estrutura principal da aplicação
 export default function App() {
     const [currentView, setCurrentView] = useState('dashboard')
+    useTheme() // Initialize theme globally
 
     // Simulador de is admin status, permitindo apenas mostrar interface de admin se selecionado
     if (currentView === 'admin') {
@@ -22,7 +24,7 @@ export default function App() {
     }
 
     return (
-        <div className="bg-background-light text-[#1d150c] font-display min-h-screen flex flex-col overflow-hidden">
+        <div className="bg-background-light dark:bg-background-dark text-[#1d150c] dark:text-[#f8f7f5] font-display min-h-screen flex flex-col overflow-hidden transition-colors duration-200">
             <Header currentView={currentView} setCurrentView={setCurrentView} />
             <div className="flex flex-1 overflow-hidden">
                 {currentView === 'dashboard' && (

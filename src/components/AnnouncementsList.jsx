@@ -37,17 +37,17 @@ export default function AnnouncementsList() {
     return (
         <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-[#1d150c]">Comunicados Urgentes</h2>
+                <h2 className="text-xl font-bold text-[#1d150c] dark:text-white">Comunicados Urgentes</h2>
                 <a href="#" className="text-sm font-bold text-primary hover:underline">
                     Ver Todos
                 </a>
             </div>
 
-            <div className="bg-white rounded-lg border border-[#eaddcd] shadow-sm divide-y divide-[#f4eee6]">
+            <div className="bg-white dark:bg-[#1a130b] rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm divide-y divide-[#f4eee6]">
                 {announcements.map((item) => (
                     <div
                         key={item.id}
-                        className="p-5 flex gap-4 hover:bg-[#fcfaf8] transition-colors cursor-pointer group"
+                        className="p-5 flex gap-4 hover:bg-[#fcfaf8] dark:bg-[#2c2217] transition-colors cursor-pointer group"
                     >
                         {/* Ícone */}
                         <div className="shrink-0 pt-1">
@@ -59,14 +59,14 @@ export default function AnnouncementsList() {
                         {/* Conteúdo */}
                         <div className="flex-1">
                             <div className="flex justify-between items-start mb-1">
-                                <h3 className="font-bold text-[#1d150c] group-hover:text-primary transition-colors">
+                                <h3 className="font-bold text-[#1d150c] dark:text-white group-hover:text-primary transition-colors">
                                     {item.title}
                                 </h3>
-                                <span className="text-xs text-[#635c55] bg-[#f4eee6] px-2 py-1 rounded shrink-0 ml-2">
+                                <span className="text-xs text-[#635c55] dark:text-gray-300 bg-[#f4eee6] dark:bg-gray-800 px-2 py-1 rounded shrink-0 ml-2">
                                     {item.date}
                                 </span>
                             </div>
-                            <p className="text-sm text-[#635c55] line-clamp-2">{item.summary}</p>
+                            <p className="text-sm text-[#635c55] dark:text-gray-300 line-clamp-2">{item.summary}</p>
                         </div>
                     </div>
                 ))}

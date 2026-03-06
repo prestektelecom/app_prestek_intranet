@@ -29,22 +29,22 @@ export default function ServicesDirectory() {
                     <button className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm dark:bg-white dark:text-slate-900">
                         <span>Todos os Serviços</span>
                     </button>
-                    <button className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-primary hover:text-primary transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary">
+                    <button className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-[#1a130b] border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-primary hover:text-primary transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary">
                         <span className="material-symbols-outlined text-lg">person</span>
                         Internet PF
                     </button>
-                    <button className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-primary hover:text-primary transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary">
+                    <button className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-[#1a130b] border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-primary hover:text-primary transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary">
                         <span className="material-symbols-outlined text-lg">business</span>
                         Internet PJ
                     </button>
-                    <button className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-primary hover:text-primary transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary">
+                    <button className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-[#1a130b] border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-primary hover:text-primary transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary">
                         <span className="material-symbols-outlined text-lg">router</span>
                         Link Dedicado
                     </button>
                 </div>
 
                 {/* Services Table */}
-                <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800">
+                <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
                             <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-700/50 dark:text-slate-400">
@@ -204,7 +204,7 @@ export default function ServicesDirectory() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                        <div className="group relative flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+                        <div className="group relative flex flex-col rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] p-6 shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                             <div className="absolute right-4 top-4 rounded-full bg-slate-100 p-2 text-slate-400 dark:bg-slate-700 dark:text-slate-500">
                                 <span className="material-symbols-outlined">speed</span>
                             </div>
@@ -229,7 +229,7 @@ export default function ServicesDirectory() {
                             </button>
                         </div>
 
-                        <div className="group relative flex flex-col rounded-xl border-2 border-primary bg-white p-6 shadow-md dark:border-primary dark:bg-slate-800">
+                        <div className="group relative flex flex-col rounded-xl border-2 border-primary bg-white dark:bg-[#1a130b] p-6 shadow-md dark:border-primary dark:bg-slate-800">
                             <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-bold text-white shadow-sm">
                                 MAIS VENDIDO
                             </div>
@@ -257,7 +257,7 @@ export default function ServicesDirectory() {
                             </button>
                         </div>
 
-                        <div className="group relative flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+                        <div className="group relative flex flex-col rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] p-6 shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                             <div className="absolute right-4 top-4 rounded-full bg-slate-100 p-2 text-slate-400 dark:bg-slate-700 dark:text-slate-500">
                                 <span className="material-symbols-outlined">network_check</span>
                             </div>

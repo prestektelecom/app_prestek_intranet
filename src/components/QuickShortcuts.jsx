@@ -14,12 +14,12 @@ export default function QuickShortcuts({ setCurrentView }) {
                 <button
                     key={shortcut.label}
                     onClick={shortcut.action}
-                    className="flex flex-col items-center justify-center p-6 bg-white border border-[#eaddcd] rounded-lg shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-center group w-full"
+                    className="flex flex-col items-center justify-center p-6 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-lg shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-center group w-full"
                 >
-                    <span className="material-symbols-outlined text-4xl text-[#635c55] mb-3 group-hover:text-primary transition-colors">
+                    <span className="material-symbols-outlined text-4xl text-[#635c55] dark:text-gray-300 mb-3 group-hover:text-primary transition-colors">
                         {shortcut.icon}
                     </span>
-                    <span className="text-sm font-bold text-[#1d150c]">{shortcut.label}</span>
+                    <span className="text-sm font-bold text-[#1d150c] dark:text-white">{shortcut.label}</span>
                 </button>
             ))}
         </div>

@@ -6,29 +6,29 @@ export default function Directory() {
             <div className="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-[#1d150c] text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Diretório de Colaboradores</h1>
-                    <p className="text-[#a17745] text-lg">Busque e conecte-se com seus colegas em todos os departamentos.</p>
+                    <h1 className="text-[#1d150c] dark:text-white text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Diretório de Colaboradores</h1>
+                    <p className="text-[#a17745] dark:text-orange-300 text-lg">Busque e conecte-se com seus colegas em todos os departamentos.</p>
                 </div>
 
                 {/* Busca e Filtros */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-[#eaddcd] mb-8 flex flex-col md:flex-row gap-4 items-end">
+                <div className="bg-white dark:bg-[#1a130b] p-6 rounded-xl shadow-sm border border-[#eaddcd] dark:border-gray-800 mb-8 flex flex-col md:flex-row gap-4 items-end">
                     <div className="w-full md:flex-1">
-                        <label className="block text-sm font-semibold text-[#1d150c] mb-2">Buscar Colaborador</label>
+                        <label className="block text-sm font-semibold text-[#1d150c] dark:text-white mb-2">Buscar Colaborador</label>
                         <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#a17745]">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#a17745] dark:text-orange-300">
                                 <span className="material-symbols-outlined">search</span>
                             </div>
                             <input
                                 type="text"
-                                className="block w-full pl-10 pr-3 py-3 border border-[#eaddcd] rounded-lg leading-5 bg-[#fcfaf8] text-[#1d150c] placeholder:text-[#a17745] focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-all shadow-sm"
+                                className="block w-full pl-10 pr-3 py-3 border border-[#eaddcd] dark:border-gray-800 rounded-lg leading-5 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white placeholder:text-[#a17745] dark:text-orange-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-all shadow-sm"
                                 placeholder="Buscar por nome, ramal ou e-mail"
                             />
                         </div>
                     </div>
                     <div className="w-full md:w-64">
-                        <label className="block text-sm font-semibold text-[#1d150c] mb-2">Departamento</label>
+                        <label className="block text-sm font-semibold text-[#1d150c] dark:text-white mb-2">Departamento</label>
                         <div className="relative">
-                            <select className="block w-full pl-3 pr-10 py-3 text-base border border-[#eaddcd] focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-[#fcfaf8] text-[#1d150c] shadow-sm appearance-none cursor-pointer">
+                            <select className="block w-full pl-3 pr-10 py-3 text-base border border-[#eaddcd] dark:border-gray-800 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white shadow-sm appearance-none cursor-pointer">
                                 <option>Todos os Departamentos</option>
                                 <option>Engenharia</option>
                                 <option>Recursos Humanos</option>
@@ -36,7 +36,7 @@ export default function Directory() {
                                 <option>Vendas</option>
                                 <option>Produto</option>
                             </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#a17745]">
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#a17745] dark:text-orange-300">
                                 <span className="material-symbols-outlined">expand_more</span>
                             </div>
                         </div>
@@ -101,23 +101,23 @@ export default function Directory() {
 
                 {/* Paginação */}
                 <div className="flex items-center justify-center gap-2 mt-auto pb-10">
-                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] bg-white text-[#a17745] hover:text-primary hover:border-primary transition-colors disabled:opacity-50">
+                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] text-[#a17745] dark:text-orange-300 hover:text-primary hover:border-primary transition-colors disabled:opacity-50">
                         <span className="material-symbols-outlined">chevron_left</span>
                     </button>
                     <button className="flex items-center justify-center size-10 rounded-lg bg-primary text-white font-bold shadow-md">
                         1
                     </button>
-                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] bg-white text-[#1d150c] hover:text-primary hover:border-primary transition-colors font-semibold">
+                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-white hover:text-primary hover:border-primary transition-colors font-semibold">
                         2
                     </button>
-                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] bg-white text-[#1d150c] hover:text-primary hover:border-primary transition-colors font-semibold">
+                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-white hover:text-primary hover:border-primary transition-colors font-semibold">
                         3
                     </button>
-                    <span className="text-[#a17745] px-2">...</span>
-                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] bg-white text-[#1d150c] hover:text-primary hover:border-primary transition-colors font-semibold">
+                    <span className="text-[#a17745] dark:text-orange-300 px-2">...</span>
+                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-white hover:text-primary hover:border-primary transition-colors font-semibold">
                         8
                     </button>
-                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] bg-white text-[#a17745] hover:text-primary hover:border-primary transition-colors">
+                    <button className="flex items-center justify-center size-10 rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] text-[#a17745] dark:text-orange-300 hover:text-primary hover:border-primary transition-colors">
                         <span className="material-symbols-outlined">chevron_right</span>
                     </button>
                 </div>
@@ -129,7 +129,7 @@ export default function Directory() {
 // Subcomponente de Card de Colaborador
 function EmployeeCard({ name, role, extension, email, image, statusColor }) {
     return (
-        <div className="bg-white rounded-xl overflow-hidden border border-[#eaddcd] shadow-sm hover:shadow-md transition-shadow group flex flex-col h-full hover:border-[#ff8c00]/50">
+        <div className="bg-white dark:bg-[#1a130b] rounded-xl overflow-hidden border border-[#eaddcd] dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow group flex flex-col h-full hover:border-[#ff8c00]/50">
             <div className="p-6 flex flex-col items-center text-center flex-grow">
                 <div className="relative mb-4">
                     <div
@@ -139,14 +139,14 @@ function EmployeeCard({ name, role, extension, email, image, statusColor }) {
                     ></div>
                     <div className={`absolute bottom-0 right-0 ${statusColor} border-2 border-white size-4 rounded-full`}></div>
                 </div>
-                <h3 className="text-xl font-bold text-[#1d150c] mb-1">{name}</h3>
+                <h3 className="text-xl font-bold text-[#1d150c] dark:text-white mb-1">{name}</h3>
                 <p className="text-primary font-medium text-sm mb-4">{role}</p>
                 <div className="w-full space-y-3 mt-auto">
-                    <div className="flex items-center gap-3 text-sm text-[#a17745] bg-[#fcfaf8] p-2 rounded-lg border border-[#f4eee6]">
+                    <div className="flex items-center gap-3 text-sm text-[#a17745] dark:text-orange-300 bg-[#fcfaf8] dark:bg-[#2c2217] p-2 rounded-lg border border-[#f4eee6]">
                         <span className="material-symbols-outlined text-[18px]">call</span>
                         <span className="font-medium">Ramal: {extension}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-[#a17745] bg-[#fcfaf8] p-2 rounded-lg border border-[#f4eee6]">
+                    <div className="flex items-center gap-3 text-sm text-[#a17745] dark:text-orange-300 bg-[#fcfaf8] dark:bg-[#2c2217] p-2 rounded-lg border border-[#f4eee6]">
                         <span className="material-symbols-outlined text-[18px]">mail</span>
                         <span className="truncate">{email}</span>
                     </div>

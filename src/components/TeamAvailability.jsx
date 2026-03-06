@@ -9,7 +9,7 @@ const teamMembers = [
 // Widget de disponibilidade da equipe com fotos empilhadas
 export default function TeamAvailability() {
     return (
-        <div className="mt-6 bg-white border border-[#eaddcd] rounded-lg p-5 shadow-sm">
+        <div className="mt-6 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-lg p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-sm">Disponibilidade da Equipe</h3>
                 <span className="material-symbols-outlined text-gray-400 text-sm">more_horiz</span>
@@ -31,7 +31,7 @@ export default function TeamAvailability() {
             </div>
 
             {/* Status online */}
-            <div className="flex items-center gap-2 text-xs text-[#635c55]">
+            <div className="flex items-center gap-2 text-xs text-[#635c55] dark:text-gray-300">
                 <span className="size-2 rounded-full bg-green-500"></span>
                 8 Online agora
             </div>
