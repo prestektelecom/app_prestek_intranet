@@ -40,7 +40,7 @@ const stats = [
 ]
 
 // Página principal do Dashboard
-export default function Dashboard() {
+export default function Dashboard({ setCurrentView }) {
     const [currentDateTime, setCurrentDateTime] = useState('');
 
     useEffect(() => {
@@ -113,7 +113,7 @@ export default function Dashboard() {
 
                     <div className="space-y-4">
                         <h2 className="text-xl font-bold text-[#1d150c]">Atalhos Rápidos</h2>
-                        <QuickShortcuts />
+                        <QuickShortcuts setCurrentView={setCurrentView} />
                         <TeamAvailability />
                     </div>
                 </div>

@@ -29,7 +29,7 @@ export default function App() {
                     <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
                 )}
                 {/* Renderização baseada em currentView */}
-                {currentView === 'dashboard' && <Dashboard />}
+                {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} />}
                 {currentView === 'services' && <ServicesDirectory />}
                 {currentView === 'coverage' && <Coverage />}
                 {currentView === 'directory' && <Directory />}
