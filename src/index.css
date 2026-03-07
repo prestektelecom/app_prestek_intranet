@@ -10,3 +10,30 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* === Login Screen === */
+.login-card {
+  max-height: 640px;
+  min-height: 500px;
+}
+
+.login-image {
+  opacity: 0.85;
+  transition: transform 0.6s ease, opacity 0.4s ease;
+}
+.login-card:hover .login-image {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
+
+/* Pulse sutil no botão ao carregar a página */
+.login-btn {
+  animation: login-pulse 2.5s ease-in-out infinite;
+}
+.login-btn:hover {
+  animation: none;
+}
+@keyframes login-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 140, 0, 0); }
+}

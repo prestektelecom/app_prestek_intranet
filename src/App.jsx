@@ -10,15 +10,21 @@ import Schedule from './components/Schedule'
 import Processos from './components/Processos'
 import Comunicados from './components/Comunicados'
 import Configuracoes from './components/Configuracoes'
+import Login from './components/Login'
 import AdminDashboard from './components/AdminDashboard'
 import { useTheme } from './hooks/useTheme'
 
 // Componente raiz que monta a estrutura principal da aplicação
 export default function App() {
-    const [currentView, setCurrentView] = useState('dashboard')
+    const [currentView, setCurrentView] = useState('login')
     useTheme() // Initialize theme globally
 
     // Simulador de is admin status, permitindo apenas mostrar interface de admin se selecionado
+    // Tela de login — renderizada isoladamente sem Header/Sidebar
+    if (currentView === 'login') {
+        return <Login onLogin={() => setCurrentView('dashboard')} />
+    }
+
     if (currentView === 'admin') {
         return <AdminDashboard setCurrentView={setCurrentView} />
     }
