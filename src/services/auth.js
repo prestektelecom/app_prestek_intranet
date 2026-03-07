@@ -23,9 +23,13 @@ export async function loginUsuario(email, senha) {
             return { erro: dados.erro }
         }
 
-        // Retorna os dados do usuário para que o React (Login.jsx / App.jsx) 
-        // mude a tela para o Dashboard interno
-        return dados.usuario
+        // Retorna objeto completo com dados de usuarios + funcionarios
+        // para que a tela de configurações tenha tudo disponível
+        return {
+            usuario: dados.usuario,
+            funcionario: dados.funcionario ?? null,
+            host: dados.host
+        }
 
     } catch (erro) {
         console.error('Erro ao conectar com o servidor:', erro)

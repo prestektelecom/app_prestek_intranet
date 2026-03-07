@@ -1,6 +1,127 @@
+import { useState, useRef, useEffect } from 'react';
 import ThemeSwitcher from './ThemeSwitcher';
 
-export default function Configuracoes() {
+import avatar1 from '../image/avatar/homem-de-negocios-3d-icon-png-download-4841519.png';
+import avatar2 from '../image/avatar/garota-3d-icon-png-download-4841514.png';
+import avatar3 from '../image/avatar/suporte-tecnico-3d-icon-png-download-4841511.png';
+import avatar4 from '../image/avatar/mulheres-medicas-3d-icon-png-download-4841517.png';
+import avatar5 from '../image/avatar/gerente-3d-icon-png-download-4841552.png';
+import avatar6 from '../image/avatar/mulher-construtora-3d-icon-png-download-4841516.png';
+import avatar7 from '../image/avatar/vendedor-3d-icon-png-download-4841513.png';
+import avatar8 from '../image/avatar/enfermeira-3d-icon-png-download-4841567.png';
+import avatar9 from '../image/avatar/estudante-3d-icon-png-download-4841557.png';
+import avatar10 from '../image/avatar/mulher-agricultora-3d-icon-png-download-4841518.png';
+import avatar11 from '../image/avatar/operador-de-chamada-3d-icon-png-download-4841556.png';
+import avatar12 from '../image/avatar/medico-homem-3d-icon-png-download-4841530.png';
+
+const PREDEFINED_AVATARS = [
+    avatar1, avatar2, avatar3, avatar4, avatar5, avatar6,
+    avatar7, avatar8, avatar9, avatar10, avatar11, avatar12
+];
+
+export default function Configuracoes({ user }) {
+    const fileInputRef = useRef(null);
+    const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+    const [showAvatarGrid, setShowAvatarGrid] = useState(false);
+
+    // Dados da tabela funcionarios (vem embutido no login)
+    const func = user?.funcionario ?? {};
+
+    // Fallbacks para exibição de texto
+    const safeName = func.funcionario || user?.nome || 'Usuário';
+    const nameParts = safeName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+    const safeRole = func.id_funcao || 'Colaborador';
+    const safeEmail = func.email || user?.email || '';
+    const safePhone = func.fone_celular || func.fone || '';
+    const safeBirthDate = func.data_nascimento || '';
+    const safeAdmission = func.data_admissao || 'N/D';
+    const safeRamal = func.ramal || '';
+    const safeId = func.id ?? user?.id ?? '0000';
+    const isActive = func.ativo === 'S';
+
+    // Recupera dados salvos localmente ou inicia vazio
+    const getInitialFormData = () => {
+        try {
+            const saved = localStorage.getItem(`stitch_profile_${safeId}`);
+            return saved ? JSON.parse(saved) : {};
+        } catch {
+            return {};
+        }
+    };
+
+    const [formData, setFormData] = useState(getInitialFormData);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+
+    // Recuperar também o avatarUrl do LocalStorage se existir, senão usa do IXC
+    const initialAvatarUrl = formData.avatarUrl !== undefined ? formData.avatarUrl : (user?.funcionario?.foto_perfil || null);
+    const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+
+    // Fechar menus ao clicar fora
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.avatar-container')) {
+                setShowAvatarMenu(false);
+                setShowAvatarGrid(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setAvatarUrl(url);
+            setShowAvatarMenu(false);
+
+            // Auto update temporary url in formdata for saving logic
+            setFormData(prev => ({ ...prev, avatarUrl: url }));
+        }
+    };
+
+    const handleChangeAvatar = (url) => {
+        setAvatarUrl(url);
+        setShowAvatarMenu(false);
+        setShowAvatarGrid(false);
+
+        // Auto update avatar in formdata for saving logic
+        setFormData(prev => ({ ...prev, avatarUrl: url }));
+    }
+
+    // Ação do Botão Salvar
+    const handleSave = () => {
+        setIsSaving(true);
+        // Simulando delay de salvamento para UI interativa
+        setTimeout(() => {
+            try {
+                // Guarda os overrides na máquina (não sobrescreve servidor)
+                localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(formData));
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000); // Tira a mensagem de sucesso após 3s
+            } catch (err) {
+                console.error("Erro ao salvar localmente:", err);
+            } finally {
+                setIsSaving(false);
+            }
+        }, 600);
+    };
+
+    // Dados mesclados para Inputs visíveis: FormData LocalStorage > Dados do Backend
+    const displayEmail = formData.email !== undefined ? formData.email : safeEmail;
+    const displayPhone = formData.telefone_celular !== undefined ? formData.telefone_celular : safePhone;
+    const displayBirthDate = formData.data_nascimento !== undefined ? formData.data_nascimento : safeBirthDate;
+    const displayRamal = formData.ramal !== undefined ? formData.ramal : safeRamal;
+
+    // Gerenciador genérico de campos de texto/selects
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     return (
         <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-8 flex justify-center overflow-y-auto no-scrollbar">
             <div className="max-w-[1024px] w-full flex flex-col mt-4">
@@ -9,34 +130,129 @@ export default function Configuracoes() {
                     <span className="text-[#a17745] dark:text-orange-300 text-sm font-medium leading-normal">/</span>
                     <span className="text-[#1d150c] dark:text-white text-sm font-medium leading-normal">Configurações de Perfil</span>
                 </nav>
-                <div className="flex flex-col gap-2 px-4 mb-10">
-                    <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight">Perfil do Usuário e Configurações</h1>
-                    <p className="text-[#a17745] dark:text-orange-300 text-base font-normal">Gerencie suas informações pessoais, preferências de segurança e configurações de conta.</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 mb-10">
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight">Perfil do Usuário e Configurações</h1>
+                        <p className="text-[#a17745] dark:text-orange-300 text-base font-normal">Gerencie suas informações pessoais, preferências de segurança e configurações de conta.</p>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className={`w-full sm:w-auto px-8 py-3 rounded-lg text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 ${isSaving ? 'bg-primary/70 cursor-not-allowed' : saveSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-primary hover:bg-[#e67e00]'}`}>
+                            {isSaving ? (
+                                <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                            ) : saveSuccess ? (
+                                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                            ) : (
+                                <span className="material-symbols-outlined text-[18px]">save</span>
+                            )}
+                            {isSaving ? 'Salvando...' : saveSuccess ? 'Salvo com Sucesso!' : 'Salvar Alterações'}
+                        </button>
+                    </div>
+
+                    {/* Toast flutuante de confirmação */}
+                    {saveSuccess && (
+                        <div className="fixed bottom-8 left-1/2 z-50" style={{ transform: 'translateX(-50%)', animation: 'toastSlideUp 0.4s ease-out' }}>
+                            <div className="flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border border-green-200 dark:border-green-800 bg-white dark:bg-[#1a130b]"
+                                style={{ boxShadow: '0 8px 32px rgba(34,197,94,0.2)' }}>
+                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40">
+                                    <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-[24px]">check_circle</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-[#1d150c] dark:text-white">Alterações Salvas!</span>
+                                    <span className="text-xs text-[#a17745] dark:text-orange-300">Suas preferências foram mantidas neste navegador.</span>
+                                </div>
+                            </div>
+                            <style>{`
+                                @keyframes toastSlideUp {
+                                    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                                    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+                                }
+                            `}</style>
+                        </div>
+                    )}
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4">
                     <div className="lg:col-span-4 xl:col-span-3">
                         <div className="sticky top-24 bg-white dark:bg-[#1a130b] rounded-xl p-6 shadow-sm border border-[#eaddcd] dark:border-gray-800 flex flex-col items-center gap-6">
-                            <div className="relative group">
-                                <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-32 h-32 ring-4 ring-[#fcfaf8] shadow-md" data-alt="Avatar de Alex Johnson" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCEo3E9fZw_QuwIW9kOFNyk3IVDhwgd3tLL5WkNpWvW9A0Q5offrPtuGKHoc-d1pnxXt8jtCrqp1jRZQdnl-YqQyblbhy70pWxpgbYxwSu7LDQLXYwsdDaxwYvt-h6ICECOSRw8fh-4qSQXtzTxo4zJ81GjRTSUpHasXFPHUv6tXjje41uXsmZ5V4p_3SKINlmYFp3FY6C7FcF06LBkx7ZOh9bRlsfXBkdhuJrz1yK5nHuONT2EW50Zc_kbhFwvTWB8wYcshYXKAFI")' }}></div>
-                                <button className="absolute bottom-0 right-0 bg-primary hover:bg-[#e67e00] text-white p-2 rounded-full shadow-lg transition-transform transform hover:scale-105" title="Alterar Foto">
+                            <div className="relative group avatar-container flex flex-col items-center">
+                                <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-32 h-32 ring-4 ring-[#fcfaf8] shadow-md flex items-center justify-center bg-gradient-to-br from-primary/20 to-orange-100 dark:from-primary/30 dark:to-orange-900/30 overflow-hidden"
+                                    style={avatarUrl ? { backgroundImage: `url(${avatarUrl})` } : {}}>
+                                    {!avatarUrl && <span className="text-4xl font-bold text-primary">{firstName.charAt(0)}{lastName.charAt(0)}</span>}
+                                </div>
+                                <button
+                                    onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+                                    className="absolute bottom-0 right-0 bg-primary hover:bg-[#e67e00] text-white p-2 text-sm rounded-full shadow-lg transition-transform transform hover:scale-105"
+                                    title="Alterar Foto">
                                     <span className="material-symbols-outlined text-[20px]">photo_camera</span>
                                 </button>
+
+                                {/* Input Hidden de Arquivo */}
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                    accept="image/png, image/jpeg, image/webp"
+                                    className="hidden"
+                                />
+
+                                {/* Menu de Opções de Avatar */}
+                                {showAvatarMenu && (
+                                    <div className="absolute top-[140px] z-20 w-48 bg-white dark:bg-[#1a130b] rounded-lg shadow-xl border border-[#eaddcd] dark:border-gray-800 py-1 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+                                        <button
+                                            onClick={() => { fileInputRef.current?.click(); setShowAvatarGrid(false); }}
+                                            className="px-4 py-2 text-sm text-left text-[#1d150c] dark:text-white hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] transition-colors flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-[18px]">upload</span> Fazer Upload
+                                        </button>
+                                        <button
+                                            onClick={() => { setShowAvatarGrid(!showAvatarGrid); }}
+                                            className="px-4 py-2 text-sm text-left text-[#1d150c] dark:text-white hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] transition-colors flex items-center gap-2 border-b border-[#eaddcd] dark:border-gray-800">
+                                            <span className="material-symbols-outlined text-[18px]">sentiment_satisfied</span> Escolher Avatar
+                                        </button>
+                                        {avatarUrl && (
+                                            <button
+                                                onClick={() => { setAvatarUrl(null); setShowAvatarMenu(false); setShowAvatarGrid(false); }}
+                                                className="px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-[18px]">delete</span> Remover Foto
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Grid de Seleção de Avatares */}
+                                {showAvatarGrid && (
+                                    <div className="absolute top-[230px] z-30 w-64 bg-white dark:bg-[#1a130b] rounded-lg shadow-xl border border-[#eaddcd] dark:border-gray-800 p-3 pt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300 mb-3 text-center">Avatares Padrão</h4>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {PREDEFINED_AVATARS.map((url, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => { setAvatarUrl(url); setShowAvatarMenu(false); setShowAvatarGrid(false); }}
+                                                    className="aspect-square rounded-lg border border-[#eaddcd] dark:border-gray-800 hover:border-primary dark:hover:border-primary focus:ring-2 ring-primary/30 transition-all bg-[#fcfaf8] dark:bg-[#2c2217] p-1 overflow-hidden">
+                                                    <img src={url} alt={`Avatar ${idx + 1}`} className="w-full h-full object-contain" />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="text-center w-full">
-                                <h2 className="text-[#1d150c] dark:text-white text-xl font-bold mb-1">Alex Johnson</h2>
-                                <p className="text-primary font-medium text-sm mb-4">Analista de Sistemas Sênior</p>
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Colaborador Ativo
+                                <h2 className="text-[#1d150c] dark:text-white text-xl font-bold mb-1">{safeName}</h2>
+                                <p className="text-primary font-medium text-sm mb-4">{safeRole}</p>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                    {isActive ? 'Colaborador Ativo' : 'Inativo'}
                                 </span>
                             </div>
                             <div className="w-full border-t border-[#eaddcd] dark:border-gray-800 pt-4 mt-2">
                                 <div className="flex items-center gap-3 mb-3 text-sm text-[#a17745] dark:text-orange-300">
                                     <span className="material-symbols-outlined text-[18px]">badge</span>
-                                    <span>ID: <span className="text-[#1d150c] dark:text-white font-medium">EMP-8842</span></span>
+                                    <span>ID: <span className="text-[#1d150c] dark:text-white font-medium">EMP-{safeId}</span></span>
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-[#a17745] dark:text-orange-300">
                                     <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                                    <span>Admitido em: <span className="text-[#1d150c] dark:text-white font-medium">Mar 2019</span></span>
+                                    <span>Admitido em: <span className="text-[#1d150c] dark:text-white font-medium">{safeAdmission}</span></span>
                                 </div>
                             </div>
                         </div>
@@ -52,26 +268,31 @@ export default function Configuracoes() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">NOME</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow" type="text" defaultValue="Alex" />
+                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
+                                        name="nome" type="text" value={formData.nome !== undefined ? formData.nome : firstName} onChange={handleInputChange} />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">SOBRENOME</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow" type="text" defaultValue="Johnson" />
+                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
+                                        name="sobrenome" type="text" value={formData.sobrenome !== undefined ? formData.sobrenome : lastName} onChange={handleInputChange} />
                                 </div>
                                 <div className="flex flex-col gap-1.5 md:col-span-2">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">ENDEREÇO DE E-MAIL</label>
                                     <div className="relative">
                                         <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#a17745] dark:text-orange-300 text-[20px]">mail</span>
-                                        <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary pl-10 pr-4 py-2.5 transition-shadow" type="email" defaultValue="alex.johnson@prestek.com" />
+                                        <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary pl-10 pr-4 py-2.5 transition-shadow"
+                                            name="email" type="email" value={displayEmail} onChange={handleInputChange} />
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">NÚMERO DE TELEFONE</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow" type="tel" defaultValue="+1 (555) 012-3456" />
+                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
+                                        name="telefone_celular" type="tel" value={displayPhone} onChange={handleInputChange} />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">DATA DE NASCIMENTO</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow" type="date" defaultValue="1988-05-12" />
+                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
+                                        name="data_nascimento" type="date" value={displayBirthDate} onChange={handleInputChange} />
                                 </div>
                             </div>
                         </section>
@@ -86,25 +307,35 @@ export default function Configuracoes() {
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">DEPARTAMENTO</label>
                                     <div className="relative">
-                                        <select className="form-select w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow">
-                                            <option>Tecnologia da Informação</option>
-                                            <option>Recursos Humanos</option>
-                                            <option>Marketing</option>
+                                        <select className="form-select w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
+                                            name="id_departamento" value={formData.id_departamento !== undefined ? formData.id_departamento : (func.id_departamento || '')} onChange={handleInputChange}>
+                                            <option value="">Selecione o Departamento</option>
+                                            <option value="1">Atendimento ao Cliente</option>
+                                            <option value="2">Tecnologia da Informação</option>
+                                            <option value="3">Recursos Humanos</option>
+                                            <option value="4">Marketing e Vendas</option>
+                                            <option value="5">Financeiro</option>
+                                            {func.id_departamento && !['1', '2', '3', '4', '5'].includes(String(func.id_departamento)) && (
+                                                <option value={func.id_departamento}>Departamento {func.id_departamento}</option>
+                                            )}
                                         </select>
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">LOCALIZAÇÃO DO ESCRITÓRIO</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow" type="text" defaultValue="HQ - Building A, Floor 4" />
+                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
+                                        name="filial_id" type="text" value={formData.filial_id !== undefined ? formData.filial_id : (func.filial_id || 'Sede Principal')} onChange={handleInputChange} />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">CARGO</label>
-                                    <input className="form-input w-full rounded-lg border-transparent bg-gray-100 text-gray-500 cursor-not-allowed px-4 py-2.5" readOnly type="text" defaultValue="Analista de Sistemas Sênior" />
+                                    <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
+                                        readOnly type="text" defaultValue={safeRole} />
                                     <span className="text-xs text-[#a17745] dark:text-orange-300 italic">Contate o RH para atualizar o cargo.</span>
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">RAMAL INTERNO</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow" type="text" defaultValue="x4402" />
+                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
+                                        name="ramal" type="text" value={displayRamal} onChange={handleInputChange} />
                                 </div>
                             </div>
                         </section>
@@ -182,13 +413,7 @@ export default function Configuracoes() {
                                 </div>
                             </div>
                         </section>
-                        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-4 pt-4 pb-12">
-                            <button className="w-full sm:w-auto px-6 py-3 rounded-lg text-sm font-bold text-[#a17745] dark:text-orange-300 hover:text-[#1d150c] dark:text-white hover:bg-black/5 transition-colors">Cancelar</button>
-                            <button className="w-full sm:w-auto px-8 py-3 rounded-lg bg-primary hover:bg-[#e67e00] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                                <span className="material-symbols-outlined text-[18px]">save</span>
-                                Salvar Alterações
-                            </button>
-                        </div>
+
                     </div>
                 </div>
             </div>

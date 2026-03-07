@@ -87,7 +87,31 @@ app.post('/api/login', async (req, res) => {
             })
         }
 
-        // Retorna dados necessários para o redirect (sem expor token da API)
+        // ── Busca dados do funcionário em paralelo ──
+        let funcionario = null
+        try {
+            const urlFunc = `https://${host}/webservice/v1/funcionarios`
+            const bodyFunc = JSON.stringify({
+                qtype: 'funcionarios.email',
+                query: email,
+                oper: '=',
+                page: '1',
+                rp: '1',
+                sortname: 'funcionarios.id',
+                sortorder: 'asc'
+            })
+            const resFunc = await fetch(urlFunc, { method: 'POST', headers, body: bodyFunc })
+            if (resFunc.ok) {
+                const dadosFunc = await resFunc.json()
+                if (dadosFunc.total > 0) {
+                    funcionario = dadosFunc.registros[0]
+                }
+            }
+        } catch (errFunc) {
+            console.warn('Aviso: não foi possível buscar dados de funcionário:', errFunc.message)
+        }
+
+        // Retorna dados combinados de usuarios + funcionarios
         console.log(`Login bem-sucedido: ${usuario.nome} (${usuario.email})`)
         return res.json({
             sucesso: true,
@@ -97,6 +121,7 @@ app.post('/api/login', async (req, res) => {
                 email: usuario.email,
                 acesso_token: usuario.acesso_token
             },
+            funcionario,
             host
         })
 
@@ -106,6 +131,59 @@ app.post('/api/login', async (req, res) => {
             sucesso: false,
             erro: 'Erro interno do servidor.'
         })
+    }
+})
+
+// ─── Rota de Funcionário ───────────────────────────────────────────────
+app.post('/api/funcionario', async (req, res) => {
+    const { email } = req.body
+
+    if (!email) {
+        return res.status(400).json({ sucesso: false, erro: 'Email é obrigatório.' })
+    }
+
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
+    const host = process.env.IXC_HOST
+    const url = `https://${host}/webservice/v1/funcionarios`
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    }
+
+    const body = JSON.stringify({
+        qtype: 'funcionarios.email',
+        query: email,
+        oper: '=',
+        page: '1',
+        rp: '1',
+        sortname: 'funcionarios.id',
+        sortorder: 'asc'
+    })
+
+    try {
+        const resposta = await fetch(url, { method: 'POST', headers, body })
+
+        if (!resposta.ok) {
+            const textoErro = await resposta.text()
+            console.error(`Erro API IXC Funcionarios [${resposta.status}]:`, textoErro)
+            return res.status(502).json({ sucesso: false, erro: 'Falha ao comunicar com API de funcionários.' })
+        }
+
+        const dados = await resposta.json()
+
+        if (dados.total === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Funcionário não encontrado com este e-mail.' })
+        }
+
+        const funcionario = dados.registros[0]
+
+        return res.json({ sucesso: true, funcionario })
+
+    } catch (erro) {
+        console.error('Erro requisição Funcionarios:', erro.message)
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 })
 

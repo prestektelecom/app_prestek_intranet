@@ -17,12 +17,20 @@ import { useTheme } from './hooks/useTheme'
 // Componente raiz que monta a estrutura principal da aplicação
 export default function App() {
     const [currentView, setCurrentView] = useState('login')
+    const [user, setUser] = useState(null)
     useTheme() // Initialize theme globally
 
     // Simulador de is admin status, permitindo apenas mostrar interface de admin se selecionado
     // Tela de login — renderizada isoladamente sem Header/Sidebar
     if (currentView === 'login') {
-        return <Login onLogin={() => setCurrentView('dashboard')} />
+        return <Login onLogin={(resultado) => {
+            // resultado = { usuario: {...}, funcionario: {...} | null }
+            setUser({
+                ...resultado.usuario,
+                funcionario: resultado.funcionario
+            })
+            setCurrentView('dashboard')
+        }} />
     }
 
     if (currentView === 'admin') {
@@ -31,7 +39,7 @@ export default function App() {
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-[#1d150c] dark:text-[#f8f7f5] font-display min-h-screen flex flex-col overflow-hidden transition-colors duration-200">
-            <Header currentView={currentView} setCurrentView={setCurrentView} />
+            <Header currentView={currentView} setCurrentView={setCurrentView} user={user} />
             <div className="flex flex-1 overflow-hidden">
                 {currentView === 'dashboard' && (
                     <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
@@ -45,7 +53,7 @@ export default function App() {
                 {currentView === 'schedule' && <Schedule />}
                 {currentView === 'processes' && <Processos />}
                 {currentView === 'announcements' && <Comunicados />}
-                {currentView === 'settings' && <Configuracoes />}
+                {currentView === 'settings' && <Configuracoes user={user} />}
                 {/* Fallback para outros menus n implementados, exibe ServicesDirectory apenas como placeholder se nao for nenhuma das acimas */}
                 {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings'].includes(currentView) && <ServicesDirectory />}
             </div>
