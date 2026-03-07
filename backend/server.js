@@ -4,6 +4,7 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import crypto from 'crypto'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -14,10 +15,14 @@ app.use(express.json())
 
 // ─── Rota de Login ───────────────────────────────────────────────
 app.post('/api/login', async (req, res) => {
-    const { email } = req.body
+    const { email, senha } = req.body
 
     if (!email) {
         return res.status(400).json({ sucesso: false, erro: 'Email é obrigatório.' })
+    }
+
+    if (!senha) {
+        return res.status(400).json({ sucesso: false, erro: 'Senha é obrigatória.' })
     }
 
     // Monta o token Basic Auth a partir do .env
@@ -64,6 +69,15 @@ app.post('/api/login', async (req, res) => {
         }
 
         const usuario = dados.registros[0]
+
+        // Valida a senha — API IXC armazena senha como hash SHA-256
+        const senhaHash = crypto.createHash('sha256').update(senha).digest('hex')
+        if (usuario.senha !== senhaHash) {
+            return res.status(401).json({
+                sucesso: false,
+                erro: 'Senha incorreta.'
+            })
+        }
 
         // Valida se o usuário está ativo
         if (usuario.status !== 'A') {
