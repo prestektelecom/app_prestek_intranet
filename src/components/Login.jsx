@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { loginUsuario } from '../services/auth'
 import ParticlesBackground from './ParticlesBackground'
+import MagneticSandCard from './MagneticSandCard'
 
 export default function Login({ onLogin }) {
+    const cardRef = useRef(null)
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
     const [erro, setErro] = useState('')
@@ -63,8 +65,11 @@ export default function Login({ onLogin }) {
                     </div>
 
                     {/* Login Card */}
-                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 rounded-3xl overflow-hidden border border-white/50 dark:border-slate-700/50">
-                        <div className="p-8 pt-10 relative">
+                    <div ref={cardRef} className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 rounded-3xl overflow-hidden border border-white/50 dark:border-slate-700/50 relative">
+                        {/* Magnetic Sand Effect Area */}
+                        <MagneticSandCard cardRef={cardRef} />
+
+                        <div className="p-8 pt-10 relative z-10">
                             <div className="mb-8 text-center">
                                 <h2 className="text-xl font-bold">Acesso ao Sistema</h2>
                                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Insira suas credenciais para continuar</p>
