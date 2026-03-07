@@ -14,9 +14,9 @@ const MagneticSandCard = ({ cardRef }) => {
         let mouse = { x: -9999, y: -9999, vx: 0, vy: 0, px: -9999, py: -9999 };
         let attractMode = false;
 
-        const PARTICLE_COUNT = () => Math.min(Math.floor((W * H) / 900), 2000);
-        const RADIUS = 100;
-        const ATTRACT_RADIUS = 150;
+        const PARTICLE_COUNT = () => Math.min(Math.floor((W * H) / 600), 3000);
+        const RADIUS = 60;
+        const ATTRACT_RADIUS = 100;
 
         class Particle {
             constructor() { this.init(); }
@@ -28,7 +28,7 @@ const MagneticSandCard = ({ cardRef }) => {
                 this.y = this.oy;
                 this.vx = 0;
                 this.vy = 0;
-                this.size = Math.random() * 1.5 + 0.3;
+                this.size = Math.random() * 1.0 + 0.2;
                 this.baseSize = this.size;
 
                 this.hue = 30; // Tom alaranjado/bege para combinar com logo Stitch
@@ -216,7 +216,7 @@ const MagneticSandCard = ({ cardRef }) => {
     return (
         <canvas
             ref={canvasRef}
-            className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-50 mix-blend-multiply dark:opacity-80 dark:mix-blend-screen"
+            className="absolute inset-0 w-full h-full pointer-events-none z-20 opacity-60 mix-blend-multiply dark:opacity-90 dark:mix-blend-screen"
         />
     );
 };
