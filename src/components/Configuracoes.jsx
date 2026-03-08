@@ -269,8 +269,8 @@ export default function Configuracoes({ user }) {
         || filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.razao
         || (displayFilial ? `Filial ${displayFilial}` : 'Sede Principal');
 
-    // Cargo (id_funcao) — o usuário confirmou que está na mesma tabela empresa_setor
-    const cargoName = cargosList.find(c => String(c.id).trim() === String(safeRole).trim())?.setor
+    // Cargo (id_funcao) — busca na tabela funcionarios_funcao (funcoesList)
+    const cargoName = funcoesList.find(c => String(c.id).trim() === String(safeRole).trim())?.funcao
         || safeRole || 'Colaborador';
 
     // Gerenciador genérico de campos de texto/selects
