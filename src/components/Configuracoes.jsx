@@ -41,23 +41,51 @@ export default function Configuracoes({ user }) {
     const safeId = func.id ?? user?.id ?? '0000';
     const isActive = func.ativo === 'S';
 
-    // Recupera dados salvos localmente ou inicia vazio
-    const getInitialFormData = () => {
-        try {
-            const saved = localStorage.getItem(`stitch_profile_${safeId}`);
-            return saved ? JSON.parse(saved) : {};
-        } catch {
-            return {};
-        }
-    };
-
-    const [formData, setFormData] = useState(getInitialFormData);
+    // Estado para os formulários e UI
+    const [formData, setFormData] = useState({});
+    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    // Recuperar também o avatarUrl do LocalStorage se existir, senão usa do IXC
+    // Carrega dados remotamente do PostgreSQL via API
+    useEffect(() => {
+        if (!safeId || safeId === '0000') {
+            setIsLoading(false);
+            return;
+        }
+        const carregarConfiguracoes = async () => {
+            try {
+                // Tenta carregar do local storage primeiro p/ interface rápida
+                const saved = localStorage.getItem(`stitch_profile_${safeId}`);
+                if (saved) setFormData(JSON.parse(saved));
+
+                // E busca dados fresquinhos do PostgreSQL
+                const res = await fetch(`http://localhost:3001/api/configuracoes/${safeId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.sucesso && data.preferencias) {
+                        setFormData(data.preferencias); // Sobrescreve local com versão do banco
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao carregar configurações do banco:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        carregarConfiguracoes();
+    }, [safeId]);
+
+    // AvatarUrl usa o formData (do banco) ou o default do usuário
     const initialAvatarUrl = formData.avatarUrl !== undefined ? formData.avatarUrl : (user?.funcionario?.foto_perfil || null);
     const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+
+    // Atualiza avatarUrl visual quando as configs carregam do banco
+    useEffect(() => {
+        if (formData.avatarUrl) {
+            setAvatarUrl(formData.avatarUrl);
+        }
+    }, [formData.avatarUrl]);
 
     // Fechar menus ao clicar fora
     useEffect(() => {
@@ -93,21 +121,30 @@ export default function Configuracoes({ user }) {
     }
 
     // Ação do Botão Salvar
-    const handleSave = () => {
+    const handleSave = async () => {
         setIsSaving(true);
-        // Simulando delay de salvamento para UI interativa
-        setTimeout(() => {
-            try {
-                // Guarda os overrides na máquina (não sobrescreve servidor)
-                localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(formData));
-                setSaveSuccess(true);
-                setTimeout(() => setSaveSuccess(false), 3000); // Tira a mensagem de sucesso após 3s
-            } catch (err) {
-                console.error("Erro ao salvar localmente:", err);
-            } finally {
-                setIsSaving(false);
-            }
-        }, 600);
+        try {
+            // Salvar no PostgreSQL (via API backend)
+            // Se houver múltiplas chaves preenchidas, manda uma por uma
+            const promessas = Object.entries(formData).map(([chave, valor]) => {
+                return fetch(`http://localhost:3001/api/configuracoes/${safeId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: safeEmail, chave, valor })
+                });
+            });
+            await Promise.all(promessas);
+
+            // Mantém backup offline no localStorage
+            localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(formData));
+
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000); // Tira a mensagem de sucesso após 3s
+        } catch (err) {
+            console.error("Erro ao salvar no PostgreSQL remoto:", err);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     // Dados mesclados para Inputs visíveis: FormData LocalStorage > Dados do Backend

@@ -5,6 +5,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import crypto from 'crypto'
+import pool from './db.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -186,6 +187,46 @@ app.post('/api/funcionario', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 })
+
+// ─── Rota de Configurações ───────────────────────────────────────────────
+app.get('/api/configuracoes/:usuarioId', async (req, res) => {
+    const { usuarioId } = req.params;
+    try {
+        const result = await pool.query('SELECT chave, valor FROM usuarios_preferencias WHERE usuario_id = $1', [usuarioId]);
+        // Converter de array [{chave: 'tema', valor: 'dark'}] para objeto {tema: 'dark'}
+        const preferencias = result.rows.reduce((acc, curr) => {
+            acc[curr.chave] = curr.valor;
+            return acc;
+        }, {});
+        return res.json({ sucesso: true, preferencias });
+    } catch (err) {
+        console.error('Erro ao buscar configurações do banco:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro buscar configuracoes do banco' });
+    }
+});
+
+app.put('/api/configuracoes/:usuarioId', async (req, res) => {
+    const { usuarioId } = req.params;
+    const { email, chave, valor } = req.body;
+
+    if (!chave) {
+        return res.status(400).json({ sucesso: false, erro: 'Chave é obrigatória.' });
+    }
+
+    try {
+        const query = `
+            INSERT INTO usuarios_preferencias (usuario_id, usuario_email, chave, valor, atualizado_em)
+            VALUES ($1, $2, $3, $4, NOW())
+            ON CONFLICT (usuario_id, chave) 
+            DO UPDATE SET valor = EXCLUDED.valor, atualizado_em = NOW();
+        `;
+        await pool.query(query, [String(usuarioId), email || 'desconhecido', chave, valor]);
+        return res.json({ sucesso: true });
+    } catch (err) {
+        console.error('Erro ao salvar configuração no banco:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao salvar no banco' });
+    }
+});
 
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
