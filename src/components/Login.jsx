@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { loginUsuario } from '../services/auth'
 import ParticlesBackground from './ParticlesBackground'
 import MagneticSandCard from './MagneticSandCard'
+import logoPrestek from '../image/logos/PRESTEK-TELECOM3-scaled.png'
 
 // Chave de armazenamento para as credenciais salvas
 const CHAVE_CREDS = '@Stitch:creds'
@@ -84,11 +85,8 @@ export default function Login({ onLogin }) {
                 <div className="w-full max-w-md z-10 relative">
                     {/* Logo Section */}
                     <div className="flex flex-col items-center mb-8">
-                        <div className="bg-gradient-to-br from-[#ff8c00] to-orange-600 p-3.5 rounded-2xl shadow-xl shadow-[#ff8c00]/30 mb-5 relative group cursor-default">
-                            <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            <svg className="w-9 h-9 text-white relative z-10" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                                <path clipRule="evenodd" d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z" fill="currentColor" fillRule="evenodd"></path>
-                            </svg>
+                        <div className="mb-5 relative group cursor-default hover:scale-105 transition-transform duration-300 flex justify-center w-full">
+                            <img src={logoPrestek} alt="Prestek Telecom" className="w-64 sm:w-72 h-auto mx-auto block drop-shadow-md" />
                         </div>
                         <h1 className="text-3xl font-extrabold tracking-tight">Portal Interno</h1>
                         <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Bem-vindo à Prestek Inc.</p>

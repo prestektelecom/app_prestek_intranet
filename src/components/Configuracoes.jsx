@@ -91,11 +91,17 @@ export default function Configuracoes({ user }) {
                 // 2º - preferências do usuário sobrescrevem (têm prioridade)
                 const p = dadosPerfil || {};
                 const nomeParts = (p.usuario_nome || safeName).split(' ');
+                // Preferências do usuário sobrescrevem os dados-base do perfil
+
+                // Puxamos fone_celular tanto de p.fone_celular (banco local) quanto direto do IXC (func.fone_celular)
+                // dando preferência para o banco e caindo pro IXC se não existir.
+                const telefoneFinal = p.fone_celular || func.fone_celular || p.fone || func.fone || safePhone;
+
                 const baseFormData = {
                     nome: nomeParts[0] || firstName,
                     sobrenome: nomeParts.slice(1).join(' ') || lastName,
                     email: p.usuario_email || p.funcionario_email || safeEmail,
-                    telefone_celular: p.fone_celular || p.fone || safePhone,
+                    telefone_celular: telefoneFinal,
                     data_nascimento: p.data_nascimento || safeBirthDate || '',
                     ramal: p.ramal || safeRamal || '',
                     id_departamento: p.id_departamento ? String(p.id_departamento) : (func.id_departamento ? String(func.id_departamento) : ''),
@@ -183,6 +189,13 @@ export default function Configuracoes({ user }) {
             );
             await Promise.all(promessas);
 
+            // Sincroniza dados críticos (como celular, nome, ramal) com a API IXC
+            await fetch(`http://localhost:3001/api/funcionario/${safeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
             // Backup offline no localStorage para carregamento rápido
             localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(formData));
 
@@ -239,7 +252,7 @@ export default function Configuracoes({ user }) {
                             ) : (
                                 <span className="material-symbols-outlined text-[18px]">save</span>
                             )}
-                            {isSaving ? 'Salvando...' : saveSuccess ? 'Salvo com Sucesso!' : 'Salvar Alterações'}
+                            {isSaving ? 'Salvando...' : saveSuccess ? 'Atualizado!' : 'Salvar Alterações'}
                         </button>
                     </div>
 
@@ -252,8 +265,8 @@ export default function Configuracoes({ user }) {
                                     <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-[24px]">check_circle</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-[#1d150c] dark:text-white">Alterações Salvas!</span>
-                                    <span className="text-xs text-[#a17745] dark:text-orange-300">Suas preferências foram mantidas neste navegador.</span>
+                                    <span className="text-sm font-bold text-[#1d150c] dark:text-white">Perfil atualizado</span>
+                                    <span className="text-xs text-[#a17745] dark:text-orange-300">Suas configurações foram sincronizadas com sucesso.</span>
                                 </div>
                             </div>
                             <style>{`

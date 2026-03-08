@@ -155,8 +155,8 @@ app.post('/api/login', async (req, res) => {
         try {
             const urlFunc = `https://${host}/webservice/v1/funcionarios`
             const bodyFunc = JSON.stringify({
-                qtype: 'funcionarios.email',
-                query: email,
+                qtype: 'funcionarios.id',
+                query: usuario.funcionario, // usuario.funcionario guarda o ID do funcionário vinculado a ele!
                 oper: '=',
                 page: '1',
                 rp: '1',
@@ -255,7 +255,104 @@ app.post('/api/funcionario', async (req, res) => {
     }
 })
 
-// ─── Rota: buscar perfil salvo no banco ──────────────────────────────────────
+// ─── Rota: Atualizar dados de Funcionário no IXC ───────────────────────────
+app.put('/api/funcionario/:usuarioId', async (req, res) => {
+    const { usuarioId } = req.params;
+    const formData = req.body;
+
+    try {
+        // Busca o ID do funcionário vinculado a este usuário
+        const result = await pool.query('SELECT funcionario_id FROM usuarios_perfil WHERE usuario_id = $1', [usuarioId]);
+        if (result.rows.length === 0 || !result.rows[0].funcionario_id) {
+            return res.status(404).json({ sucesso: false, erro: 'Funcionário não encontrado no banco.' });
+        }
+
+        const funcionarioId = result.rows[0].funcionario_id;
+        const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+        const host = process.env.IXC_HOST;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+            ixcsoft: 'listar'
+        };
+
+        // 1. Busca os dados atuais do dicionario IXC via POST (busca)
+        const bodyGet = JSON.stringify({
+            qtype: 'funcionarios.id',
+            query: funcionarioId,
+            oper: '=',
+            page: '1',
+            rp: '1'
+        });
+        const resGet = await fetch(`https://${host}/webservice/v1/funcionarios`, { method: 'POST', headers, body: bodyGet });
+        if (!resGet.ok) {
+            return res.status(502).json({ sucesso: false, erro: 'Falha ao buscar funcionário atual no IXC.' });
+        }
+
+        const dadosFunc = await resGet.json();
+        if (!dadosFunc.total || dadosFunc.total === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Funcionário não encontrado no IXC para atualizar.' });
+        }
+
+        const funcionarioAtual = dadosFunc.registros[0];
+
+        // 2. Prepara os headers para o PUT (removendo o header ixcsoft: listar)
+        const headersPut = {
+            'Content-Type': 'application/json',
+            Authorization: 'Basic ' + Buffer.from(token).toString('base64')
+        };
+        const urlPut = `https://${host}/webservice/v1/funcionarios/${funcionarioId}`;
+
+        // Mapeia os dados novos
+        const funcionarioName = [formData.nome, formData.sobrenome].filter(Boolean).join(' ');
+
+        // 3. Mescla com os dados recebidos. Vamos garantir que `fone_celular` seja sobrescrito.
+        // As demais propriedades permanecem como estavam
+        const bodyContent = {
+            ...funcionarioAtual, // Mantem outras configs como estavam (ex: ativo, id_funcao, ctps, cpf, etc)
+            fone_celular: formData.telefone_celular !== undefined ? formData.telefone_celular : (formData.fone_celular || funcionarioAtual.fone_celular || ''),
+            funcionario: funcionarioName || funcionarioAtual.funcionario || '',
+            email: formData.email !== undefined ? formData.email : (funcionarioAtual.email || ''),
+            ramal: formData.ramal !== undefined ? formData.ramal : (funcionarioAtual.ramal || ''),
+        };
+
+        if (formData.data_nascimento) bodyContent.data_nascimento = formData.data_nascimento;
+        if (formData.id_departamento) bodyContent.id_departamento = formData.id_departamento;
+        if (formData.filial_id) bodyContent.filial_id = formData.filial_id;
+
+        const bodyPut = JSON.stringify(bodyContent);
+
+        const resposta = await fetch(urlPut, { method: 'PUT', headers: headersPut, body: bodyPut });
+
+        if (!resposta.ok) {
+            const textoErro = await resposta.text();
+            console.error(`Erro IXC ao atualizar [${resposta.status}]:`, textoErro);
+            return res.status(502).json({ sucesso: false, erro: 'Falha ao atualizar dados no IXC.' });
+        }
+
+        // Se deu sucesso, atualizamos a cache de `usuarios_perfil` também (opcional)
+        const dNasc = bodyContent.data_nascimento ? bodyContent.data_nascimento : null;
+        await pool.query(
+            `UPDATE usuarios_perfil SET 
+                fone_celular = $1, 
+                funcionario_nome = $2, 
+                usuario_nome = $2,
+                usuario_email = $3,
+                ramal = $4,
+                data_nascimento = $5,
+                atualizado_em = NOW() 
+             WHERE usuario_id = $6`,
+            [bodyContent.fone_celular, bodyContent.funcionario, bodyContent.email, bodyContent.ramal, dNasc, usuarioId]
+        );
+
+        return res.json({ sucesso: true, mensagem: 'Dados atualizados no IXC' });
+
+    } catch (erro) {
+        console.error('Erro requisição PUT Funcionario:', erro.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao atualizar funcionário.' });
+    }
+});
 app.get('/api/usuario/perfil/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
     try {
