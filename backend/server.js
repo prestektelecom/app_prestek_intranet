@@ -255,6 +255,99 @@ app.post('/api/funcionario', async (req, res) => {
     }
 })
 
+// ─── Rota: Listar Departamentos ─────────────────────────────────────────
+app.get('/api/departamentos', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
+    const host = process.env.IXC_HOST
+    const url = `https://${host}/webservice/v1/su_ticket_setor`
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    }
+
+    const body = JSON.stringify({
+        qtype: 'su_ticket_setor.id',
+        query: '0',
+        oper: '>',
+        page: '1',
+        rp: '1000',
+        sortname: 'su_ticket_setor.setor',
+        sortorder: 'asc'
+    })
+
+    try {
+        const resposta = await fetch(url, { method: 'POST', headers, body })
+        const dados = await resposta.json()
+        return res.json({ sucesso: true, departamentos: dados.registros || [] })
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message })
+    }
+})
+
+// ─── Rota: Listar Cargos (Funções) ──────────────────────────────────────
+app.get('/api/cargos', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
+    const host = process.env.IXC_HOST
+    const url = `https://${host}/webservice/v1/empresa_setor`
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    }
+
+    const body = JSON.stringify({
+        qtype: 'empresa_setor.id',
+        query: '0',
+        oper: '>',
+        page: '1',
+        rp: '1000',
+        sortname: 'empresa_setor.setor',
+        sortorder: 'asc'
+    })
+
+    try {
+        const resposta = await fetch(url, { method: 'POST', headers, body })
+        const dados = await resposta.json()
+        return res.json({ sucesso: true, cargos: dados.registros || [] })
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message })
+    }
+})
+
+// ─── Rota: Listar Filiais ────────────────────────────────────────────────
+app.get('/api/filiais', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
+    const host = process.env.IXC_HOST
+    const url = `https://${host}/webservice/v1/cliente_empresa_filial`
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    }
+
+    const body = JSON.stringify({
+        qtype: 'cliente_empresa_filial.id',
+        query: '0',
+        oper: '>',
+        page: '1',
+        rp: '100',
+        sortname: 'cliente_empresa_filial.id',
+        sortorder: 'asc'
+    })
+
+    try {
+        const resposta = await fetch(url, { method: 'POST', headers, body })
+        const dados = await resposta.json()
+        return res.json({ sucesso: true, filiais: dados.registros || [] })
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message })
+    }
+})
+
 // ─── Rota: Atualizar dados de Funcionário no IXC ───────────────────────────
 app.put('/api/funcionario/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;

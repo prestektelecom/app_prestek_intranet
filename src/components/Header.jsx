@@ -24,6 +24,22 @@ export default function Header({ currentView, setCurrentView, user }) {
     const safeId = func.id ?? user?.id ?? '0000';
 
     const [avatarUrl, setAvatarUrl] = useState(user?.funcionario?.foto_perfil || null);
+    const [cargoName, setCargoName] = useState(safeRole);
+
+    useEffect(() => {
+        // Carrega o nome do cargo chamando a API de cargos
+        if (safeRole && safeRole !== 'Colaborador') {
+            fetch('http://localhost:3001/api/cargos')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.sucesso && data.cargos) {
+                        const found = data.cargos.find(c => String(c.id) === String(safeRole));
+                        if (found) setCargoName(found.setor);
+                    }
+                })
+                .catch(err => console.error("Erro ao buscar cargos no header", err));
+        }
+    }, [safeRole]);
 
     useEffect(() => {
         if (!safeId || safeId === '0000') return;
@@ -188,7 +204,7 @@ export default function Header({ currentView, setCurrentView, user }) {
                     </div>
                     <div className="hidden lg:block text-left">
                         <p className="text-sm font-bold leading-none dark:text-white truncate max-w-[250px]">{safeName}</p>
-                        <p className="text-xs text-gray-500 mt-1 truncate max-w-[250px]">{safeRole}</p>
+                        <p className="text-xs text-gray-500 mt-1 truncate max-w-[250px]">{cargoName}</p>
                     </div>
                 </div>
             </div>

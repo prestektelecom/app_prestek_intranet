@@ -48,6 +48,11 @@ export default function Configuracoes({ user }) {
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
+    // Listas do IXC
+    const [departamentosList, setDepartamentosList] = useState([]);
+    const [cargosList, setCargosList] = useState([]);
+    const [filiaisList, setFiliaisList] = useState([]);
+
     // Carrega perfil do banco (usuarios_perfil) e preferências (usuarios_preferencias)
     useEffect(() => {
         if (!safeId || safeId === '0000') {
@@ -119,6 +124,34 @@ export default function Configuracoes({ user }) {
         };
         carregarConfiguracoes();
     }, [safeId]);
+
+    // Busca listas de departamentos, cargos e filiais do IXC
+    useEffect(() => {
+        const fetchListas = async () => {
+            try {
+                const [resDept, resCargo, resFilial] = await Promise.all([
+                    fetch('http://localhost:3001/api/departamentos').catch(() => null),
+                    fetch('http://localhost:3001/api/cargos').catch(() => null),
+                    fetch('http://localhost:3001/api/filiais').catch(() => null)
+                ]);
+                if (resDept?.ok) {
+                    const data = await resDept.json();
+                    if (data.sucesso) setDepartamentosList(data.departamentos);
+                }
+                if (resCargo?.ok) {
+                    const data = await resCargo.json();
+                    if (data.sucesso) setCargosList(data.cargos);
+                }
+                if (resFilial?.ok) {
+                    const data = await resFilial.json();
+                    if (data.sucesso) setFiliaisList(data.filiais);
+                }
+            } catch (err) {
+                console.error("Erro ao buscar listas do IXC", err);
+            }
+        };
+        fetchListas();
+    }, []);
 
     // AvatarUrl usa o formData (do banco) ou o default do usuário
     const initialAvatarUrl = formData.avatarUrl !== undefined ? formData.avatarUrl : (user?.funcionario?.foto_perfil || null);
@@ -218,7 +251,14 @@ export default function Configuracoes({ user }) {
     const displayBirthDate = formData.data_nascimento !== undefined ? formData.data_nascimento : (pb.data_nascimento || safeBirthDate);
     const displayRamal = formData.ramal !== undefined ? formData.ramal : (pb.ramal || safeRamal);
     const displayDepto = formData.id_departamento !== undefined ? formData.id_departamento : (pb.id_departamento || func.id_departamento || '');
-    const displayFilial = formData.filial_id !== undefined ? formData.filial_id : (pb.filial_id || func.filial_id || 'Sede Principal');
+    const displayFilial = formData.filial_id !== undefined ? formData.filial_id : (pb.filial_id || func.filial_id || '');
+
+    // Mapeamento visual: ID -> Nome para departamento, cargo e filial
+    const deptoName = departamentosList.find(d => String(d.id) === String(displayDepto))?.setor || displayDepto || 'N/D';
+    const filialName = filiaisList.find(f => String(f.id) === String(displayFilial))?.fantasia
+        || filiaisList.find(f => String(f.id) === String(displayFilial))?.razao
+        || (displayFilial ? `Filial ${displayFilial}` : 'Sede Principal');
+    const cargoName = cargosList.find(c => String(c.id) === String(safeRole))?.setor || safeRole || 'Colaborador';
 
     // Gerenciador genérico de campos de texto/selects
     const handleInputChange = (e) => {
@@ -350,7 +390,7 @@ export default function Configuracoes({ user }) {
                             </div>
                             <div className="text-center w-full">
                                 <h2 className="text-[#1d150c] dark:text-white text-xl font-bold mb-1">{safeName}</h2>
-                                <p className="text-primary font-medium text-sm mb-4">{safeRole}</p>
+                                <p className="text-primary font-medium text-sm mb-4">{cargoName}</p>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                     {isActive ? 'Colaborador Ativo' : 'Inativo'}
                                 </span>
@@ -362,7 +402,12 @@ export default function Configuracoes({ user }) {
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-[#a17745] dark:text-orange-300">
                                     <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                                    <span>Admitido em: <span className="text-[#1d150c] dark:text-white font-medium">{safeAdmission}</span></span>
+                                    <span>Admitido em: <span className="text-[#1d150c] dark:text-white font-medium">
+                                        {safeAdmission !== 'N/D'
+                                            ? new Date(safeAdmission.includes('T') ? safeAdmission : safeAdmission + 'T00:00:00')
+                                                .toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+                                            : 'N/D'}
+                                    </span></span>
                                 </div>
                             </div>
                         </div>
@@ -415,37 +460,28 @@ export default function Configuracoes({ user }) {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">DEPARTAMENTO</label>
+                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">SETOR</label>
                                     <div className="relative">
-                                        <select className="form-select w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                            name="id_departamento" value={displayDepto} onChange={handleInputChange}>
-                                            <option value="">Selecione o Departamento</option>
-                                            <option value="1">Atendimento ao Cliente</option>
-                                            <option value="2">Tecnologia da Informação</option>
-                                            <option value="3">Recursos Humanos</option>
-                                            <option value="4">Marketing e Vendas</option>
-                                            <option value="5">Financeiro</option>
-                                            {displayDepto && !['1', '2', '3', '4', '5', ''].includes(String(displayDepto)) && (
-                                                <option value={displayDepto}>Departamento {displayDepto}</option>
-                                            )}
-                                        </select>
+                                        <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
+                                            readOnly name="id_departamento" type="text"
+                                            value={deptoName} />
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">LOCALIZAÇÃO DO ESCRITÓRIO</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="filial_id" type="text" value={displayFilial} onChange={handleInputChange} />
+                                    <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
+                                        readOnly name="filial_id" type="text" value={filialName} />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">CARGO</label>
                                     <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
-                                        readOnly type="text" defaultValue={safeRole} />
+                                        readOnly type="text" value={cargoName} />
                                     <span className="text-xs text-[#a17745] dark:text-orange-300 italic">Contate o RH para atualizar o cargo.</span>
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">RAMAL INTERNO</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="ramal" type="text" value={displayRamal} onChange={handleInputChange} />
+                                    <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
+                                        readOnly name="ramal" type="text" value={displayRamal} />
                                 </div>
                             </div>
                         </section>
