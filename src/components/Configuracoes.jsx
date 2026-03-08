@@ -52,6 +52,7 @@ export default function Configuracoes({ user }) {
     const [departamentosList, setDepartamentosList] = useState([]);
     const [cargosList, setCargosList] = useState([]);
     const [filiaisList, setFiliaisList] = useState([]);
+    const [funcoesList, setFuncoesList] = useState([]);
 
     // Carrega perfil do banco (usuarios_perfil) e preferências (usuarios_preferencias)
     useEffect(() => {
@@ -102,6 +103,7 @@ export default function Configuracoes({ user }) {
                 // dando preferência para o banco e caindo pro IXC se não existir.
                 const telefoneFinal = p.fone_celular || func.fone_celular || p.fone || func.fone || safePhone;
 
+                // Campos editáveis pelo usuário (NÃO inclui id_departamento, filial_id — são readonly do IXC)
                 const baseFormData = {
                     nome: nomeParts[0] || firstName,
                     sobrenome: nomeParts.slice(1).join(' ') || lastName,
@@ -109,8 +111,6 @@ export default function Configuracoes({ user }) {
                     telefone_celular: telefoneFinal,
                     data_nascimento: p.data_nascimento || safeBirthDate || '',
                     ramal: p.ramal || safeRamal || '',
-                    id_departamento: p.id_departamento ? String(p.id_departamento) : (func.id_departamento ? String(func.id_departamento) : ''),
-                    filial_id: p.filial_id ? String(p.filial_id) : (func.filial_id || 'Sede Principal'),
                 };
 
                 // Preferências do usuário sobrescrevem os dados-base do perfil
@@ -125,14 +125,15 @@ export default function Configuracoes({ user }) {
         carregarConfiguracoes();
     }, [safeId]);
 
-    // Busca listas de departamentos, cargos e filiais do IXC
+    // Busca listas de departamentos, cargos, filiais e funções do IXC
     useEffect(() => {
         const fetchListas = async () => {
             try {
-                const [resDept, resCargo, resFilial] = await Promise.all([
+                const [resDept, resCargo, resFilial, resFuncao] = await Promise.all([
                     fetch('http://localhost:3001/api/departamentos').catch(() => null),
                     fetch('http://localhost:3001/api/cargos').catch(() => null),
-                    fetch('http://localhost:3001/api/filiais').catch(() => null)
+                    fetch('http://localhost:3001/api/filiais').catch(() => null),
+                    fetch('http://localhost:3001/api/funcoes').catch(() => null)
                 ]);
                 if (resDept?.ok) {
                     const data = await resDept.json();
@@ -145,6 +146,10 @@ export default function Configuracoes({ user }) {
                 if (resFilial?.ok) {
                     const data = await resFilial.json();
                     if (data.sucesso) setFiliaisList(data.filiais);
+                }
+                if (resFuncao?.ok) {
+                    const data = await resFuncao.json();
+                    if (data.sucesso) setFuncoesList(data.funcoes);
                 }
             } catch (err) {
                 console.error("Erro ao buscar listas do IXC", err);
@@ -207,13 +212,16 @@ export default function Configuracoes({ user }) {
         setFormData(prev => ({ ...prev, avatarUrl: url }));
     }
 
-    // Ação do Botão Salvar — persiste TUDO que está visível na tela
+    // Ação do Botão Salvar — persiste campos editáveis na tela
+    // Campos readonly do IXC (id_departamento, filial_id) NÃO são salvos nas preferências
+    const CAMPOS_READONLY = ['id_departamento', 'filial_id'];
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            // formData já contém todos os valores visíveis (pré-populado no carregamento)
-            // Salva cada chave-valor no PostgreSQL (upsert via ON CONFLICT)
-            const promessas = Object.entries(formData).map(([chave, valor]) =>
+            // Filtra campos readonly antes de salvar nas preferências
+            const dadosParaSalvar = Object.entries(formData)
+                .filter(([chave]) => !CAMPOS_READONLY.includes(chave));
+            const promessas = dadosParaSalvar.map(([chave, valor]) =>
                 fetch(`http://localhost:3001/api/configuracoes/${safeId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -250,15 +258,20 @@ export default function Configuracoes({ user }) {
     const displayPhone = formData.telefone_celular !== undefined ? formData.telefone_celular : (pb.fone_celular || pb.fone || safePhone);
     const displayBirthDate = formData.data_nascimento !== undefined ? formData.data_nascimento : (pb.data_nascimento || safeBirthDate);
     const displayRamal = formData.ramal !== undefined ? formData.ramal : (pb.ramal || safeRamal);
-    const displayDepto = formData.id_departamento !== undefined ? formData.id_departamento : (pb.id_departamento || func.id_departamento || '');
-    const displayFilial = formData.filial_id !== undefined ? formData.filial_id : (pb.filial_id || func.filial_id || '');
+    // Dados readonly do IXC — NÃO vêm do formData (preferências podem ter valores antigos/errados)
+    const displayDepto = pb.id_departamento || func.id_departamento || '';
+    const displayFilial = pb.filial_id || func.filial_id || '';
 
-    // Mapeamento visual: ID -> Nome para departamento, cargo e filial
-    const deptoName = departamentosList.find(d => String(d.id) === String(displayDepto))?.setor || displayDepto || 'N/D';
-    const filialName = filiaisList.find(f => String(f.id) === String(displayFilial))?.fantasia
-        || filiaisList.find(f => String(f.id) === String(displayFilial))?.razao
+    // Mapeamento visual: ID -> Nome
+    // Setor (id_departamento) busca na API empresa_setor (cargosList)
+    const deptoName = cargosList.find(c => String(c.id).trim() === String(displayDepto).trim())?.setor || displayDepto || 'N/D';
+    const filialName = filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.fantasia
+        || filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.razao
         || (displayFilial ? `Filial ${displayFilial}` : 'Sede Principal');
-    const cargoName = cargosList.find(c => String(c.id) === String(safeRole))?.setor || safeRole || 'Colaborador';
+
+    // Cargo (id_funcao) — o usuário confirmou que está na mesma tabela empresa_setor
+    const cargoName = cargosList.find(c => String(c.id).trim() === String(safeRole).trim())?.setor
+        || safeRole || 'Colaborador';
 
     // Gerenciador genérico de campos de texto/selects
     const handleInputChange = (e) => {

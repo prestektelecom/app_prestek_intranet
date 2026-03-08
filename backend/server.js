@@ -286,7 +286,8 @@ app.get('/api/departamentos', async (req, res) => {
     }
 })
 
-// ─── Rota: Listar Cargos (Funções) ──────────────────────────────────────
+// ─── Rota: Listar Cargos/Setores da Empresa (empresa_setor) ─────────────
+// Na API IXC, empresa_setor resolve o DEPARTAMENTO/SETOR do funcionário (ex: 54 = T.I)
 app.get('/api/cargos', async (req, res) => {
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
     const host = process.env.IXC_HOST
@@ -316,6 +317,39 @@ app.get('/api/cargos', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: e.message })
     }
 })
+
+// ─── Rota: Listar Funções Reais (funcionarios_funcao) ─────────────────────
+// Na API IXC, funcionarios_funcao resolve de fato o CARGO (ex: 36 = Desenvolvedor)
+app.get('/api/funcoes', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
+    const host = process.env.IXC_HOST
+    const url = `https://${host}/webservice/v1/funcionarios_funcao`
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    }
+
+    const body = JSON.stringify({
+        qtype: 'funcionarios_funcao.id',
+        query: '0',
+        oper: '>',
+        page: '1',
+        rp: '1000',
+        sortname: 'funcionarios_funcao.funcao',
+        sortorder: 'asc'
+    })
+
+    try {
+        const resposta = await fetch(url, { method: 'POST', headers, body })
+        const dados = await resposta.json()
+        return res.json({ sucesso: true, funcoes: dados.registros || [] })
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message })
+    }
+})
+
 
 // ─── Rota: Listar Filiais ────────────────────────────────────────────────
 app.get('/api/filiais', async (req, res) => {
