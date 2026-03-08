@@ -486,13 +486,7 @@ export default function Configuracoes({ user }) {
                                         readOnly name="filial_id" type="text" value={filialName} />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">CARGO</label>
-                                    <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
-                                        readOnly type="text" value={cargoName} />
-                                    <span className="text-xs text-[#a17745] dark:text-orange-300 italic">Contate o RH para atualizar o cargo.</span>
-                                </div>
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">RAMAL INTERNO</label>
+                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">TELEFONE IP</label>
                                     <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
                                         readOnly name="ramal" type="text" value={displayRamal} />
                                 </div>

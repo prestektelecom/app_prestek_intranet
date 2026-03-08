@@ -355,7 +355,7 @@ app.get('/api/funcoes', async (req, res) => {
 app.get('/api/filiais', async (req, res) => {
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
     const host = process.env.IXC_HOST
-    const url = `https://${host}/webservice/v1/cliente_empresa_filial`
+    const url = `https://${host}/webservice/v1/filial`
 
     const headers = {
         'Content-Type': 'application/json',
@@ -364,12 +364,12 @@ app.get('/api/filiais', async (req, res) => {
     }
 
     const body = JSON.stringify({
-        qtype: 'cliente_empresa_filial.id',
+        qtype: 'filial.id',
         query: '0',
         oper: '>',
         page: '1',
         rp: '100',
-        sortname: 'cliente_empresa_filial.id',
+        sortname: 'filial.id',
         sortorder: 'asc'
     })
 
