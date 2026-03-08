@@ -14,6 +14,68 @@ const PORT = process.env.PORT || 3001
 app.use(cors({ origin: 'http://localhost:5173' }))
 app.use(express.json())
 
+// ─── Função auxiliar: sincroniza perfil do usuário no banco após login ────────
+/**
+ * Salva ou atualiza os dados do usuário IXC na tabela usuarios_perfil.
+ * @param {Object} usuario  - Registro da tabela usuarios (API IXC)
+ * @param {Object|null} funcionario - Registro da tabela funcionarios (API IXC)
+ */
+async function sincronizarPerfilNoBanco(usuario, funcionario) {
+    const func = funcionario || {};
+
+    // Converte string de data para null se vazia
+    const toDate = (val) => (val && val !== '' && val !== 'N/D' ? val : null);
+
+    const query = `
+        INSERT INTO usuarios_perfil (
+            usuario_id, usuario_email, usuario_nome, acesso_token,
+            funcionario_id, funcionario_nome, funcionario_email,
+            id_funcao, id_departamento, filial_id,
+            fone_celular, fone, ramal,
+            data_nascimento, data_admissao, ativo, foto_perfil,
+            sincronizado_em, atualizado_em
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,NOW(),NOW())
+        ON CONFLICT (usuario_id) DO UPDATE SET
+            usuario_email     = EXCLUDED.usuario_email,
+            usuario_nome      = EXCLUDED.usuario_nome,
+            acesso_token      = EXCLUDED.acesso_token,
+            funcionario_id    = EXCLUDED.funcionario_id,
+            funcionario_nome  = EXCLUDED.funcionario_nome,
+            funcionario_email = EXCLUDED.funcionario_email,
+            id_funcao         = EXCLUDED.id_funcao,
+            id_departamento   = EXCLUDED.id_departamento,
+            filial_id         = EXCLUDED.filial_id,
+            fone_celular      = EXCLUDED.fone_celular,
+            fone              = EXCLUDED.fone,
+            ramal             = EXCLUDED.ramal,
+            data_nascimento   = EXCLUDED.data_nascimento,
+            data_admissao     = EXCLUDED.data_admissao,
+            ativo             = EXCLUDED.ativo,
+            foto_perfil       = EXCLUDED.foto_perfil,
+            atualizado_em     = NOW();
+    `;
+
+    await pool.query(query, [
+        String(usuario.id),
+        usuario.email || '',
+        usuario.nome || '',
+        usuario.acesso_token || '',
+        func.id ? String(func.id) : null,
+        func.funcionario || null,
+        func.email || null,
+        func.id_funcao || null,
+        func.id_departamento ? String(func.id_departamento) : null,
+        func.filial_id ? String(func.filial_id) : null,
+        func.fone_celular || null,
+        func.fone || null,
+        func.ramal || null,
+        toDate(func.data_nascimento),
+        toDate(func.data_admissao),
+        func.ativo || 'S',
+        func.foto_perfil || null
+    ]);
+}
+
 // ─── Rota de Login ───────────────────────────────────────────────
 app.post('/api/login', async (req, res) => {
     const { email, senha } = req.body
@@ -112,6 +174,11 @@ app.post('/api/login', async (req, res) => {
             console.warn('Aviso: não foi possível buscar dados de funcionário:', errFunc.message)
         }
 
+        // Sincroniza dados do perfil no banco de forma assíncrona (não bloqueia resposta)
+        sincronizarPerfilNoBanco(usuario, funcionario)
+            .then(() => console.log(`Perfil sincronizado no banco: ${usuario.email}`))
+            .catch(errSync => console.warn('Aviso: falha ao sincronizar perfil:', errSync.message));
+
         // Retorna dados combinados de usuarios + funcionarios
         console.log(`Login bem-sucedido: ${usuario.nome} (${usuario.email})`)
         return res.json({
@@ -187,6 +254,24 @@ app.post('/api/funcionario', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 })
+
+// ─── Rota: buscar perfil salvo no banco ──────────────────────────────────────
+app.get('/api/usuario/perfil/:usuarioId', async (req, res) => {
+    const { usuarioId } = req.params;
+    try {
+        const result = await pool.query(
+            'SELECT * FROM usuarios_perfil WHERE usuario_id = $1',
+            [usuarioId]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Perfil não encontrado.' });
+        }
+        return res.json({ sucesso: true, perfil: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao buscar perfil do banco:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar perfil.' });
+    }
+});
 
 // ─── Rota de Configurações ───────────────────────────────────────────────
 app.get('/api/configuracoes/:usuarioId', async (req, res) => {

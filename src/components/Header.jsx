@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Header: barra superior com logo, busca, notificações, perfil do usuário e navegação condicional
-export default function Header({ currentView, setCurrentView }) {
+export default function Header({ currentView, setCurrentView, user }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const headerMenuItems = [
@@ -14,6 +14,41 @@ export default function Header({ currentView, setCurrentView }) {
         { id: 'offices', label: 'Escritórios' },
         { id: 'processes', label: 'Processos' },
     ];
+
+    const func = user?.funcionario ?? {};
+    const safeName = func.funcionario || user?.nome || 'Usuário';
+    const nameParts = safeName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+    const safeRole = func.id_funcao || 'Colaborador';
+    const safeId = func.id ?? user?.id ?? '0000';
+
+    const [avatarUrl, setAvatarUrl] = useState(user?.funcionario?.foto_perfil || null);
+
+    useEffect(() => {
+        if (!safeId || safeId === '0000') return;
+        const saved = localStorage.getItem(`stitch_profile_${safeId}`);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.avatarUrl) setAvatarUrl(parsed.avatarUrl);
+            } catch (e) { }
+        }
+
+        // Sincronizar o avatar se alterado nas configurações
+        const interval = setInterval(() => {
+            const currentSaved = localStorage.getItem(`stitch_profile_${safeId}`);
+            if (currentSaved) {
+                try {
+                    const parsed = JSON.parse(currentSaved);
+                    if (parsed.avatarUrl && parsed.avatarUrl !== avatarUrl) {
+                        setAvatarUrl(parsed.avatarUrl);
+                    }
+                } catch (e) { }
+            }
+        }, 1500);
+        return () => clearInterval(interval);
+    }, [safeId, avatarUrl]);
 
     return (
         <header className="flex items-center justify-between whitespace-nowrap border-b border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] px-4 md:px-6 py-3 shrink-0 h-16 z-20 shadow-sm relative transition-colors duration-200">
@@ -127,20 +162,33 @@ export default function Header({ currentView, setCurrentView }) {
                     <span className="material-symbols-outlined text-[24px]">admin_panel_settings</span>
                 </button>
 
+                {/* Botão Sair / Logout */}
+                <button
+                    onClick={() => {
+                        localStorage.removeItem('@Stitch:user');
+                        localStorage.removeItem('@Stitch:currentView');
+                        sessionStorage.removeItem('@Stitch:user');
+                        sessionStorage.removeItem('@Stitch:currentView');
+                        setCurrentView('login');
+                    }}
+                    title="Sair da Conta"
+                    className="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1a130b] hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 hover:text-red-600 transition-colors">
+                    <span className="material-symbols-outlined text-[24px]">logout</span>
+                </button>
 
                 <div className="h-8 w-px bg-[#eaddcd] dark:bg-gray-800 mx-1"></div>
 
                 {/* Avatar + Nome */}
-                <div className="flex items-center gap-3 cursor-pointer group">
+                <div onClick={() => setCurrentView('settings')} className="flex items-center gap-3 cursor-pointer group">
                     <div
-                        className="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-transparent group-hover:border-primary transition-all"
-                        style={{
-                            backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuCzNpKtesQXtpcYif9ejbbMoZTuuRQGeIXa6m9sfm4J9LKnRIOTD8EBvlEOWFaUx-bXnxSunYjvJgSfs_5y0O7OFYf-e2DXSTBdO9Z9tnSErexUMgREwAScP_3KkTTqWj_FscXKucqmtwla4CUanVTBdz2myIkW2A8YOEBzv7z2WMc-YhFQT7h4amBXMMjREIk28yX2iWzX8a8npYrgt6uJM15Bj5yaEjw2wDoZTNqFBXpRQiiSWATeUxSzclzkzJ3Jt5Zmotuq7Ts")`,
-                        }}
-                    ></div>
-                    <div className="hidden lg:block">
-                        <p className="text-sm font-bold leading-none dark:text-white">Alex Morgan</p>
-                        <p className="text-xs text-gray-500 mt-1">Líder Comercial</p>
+                        className="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-transparent group-hover:border-primary flex items-center justify-center bg-gradient-to-br from-primary/20 to-orange-100 shrink-0 overflow-hidden transition-all"
+                        style={avatarUrl ? { backgroundImage: `url("${avatarUrl}")` } : {}}
+                    >
+                        {!avatarUrl && <span className="font-bold text-primary text-sm">{firstName.charAt(0)}{lastName.charAt(0)}</span>}
+                    </div>
+                    <div className="hidden lg:block text-left">
+                        <p className="text-sm font-bold leading-none dark:text-white truncate max-w-[250px]">{safeName}</p>
+                        <p className="text-xs text-gray-500 mt-1 truncate max-w-[250px]">{safeRole}</p>
                     </div>
                 </div>
             </div>

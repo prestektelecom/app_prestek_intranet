@@ -43,11 +43,12 @@ export default function Configuracoes({ user }) {
 
     // Estado para os formulários e UI
     const [formData, setFormData] = useState({});
+    const [perfilBanco, setPerfilBanco] = useState(null); // Dados do banco (usuarios_perfil)
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
-    // Carrega dados remotamente do PostgreSQL via API
+    // Carrega perfil do banco (usuarios_perfil) e preferências (usuarios_preferencias)
     useEffect(() => {
         if (!safeId || safeId === '0000') {
             setIsLoading(false);
@@ -55,20 +56,57 @@ export default function Configuracoes({ user }) {
         }
         const carregarConfiguracoes = async () => {
             try {
-                // Tenta carregar do local storage primeiro p/ interface rápida
+                // Tenta carregar do localStorage primeiro p/ interface rápida
                 const saved = localStorage.getItem(`stitch_profile_${safeId}`);
                 if (saved) setFormData(JSON.parse(saved));
 
-                // E busca dados fresquinhos do PostgreSQL
-                const res = await fetch(`http://localhost:3001/api/configuracoes/${safeId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.sucesso && data.preferencias) {
-                        setFormData(data.preferencias); // Sobrescreve local com versão do banco
+                // Carrega em paralelo: perfil do banco + preferências do usuário
+                const [resPerfil, resPref] = await Promise.all([
+                    fetch(`http://localhost:3001/api/usuario/perfil/${safeId}`).catch(() => null),
+                    fetch(`http://localhost:3001/api/configuracoes/${safeId}`).catch(() => null)
+                ]);
+
+                let dadosPerfil = null;
+                let dadosPrefs = {};
+
+                // Lê perfil sincronizado com dados da API IXC
+                if (resPerfil?.ok) {
+                    const dataPerfil = await resPerfil.json();
+                    if (dataPerfil.sucesso && dataPerfil.perfil) {
+                        dadosPerfil = dataPerfil.perfil;
+                        setPerfilBanco(dadosPerfil);
                     }
                 }
+
+                // Lê preferências salvas pelo usuário
+                if (resPref?.ok) {
+                    const dataPref = await resPref.json();
+                    if (dataPref.sucesso && dataPref.preferencias) {
+                        dadosPrefs = dataPref.preferencias;
+                    }
+                }
+
+                // Monta formData completo:
+                // 1º - semeia com dados do perfil IXC (banco)
+                // 2º - preferências do usuário sobrescrevem (têm prioridade)
+                const p = dadosPerfil || {};
+                const nomeParts = (p.usuario_nome || safeName).split(' ');
+                const baseFormData = {
+                    nome: nomeParts[0] || firstName,
+                    sobrenome: nomeParts.slice(1).join(' ') || lastName,
+                    email: p.usuario_email || p.funcionario_email || safeEmail,
+                    telefone_celular: p.fone_celular || p.fone || safePhone,
+                    data_nascimento: p.data_nascimento || safeBirthDate || '',
+                    ramal: p.ramal || safeRamal || '',
+                    id_departamento: p.id_departamento ? String(p.id_departamento) : (func.id_departamento ? String(func.id_departamento) : ''),
+                    filial_id: p.filial_id ? String(p.filial_id) : (func.filial_id || 'Sede Principal'),
+                };
+
+                // Preferências do usuário sobrescrevem os dados-base do perfil
+                setFormData({ ...baseFormData, ...dadosPrefs });
+
             } catch (err) {
-                console.error("Erro ao carregar configurações do banco:", err);
+                console.error("Erro ao carregar dados do banco:", err);
             } finally {
                 setIsLoading(false);
             }
@@ -99,59 +137,75 @@ export default function Configuracoes({ user }) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    /**
+     * Upload de imagem: converte para base64 para persistir no banco.
+     * blob: URLs são temporárias e expiram ao recarregar a página.
+     */
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setAvatarUrl(url);
-            setShowAvatarMenu(false);
+        if (!file) return;
 
-            // Auto update temporary url in formdata for saving logic
-            setFormData(prev => ({ ...prev, avatarUrl: url }));
+        // Valida tamanho máximo: 2MB
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Imagem muito grande. Use uma imagem de até 2MB.');
+            return;
         }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64 = reader.result; // 'data:image/png;base64,...'
+            setAvatarUrl(base64);
+            setShowAvatarMenu(false);
+            setFormData(prev => ({ ...prev, avatarUrl: base64 }));
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleChangeAvatar = (url) => {
         setAvatarUrl(url);
         setShowAvatarMenu(false);
         setShowAvatarGrid(false);
-
-        // Auto update avatar in formdata for saving logic
         setFormData(prev => ({ ...prev, avatarUrl: url }));
     }
 
-    // Ação do Botão Salvar
+    // Ação do Botão Salvar — persiste TUDO que está visível na tela
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            // Salvar no PostgreSQL (via API backend)
-            // Se houver múltiplas chaves preenchidas, manda uma por uma
-            const promessas = Object.entries(formData).map(([chave, valor]) => {
-                return fetch(`http://localhost:3001/api/configuracoes/${safeId}`, {
+            // formData já contém todos os valores visíveis (pré-populado no carregamento)
+            // Salva cada chave-valor no PostgreSQL (upsert via ON CONFLICT)
+            const promessas = Object.entries(formData).map(([chave, valor]) =>
+                fetch(`http://localhost:3001/api/configuracoes/${safeId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: safeEmail, chave, valor })
-                });
-            });
+                    body: JSON.stringify({ email: safeEmail, chave, valor: valor ?? '' })
+                })
+            );
             await Promise.all(promessas);
 
-            // Mantém backup offline no localStorage
+            // Backup offline no localStorage para carregamento rápido
             localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(formData));
 
             setSaveSuccess(true);
-            setTimeout(() => setSaveSuccess(false), 3000); // Tira a mensagem de sucesso após 3s
+            setTimeout(() => setSaveSuccess(false), 3000);
         } catch (err) {
-            console.error("Erro ao salvar no PostgreSQL remoto:", err);
+            console.error("Erro ao salvar no PostgreSQL:", err);
         } finally {
             setIsSaving(false);
         }
     };
 
-    // Dados mesclados para Inputs visíveis: FormData LocalStorage > Dados do Backend
-    const displayEmail = formData.email !== undefined ? formData.email : safeEmail;
-    const displayPhone = formData.telefone_celular !== undefined ? formData.telefone_celular : safePhone;
-    const displayBirthDate = formData.data_nascimento !== undefined ? formData.data_nascimento : safeBirthDate;
-    const displayRamal = formData.ramal !== undefined ? formData.ramal : safeRamal;
+    // Dados mesclados para Inputs visíveis:
+    // Hierarquia: formData (edições do usuário) > perfilBanco (dados IXC salvos) > dados do login (memória)
+    const pb = perfilBanco || {}; // Atalho para dados do banco
+    const displayNome = formData.nome !== undefined ? formData.nome : (pb.usuario_nome?.split(' ')[0] || firstName);
+    const displaySobrenome = formData.sobrenome !== undefined ? formData.sobrenome : (pb.usuario_nome?.split(' ').slice(1).join(' ') || lastName);
+    const displayEmail = formData.email !== undefined ? formData.email : (pb.usuario_email || pb.funcionario_email || safeEmail);
+    const displayPhone = formData.telefone_celular !== undefined ? formData.telefone_celular : (pb.fone_celular || pb.fone || safePhone);
+    const displayBirthDate = formData.data_nascimento !== undefined ? formData.data_nascimento : (pb.data_nascimento || safeBirthDate);
+    const displayRamal = formData.ramal !== undefined ? formData.ramal : (pb.ramal || safeRamal);
+    const displayDepto = formData.id_departamento !== undefined ? formData.id_departamento : (pb.id_departamento || func.id_departamento || '');
+    const displayFilial = formData.filial_id !== undefined ? formData.filial_id : (pb.filial_id || func.filial_id || 'Sede Principal');
 
     // Gerenciador genérico de campos de texto/selects
     const handleInputChange = (e) => {
@@ -250,7 +304,13 @@ export default function Configuracoes({ user }) {
                                         </button>
                                         {avatarUrl && (
                                             <button
-                                                onClick={() => { setAvatarUrl(null); setShowAvatarMenu(false); setShowAvatarGrid(false); }}
+                                                onClick={() => {
+                                                    setAvatarUrl(null);
+                                                    setShowAvatarMenu(false);
+                                                    setShowAvatarGrid(false);
+                                                    // Limpa avatar do formData para ser salvo como removido
+                                                    setFormData(prev => ({ ...prev, avatarUrl: '' }));
+                                                }}
                                                 className="px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2">
                                                 <span className="material-symbols-outlined text-[18px]">delete</span> Remover Foto
                                             </button>
@@ -266,7 +326,7 @@ export default function Configuracoes({ user }) {
                                             {PREDEFINED_AVATARS.map((url, idx) => (
                                                 <button
                                                     key={idx}
-                                                    onClick={() => { setAvatarUrl(url); setShowAvatarMenu(false); setShowAvatarGrid(false); }}
+                                                    onClick={() => handleChangeAvatar(url)}
                                                     className="aspect-square rounded-lg border border-[#eaddcd] dark:border-gray-800 hover:border-primary dark:hover:border-primary focus:ring-2 ring-primary/30 transition-all bg-[#fcfaf8] dark:bg-[#2c2217] p-1 overflow-hidden">
                                                     <img src={url} alt={`Avatar ${idx + 1}`} className="w-full h-full object-contain" />
                                                 </button>
@@ -306,12 +366,12 @@ export default function Configuracoes({ user }) {
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">NOME</label>
                                     <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="nome" type="text" value={formData.nome !== undefined ? formData.nome : firstName} onChange={handleInputChange} />
+                                        name="nome" type="text" value={displayNome} onChange={handleInputChange} />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">SOBRENOME</label>
                                     <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="sobrenome" type="text" value={formData.sobrenome !== undefined ? formData.sobrenome : lastName} onChange={handleInputChange} />
+                                        name="sobrenome" type="text" value={displaySobrenome} onChange={handleInputChange} />
                                 </div>
                                 <div className="flex flex-col gap-1.5 md:col-span-2">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">ENDEREÇO DE E-MAIL</label>
@@ -345,15 +405,15 @@ export default function Configuracoes({ user }) {
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">DEPARTAMENTO</label>
                                     <div className="relative">
                                         <select className="form-select w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                            name="id_departamento" value={formData.id_departamento !== undefined ? formData.id_departamento : (func.id_departamento || '')} onChange={handleInputChange}>
+                                            name="id_departamento" value={displayDepto} onChange={handleInputChange}>
                                             <option value="">Selecione o Departamento</option>
                                             <option value="1">Atendimento ao Cliente</option>
                                             <option value="2">Tecnologia da Informação</option>
                                             <option value="3">Recursos Humanos</option>
                                             <option value="4">Marketing e Vendas</option>
                                             <option value="5">Financeiro</option>
-                                            {func.id_departamento && !['1', '2', '3', '4', '5'].includes(String(func.id_departamento)) && (
-                                                <option value={func.id_departamento}>Departamento {func.id_departamento}</option>
+                                            {displayDepto && !['1', '2', '3', '4', '5', ''].includes(String(displayDepto)) && (
+                                                <option value={displayDepto}>Departamento {displayDepto}</option>
                                             )}
                                         </select>
                                     </div>
@@ -361,7 +421,7 @@ export default function Configuracoes({ user }) {
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">LOCALIZAÇÃO DO ESCRITÓRIO</label>
                                     <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="filial_id" type="text" value={formData.filial_id !== undefined ? formData.filial_id : (func.filial_id || 'Sede Principal')} onChange={handleInputChange} />
+                                        name="filial_id" type="text" value={displayFilial} onChange={handleInputChange} />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">CARGO</label>
@@ -376,43 +436,7 @@ export default function Configuracoes({ user }) {
                                 </div>
                             </div>
                         </section>
-                        <section className="bg-white dark:bg-[#1a130b] rounded-xl p-6 md:p-8 shadow-sm border border-[#eaddcd] dark:border-gray-800">
-                            <div className="flex items-center gap-3 mb-6 border-b border-[#eaddcd] dark:border-gray-800 pb-4">
-                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                                    <span className="material-symbols-outlined">lock</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-[#1d150c] dark:text-white">Segurança</h3>
-                            </div>
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between p-4 rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217]">
-                                    <div className="flex items-start gap-4">
-                                        <div className="hidden sm:flex items-center justify-center size-10 rounded-full bg-orange-100 text-orange-600">
-                                            <span className="material-symbols-outlined">key</span>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-bold text-[#1d150c] dark:text-white">Senha</h4>
-                                            <p className="text-sm text-[#a17745] dark:text-orange-300">Alterada há 3 meses</p>
-                                        </div>
-                                    </div>
-                                    <button className="px-4 py-2 text-sm font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all">Alterar</button>
-                                </div>
-                                <div className="flex items-center justify-between p-4 rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217]">
-                                    <div className="flex items-start gap-4">
-                                        <div className="hidden sm:flex items-center justify-center size-10 rounded-full bg-green-100 text-green-600">
-                                            <span className="material-symbols-outlined">verified_user</span>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-bold text-[#1d150c] dark:text-white">Autenticação de Dois Fatores</h4>
-                                            <p className="text-sm text-[#a17745] dark:text-orange-300">Proteja sua conta com 2FA</p>
-                                        </div>
-                                    </div>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input defaultChecked className="sr-only peer" type="checkbox" value="" />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-[#1a130b] after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                    </label>
-                                </div>
-                            </div>
-                        </section>
+
                         <section className="bg-white dark:bg-[#1a130b] rounded-xl p-6 md:p-8 shadow-sm border border-[#eaddcd] dark:border-gray-800">
                             <div className="flex items-center gap-3 mb-6 border-b border-[#eaddcd] dark:border-gray-800 pb-4">
                                 <div className="p-2 bg-primary/10 rounded-lg text-primary">

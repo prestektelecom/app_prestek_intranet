@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
@@ -14,21 +14,76 @@ import Login from './components/Login'
 import AdminDashboard from './components/AdminDashboard'
 import { useTheme } from './hooks/useTheme'
 
-// Componente raiz que monta a estrutura principal da aplicação
 export default function App() {
-    const [currentView, setCurrentView] = useState('login')
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState(() => {
+        const sessionUser = sessionStorage.getItem('@Stitch:user')
+        if (sessionUser) {
+            try { return JSON.parse(sessionUser) } catch (e) { return null }
+        }
+
+        const savedUserStr = localStorage.getItem('@Stitch:user')
+        if (savedUserStr) {
+            try {
+                const savedUser = JSON.parse(savedUserStr)
+                if (savedUser.expiry && Date.now() > savedUser.expiry) {
+                    localStorage.removeItem('@Stitch:user')
+                    return null
+                }
+                return savedUser.data || savedUser
+            } catch (e) { return null }
+        }
+        return null
+    })
+
+    const [currentView, setCurrentView] = useState(() => {
+        const savedView = sessionStorage.getItem('@Stitch:currentView') || localStorage.getItem('@Stitch:currentView')
+
+        let validUser = false;
+        if (sessionStorage.getItem('@Stitch:user')) validUser = true;
+        if (!validUser) {
+            const savedUserStr = localStorage.getItem('@Stitch:user')
+            if (savedUserStr) {
+                try {
+                    const savedUser = JSON.parse(savedUserStr)
+                    if (!savedUser.expiry || Date.now() <= savedUser.expiry) validUser = true;
+                } catch (e) { }
+            }
+        }
+
+        if (validUser && savedView) return savedView
+        return 'login'
+    })
+
+    useEffect(() => {
+        if (currentView !== 'login') {
+            if (sessionStorage.getItem('@Stitch:user')) {
+                sessionStorage.setItem('@Stitch:currentView', currentView)
+            } else {
+                localStorage.setItem('@Stitch:currentView', currentView)
+            }
+        }
+    }, [currentView])
+
     useTheme() // Initialize theme globally
 
     // Simulador de is admin status, permitindo apenas mostrar interface de admin se selecionado
     // Tela de login — renderizada isoladamente sem Header/Sidebar
     if (currentView === 'login') {
         return <Login onLogin={(resultado) => {
-            // resultado = { usuario: {...}, funcionario: {...} | null }
-            setUser({
+            const userData = {
                 ...resultado.usuario,
                 funcionario: resultado.funcionario
-            })
+            }
+            setUser(userData)
+
+            if (resultado.lembrar) {
+                const expiryTime = Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 dias
+                localStorage.setItem('@Stitch:user', JSON.stringify({ data: userData, expiry: expiryTime }))
+                localStorage.setItem('@Stitch:currentView', 'dashboard')
+            } else {
+                sessionStorage.setItem('@Stitch:user', JSON.stringify(userData))
+                sessionStorage.setItem('@Stitch:currentView', 'dashboard')
+            }
             setCurrentView('dashboard')
         }} />
     }

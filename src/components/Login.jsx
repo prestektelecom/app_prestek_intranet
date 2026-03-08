@@ -3,13 +3,36 @@ import { loginUsuario } from '../services/auth'
 import ParticlesBackground from './ParticlesBackground'
 import MagneticSandCard from './MagneticSandCard'
 
+// Chave de armazenamento para as credenciais salvas
+const CHAVE_CREDS = '@Stitch:creds'
+
+// Lê as credenciais salvas e verifica se ainda estão dentro do prazo de 7 dias
+function lerCredenciasSalvas() {
+    try {
+        const raw = localStorage.getItem(CHAVE_CREDS)
+        if (!raw) return null
+        const { email, senha, expiry } = JSON.parse(raw)
+        if (Date.now() > expiry) {
+            localStorage.removeItem(CHAVE_CREDS)
+            return null
+        }
+        return { email, senha }
+    } catch (e) {
+        return null
+    }
+}
+
 export default function Login({ onLogin }) {
     const cardRef = useRef(null)
-    const [email, setEmail] = useState('')
-    const [senha, setSenha] = useState('')
+    const credsSalvas = lerCredenciasSalvas()
+    const [email, setEmail] = useState(credsSalvas?.email || '')
+    const [senha, setSenha] = useState(credsSalvas?.senha || '')
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(false)
     const [mostrarSenha, setMostrarSenha] = useState(false)
+    // Exibe o checkbox só se não houver credenciais salvas válidas
+    const [lembrar, setLembrar] = useState(false)
+    const credValida = !!credsSalvas
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -33,7 +56,14 @@ export default function Login({ onLogin }) {
             if (resultado?.erro) {
                 setErro(resultado.erro)
             } else if (resultado) {
-                if (onLogin) onLogin(resultado)
+                // Se marcou 'confiar neste dispositivo' ou já havia credencial salva, renovar por 7 dias
+                if (lembrar || credValida) {
+                    const expiry = Date.now() + 7 * 24 * 60 * 60 * 1000
+                    localStorage.setItem(CHAVE_CREDS, JSON.stringify({ email, senha, expiry }))
+                } else {
+                    localStorage.removeItem(CHAVE_CREDS)
+                }
+                if (onLogin) onLogin({ ...resultado, lembrar: lembrar || credValida })
             }
         } catch (err) {
             setErro('Erro inesperado. Tente novamente.')
@@ -142,20 +172,34 @@ export default function Login({ onLogin }) {
                                     </div>
                                 </div>
 
-                                {/* Options */}
-                                <div className="flex items-center justify-between text-sm py-1">
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <div className="relative flex items-center justify-center">
-                                            <input type="checkbox" className="peer appearance-none w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded-[6px] checked:bg-[#ff8c00] checked:border-[#ff8c00] transition-colors cursor-pointer" />
-                                            <svg className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </div>
-                                        <span className="text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 font-medium transition-colors">
-                                            Lembrar de mim
-                                        </span>
-                                    </label>
-                                </div>
+                                {/* Opção "Confiar por 7 dias" — sumir se já houver credencial válida salva */}
+                                {!credValida ? (
+                                    <div className="flex items-center justify-between text-sm py-1">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <div className="relative flex items-center justify-center">
+                                                <input
+                                                    type="checkbox"
+                                                    className="peer appearance-none w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded-[6px] checked:bg-[#ff8c00] checked:border-[#ff8c00] transition-colors cursor-pointer"
+                                                    checked={lembrar}
+                                                    onChange={(e) => setLembrar(e.target.checked)}
+                                                />
+                                                <svg className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                            <span className="text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 font-medium transition-colors">
+                                                Confiar neste dispositivo por 7 dias
+                                            </span>
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center gap-2 text-sm py-1 text-emerald-600 dark:text-emerald-400">
+                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                        </svg>
+                                        <span className="font-medium">Dispositivo confiável, acesso salvo por 7 dias</span>
+                                    </div>
+                                )}
 
                                 {/* Submit Button */}
                                 <button
