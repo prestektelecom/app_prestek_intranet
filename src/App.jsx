@@ -100,7 +100,7 @@ export default function App() {
                     <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
                 )}
                 {/* Renderização baseada em currentView */}
-                {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} />}
+                {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
                 {currentView === 'services' && <ServicesDirectory />}
                 {currentView === 'coverage' && <Coverage />}
                 {currentView === 'directory' && <Directory />}

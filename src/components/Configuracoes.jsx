@@ -263,15 +263,16 @@ export default function Configuracoes({ user }) {
     const displayFilial = pb.filial_id || func.filial_id || '';
 
     // Mapeamento visual: ID -> Nome
-    // Setor (id_departamento) busca na API empresa_setor (cargosList)
-    const deptoName = cargosList.find(c => String(c.id).trim() === String(displayDepto).trim())?.setor || displayDepto || 'N/D';
+    // Setor (id_departamento) busca na API empresa_setor (cargosList) e departamentos
+    const deptoName = departamentosList.find(d => String(d.id).trim() === String(displayDepto).trim())?.setor
+        || cargosList.find(c => String(c.id).trim() === String(displayDepto).trim())?.setor
+        || displayDepto || 'N/D';
     const filialName = filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.fantasia
         || filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.razao
         || (displayFilial ? `Filial ${displayFilial}` : 'Sede Principal');
 
-    // Cargo (id_funcao) — busca na tabela funcionarios_funcao (funcoesList)
-    const cargoName = funcoesList.find(c => String(c.id).trim() === String(safeRole).trim())?.funcao
-        || safeRole || 'Colaborador';
+    // Cargo (id_funcao) — no layout novo será usado o nome do Setor (deptoName) abaixo do nome do usuário
+    const cargoName = deptoName !== 'N/D' ? deptoName : safeRole;
 
     // Gerenciador genérico de campos de texto/selects
     const handleInputChange = (e) => {
@@ -487,8 +488,8 @@ export default function Configuracoes({ user }) {
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">TELEFONE IP</label>
-                                    <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
-                                        readOnly name="ramal" type="text" value={displayRamal} />
+                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
+                                        name="ramal" type="text" value={displayRamal} onChange={handleInputChange} />
                                 </div>
                             </div>
                         </section>

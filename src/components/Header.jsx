@@ -21,25 +21,58 @@ export default function Header({ currentView, setCurrentView, user }) {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
     const safeRole = func.id_funcao || 'Colaborador';
+    const safeDepto = func.id_departamento || '';
     const safeId = func.id ?? user?.id ?? '0000';
 
     const [avatarUrl, setAvatarUrl] = useState(user?.funcionario?.foto_perfil || null);
     const [cargoName, setCargoName] = useState(safeRole);
 
     useEffect(() => {
-        // Carrega o nome do cargo chamando a API de cargos
-        if (safeRole && safeRole !== 'Colaborador') {
-            fetch('http://localhost:3001/api/cargos')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.sucesso && data.cargos) {
-                        const found = data.cargos.find(c => String(c.id) === String(safeRole));
-                        if (found) setCargoName(found.setor);
-                    }
-                })
-                .catch(err => console.error("Erro ao buscar cargos no header", err));
-        }
-    }, [safeRole]);
+        const fetchCargoESetor = async () => {
+            let nomeFinal = safeRole;
+            try {
+                // Busca tanto departamentos quanto cargos para encontrar o nome do setor
+                const [resDept, resCargo] = await Promise.all([
+                    fetch('http://localhost:3001/api/departamentos').catch(() => null),
+                    fetch('http://localhost:3001/api/cargos').catch(() => null)
+                ]);
+
+                let departamentos = [];
+                let cargos = [];
+
+                if (resDept?.ok) {
+                    const data = await resDept.json();
+                    if (data.sucesso) departamentos = data.departamentos || [];
+                }
+                if (resCargo?.ok) {
+                    const data = await resCargo.json();
+                    if (data.sucesso) cargos = data.cargos || [];
+                }
+
+                // Tenta achar pelo departamento primeiro (igual ao Configuracoes.jsx)
+                let deptoName = 'N/D';
+                if (safeDepto) {
+                    const foundDept = departamentos.find(d => String(d.id).trim() === String(safeDepto).trim());
+                    const foundCargo = cargos.find(c => String(c.id).trim() === String(safeDepto).trim());
+                    deptoName = foundDept?.setor || foundCargo?.setor || safeDepto;
+                }
+
+                // Se encontrou o departamento, usa ele; senão, cai para id_funcao
+                if (deptoName !== 'N/D' && deptoName !== '') {
+                    nomeFinal = deptoName;
+                } else if (safeRole && safeRole !== 'Colaborador') {
+                    const foundRole = cargos.find(c => String(c.id).trim() === String(safeRole).trim());
+                    if (foundRole?.setor) nomeFinal = foundRole.setor;
+                }
+
+                setCargoName(nomeFinal);
+            } catch (err) {
+                console.error("Erro ao buscar cargos/departamentos no header", err);
+            }
+        };
+
+        fetchCargoESetor();
+    }, [safeDepto, safeRole]);
 
     useEffect(() => {
         if (!safeId || safeId === '0000') return;
