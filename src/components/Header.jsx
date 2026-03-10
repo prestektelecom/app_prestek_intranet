@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Header: barra superior com logo, busca, notificações, perfil do usuário e navegação condicional
 export default function Header({ currentView, setCurrentView, user }) {
@@ -26,6 +26,38 @@ export default function Header({ currentView, setCurrentView, user }) {
 
     const [avatarUrl, setAvatarUrl] = useState(user?.funcionario?.foto_perfil || null);
     const [cargoName, setCargoName] = useState(safeRole);
+    const [hasUrgent, setHasUrgent] = useState(false);
+    const [urgentAnnouncements, setUrgentAnnouncements] = useState([]);
+    const [hasViewedUrgent, setHasViewedUrgent] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const notificationsRef = useRef(null);
+
+    useEffect(() => {
+        const fetchUrgentCount = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/comunicados');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.sucesso && data.comunicados) {
+                        const urgentOnly = data.comunicados.filter(c => c.tipo === 'Urgente');
+                        setHasUrgent(urgentOnly.length > 0);
+                        setUrgentAnnouncements(prev => {
+                            if (urgentOnly.length > prev.length) {
+                                setHasViewedUrgent(false);
+                            }
+                            return urgentOnly;
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao buscar comunicados no header", err);
+            }
+        };
+
+        fetchUrgentCount();
+        const intervalId = setInterval(fetchUrgentCount, 30000); // Atualiza a cada 30 segundos
+        return () => clearInterval(intervalId);
+    }, []);
 
     useEffect(() => {
         const fetchCargoESetor = async () => {
@@ -98,6 +130,19 @@ export default function Header({ currentView, setCurrentView, user }) {
         }, 1500);
         return () => clearInterval(interval);
     }, [safeId, avatarUrl]);
+
+    // Handle click outside for notifications dropdown
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+                setIsNotificationsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [notificationsRef]);
 
     return (
         <header className="flex items-center justify-between whitespace-nowrap border-b border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] px-4 md:px-6 py-3 shrink-0 h-16 z-20 shadow-sm relative transition-colors duration-200">
@@ -198,10 +243,101 @@ export default function Header({ currentView, setCurrentView, user }) {
                 </button>
 
                 {/* Notificações */}
-                <button className="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1a130b] hover:bg-[#f4eee6] dark:hover:bg-gray-800 text-[#1d150c] dark:text-[#f8f7f5] transition-colors relative">
-                    <span className="material-symbols-outlined text-[24px]">notifications</span>
-                    <span className="absolute top-2 right-2 size-2 bg-primary rounded-full border border-white"></span>
-                </button>
+                <div className="relative" ref={notificationsRef}>
+                    <button 
+                        onClick={() => {
+                            setIsNotificationsOpen(!isNotificationsOpen);
+                            if (!isNotificationsOpen) {
+                                setHasViewedUrgent(true);
+                            }
+                        }}
+                        className={`flex items-center justify-center size-10 rounded-full hover:bg-[#f4eee6] dark:hover:bg-gray-800 transition-colors relative ${isNotificationsOpen ? 'bg-[#f4eee6] dark:bg-gray-800 text-primary' : 'bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-[#f8f7f5]'}`}
+                    >
+                        <span className={`material-symbols-outlined text-[24px] ${(hasUrgent && !hasViewedUrgent) ? 'animate-bell-ring text-orange-600 dark:text-orange-500' : ''}`}>notifications</span>
+                        {(hasUrgent && !hasViewedUrgent) && (
+                            <span className="absolute top-2 right-2 size-2 bg-primary rounded-full border border-white dark:border-[#1a130b]"></span>
+                        )}
+                    </button>
+                    
+                    {/* Dropdown de Notificações */}
+                    {isNotificationsOpen && (
+                        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <div className="bg-[#fcfaf8] dark:bg-gray-800 px-4 py-3 border-b border-[#eaddcd] dark:border-gray-700 flex justify-between items-center">
+                                <h3 className="font-bold text-[#1d150c] dark:text-white">Notificações</h3>
+                                {hasUrgent && (
+                                    <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                        {urgentAnnouncements.length} Urgente(s)
+                                    </span>
+                                )}
+                            </div>
+                            
+                            <div className="max-h-[350px] overflow-y-auto no-scrollbar">
+                                {!hasUrgent ? (
+                                    <div className="px-4 py-8 text-center flex flex-col items-center gap-2">
+                                        <div className="size-12 rounded-full bg-green-50 dark:bg-green-900/20 text-green-500 flex items-center justify-center mb-2">
+                                            <span className="material-symbols-outlined text-[28px]">task_alt</span>
+                                        </div>
+                                        <p className="text-[#1d150c] dark:text-[#f8f7f5] font-semibold">Tudo tranquilo!</p>
+                                        <p className="text-[#635c55] dark:text-gray-400 text-xs text-balance">Nenhum comunicado urgente no momento.</p>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-[#f4eee6] dark:divide-gray-800">
+                                        {urgentAnnouncements.map((announcement) => {
+                                            let dateFormatted = announcement.criado_em;
+                                            try {
+                                                const dt = new Date(announcement.criado_em);
+                                                dateFormatted = new Intl.DateTimeFormat('pt-BR', {
+                                                    day: '2-digit', month: 'short'
+                                                }).format(dt);
+                                            } catch(e) {}
+                                            
+                                            return (
+                                                <div key={announcement.id} className="px-4 py-3 hover:bg-[#fcfaf8] dark:hover:bg-gray-800/50 transition-colors cursor-pointer group">
+                                                    <div className="flex gap-3">
+                                                        <div className="shrink-0 pt-0.5">
+                                                            <div className="size-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 flex items-center justify-center">
+                                                                <span className="material-symbols-outlined text-[18px]">priority_high</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex justify-between items-start mb-1">
+                                                                <h4 className="text-sm font-bold text-[#1d150c] dark:text-white truncate group-hover:text-primary transition-colors">
+                                                                    {announcement.titulo}
+                                                                </h4>
+                                                            </div>
+                                                            <p className="text-xs text-[#635c55] dark:text-gray-400 line-clamp-2 leading-relaxed">
+                                                                {announcement.descricao}
+                                                            </p>
+                                                            <div className="mt-2 flex items-center justify-between">
+                                                                <p className="text-[10px] font-medium text-primary">
+                                                                    {announcement.departamento_autor}
+                                                                </p>
+                                                                <p className="text-[10px] text-gray-400">
+                                                                    {dateFormatted}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="p-2 bg-[#fcfaf8] dark:bg-gray-800 border-t border-[#eaddcd] dark:border-gray-700">
+                                <button 
+                                    onClick={() => {
+                                        setIsNotificationsOpen(false);
+                                        setCurrentView('dashboard'); // Assuming dashboard contains the 'Comunicados' view, or user can navigate there
+                                    }}
+                                    className="w-full py-2 text-xs font-bold text-center text-primary hover:text-[#a17745] transition-colors"
+                                >
+                                    Ver todos os comunicados
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* Painel Admin */}
                 {user?.is_admin && (
