@@ -177,13 +177,15 @@ export default function Header({ currentView, setCurrentView, user }) {
                 </div>
 
                 {/* Campo de busca (visível em md+) */}
-                <label className="hidden md:flex flex-col min-w-40 w-96 h-10">
-                    <div className="flex w-full flex-1 items-stretch rounded-lg h-full bg-[#f4eee6] dark:bg-gray-800 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
-                        <div className="text-[#a17745] dark:text-orange-300 flex items-center justify-center pl-4 rounded-l-lg">
-                            <span className="material-symbols-outlined text-[20px]">search</span>
+                <label className="hidden md:flex relative group min-w-40 w-full max-w-sm h-10 transition-all duration-300">
+                    <div className="absolute inset-0 bg-[#f4eee6] dark:bg-gray-800 rounded-full group-focus-within:bg-white dark:group-focus-within:bg-[#1a130b] transition-colors duration-300"></div>
+                    <div className="relative flex w-full items-stretch rounded-full h-full border border-transparent group-focus-within:border-[#a17745]/30 group-focus-within:shadow-[0_2px_12px_rgba(161,119,69,0.08)] transition-all duration-300">
+                        <div className="text-[#a17745] dark:text-orange-300 flex items-center justify-center pl-4 pr-2">
+                            <span className="material-symbols-outlined text-[20px] group-focus-within:text-[#1d150c] dark:group-focus-within:text-white transition-colors duration-300">search</span>
                         </div>
                         <input
-                            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg rounded-l-none border-none bg-transparent text-[#1d150c] dark:text-white focus:outline-0 focus:ring-0 h-full placeholder:text-[#a17745] dark:text-orange-300 px-3 text-sm font-normal leading-normal"
+                            type="text"
+                            className="flex-1 min-w-0 bg-transparent text-[#1d150c] dark:text-white border-0 focus:ring-0 px-2 text-sm font-medium placeholder:text-[#a17745]/70 dark:placeholder:text-orange-300/70 outline-none w-full"
                             placeholder="Buscar por serviços, pessoas ou documentos..."
                         />
                     </div>
@@ -413,15 +415,17 @@ export default function Header({ currentView, setCurrentView, user }) {
 
             {/* Mobile Search Overlay */}
             {isMobileSearchOpen && (
-                <div className="absolute top-full left-0 right-0 bg-white dark:bg-[#1a130b] border-b border-[#eaddcd] dark:border-gray-800 p-4 shadow-xl md:hidden z-50 animate-in slide-in-from-top-2">
-                    <label className="flex flex-col w-full h-12">
-                        <div className="flex w-full flex-1 items-stretch rounded-lg h-full bg-[#f4eee6] dark:bg-gray-800 focus-within:ring-2 focus-within:ring-primary/50 transition-all overflow-hidden border border-transparent focus-within:border-primary/30">
-                            <div className="text-[#a17745] dark:text-orange-300 flex items-center justify-center pl-4 bg-transparent">
-                                <span className="material-symbols-outlined text-[22px]">search</span>
+                <div className="absolute top-full left-0 right-0 bg-white/95 dark:bg-[#1a130b]/95 backdrop-blur-md border-b border-[#eaddcd] dark:border-gray-800 p-4 shadow-xl md:hidden z-50 animate-in slide-in-from-top-2 duration-300">
+                    <label className="flex relative w-full h-12 group">
+                        <div className="absolute inset-0 bg-[#f4eee6] dark:bg-gray-800 rounded-full group-focus-within:bg-white dark:group-focus-within:bg-[#1a130b] transition-colors duration-300"></div>
+                        <div className="relative flex w-full flex-1 items-stretch rounded-full h-full border border-transparent group-focus-within:border-[#a17745]/30 group-focus-within:shadow-[0_2px_12px_rgba(161,119,69,0.08)] transition-all duration-300">
+                            <div className="text-[#a17745] dark:text-orange-300 flex items-center justify-center pl-5 pr-2">
+                                <span className="material-symbols-outlined text-[22px] group-focus-within:text-[#1d150c] dark:group-focus-within:text-white transition-colors duration-300">search</span>
                             </div>
                             <input
                                 autoFocus
-                                className="form-input flex w-full min-w-0 flex-1 resize-none rounded-r-lg border-none bg-transparent text-[#1d150c] dark:text-white focus:outline-none focus:ring-0 h-full placeholder:text-[#a17745] dark:text-orange-300 px-3 text-base font-normal"
+                                type="text"
+                                className="flex-1 min-w-0 bg-transparent text-[#1d150c] dark:text-white border-0 focus:ring-0 px-2 text-base font-medium placeholder:text-[#a17745]/70 dark:placeholder:text-orange-300/70 outline-none w-full"
                                 placeholder="Buscar serviços, pessoas..."
                             />
                         </div>
