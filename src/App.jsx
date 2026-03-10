@@ -107,7 +107,7 @@ export default function App() {
                 {currentView === 'sectors' && <Sectors />}
                 {currentView === 'schedule' && <Schedule />}
                 {currentView === 'processes' && <Processos />}
-                {currentView === 'announcements' && <Comunicados />}
+                {currentView === 'announcements' && <Comunicados user={user} />}
                 {currentView === 'settings' && <Configuracoes user={user} />}
                 {/* Fallback para outros menus n implementados, exibe ServicesDirectory apenas como placeholder se nao for nenhuma das acimas */}
                 {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings'].includes(currentView) && <ServicesDirectory />}

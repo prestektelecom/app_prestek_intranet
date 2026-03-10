@@ -52,10 +52,11 @@ async function sincronizarPerfilNoBanco(usuario, funcionario) {
             data_admissao     = EXCLUDED.data_admissao,
             ativo             = EXCLUDED.ativo,
             foto_perfil       = EXCLUDED.foto_perfil,
-            atualizado_em     = NOW();
+            atualizado_em     = NOW()
+        RETURNING is_admin;
     `;
 
-    await pool.query(query, [
+    const result = await pool.query(query, [
         String(usuario.id),
         usuario.email || '',
         usuario.nome || '',
@@ -74,6 +75,8 @@ async function sincronizarPerfilNoBanco(usuario, funcionario) {
         func.ativo || 'S',
         func.foto_perfil || null
     ]);
+
+    return result.rows[0]?.is_admin || false;
 }
 
 // ─── Rota de Login ───────────────────────────────────────────────
@@ -174,10 +177,14 @@ app.post('/api/login', async (req, res) => {
             console.warn('Aviso: não foi possível buscar dados de funcionário:', errFunc.message)
         }
 
-        // Sincroniza dados do perfil no banco de forma assíncrona (não bloqueia resposta)
-        sincronizarPerfilNoBanco(usuario, funcionario)
-            .then(() => console.log(`Perfil sincronizado no banco: ${usuario.email}`))
-            .catch(errSync => console.warn('Aviso: falha ao sincronizar perfil:', errSync.message));
+        // Sincroniza dados do perfil no banco (bloqueia resposta para pegar is_admin)
+        let isAdmin = false;
+        try {
+            isAdmin = await sincronizarPerfilNoBanco(usuario, funcionario);
+            console.log(`Perfil sincronizado no banco: ${usuario.email} (Admin: ${isAdmin})`);
+        } catch (errSync) {
+            console.warn('Aviso: falha ao sincronizar perfil:', errSync.message);
+        }
 
         // Retorna dados combinados de usuarios + funcionarios
         console.log(`Login bem-sucedido: ${usuario.nome} (${usuario.email})`)
@@ -187,7 +194,8 @@ app.post('/api/login', async (req, res) => {
                 id: usuario.id,
                 nome: usuario.nome,
                 email: usuario.email,
-                acesso_token: usuario.acesso_token
+                acesso_token: usuario.acesso_token,
+                is_admin: isAdmin
             },
             funcionario,
             host
@@ -254,6 +262,69 @@ app.post('/api/funcionario', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 })
+
+// ─── Rotas: Comunicados Internos ──────────────────────────────────────────────
+app.get('/api/comunicados', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM comunicados ORDER BY criado_em DESC');
+        return res.json({ sucesso: true, comunicados: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar comunicados:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar comunicados.' });
+    }
+});
+
+app.post('/api/comunicados', async (req, res) => {
+    const { titulo, descricao, tipo, departamento_autor, link_opcional, criado_por } = req.body;
+
+    if (!titulo || !descricao || !tipo || !departamento_autor) {
+        return res.status(400).json({ sucesso: false, erro: 'Preencha os campos obrigatórios.' });
+    }
+
+    try {
+        const query = `
+            INSERT INTO comunicados (titulo, descricao, tipo, departamento_autor, link_opcional, criado_por)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [titulo, descricao, tipo, departamento_autor, link_opcional, criado_por]);
+        return res.status(201).json({ sucesso: true, comunicado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao inserir comunicado:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao salvar comunicado.' });
+    }
+});
+
+app.put('/api/comunicados/:id', async (req, res) => {
+    const { id } = req.params;
+    const { titulo, descricao, tipo, departamento_autor, link_opcional } = req.body;
+
+    try {
+        const query = `
+            UPDATE comunicados 
+            SET titulo = $1, descricao = $2, tipo = $3, departamento_autor = $4, link_opcional = $5
+            WHERE id = $6 RETURNING *;
+        `;
+        const result = await pool.query(query, [titulo, descricao, tipo, departamento_autor, link_opcional, id]);
+        if (result.rows.length === 0) return res.status(404).json({ sucesso: false, erro: 'Comunicado não encontrado.' });
+        return res.json({ sucesso: true, comunicado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar comunicado:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao atualizar comunicado.' });
+    }
+});
+
+app.delete('/api/comunicados/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM comunicados WHERE id = $1 RETURNING *;', [id]);
+        if (result.rows.length === 0) return res.status(404).json({ sucesso: false, erro: 'Comunicado não encontrado.' });
+        return res.json({ sucesso: true });
+    } catch (err) {
+        console.error('Erro ao excluir comunicado:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao excluir comunicado.' });
+    }
+});
 
 // ─── Rota: Listar Departamentos ─────────────────────────────────────────
 app.get('/api/departamentos', async (req, res) => {
@@ -536,6 +607,8 @@ app.put('/api/configuracoes/:usuarioId', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao salvar no banco' });
     }
 });
+
+
 
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {

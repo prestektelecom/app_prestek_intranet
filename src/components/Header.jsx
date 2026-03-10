@@ -204,12 +204,14 @@ export default function Header({ currentView, setCurrentView, user }) {
                 </button>
 
                 {/* Painel Admin */}
-                <button
-                    onClick={() => setCurrentView('admin')}
-                    title="Painel Administrativo"
-                    className="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1a130b] hover:bg-[#f4eee6] dark:hover:bg-gray-800 text-primary transition-colors">
-                    <span className="material-symbols-outlined text-[24px]">admin_panel_settings</span>
-                </button>
+                {user?.is_admin && (
+                    <button
+                        onClick={() => setCurrentView('admin')}
+                        title="Painel Administrativo"
+                        className="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1a130b] hover:bg-[#f4eee6] dark:hover:bg-gray-800 text-primary transition-colors">
+                        <span className="material-symbols-outlined text-[24px]">admin_panel_settings</span>
+                    </button>
+                )}
 
                 {/* Botão Sair / Logout */}
                 <button
