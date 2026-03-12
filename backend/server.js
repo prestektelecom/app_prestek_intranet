@@ -453,6 +453,116 @@ app.get('/api/filiais', async (req, res) => {
     }
 })
 
+// ─── Rota: Listar Quantidade de OS do Funcionário (Abertas) ───────────────
+app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
+    let { funcionarioId } = req.params;
+
+    if (!funcionarioId || funcionarioId === 'undefined') {
+        return res.status(400).json({ sucesso: false, erro: 'ID do funcionário é obrigatório.' });
+    }
+
+    try {
+        // No painel Dashboard, o func.id que está sendo enviado (`222` para o Márcio) 
+        // muitas vezes é na verdade o `usuario_id` ou o ID errado. 
+        // Vamos checar na base local se recebemos um funcionario_id ou usuario_id 
+        // para achar o e-mail real do usuário e pegar o verdadeiro ID do IXC `funcionario`.
+        
+        console.log("-> Rota OS Chamados. Solicitado funcionarioId recebido do Dashboard:", funcionarioId);
+        
+        let ixcTecnicoId = funcionarioId;
+        
+        // Verifica se o ID recebido cruza com o usuario_id ou funcionario_id local
+        const pRes = await pool.query('SELECT usuario_email, funcionario_id FROM usuarios_perfil WHERE funcionario_id = $1 OR usuario_id = $1 LIMIT 1', [funcionarioId]);
+        
+        if (pRes.rows.length > 0) {
+            console.log("-> Encontrou perfil de funcionario no banco de dados.");
+            const email = pRes.rows[0].usuario_email;
+            console.log("-> Email atrelado ao perfil:", email);
+            
+            if (email) {
+               const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+               const host = process.env.IXC_HOST;
+               const rUser = await fetch(`https://${host}/webservice/v1/usuarios`, {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                       Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+                       ixcsoft: 'listar'
+                   },
+                   body: JSON.stringify({ qtype: 'usuarios.email', query: email, oper: '=', page: '1', rp: '1' })
+               });
+               const dUser = await rUser.json();
+               if (dUser.total > 0 && dUser.registros[0].funcionario) {
+                   ixcTecnicoId = dUser.registros[0].funcionario; 
+                   console.log("-> Match exato de e-mail no IXC. ixcTecnicoId (verdadeiro id_tecnico das OS) atualizado para:", ixcTecnicoId);
+               } else {
+                   console.log("-> IXC Resposta para email:", JSON.stringify(dUser));
+               }
+            } else if (pRes.rows[0].funcionario_id) {
+               // Se não tinha email salvo mas tem o funcionario_id real guardado no banco
+               ixcTecnicoId = pRes.rows[0].funcionario_id;
+               console.log("-> Sem email, mas usando funcionario_id real do banco:", ixcTecnicoId);
+            }
+        } else {
+             console.log("-> AVISO: Não encontrou o funcionario no usuarios_perfil com ID", funcionarioId, ". Usando id puro.");
+        }
+
+        const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+        const host = process.env.IXC_HOST;
+        const url = `https://${host}/webservice/v1/su_oss_chamado`;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+            ixcsoft: 'listar'
+        };
+
+        console.log("-> Buscando OS com id_tecnico =", ixcTecnicoId);
+        // Filtra pelo técnico usando qtype e query com o ID correto encontrado
+        const body = JSON.stringify({
+            qtype: 'su_oss_chamado.id_tecnico',
+            query: String(ixcTecnicoId),
+            oper: '=',
+            page: '1',
+            rp: '1000', 
+            sortname: 'su_oss_chamado.id',
+            sortorder: 'desc'
+        });
+
+        try {
+            const resposta = await fetch(url, { method: 'POST', headers, body });
+            const dados = await resposta.json();
+            
+            if (!resposta.ok || dados.type === 'error') {
+                return res.status(502).json({ sucesso: false, erro: 'Falha buscar OS no IXC.' });
+            }
+
+            const registros = dados.registros || [];
+            
+            // Filtra OSs que não estejam com status (F) Finalizada, (C) Cancelada
+            // Isso garante que tickets em andamento (EN), análise (AN) ou agendado (AG) sejam contabilizados.
+            const osAbertas = registros.filter(os => !['F', 'C'].includes(String(os.status).toUpperCase()));
+            
+            const statusCount = { AG: 0, AS: 0, EN: 0, AN: 0, EX: 0, OUTROS: 0 };
+            osAbertas.forEach(os => {
+                const s = String(os.status).toUpperCase();
+                if (statusCount[s] !== undefined) {
+                    statusCount[s]++;
+                } else {
+                    statusCount['OUTROS']++;
+                }
+            });
+            
+            return res.json({ sucesso: true, quantidade: osAbertas.length, statusCount });
+        } catch (e) {
+            return res.status(500).json({ sucesso: false, erro: e.message });
+        }
+    } catch (errExterno) {
+        console.error("Erro rota os-chamados:", errExterno);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno buscar OS.' });
+    }
+}); // Fim do GET /api/os-chamados/:funcionarioId
+
 // ─── Rota: Atualizar dados de Funcionário no IXC ───────────────────────────
 app.put('/api/funcionario/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;

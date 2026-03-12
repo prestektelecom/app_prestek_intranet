@@ -8,6 +8,9 @@ import { useState, useEffect } from 'react'
 export default function Dashboard({ setCurrentView, user }) {
     const [currentDateTime, setCurrentDateTime] = useState('');
     const [cargoName, setCargoName] = useState('Comercial');
+    const [osCount, setOsCount] = useState(0);
+    const [osStatusCount, setOsStatusCount] = useState(null);
+    const [osLoading, setOsLoading] = useState(true);
 
     const func = user?.funcionario ?? {};
     const safeRole = func.id_funcao || 'Colaborador';
@@ -59,6 +62,30 @@ export default function Dashboard({ setCurrentView, user }) {
 
         fetchCargoESetor();
     }, [safeDepto, safeRole]);
+
+    useEffect(() => {
+        const fetchOsCount = async () => {
+            setOsLoading(true);
+            if (!func.id) {
+                setOsLoading(false);
+                return;
+            }
+            try {
+                const res = await fetch(`http://localhost:3001/api/os-chamados/${func.id}`);
+                const data = await res.json();
+                if (data.sucesso) {
+                    setOsCount(data.quantidade);
+                    setOsStatusCount(data.statusCount);
+                }
+            } catch (err) {
+                console.error("Erro ao buscar quantidade de OS:", err);
+            } finally {
+                setOsLoading(false);
+            }
+        };
+
+        fetchOsCount();
+    }, [func.id]);
 
     useEffect(() => {
         const updateDateTime = () => {
@@ -122,16 +149,35 @@ export default function Dashboard({ setCurrentView, user }) {
             badgeClassName: 'text-[#635c55] dark:text-gray-300',
         },
         {
-            icon: 'folder_open',
-            label: 'Contratos Ativos',
-            value: '45',
+            icon: 'construction',
+            label: 'OS no meu Nome',
+            value: osLoading ? '...' : osCount,
+            tooltip: osStatusCount && (
+                <div className="flex flex-col gap-1.5 text-[0.8rem] min-w-[140px]">
+                    <p className="font-bold border-b border-gray-700 pb-1.5 mb-1 text-gray-200">Status das OS</p>
+                    <div className="flex justify-between items-center"><span className="text-gray-400">Agendado:</span> <span className="font-semibold">{osStatusCount.AG || 0}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-gray-400">Assumido:</span> <span className="font-semibold">{osStatusCount.AS || 0}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-gray-400">Encaminhada:</span> <span className="font-semibold">{osStatusCount.EN || 0}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-gray-400">Análise:</span> <span className="font-semibold">{osStatusCount.AN || 0}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-gray-400">Execução:</span> <span className="font-semibold">{(osStatusCount.EX || 0) + (osStatusCount.OUTROS || 0)}</span></div>
+                </div>
+            ),
             badge: (
                 <>
-                    <span className="material-symbols-outlined text-sm mr-1">priority_high</span>
-                    3 Necessitam de Revisão
+                    {osCount > 0 ? (
+                        <>
+                            <span className="material-symbols-outlined text-sm mr-1">priority_high</span>
+                            Você tem OS pendentes
+                        </>
+                    ) : (
+                        <>
+                            <span className="material-symbols-outlined text-sm mr-1">check_circle</span>
+                            Tudo em dia
+                        </>
+                    )}
                 </>
             ),
-            badgeClassName: 'text-orange-600',
+            badgeClassName: osCount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400',
         },
     ];
 
