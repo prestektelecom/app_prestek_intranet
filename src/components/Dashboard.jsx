@@ -155,6 +155,7 @@ export default function Dashboard({ setCurrentView, user }) {
             tooltip: osStatusCount && (
                 <div className="flex flex-col gap-1.5 text-[0.8rem] min-w-[140px]">
                     <p className="font-bold border-b border-gray-700 pb-1.5 mb-1 text-gray-200">Status das OS</p>
+                    <div className="flex justify-between items-center"><span className="text-gray-400">Aberto:</span> <span className="font-semibold">{osStatusCount.A || 0}</span></div>
                     <div className="flex justify-between items-center"><span className="text-gray-400">Agendado:</span> <span className="font-semibold">{osStatusCount.AG || 0}</span></div>
                     <div className="flex justify-between items-center"><span className="text-gray-400">Assumido:</span> <span className="font-semibold">{osStatusCount.AS || 0}</span></div>
                     <div className="flex justify-between items-center"><span className="text-gray-400">Encaminhada:</span> <span className="font-semibold">{osStatusCount.EN || 0}</span></div>

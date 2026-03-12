@@ -7,6 +7,12 @@ import cors from 'cors'
 import crypto from 'crypto'
 import pool from './db.js'
 
+// Cache para OS abertas global
+let cacheOS = {
+    dados: null,
+    timestamp: 0
+};
+
 const app = express()
 const PORT = process.env.PORT || 3001
 
@@ -210,7 +216,7 @@ app.post('/api/login', async (req, res) => {
     }
 })
 
-// ─── Rota de Funcionário ───────────────────────────────────────────────
+// ─── Rota: Buscar Funcionário p/ Painel ───────────────────────────────────
 app.post('/api/funcionario', async (req, res) => {
     const { email } = req.body
 
@@ -358,7 +364,6 @@ app.get('/api/departamentos', async (req, res) => {
 })
 
 // ─── Rota: Listar Cargos/Setores da Empresa (empresa_setor) ─────────────
-// Na API IXC, empresa_setor resolve o DEPARTAMENTO/SETOR do funcionário (ex: 54 = T.I)
 app.get('/api/cargos', async (req, res) => {
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
     const host = process.env.IXC_HOST
@@ -390,7 +395,6 @@ app.get('/api/cargos', async (req, res) => {
 })
 
 // ─── Rota: Listar Funções Reais (funcionarios_funcao) ─────────────────────
-// Na API IXC, funcionarios_funcao resolve de fato o CARGO (ex: 36 = Desenvolvedor)
 app.get('/api/funcoes', async (req, res) => {
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
     const host = process.env.IXC_HOST
@@ -421,18 +425,15 @@ app.get('/api/funcoes', async (req, res) => {
     }
 })
 
-
 // ─── Rota: Listar Filiais ────────────────────────────────────────────────
 app.get('/api/filiais', async (req, res) => {
-    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
-    const host = process.env.IXC_HOST
-    const url = `https://${host}/webservice/v1/filial`
-
+    const url = `https://${process.env.IXC_HOST}/webservice/v1/filial`;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const headers = {
         'Content-Type': 'application/json',
         Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
         ixcsoft: 'listar'
-    }
+    };
 
     const body = JSON.stringify({
         qtype: 'filial.id',
@@ -442,126 +443,110 @@ app.get('/api/filiais', async (req, res) => {
         rp: '100',
         sortname: 'filial.id',
         sortorder: 'asc'
-    })
+    });
 
     try {
-        const resposta = await fetch(url, { method: 'POST', headers, body })
-        const dados = await resposta.json()
-        return res.json({ sucesso: true, filiais: dados.registros || [] })
+        const resposta = await fetch(url, { method: 'POST', headers, body });
+        const dados = await resposta.json();
+        return res.json({ sucesso: true, filiais: dados.registros || [] });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message })
+        return res.status(500).json({ sucesso: false, erro: e.message });
     }
-})
+});
 
-// ─── Rota: Listar Quantidade de OS do Funcionário (Abertas) ───────────────
+// ─── Rota: Listar Quantidade de OS do Funcionário (Busca Global c/ Cache) ──
 app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
-    let { funcionarioId } = req.params;
-
+    const { funcionarioId } = req.params;
+    
     if (!funcionarioId || funcionarioId === 'undefined') {
         return res.status(400).json({ sucesso: false, erro: 'ID do funcionário é obrigatório.' });
     }
 
+    const host = process.env.IXC_HOST;
+    const url = `https://${host}/webservice/v1/su_oss_chamado`;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
     try {
-        // No painel Dashboard, o func.id que está sendo enviado (`222` para o Márcio) 
-        // muitas vezes é na verdade o `usuario_id` ou o ID errado. 
-        // Vamos checar na base local se recebemos um funcionario_id ou usuario_id 
-        // para achar o e-mail real do usuário e pegar o verdadeiro ID do IXC `funcionario`.
-        
-        console.log("-> Rota OS Chamados. Solicitado funcionarioId recebido do Dashboard:", funcionarioId);
-        
+        // 1. Resolver o ID de Técnico do IXC
         let ixcTecnicoId = funcionarioId;
-        
-        // Verifica se o ID recebido cruza com o usuario_id ou funcionario_id local
         const pRes = await pool.query('SELECT usuario_email, funcionario_id FROM usuarios_perfil WHERE funcionario_id = $1 OR usuario_id = $1 LIMIT 1', [funcionarioId]);
         
         if (pRes.rows.length > 0) {
-            console.log("-> Encontrou perfil de funcionario no banco de dados.");
             const email = pRes.rows[0].usuario_email;
-            console.log("-> Email atrelado ao perfil:", email);
-            
             if (email) {
-               const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
-               const host = process.env.IXC_HOST;
                const rUser = await fetch(`https://${host}/webservice/v1/usuarios`, {
                    method: 'POST',
-                   headers: {
-                       'Content-Type': 'application/json',
-                       Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
-                       ixcsoft: 'listar'
-                   },
+                   headers: headers,
                    body: JSON.stringify({ qtype: 'usuarios.email', query: email, oper: '=', page: '1', rp: '1' })
                });
                const dUser = await rUser.json();
                if (dUser.total > 0 && dUser.registros[0].funcionario) {
                    ixcTecnicoId = dUser.registros[0].funcionario; 
-                   console.log("-> Match exato de e-mail no IXC. ixcTecnicoId (verdadeiro id_tecnico das OS) atualizado para:", ixcTecnicoId);
-               } else {
-                   console.log("-> IXC Resposta para email:", JSON.stringify(dUser));
+               } else if (pRes.rows[0].funcionario_id) {
+                   ixcTecnicoId = pRes.rows[0].funcionario_id;
                }
             } else if (pRes.rows[0].funcionario_id) {
-               // Se não tinha email salvo mas tem o funcionario_id real guardado no banco
                ixcTecnicoId = pRes.rows[0].funcionario_id;
-               console.log("-> Sem email, mas usando funcionario_id real do banco:", ixcTecnicoId);
             }
-        } else {
-             console.log("-> AVISO: Não encontrou o funcionario no usuarios_perfil com ID", funcionarioId, ". Usando id puro.");
         }
 
-        const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
-        const host = process.env.IXC_HOST;
-        const url = `https://${host}/webservice/v1/su_oss_chamado`;
-
-        const headers = {
-            'Content-Type': 'application/json',
-            Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
-            ixcsoft: 'listar'
-        };
-
-        console.log("-> Buscando OS com id_tecnico =", ixcTecnicoId);
-        // Filtra pelo técnico usando qtype e query com o ID correto encontrado
-        const body = JSON.stringify({
-            qtype: 'su_oss_chamado.id_tecnico',
-            query: String(ixcTecnicoId),
-            oper: '=',
-            page: '1',
-            rp: '1000', 
-            sortname: 'su_oss_chamado.id',
-            sortorder: 'desc'
-        });
-
-        try {
-            const resposta = await fetch(url, { method: 'POST', headers, body });
-            const dados = await resposta.json();
-            
-            if (!resposta.ok || dados.type === 'error') {
-                return res.status(502).json({ sucesso: false, erro: 'Falha buscar OS no IXC.' });
-            }
-
-            const registros = dados.registros || [];
-            
-            // Filtra OSs que não estejam com status (F) Finalizada, (C) Cancelada
-            // Isso garante que tickets em andamento (EN), análise (AN) ou agendado (AG) sejam contabilizados.
-            const osAbertas = registros.filter(os => !['F', 'C'].includes(String(os.status).toUpperCase()));
-            
-            const statusCount = { AG: 0, AS: 0, EN: 0, AN: 0, EX: 0, OUTROS: 0 };
-            osAbertas.forEach(os => {
-                const s = String(os.status).toUpperCase();
-                if (statusCount[s] !== undefined) {
-                    statusCount[s]++;
-                } else {
-                    statusCount['OUTROS']++;
+        // 2. Verificar Cache Global (1 minuto)
+        const agora = Date.now();
+        if (!cacheOS.dados || (agora - cacheOS.timestamp > 60000)) {
+            console.log("-> Cache expirado ou vazio em /api/os-chamados. Buscando OS abertas no IXC...");
+            const statusAtivos = ['A', 'AG', 'AS', 'EN', 'AN', 'EX'];
+            const promises = statusAtivos.map(async (status) => {
+                const body = JSON.stringify({
+                    qtype: 'su_oss_chamado.status',
+                    query: status,
+                    oper: '=',
+                    page: '1',
+                    rp: '10000'
+                });
+                try {
+                    const resp = await fetch(url, { method: 'POST', headers, body });
+                    const json = await resp.json();
+                    return json.registros || [];
+                } catch (err) {
+                    return [];
                 }
             });
-            
-            return res.json({ sucesso: true, quantidade: osAbertas.length, statusCount });
-        } catch (e) {
-            return res.status(500).json({ sucesso: false, erro: e.message });
+            const resultados = await Promise.all(promises);
+            cacheOS = {
+                dados: resultados.flat(),
+                timestamp: agora
+            };
+            console.log(`-> Cache atualizado. Total de OS abertas na empresa: ${cacheOS.dados.length}`);
         }
-    } catch (errExterno) {
-        console.error("Erro rota os-chamados:", errExterno);
-        return res.status(500).json({ sucesso: false, erro: 'Erro interno buscar OS.' });
+
+        // 3. Filtrar localmente e contar
+        const registrosDoTecnico = cacheOS.dados.filter(os => String(os.id_tecnico) === String(ixcTecnicoId));
+        console.log(`-> Usuario ${funcionarioId} (Tecnico ${ixcTecnicoId}): ${registrosDoTecnico.length} OS encontrada.`);
+
+        const statusCount = { A: 0, AG: 0, AS: 0, EN: 0, AN: 0, EX: 0, OUTROS: 0 };
+        registrosDoTecnico.forEach(os => {
+            const s = String(os.status).toUpperCase();
+            if (statusCount[s] !== undefined) statusCount[s]++;
+            else statusCount['OUTROS']++;
+        });
+        
+        return res.json({ 
+            sucesso: true, 
+            quantidade: registrosDoTecnico.length, 
+            statusCount,
+            cacheStatus: cacheOS.timestamp === agora ? 'MISS' : 'HIT'
+        });
+
+    } catch (e) {
+        console.error("Erro rota os-chamados:", e);
+        return res.status(500).json({ sucesso: false, erro: 'Erro buscar OS do IXC.' });
     }
-}); // Fim do GET /api/os-chamados/:funcionarioId
+});
 
 // ─── Rota: Atualizar dados de Funcionário no IXC ───────────────────────────
 app.put('/api/funcionario/:usuarioId', async (req, res) => {
@@ -569,7 +554,6 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
     const formData = req.body;
 
     try {
-        // Busca o ID do funcionário vinculado a este usuário
         const result = await pool.query('SELECT funcionario_id FROM usuarios_perfil WHERE usuario_id = $1', [usuarioId]);
         if (result.rows.length === 0 || !result.rows[0].funcionario_id) {
             return res.status(404).json({ sucesso: false, erro: 'Funcionário não encontrado no banco.' });
@@ -585,7 +569,6 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
             ixcsoft: 'listar'
         };
 
-        // 1. Busca os dados atuais do dicionario IXC via POST (busca)
         const bodyGet = JSON.stringify({
             qtype: 'funcionarios.id',
             query: funcionarioId,
@@ -605,20 +588,16 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
 
         const funcionarioAtual = dadosFunc.registros[0];
 
-        // 2. Prepara os headers para o PUT (removendo o header ixcsoft: listar)
         const headersPut = {
             'Content-Type': 'application/json',
             Authorization: 'Basic ' + Buffer.from(token).toString('base64')
         };
         const urlPut = `https://${host}/webservice/v1/funcionarios/${funcionarioId}`;
 
-        // Mapeia os dados novos
         const funcionarioName = [formData.nome, formData.sobrenome].filter(Boolean).join(' ');
 
-        // 3. Mescla com os dados recebidos. Vamos garantir que `fone_celular` seja sobrescrito.
-        // As demais propriedades permanecem como estavam
         const bodyContent = {
-            ...funcionarioAtual, // Mantem outras configs como estavam (ex: ativo, id_funcao, ctps, cpf, etc)
+            ...funcionarioAtual, 
             fone_celular: formData.telefone_celular !== undefined ? formData.telefone_celular : (formData.fone_celular || funcionarioAtual.fone_celular || ''),
             funcionario: funcionarioName || funcionarioAtual.funcionario || '',
             email: formData.email !== undefined ? formData.email : (funcionarioAtual.email || ''),
@@ -630,7 +609,6 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
         if (formData.filial_id) bodyContent.filial_id = formData.filial_id;
 
         const bodyPut = JSON.stringify(bodyContent);
-
         const resposta = await fetch(urlPut, { method: 'PUT', headers: headersPut, body: bodyPut });
 
         if (!resposta.ok) {
@@ -639,7 +617,6 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
             return res.status(502).json({ sucesso: false, erro: 'Falha ao atualizar dados no IXC.' });
         }
 
-        // Se deu sucesso, atualizamos a cache de `usuarios_perfil` também (opcional)
         const dNasc = bodyContent.data_nascimento ? bodyContent.data_nascimento : null;
         await pool.query(
             `UPDATE usuarios_perfil SET 
@@ -661,6 +638,7 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao atualizar funcionário.' });
     }
 });
+
 app.get('/api/usuario/perfil/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
     try {
@@ -683,7 +661,6 @@ app.get('/api/configuracoes/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
     try {
         const result = await pool.query('SELECT chave, valor FROM usuarios_preferencias WHERE usuario_id = $1', [usuarioId]);
-        // Converter de array [{chave: 'tema', valor: 'dark'}] para objeto {tema: 'dark'}
         const preferencias = result.rows.reduce((acc, curr) => {
             acc[curr.chave] = curr.valor;
             return acc;
@@ -695,7 +672,7 @@ app.get('/api/configuracoes/:usuarioId', async (req, res) => {
     }
 });
 
-app.put('/api/configuracoes/:usuarioId', async (req, res) => {
+app.post('/api/configuracoes/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
     const { email, chave, valor } = req.body;
 
@@ -718,11 +695,7 @@ app.put('/api/configuracoes/:usuarioId', async (req, res) => {
     }
 });
 
-
-
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
 })
-
-// Triggering restart 1
