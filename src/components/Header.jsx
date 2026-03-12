@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import defaultAvatar from '../image/avatar/homem-de-negocios-3d-icon-png-download-4841519.png';
 
 // Header: barra superior com logo, busca, notificações, perfil do usuário e navegação condicional
 export default function Header({ currentView, setCurrentView, user }) {
@@ -371,9 +372,8 @@ export default function Header({ currentView, setCurrentView, user }) {
                 <div onClick={() => setCurrentView('settings')} className="flex items-center gap-3 cursor-pointer group">
                     <div
                         className="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-transparent group-hover:border-primary flex items-center justify-center bg-gradient-to-br from-primary/20 to-orange-100 shrink-0 overflow-hidden transition-all"
-                        style={avatarUrl ? { backgroundImage: `url("${avatarUrl}")` } : {}}
+                        style={{ backgroundImage: `url("${avatarUrl || defaultAvatar}")` }}
                     >
-                        {!avatarUrl && <span className="font-bold text-primary text-sm">{firstName.charAt(0)}{lastName.charAt(0)}</span>}
                     </div>
                     <div className="hidden lg:block text-left">
                         <p className="text-sm font-bold leading-none dark:text-white truncate max-w-[250px]">{safeName}</p>

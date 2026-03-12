@@ -337,8 +337,7 @@ export default function Configuracoes({ user }) {
                         <div className="sticky top-24 bg-white dark:bg-[#1a130b] rounded-xl p-6 shadow-sm border border-[#eaddcd] dark:border-gray-800 flex flex-col items-center gap-6">
                             <div className="relative group avatar-container flex flex-col items-center">
                                 <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-32 h-32 ring-4 ring-[#fcfaf8] shadow-md flex items-center justify-center bg-gradient-to-br from-primary/20 to-orange-100 dark:from-primary/30 dark:to-orange-900/30 overflow-hidden"
-                                    style={avatarUrl ? { backgroundImage: `url(${avatarUrl})` } : {}}>
-                                    {!avatarUrl && <span className="text-4xl font-bold text-primary">{firstName.charAt(0)}{lastName.charAt(0)}</span>}
+                                    style={{ backgroundImage: `url(${avatarUrl || avatar1})` }}>
                                 </div>
                                 <button
                                     onClick={() => setShowAvatarMenu(!showAvatarMenu)}

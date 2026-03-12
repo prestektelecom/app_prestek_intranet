@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { loginUsuario } from '../services/auth'
 import ParticlesBackground from './ParticlesBackground'
 import MagneticSandCard from './MagneticSandCard'
-import logoPrestek from '../image/logos/PRESTEK-TELECOM3-scaled.png'
+import logoPrestek from '../image/logos/Logo.webp'
 
 // Chave de armazenamento para as credenciais salvas
 const CHAVE_CREDS = '@Stitch:creds'
