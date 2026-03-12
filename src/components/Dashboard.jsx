@@ -211,7 +211,8 @@ export default function Dashboard({ setCurrentView, user }) {
 
                 {/* Comunicados + Atalhos */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <AnnouncementsList />
+                    <AnnouncementsList setCurrentView={setCurrentView} />
+
 
                     <div className="space-y-4">
                         <h2 className="text-xl font-bold text-[#1d150c] dark:text-[#f8f7f5] transition-colors">Atalhos Rápidos</h2>

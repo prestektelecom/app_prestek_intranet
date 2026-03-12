@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 // Lista de comunicados urgentes
-export default function AnnouncementsList() {
+export default function AnnouncementsList({ setCurrentView }) {
     const [comunicados, setComunicados] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -29,6 +29,13 @@ export default function AnnouncementsList() {
         fetchUrgents();
     }, []);
 
+    const handleSeeAll = (e) => {
+        e.preventDefault();
+        if (setCurrentView) {
+            setCurrentView('announcements');
+        }
+    };
+
     const formatarData = (dataStr) => {
         if (!dataStr) return '';
         const data = new Date(dataStr);
@@ -39,9 +46,12 @@ export default function AnnouncementsList() {
         <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-[#1d150c] dark:text-white">Comunicados Urgentes</h2>
-                <a href="#" className="text-sm font-bold text-primary hover:underline">
+                <button
+                    onClick={handleSeeAll}
+                    className="text-sm font-bold text-primary hover:underline"
+                >
                     Ver Todos
-                </a>
+                </button>
             </div>
 
             <div className="bg-white dark:bg-[#1a130b] rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm divide-y divide-[#f4eee6]">
