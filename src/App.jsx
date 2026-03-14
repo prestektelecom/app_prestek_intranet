@@ -12,6 +12,7 @@ import Comunicados from './components/Comunicados'
 import Configuracoes from './components/Configuracoes'
 import Login from './components/Login'
 import AdminDashboard from './components/AdminDashboard'
+import NotFound from './components/NotFound'
 import { useTheme } from './hooks/useTheme'
 
 export default function App() {
@@ -109,8 +110,10 @@ export default function App() {
                 {currentView === 'processes' && <Processos />}
                 {currentView === 'announcements' && <Comunicados user={user} />}
                 {currentView === 'settings' && <Configuracoes user={user} />}
-                {/* Fallback para outros menus n implementados, exibe ServicesDirectory apenas como placeholder se nao for nenhuma das acimas */}
-                {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings'].includes(currentView) && <ServicesDirectory />}
+                {/* Fallback para outros menus n implementados ou páginas inexistentes */}
+                {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings'].includes(currentView) && (
+                    <NotFound setCurrentView={setCurrentView} />
+                )}
             </div>
         </div>
     )

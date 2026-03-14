@@ -159,7 +159,8 @@ export default function Configuracoes({ user }) {
     }, []);
 
     // AvatarUrl usa o formData (do banco) ou o default do usuário
-    const initialAvatarUrl = formData.avatarUrl !== undefined ? formData.avatarUrl : (user?.funcionario?.foto_perfil || null);
+    // Padronização: Usuário deseja que o avatar inicial seja o da garota-3d (avatar2)
+    const initialAvatarUrl = formData.avatarUrl !== undefined ? formData.avatarUrl : (user?.funcionario?.foto_perfil || avatar2);
     const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
 
     // Atualiza avatarUrl visual quando as configs carregam do banco
@@ -336,7 +337,7 @@ export default function Configuracoes({ user }) {
                     <div className="lg:col-span-4 xl:col-span-3">
                         <div className="sticky top-24 bg-white dark:bg-[#1a130b] rounded-xl p-6 shadow-sm border border-[#eaddcd] dark:border-gray-800 flex flex-col items-center gap-6">
                             <div className="relative group avatar-container flex flex-col items-center">
-                                <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-32 h-32 ring-4 ring-[#fcfaf8] shadow-md flex items-center justify-center bg-gradient-to-br from-primary/20 to-orange-100 dark:from-primary/30 dark:to-orange-900/30 overflow-hidden"
+                                <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary flex items-center justify-center bg-gradient-to-br from-primary/20 to-orange-100 shrink-0 overflow-hidden transition-all"
                                     style={{ backgroundImage: `url(${avatarUrl || avatar1})` }}>
                                 </div>
                                 <button

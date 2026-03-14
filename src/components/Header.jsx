@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import defaultAvatar from '../image/avatar/homem-de-negocios-3d-icon-png-download-4841519.png';
+import defaultAvatar from '../image/avatar/garota-3d-icon-png-download-4841514.png';
+import logoP from '../image/logos/Logo_P.webp';
 
 // Header: barra superior com logo, busca, notificações, perfil do usuário e navegação condicional
 export default function Header({ currentView, setCurrentView, user }) {
@@ -164,10 +165,9 @@ export default function Header({ currentView, setCurrentView, user }) {
                     </span>
                 </button>
 
-                {/* Logo */}
                 <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="size-8 rounded bg-primary flex items-center justify-center text-white shrink-0">
-                        <span className="material-symbols-outlined text-[20px]">grid_view</span>
+                    <div className="size-8 flex items-center justify-center shrink-0 overflow-hidden">
+                        <img src={logoP} alt="Logo" className="w-full h-full object-contain" />
                     </div>
                     <h2 className="text-[#1d150c] dark:text-white text-lg md:text-xl font-bold leading-tight tracking-tight hidden sm:block">
                         Prestek Intranet
