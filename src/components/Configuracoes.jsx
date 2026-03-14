@@ -1,22 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import ThemeSwitcher from './ThemeSwitcher';
+import LottieAvatar from './common/LottieAvatar';
 
-import avatar1 from '../image/avatar/homem-de-negocios-3d-icon-png-download-4841519.png';
-import avatar2 from '../image/avatar/garota-3d-icon-png-download-4841514.png';
-import avatar3 from '../image/avatar/suporte-tecnico-3d-icon-png-download-4841511.png';
-import avatar4 from '../image/avatar/mulheres-medicas-3d-icon-png-download-4841517.png';
-import avatar5 from '../image/avatar/gerente-3d-icon-png-download-4841552.png';
-import avatar6 from '../image/avatar/mulher-construtora-3d-icon-png-download-4841516.png';
-import avatar7 from '../image/avatar/vendedor-3d-icon-png-download-4841513.png';
-import avatar8 from '../image/avatar/enfermeira-3d-icon-png-download-4841567.png';
-import avatar9 from '../image/avatar/estudante-3d-icon-png-download-4841557.png';
-import avatar10 from '../image/avatar/mulher-agricultora-3d-icon-png-download-4841518.png';
-import avatar11 from '../image/avatar/operador-de-chamada-3d-icon-png-download-4841556.png';
-import avatar12 from '../image/avatar/medico-homem-3d-icon-png-download-4841530.png';
+import avatar1 from '../image/avatar/4472612.json';
+import avatar2 from '../image/avatar/4472613.json';
+import avatar3 from '../image/avatar/4472614.json';
+import avatar4 from '../image/avatar/4472615.json';
+import avatar5 from '../image/avatar/4472616.json';
+import avatar6 from '../image/avatar/4472617.json';
+import avatar7 from '../image/avatar/4472622.json';
+import avatar8 from '../image/avatar/4472623.json';
+import avatar9 from '../image/avatar/4472624.json';
+import avatar10 from '../image/avatar/4472625.json';
 
 const PREDEFINED_AVATARS = [
     avatar1, avatar2, avatar3, avatar4, avatar5, avatar6,
-    avatar7, avatar8, avatar9, avatar10, avatar11, avatar12
+    avatar7, avatar8, avatar9, avatar10
 ];
 
 export default function Configuracoes({ user }) {
@@ -163,10 +162,19 @@ export default function Configuracoes({ user }) {
     const initialAvatarUrl = formData.avatarUrl !== undefined ? formData.avatarUrl : (user?.funcionario?.foto_perfil || avatar2);
     const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
 
+    const avatarUrlRef = useRef(avatarUrl);
+    useEffect(() => {
+        avatarUrlRef.current = avatarUrl;
+    }, [avatarUrl]);
+
     // Atualiza avatarUrl visual quando as configs carregam do banco
     useEffect(() => {
         if (formData.avatarUrl) {
-            setAvatarUrl(formData.avatarUrl);
+            const currentStr = JSON.stringify(avatarUrlRef.current);
+            const nextStr = JSON.stringify(formData.avatarUrl);
+            if (currentStr !== nextStr) {
+                setAvatarUrl(formData.avatarUrl);
+            }
         }
     }, [formData.avatarUrl]);
 
@@ -337,9 +345,10 @@ export default function Configuracoes({ user }) {
                     <div className="lg:col-span-4 xl:col-span-3">
                         <div className="sticky top-24 bg-white dark:bg-[#1a130b] rounded-xl p-6 shadow-sm border border-[#eaddcd] dark:border-gray-800 flex flex-col items-center gap-6">
                             <div className="relative group avatar-container flex flex-col items-center">
-                                <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary flex items-center justify-center bg-gradient-to-br from-primary/20 to-orange-100 shrink-0 overflow-hidden transition-all"
-                                    style={{ backgroundImage: `url(${avatarUrl || avatar1})` }}>
-                                </div>
+                                <LottieAvatar 
+                                    src={avatarUrl || avatar1}
+                                    className="aspect-square rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-gradient-to-br from-primary/20 to-orange-100"
+                                />
                                 <button
                                     onClick={() => setShowAvatarMenu(!showAvatarMenu)}
                                     className="absolute bottom-0 right-0 bg-primary hover:bg-[#e67e00] text-white p-2 text-sm rounded-full shadow-lg transition-transform transform hover:scale-105"
@@ -394,8 +403,8 @@ export default function Configuracoes({ user }) {
                                                 <button
                                                     key={idx}
                                                     onClick={() => handleChangeAvatar(url)}
-                                                    className="aspect-square rounded-lg border border-[#eaddcd] dark:border-gray-800 hover:border-primary dark:hover:border-primary focus:ring-2 ring-primary/30 transition-all bg-[#fcfaf8] dark:bg-[#2c2217] p-1 overflow-hidden">
-                                                    <img src={url} alt={`Avatar ${idx + 1}`} className="w-full h-full object-contain" />
+                                                    className="aspect-square rounded-lg border border-[#eaddcd] dark:border-gray-800 hover:border-primary dark:hover:border-primary focus:ring-2 ring-primary/30 transition-all bg-[#fcfaf8] dark:bg-[#2c2217] overflow-hidden">
+                                                    <LottieAvatar src={url} className="w-full h-full" />
                                                 </button>
                                             ))}
                                         </div>

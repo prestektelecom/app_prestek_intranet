@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import defaultAvatar from '../image/avatar/garota-3d-icon-png-download-4841514.png';
+import defaultAvatar from '../image/avatar/4472613.json';
 import logoP from '../image/logos/Logo_P.webp';
+import LottieAvatar from './common/LottieAvatar';
 
 // Header: barra superior com logo, busca, notificações, perfil do usuário e navegação condicional
 export default function Header({ currentView, setCurrentView, user }) {
@@ -108,30 +109,34 @@ export default function Header({ currentView, setCurrentView, user }) {
         fetchCargoESetor();
     }, [safeDepto, safeRole]);
 
+    const avatarUrlRef = useRef(avatarUrl);
+    useEffect(() => {
+        avatarUrlRef.current = avatarUrl;
+    }, [avatarUrl]);
+
     useEffect(() => {
         if (!safeId || safeId === '0000') return;
-        const saved = localStorage.getItem(`stitch_profile_${safeId}`);
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                if (parsed.avatarUrl) setAvatarUrl(parsed.avatarUrl);
-            } catch (e) { }
-        }
-
-        // Sincronizar o avatar se alterado nas configurações
-        const interval = setInterval(() => {
+        
+        const syncAvatar = () => {
             const currentSaved = localStorage.getItem(`stitch_profile_${safeId}`);
             if (currentSaved) {
                 try {
                     const parsed = JSON.parse(currentSaved);
-                    if (parsed.avatarUrl && parsed.avatarUrl !== avatarUrl) {
-                        setAvatarUrl(parsed.avatarUrl);
+                    if (parsed.avatarUrl) {
+                        const currentStr = JSON.stringify(avatarUrlRef.current);
+                        const nextStr = JSON.stringify(parsed.avatarUrl);
+                        if (currentStr !== nextStr) {
+                            setAvatarUrl(parsed.avatarUrl);
+                        }
                     }
                 } catch (e) { }
             }
-        }, 1500);
+        };
+
+        syncAvatar();
+        const interval = setInterval(syncAvatar, 1500);
         return () => clearInterval(interval);
-    }, [safeId, avatarUrl]);
+    }, [safeId]);
 
     // Handle click outside for notifications dropdown
     useEffect(() => {
@@ -370,11 +375,10 @@ export default function Header({ currentView, setCurrentView, user }) {
 
                 {/* Avatar + Nome */}
                 <div onClick={() => setCurrentView('settings')} className="flex items-center gap-3 cursor-pointer group">
-                    <div
-                        className="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-transparent group-hover:border-primary flex items-center justify-center bg-gradient-to-br from-primary/20 to-orange-100 shrink-0 overflow-hidden transition-all"
-                        style={{ backgroundImage: `url("${avatarUrl || defaultAvatar}")` }}
-                    >
-                    </div>
+                    <LottieAvatar 
+                        src={avatarUrl || defaultAvatar}
+                        className="rounded-full size-10 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-gradient-to-br from-primary/20 to-orange-100"
+                    />
                     <div className="hidden lg:block text-left">
                         <p className="text-sm font-bold leading-none dark:text-white truncate max-w-[250px]">{safeName}</p>
                         <p className="text-xs text-gray-500 mt-1 truncate max-w-[250px]">{cargoName}</p>

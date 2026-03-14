@@ -11,6 +11,8 @@ export default function Dashboard({ setCurrentView, user }) {
     const [osCount, setOsCount] = useState(0);
     const [osStatusCount, setOsStatusCount] = useState(null);
     const [osLoading, setOsLoading] = useState(true);
+    const [proximoPlantao, setProximoPlantao] = useState(null);
+    const [plantaoLoading, setPlantaoLoading] = useState(true);
 
     const func = user?.funcionario ?? {};
     const safeRole = func.id_funcao || 'Colaborador';
@@ -88,6 +90,26 @@ export default function Dashboard({ setCurrentView, user }) {
     }, [func.id]);
 
     useEffect(() => {
+        const fetchProximoPlantao = async () => {
+            if (!user?.id) return;
+            setPlantaoLoading(true);
+            try {
+                const res = await fetch(`http://localhost:3001/api/plantoes/meu-proximo/${user.id}`);
+                const data = await res.json();
+                if (data.sucesso && data.proximo) {
+                    setProximoPlantao(data.proximo);
+                }
+            } catch (err) {
+                console.error("Erro ao buscar próximo plantão:", err);
+            } finally {
+                setPlantaoLoading(false);
+            }
+        };
+
+        fetchProximoPlantao();
+    }, [user?.id]);
+
+    useEffect(() => {
         const updateDateTime = () => {
             const now = new Date();
 
@@ -144,8 +166,8 @@ export default function Dashboard({ setCurrentView, user }) {
         {
             icon: 'event_available',
             label: 'Próximo Plantão',
-            value: '01/03/2025',
-            badge: '09:00 - 17:00',
+            value: plantaoLoading ? '...' : (proximoPlantao ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR') : 'Nenhum Agendado'),
+            badge: proximoPlantao ? `${proximoPlantao.horario_inicio.slice(0, 5)} - ${proximoPlantao.horario_fim.slice(0, 5)}` : (plantaoLoading ? '' : 'Sem cobertura'),
             badgeClassName: 'text-[#635c55] dark:text-gray-300',
         },
         {

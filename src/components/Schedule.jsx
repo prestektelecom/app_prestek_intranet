@@ -1,6 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import LottieAvatar from './common/LottieAvatar';
 
 export default function Schedule() {
+    const [plantoes, setPlantoes] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPlantoes = async () => {
+            try {
+                const res = await fetch('http://localhost:3001/api/plantoes');
+                const data = await res.json();
+                if (data.sucesso) {
+                    setPlantoes(data.plantoes);
+                }
+            } catch (err) {
+                console.error("Erro ao buscar plantões:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPlantoes();
+    }, []);
+
+    // Função para formatar data do banco para exibição (ex: "Fev 05")
+    const formatarData = (dataStr) => {
+        const data = new Date(dataStr);
+        return data.toLocaleDateString('pt-BR', { month: 'short', day: '2-digit' })
+            .replace('.', '')
+            .replace(/^\w/, (c) => c.toUpperCase());
+    };
+
+    // Função para pegar o dia da semana
+    const getDiaSemana = (dataStr) => {
+        const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        return dias[new Date(dataStr).getDay()];
+    };
+
+    // Função para verificar se é final de semana
+    const isFimDeSemana = (dataStr) => {
+        const dia = new Date(dataStr).getDay();
+        return dia === 0 || dia === 6;
+    };
+
+    // Função para verificar se é hoje
+    const isHoje = (dataStr) => {
+        const hoje = new Date().toISOString().split('T')[0];
+        return dataStr.split('T')[0] === hoje;
+    };
     return (
         <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto">
             {/* Breadcrumbs */}
@@ -89,35 +136,20 @@ export default function Schedule() {
                         </div>
 
                         <div className="grid grid-cols-7 gap-y-2 gap-x-1 text-center">
-                            <div className="p-2"></div><div className="p-2"></div><div className="p-2"></div><div className="p-2"></div><div className="p-2"></div><div className="p-2"></div>
-                            <CalendarDay day="1" />
-                            <CalendarDay day="2" />
-                            <CalendarDay day="3" />
-                            <CalendarDay day="4" />
-                            <CalendarDay day="5" isToday active />
-                            <CalendarDay day="6" />
-                            <CalendarDay day="7" />
-                            <CalendarDay day="8" active />
-                            <CalendarDay day="9" active />
-                            <CalendarDay day="10" />
-                            <CalendarDay day="11" />
-                            <CalendarDay day="12" />
-                            <CalendarDay day="13" />
-                            <CalendarDay day="14" />
-                            <CalendarDay day="15" active />
-                            <CalendarDay day="16" active />
-                            <CalendarDay day="17" />
-                            <CalendarDay day="18" />
-                            <CalendarDay day="19" />
-                            <CalendarDay day="20" />
-                            <CalendarDay day="21" />
-                            <CalendarDay day="22" active />
-                            <CalendarDay day="23" active />
-                            <CalendarDay day="24" />
-                            <CalendarDay day="25" />
-                            <CalendarDay day="26" />
-                            <CalendarDay day="27" />
-                            <CalendarDay day="28" />
+                            {/* Lógica do calendário simplificada para marcar os dias com plantão */}
+                            {Array.from({ length: 28 }, (_, i) => {
+                                const day = i + 1;
+                                const dateStr = `2025-02-${day.toString().padStart(2, '0')}`; // Exemplo estático para o calendário visual
+                                const temPlantao = plantoes.some(p => p.data.split('T')[0] === dateStr);
+                                return (
+                                    <CalendarDay 
+                                        key={day} 
+                                        day={day} 
+                                        active={temPlantao} 
+                                        isToday={day === 14} // Exemplo simplificado
+                                    />
+                                );
+                            })}
                         </div>
 
                         <div className="mt-6 flex items-center gap-5 text-xs font-bold justify-center border-t border-[#f4eee6] pt-4">
@@ -177,54 +209,32 @@ export default function Schedule() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[#f4eee6]">
-                                    <ScheduleRow
-                                        date="Fev 05"
-                                        day="Quarta-feira"
-                                        isToday
-                                        n1={{ name: 'Sarah J.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA0wk2s-79jSJo51ZLHL4K97Fmj4Ds_PEKuKUBg1crymxYwjmwFVEhX3EjXD1x6xa9YHeucXnBgqcCZjym0yAWzoFJYX5qcOU1ipbTuA59Oi9CYKsh2g23e7sjBIHYGeJs8Os0uDGxujbXH0CUaGbASmr9I_UhciDvXjyRr1V_MqeniMO5rRQpW1fs2S2StjRTHqX64YhIwZYtxbyAQq3akVTL0jFQ6-9Eus7gLFi1-qdmvP3i9AFMKcWsKR78qiXCWEpNVxJKOey4' }}
-                                        n2={{ name: 'Michael C.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB7btibQUBBlATKg8cJ4aDVbc-VniWGjs4hTqORPrTw3oNyARhxWtXc_f49judxZa-Ogj5pSQqDcipz0zoqdQagaA0O48zcNfpzgC3N0fyS3mR7uTrfmWCy6gngEdxdM0RUBczORyJJ_FkvPbiy-IESTEcOl3qkNimrt3CVjZ-Pz3Vduqgvt58l6SDoS4W8cyJl5e73i_QmUyPL24QOa6QXbCs81e126rEUhQREgEH4JWfTLCLccKYhFZ1CrqIvYcJjZpx6wXQbvT8' }}
-                                        mgr={{ name: 'David S.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYvqKfJXYcmVga0AlLbSOWZvMv8VQ1s323Kfgbe1mRk-JeHi5Ut4l8i1NHHYFYYcQLnHSkyLqLvaglWvheVfQsaPQSUcLKZCF6i5H2_CuuUVlStpN73wvdd90ZRqvQtZMtii4YRpnK3_QL1l9WsTS6-Gr9JbhFTHk3rpG8M5l2e1KN699hMCa7eQpJidadVi9BfoOz6LiBYdd-a7grJktNMPuRNuLKGwv4yr1u7cok4zgJw9IlY2RMetbHICNkIgyDiMvR849y4ME' }}
-                                    />
-                                    <ScheduleRow
-                                        date="Fev 08"
-                                        day="Sábado"
-                                        isWeekend
-                                        n1={{ name: 'Emily D.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAtpb4x4hztktTzF6bw8w_LXUme0aZFoujb0ntlC0qrRJMwc2_T-QEpHLLZju_AF-v_-WO50FmM-AoZsuwzYBZi_xPM-aaidnVvN6Rby2kOZCAiubWCPqKpvPiTRqN3MJO3_iQdQkoOc8QEeYIUjXLetwQc4T72PmS0_tr2iTV5i36_Mn19jWKPGJqLGAW5JA_CfktnfKILdRZ27g2wuOcuHwWerEiTGh7P-pQ3H8jUjTmCIGlFKMIJasQGkRyRxxamLSDG58vqgQs' }}
-                                        n2={null}
-                                        mgr={{ name: 'Lisa W.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBGGHC5Bc5IxUzcIMHZc94dVDgmzJ8IsCI8ciKyFCL36wcn8xSALwnoppULUN0R4eSbIXYW45vct3SyZr1aX66T6QlrtsAFAfOg9J-J0iomn50Q__CvjPBXAc5jBRmfkrFOFD8k6NgcmXfDEHDJEyBpk4VCM0wxUe7LlyxosRHKVj48CP5c1z9bNwn12OPn833Lf8IpcheRWn7KuRxihOBKVsGSJxbo5SozsgToLjeMJ_mRE1PQMqaSCAr-RfBuMUlWKBYW7nm78N4' }}
-                                    />
-                                    <ScheduleRow
-                                        date="Fev 09"
-                                        day="Domingo"
-                                        isWeekend
-                                        n1={{ name: 'James W.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfZIfGNX8EipPbL4biJeQger9fIYX4Xv0GbJ6Cxkl-f89x6sPPe8liyCu5ImuOLbJv5SvXNbo5d_SbfBKO3iPomKnFs6W8614eT2JFHpRpPdOnuqOQIlYPBk9YckxWgMdydECRePnHTvDWIb0o26YTlWkNK7hLWudFI5vcsu9AYygUXfCKHVT5wMcoWER5mlWpWNwOwHF8LNBhDwpccrC-eFwot9dib0xvWedXLQGtziPc1puzWzpf5Ju-x2zv_dzXWE3sYzVhUJQ' }}
-                                        n2={{ name: 'Robert B.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBD8nZxwbuzsV2Ow2cC9gHVPNbUSGmleeHYxpCR5WQygfi7vRcCv9TrIugkjaQNOGZE9wg1_vKuqXnPD5zSdK6bB3iuIzFtLOBEPQZXSdEnfKkDWI0S9_u2wsbT03h3zsUpX24TOjjY24IdG0WayD8qSL3cPU1h0djFN4A9P_6FjVkJLzlJjcNxTXOE9TsKE9cNioBIBb7rDfkrpJCDmm-F7jp5KcV9GzVid4RXk1X0SuR_27xlTqpc_GElNDQIihwjYdQ8hAce4uQ' }}
-                                        mgr={{ name: 'Patricia M.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC1Vitr0pQ5PrYSGuurCLiSd1pXO4mP2J3ANQrwQnjSb_nUVE9utevGHdc88Fw3qPCON9vYEsZf8Aywd6B82PpGh0OhhvgGGIxGRjT7w58S8tjD6xhxcaBtIr4lSs7S65QU6043FVyK_4rFoFNpfA2cPCN3YNTUvnqn-M2twrhqtfoWltUrDPNlwzlpi9BQJQnrkLHLU1tiQi8UaSyGWU1bdEGTBKDO--5sfpa1ss3G7WGo11gK1NTFJUbGR-TzOJnBoey1aLf6KQg' }}
-                                    />
-                                    <ScheduleRow
-                                        date="Fev 15"
-                                        day="Sábado"
-                                        isWeekend
-                                        n1={{ name: 'John D.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgWpq2Gm8WOWGX58RoPucf1kDG8eEPoDyw5jZxeHtNCQSqfCKroo22WLzkXPfrGBnZirQFsMR36OI9qWC1YinsglMS9eg7HBD7kbuJ3gAJJIWviW_5O4zwrCs6mlRp2JFjwt5N8n0__URWSyWd_EThg5dhH9jDoPpLbcoPXS1kq0HtbAtWwkV278Skb_qJk9SwGoWtKp7-_9GbnQ2STZzN3_yO_cDadf5XiyaEblbkB5pihZLp3GoeNDtmQwEGxropfCjELL6_nZs' }}
-                                        n2={{ name: 'Alex K.', initials: 'AK', color: 'purple' }}
-                                        mgr={{ name: 'David S.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCDn68uL1cuUQyg7WQIuS17V7tool_8JSrUQWthPI2jr8Lg8QAvge4H-6yuf1hdlBiT2BMfUF08-dHHu-R25qA1IUc4LR_7uKqrnsOCv5pqWhQbYCfDLKgn5Hzme004c2uYLzuzNzaL068361JE3NqchAiVzCNbE_dfxhQP1c4oLBa88uRRvrHhIJqI32641wF5wwalUywYCb3cry-kDlYj4ojUERlixSr8MCai2HQRQVhIerVRz8gstIf1_R3JRN5soSfSARWnplA' }}
-                                    />
-                                    <ScheduleRow
-                                        date="Fev 16"
-                                        day="Domingo"
-                                        isWeekend
-                                        n1={{ name: 'Brian R.', initials: 'BR', color: 'orange' }}
-                                        n2={{ name: 'Catherine L.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5-2ca7lKaOkgO3rT46nukvLXaMYB_o5pElK9jrUuAMcTVWpE9sy18gpy50x-Qz42uCPiqbnTlswm4EJ9qpOOFaNF4M0FVmNdI0TGIHek38ei4q_YX_rPBDrKO0cVTkJuQzgsNQRiZsXTnL5z0fxTy_1BXgsTvJ1MN6N-h2CtzJQiFe-8rDc8sJfLE7_DYBO1qxRlhgGwCieL3KoeV8mH3doR4D8ZNS10D75hIOHOGkFoUbjXnuHiqpw0gyM2UjEMRC2pLkzbAVI4' }}
-                                        mgr={{ name: 'George C.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD0vcg4BS0f52Xk_yBkIkMJVZwhaaeF4byymUfAh_Nha4GUeLQP7xIQzvYEHMkVKgOXwgqMQx96Fy6k5m5Ua99MRKbUESaRrfcseYVuy0G9aNjCYapiTFR7MquD7cYXFKavbjsC8E7xSUlfk-n2tX6cCtlNSFQdnUnTwfM-OLaIvXzXMsRQ4HTKgiOirapwzt5mV1WkY0fosbsJX_0Qhq6jB9xqNSSxJf92Rw7T2AB9tqRxYz2vuQxgseWxphoR4GymRqwinPbqREQ' }}
-                                    />
-                                    <ScheduleRow
-                                        date="Fev 22"
-                                        day="Sábado"
-                                        isWeekend
-                                        n1={{ name: 'Emily D.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDHQa6sfSJnbacpn-fWsf2nOQ4C6JzoMlrRpr7xs9b5-TGwo_C_AfkakqscWONn4-6qTtFptlqzf7yhzWs_QYx-aXKeyKWBV-pyrJKXKMzgQWDQzyqjWPKihnVifFizwxUgpuj-ELan_YelJGpQb3YgAaRZDaR3S0jqWfeHKJyRvUIgL-67UsoF_XJOr0-YM1bxW0_5Mr5nE-UZei0C7pzJbrDh6vd-_iv97MpQ8d0DUT_nFdtgHBhvInbsFUeirsYfBcuO76IcCaY' }}
-                                        n2={{ name: 'Michael C.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD14PvxpPYcvfga110syZUq0_RzNdzkx-LvGf96WWfqQ7cwahzoYDDq4NEX8s8p6rfbUbB6HdPy5q2_N_uHJkwcbrcQI1wI1MQPATQBEshJwFldZl3MQA3REa9zxlC2rkq9nGeCGI_Mcm6xU_CnYXSOvjlYIIhUg84u7nJeqdZAuq-f6zllCd2x8AOQWMU_Mduqbt9ohljL5Dn21YMW1cRaKnulMbUlJgOleCLp0C3NEPLsOtkhlIugIpN0xpgfR0pjAIFf-PsOhK8' }}
-                                        mgr={{ name: 'Lisa W.', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA3ZlnNer-mroEIrfoVLKA9Q41k7gVthvdp7c_6iIRaETXEOjsL0gGxEJq7XqBC5pCgW_p7ugECzFVb2Q5nTFSzci4Rl1FnsnO32TgrFv0_HQUtlWJLB0BVZznE1f0uInnjnNWDIhHjX1x4tLh0kllO1ztjshXiGcWF69n3v4CqNxTfxr4xdXqyJ0jkf3VpmQsm9VGwZ4TxbDPvZFdI8pq8qhgGcXtI5hXb7lAZHYP7rSdC_XOJcysJSRxjcjM2_8BXg_t6-HmtZ9g' }}
-                                    />
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-10 text-center text-[#a17745] font-bold">
+                                                Carregando escala...
+                                            </td>
+                                        </tr>
+                                    ) : plantoes.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-10 text-center text-[#a17745] font-bold">
+                                                Nenhum plantão agendado para este período.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        plantoes.map((p) => (
+                                            <ScheduleRow
+                                                key={p.id}
+                                                date={formatarData(p.data)}
+                                                day={getDiaSemana(p.data)}
+                                                isToday={isHoje(p.data)}
+                                                isWeekend={isFimDeSemana(p.data)}
+                                                n1={{ name: p.n1_nome || 'Não atribuído', img: p.n1_foto }}
+                                                n2={p.n2_id ? { name: p.n2_nome || 'Não atribuído', img: p.n2_foto } : null}
+                                                mgr={{ name: p.mgr_nome || 'Não atribuído', img: p.mgr_foto }}
+                                            />
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -316,11 +326,10 @@ function UserAvatar({ user, allowEmpty }) {
     return (
         <div className="flex items-center gap-3">
             {user.img ? (
-                <div
-                    className="size-8 rounded-full bg-cover bg-center border border-[#eaddcd] dark:border-gray-800 shrink-0"
-                    title={user.name}
-                    style={{ backgroundImage: `url('${user.img}')` }}
-                ></div>
+                <LottieAvatar 
+                    src={user.img}
+                    className="size-8 rounded-full border border-[#eaddcd] dark:border-gray-800 shrink-0"
+                />
             ) : (
                 <div className={avatarBgClasses} title={user.name}>
                     {user.initials}

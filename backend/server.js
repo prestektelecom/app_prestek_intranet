@@ -695,6 +695,55 @@ app.post('/api/configuracoes/:usuarioId', async (req, res) => {
     }
 });
 
+// ─── Rotas: Plantões ────────────────────────────────────────────────────────
+app.get('/api/plantoes', async (req, res) => {
+    try {
+        const query = `
+            SELECT p.*, 
+                   n1.funcionario_nome as n1_nome, n1.foto_perfil as n1_foto,
+                   n2.funcionario_nome as n2_nome, n2.foto_perfil as n2_foto,
+                   mgr.funcionario_nome as mgr_nome, mgr.foto_perfil as mgr_foto
+            FROM plantoes p
+            LEFT JOIN usuarios_perfil n1 ON p.n1_id = n1.funcionario_id
+            LEFT JOIN usuarios_perfil n2 ON p.n2_id = n2.funcionario_id
+            LEFT JOIN usuarios_perfil mgr ON p.gerente_id = mgr.funcionario_id
+            ORDER BY p.data ASC;
+        `;
+        const result = await pool.query(query);
+        return res.json({ sucesso: true, plantoes: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar plantões:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar plantões.' });
+    }
+});
+
+app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
+    const { usuarioId } = req.params;
+    try {
+        // Primeiro, pega o funcionario_id associado ao usuario_id
+        const userRes = await pool.query('SELECT funcionario_id FROM usuarios_perfil WHERE usuario_id = $1', [usuarioId]);
+        const funcionarioId = userRes.rows[0]?.funcionario_id;
+
+        const query = `
+            SELECT * FROM plantoes 
+            WHERE (n1_id = $1 OR n2_id = $1 OR gerente_id = $1)
+              AND data >= CURRENT_DATE
+            ORDER BY data ASC
+            LIMIT 1;
+        `;
+        const result = await pool.query(query, [funcionarioId || 'vazio']);
+        
+        if (result.rows.length === 0) {
+            return res.json({ sucesso: true, proximo: null });
+        }
+        
+        return res.json({ sucesso: true, proximo: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao buscar próximo plantão:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar próximo plantão.' });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
