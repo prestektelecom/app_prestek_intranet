@@ -756,6 +756,68 @@ app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
     }
 });
 
+// ─── Rota: Abrir Ticket de Suporte no IXC ────────────────────────────────────
+app.post('/api/ixc/su-ticket', async (req, res) => {
+    const { mensagem } = req.body;
+
+    if (!mensagem) {
+        return res.status(400).json({ sucesso: false, erro: 'A descrição da situação é obrigatória.' });
+    }
+
+    const host = process.env.IXC_HOST;
+    const url = `https://${host}/webservice/v1/su_ticket`;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64')
+    };
+
+    const dados = {
+        tipo: 'C',
+        id_cliente: '681', // Corrigido de 661
+        id_login: '1',
+        id_contrato: '18426',
+        id_filial: '1',
+        id_assunto: '1154',
+        id_canal_atendimento: '4',
+        id_ticket_setor: '1', // ID 1 costuma ser o setor padrão/infra
+        id_wfl_processo: '237', // Novo campo solicitado
+        titulo: 'Suporte de TI via Intranet',
+        menssagem: mensagem,
+        status: 'T',
+        su_status: 'N', // Obrigatório em algumas versões do IXC para validar o status
+        origem_cadastro: 'P',
+        prioridade: 'M',
+        melhor_horario_reserva: 'Q',
+        id_ticket_origem: 'I',
+        interacao_pendente: 'N',
+        finalizar_atendimento: 'N',
+        atualizar_cliente: 'S',
+        atualizar_login: 'S'
+    };
+
+    try {
+        const resposta = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(dados)
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || resultado.type === 'error') {
+            console.error(`Erro API IXC su_ticket:`, resultado);
+            const erroMsg = resultado.message || 'Falha ao comunicar com o IXC.';
+            return res.status(502).json({ sucesso: false, erro: erroMsg });
+        }
+
+        return res.json({ sucesso: true, ticket: resultado });
+    } catch (e) {
+        console.error("Erro rota su-ticket:", e);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao abrir ticket no IXC.' });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
