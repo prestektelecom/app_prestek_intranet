@@ -785,7 +785,7 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         id_responsavel_tecnico: colaborador_id || '0', // Colaborador que abriu o chamado
         titulo: 'SUPORTE DE TI VIA INTRANET', // Texto em maiúsculas
         origem_endereco: 'CC', // Origem contrato (CC informado pelo usuário)
-        endereco: 'RODOVIA MARIO FREIRE LEAHY',
+        endereco: 'AL Penedo 57200-000 SENHOR DO BONFIM - RODOVIA MARIO FREIRE LEAHY',
         numero: '1650',
         bairro: 'SENHOR DO BONFIM',
         id_cidade: '1721',
