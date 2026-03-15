@@ -758,7 +758,7 @@ app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
 
 // ─── Rota: Abrir Ticket de Suporte no IXC ────────────────────────────────────
 app.post('/api/ixc/su-ticket', async (req, res) => {
-    const { mensagem } = req.body;
+    const { mensagem, colaborador_id } = req.body;
 
     if (!mensagem) {
         return res.status(400).json({ sucesso: false, erro: 'A descrição da situação é obrigatória.' });
@@ -774,18 +774,27 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
 
     const dados = {
         tipo: 'C',
-        id_cliente: '681', // Corrigido de 661
+        id_cliente: '681',
         id_login: '1',
         id_contrato: '18426',
         id_filial: '1',
         id_assunto: '1154',
         id_canal_atendimento: '4',
-        id_ticket_setor: '1', // ID 1 costuma ser o setor padrão/infra
-        id_wfl_processo: '237', // Novo campo solicitado
-        titulo: 'Suporte de TI via Intranet',
+        id_ticket_setor: '16', // Alterado fixo para 16
+        id_wfl_processo: '237',
+        id_responsavel_tecnico: colaborador_id || '0', // Colaborador que abriu o chamado
+        titulo: 'SUPORTE DE TI VIA INTRANET', // Texto em maiúsculas
+        origem_endereco: 'CC', // Origem contrato (CC informado pelo usuário)
+        endereco: 'RODOVIA MARIO FREIRE LEAHY',
+        numero: '1650',
+        bairro: 'SENHOR DO BONFIM',
+        id_cidade: '1721',
+        latitude: '-10.2200683',
+        longitude: '-36.5695965',
+        gerar_protocolo: 'S', // Força o IXC a gerar o protocolo
         menssagem: mensagem,
         status: 'T',
-        su_status: 'N', // Obrigatório em algumas versões do IXC para validar o status
+        su_status: 'N',
         origem_cadastro: 'P',
         prioridade: 'M',
         melhor_horario_reserva: 'Q',

@@ -238,7 +238,7 @@ export default function Dashboard({ setCurrentView, user }) {
 
                     <div className="space-y-4">
                         <h2 className="text-xl font-bold text-[#1d150c] dark:text-[#f8f7f5] transition-colors">Atalhos Rápidos</h2>
-                        <QuickShortcuts setCurrentView={setCurrentView} />
+                        <QuickShortcuts setCurrentView={setCurrentView} user={user} />
                         <TeamAvailability />
                     </div>
                 </div>

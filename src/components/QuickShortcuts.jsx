@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 // Grade 2x2 de atalhos rápidos
-export default function QuickShortcuts({ setCurrentView }) {
+export default function QuickShortcuts({ setCurrentView, user }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [mensagem, setMensagem] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -22,11 +22,17 @@ export default function QuickShortcuts({ setCurrentView }) {
         setIsLoading(true);
         setFeedback(null);
 
+        // Pega o ID do colaborador logado para ser o responsável no ticket
+        const colaborador_id = user?.funcionario?.id;
+
         try {
             const res = await fetch('http://localhost:3001/api/ixc/su-ticket', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensagem })
+                body: JSON.stringify({ 
+                    mensagem,
+                    colaborador_id 
+                })
             });
 
             const data = await res.json();
