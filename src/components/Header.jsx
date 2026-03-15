@@ -27,7 +27,11 @@ export default function Header({ currentView, setCurrentView, user }) {
     const safeDepto = func.id_departamento || '';
     const safeId = func.id ?? user?.id ?? '0000';
 
-    const [avatarUrl, setAvatarUrl] = useState(user?.funcionario?.foto_perfil || null);
+    const [avatarUrl, setAvatarUrl] = useState(user?.funcionario?.foto_perfil || defaultAvatar);
+
+    useEffect(() => {
+        setAvatarUrl(user?.funcionario?.foto_perfil || defaultAvatar);
+    }, [user?.funcionario?.foto_perfil]);
     const [cargoName, setCargoName] = useState(safeRole);
     const [hasUrgent, setHasUrgent] = useState(false);
     const [urgentAnnouncements, setUrgentAnnouncements] = useState([]);

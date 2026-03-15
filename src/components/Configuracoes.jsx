@@ -159,24 +159,12 @@ export default function Configuracoes({ user }) {
 
     // AvatarUrl usa o formData (do banco) ou o default do usuário
     // Padronização: Usuário deseja que o avatar inicial seja o da garota-3d (avatar2)
-    const initialAvatarUrl = formData.avatarUrl !== undefined ? formData.avatarUrl : (user?.funcionario?.foto_perfil || avatar2);
-    const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+    const [avatarUrl, setAvatarUrl] = useState(formData.avatarUrl || user?.funcionario?.foto_perfil || avatar2);
 
-    const avatarUrlRef = useRef(avatarUrl);
     useEffect(() => {
-        avatarUrlRef.current = avatarUrl;
-    }, [avatarUrl]);
-
-    // Atualiza avatarUrl visual quando as configs carregam do banco
-    useEffect(() => {
-        if (formData.avatarUrl) {
-            const currentStr = JSON.stringify(avatarUrlRef.current);
-            const nextStr = JSON.stringify(formData.avatarUrl);
-            if (currentStr !== nextStr) {
-                setAvatarUrl(formData.avatarUrl);
-            }
-        }
-    }, [formData.avatarUrl]);
+        const currentAvatar = formData.avatarUrl || user?.funcionario?.foto_perfil || avatar2;
+        setAvatarUrl(currentAvatar);
+    }, [formData.avatarUrl, user?.funcionario?.foto_perfil]);
 
     // Fechar menus ao clicar fora
     useEffect(() => {
@@ -346,7 +334,7 @@ export default function Configuracoes({ user }) {
                         <div className="sticky top-24 bg-white dark:bg-[#1a130b] rounded-xl p-6 shadow-sm border border-[#eaddcd] dark:border-gray-800 flex flex-col items-center gap-6">
                             <div className="relative group avatar-container flex flex-col items-center">
                                 <LottieAvatar 
-                                    src={avatarUrl || avatar1}
+                                    src={avatarUrl}
                                     className="aspect-square rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-gradient-to-br from-primary/20 to-orange-100"
                                 />
                                 <button

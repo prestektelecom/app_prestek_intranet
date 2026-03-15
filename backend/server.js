@@ -642,13 +642,25 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
 app.get('/api/usuario/perfil/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
     try {
+        // Busca perfil na tabela usuarios_perfil
         const result = await pool.query(
             'SELECT * FROM usuarios_perfil WHERE usuario_id = $1',
             [usuarioId]
         );
+
         if (result.rows.length === 0) {
-            return res.status(404).json({ sucesso: false, erro: 'Perfil não encontrado.' });
+            // Se não encontrou no perfil, retornamos um objeto mínimo para não dar 404 nem 500
+            // O frontend cuidará dos fallbacks (como o avatar2)
+            return res.json({ 
+                sucesso: true, 
+                perfil: { 
+                    usuario_id: usuarioId,
+                    usuario_nome: 'Usuário',
+                    foto_perfil: null
+                } 
+            });
         }
+
         return res.json({ sucesso: true, perfil: result.rows[0] });
     } catch (err) {
         console.error('Erro ao buscar perfil do banco:', err.message);

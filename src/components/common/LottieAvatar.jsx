@@ -15,7 +15,30 @@ const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
 
     // Check if src is a Lottie JSON object (v, fr, ip, op, w, h are common lottie properties)
     const isLottie = useMemo(() => {
-        return src && typeof src === 'object' && 'v' in src && 'fr' in src;
+        if (!src) return false;
+        
+        // Helper to check if an object looks like Lottie
+        const check = (obj) => {
+            if (!obj || typeof obj !== 'object') return false;
+            // Lottie files must have 'v' (version), 'fr' (frame rate) and 'layers'
+            const hasLottieProps = ('v' in obj || obj.v) && ('fr' in obj || obj.fr);
+            return !!hasLottieProps;
+        };
+
+        if (check(src)) return true;
+        if (src.default && check(src.default)) return true; // Handle potential wrapped imports
+        
+        // Try parsing if it's a string that looks like JSON
+        if (typeof src === 'string' && src.trim().startsWith('{')) {
+            try {
+                const parsed = JSON.parse(src);
+                return check(parsed);
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        return false;
     }, [src]);
 
     useEffect(() => {
@@ -27,12 +50,24 @@ const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
             }
 
             try {
+                // Se for string JSON (de um fetch por exemplo)
+                let animData = typeof src === 'string' && src.trim().startsWith('{') 
+                    ? JSON.parse(src) 
+                    : src;
+
+                // Se vier do Vite como módulo (tem .default ou exports diretos)
+                if (animData && typeof animData === 'object') {
+                    if (animData.default && (animData.default.v || 'v' in animData.default)) {
+                        animData = animData.default;
+                    }
+                }
+                
                 animRef.current = lottie.loadAnimation({
                     container: containerRef.current,
                     renderer: 'svg',
                     loop: loop,
                     autoplay: true,
-                    animationData: JSON.parse(JSON.stringify(src)), // Clone to ensure stability
+                    animationData: animData, // Removido o clone que quebrava objetos de módulo
                 });
             } catch (err) {
                 console.error("Lottie error:", err);
@@ -47,14 +82,6 @@ const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
         }
     }, [isLottie, src, loop]);
 
-    // Filter out old internal paths that Vite won't resolve directly in dev mode
-    const processedSrc = useMemo(() => {
-        if (typeof src === 'string' && src.includes('/image/avatar/') && src.endsWith('.png')) {
-            return null; // Fallback for broken dev paths
-        }
-        return src;
-    }, [src]);
-
     if (isLottie) {
         return (
             <div 
@@ -66,11 +93,14 @@ const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
     }
 
     // Fallback to regular image
+    const isString = typeof src === 'string' && src.length > 0;
+    const backgroundStyle = isString ? { backgroundImage: `url("${src}")` } : {};
+
     return (
         <div 
             className={`bg-center bg-no-repeat bg-cover ${className}`}
             style={{ 
-                backgroundImage: processedSrc ? `url("${processedSrc}")` : 'none',
+                ...backgroundStyle,
                 ...style 
             }}
         />
