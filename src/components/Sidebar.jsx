@@ -9,6 +9,7 @@ const menuItems = [
     { id: 'schedule', icon: 'schedule', label: 'Plantão' },
     { id: 'offices', icon: 'apartment', label: 'Escritórios' },
     { id: 'processes', icon: 'description', label: 'Processos' },
+    { id: 'tickets', icon: 'confirmation_number', label: 'Meus Chamados' },
 ]
 
 // Sidebar: menu de navegação lateral (visível apenas em lg+)

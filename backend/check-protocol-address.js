@@ -34,7 +34,12 @@ async function test() {
             protocolo: r.protocolo,
             origem_endereco: r.origem_endereco,
             endereco: r.endereco,
-            titulo: r.titulo
+            titulo: r.titulo,
+            id_assunto: r.id_assunto,
+            id_ticket_setor: r.id_ticket_setor,
+            id_cliente: r.id_cliente,
+            tipo: r.tipo,
+            id_login: r.id_login
         }))
         console.log('Tickets Recentes (Protocolo e Endereço):', JSON.stringify(summary, null, 2))
     } catch (e) {

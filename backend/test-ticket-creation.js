@@ -46,6 +46,12 @@ async function test() {
         const resultado = await resposta.json()
         console.log('Sucesso! Resposta do IXC:')
         console.log(JSON.stringify(resultado, null, 2))
+        
+        if (resultado.protocolo) {
+            console.log('PROTOCOLO GERADO:', resultado.protocolo)
+        } else {
+            console.log('AVISO: PROTOCOLO VEIO EM BRANCO!')
+        }
     } catch (e) {
         console.error('Erro durante o teste:', e)
     }

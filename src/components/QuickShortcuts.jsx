@@ -38,12 +38,16 @@ export default function QuickShortcuts({ setCurrentView, user }) {
             const data = await res.json();
 
             if (data.sucesso) {
-                setFeedback({ type: 'success', text: 'Chamado aberto com sucesso no IXC!' });
+                const protocoloMsg = data.protocolo ? ` Protocolo: ${data.protocolo}` : '';
+                setFeedback({ 
+                    type: 'success', 
+                    text: `Chamado aberto com sucesso no IXC!${protocoloMsg}` 
+                });
                 setMensagem('');
                 setTimeout(() => {
                     setIsModalOpen(false);
                     setFeedback(null);
-                }, 3000);
+                }, 6000); // 6 segundos para dar tempo de ler o protocolo
             } else {
                 setFeedback({ type: 'error', text: data.erro || 'Falha ao abrir chamado.' });
             }

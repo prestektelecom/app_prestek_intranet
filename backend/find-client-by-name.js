@@ -11,9 +11,9 @@ const headers = {
 }
 
 const body = JSON.stringify({
-    qtype: 'cliente.email',
-    query: 'suporte@prestek.net.br', // Just a placeholder, I'll try to find a real one from the tech
-    oper: '=',
+    qtype: 'cliente.razao',
+    query: 'Marcio Felix',
+    oper: 'L',
     page: '1',
     rp: '10'
 })

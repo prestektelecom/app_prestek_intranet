@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
 const host = process.env.IXC_HOST
-const url = `https://${host}/webservice/v1/cliente`
+const url = `https://${host}/webservice/v1/su_oss_chamado`
 
 const headers = {
     'Content-Type': 'application/json',
@@ -11,18 +11,18 @@ const headers = {
 }
 
 const body = JSON.stringify({
-    qtype: 'cliente.email',
-    query: 'suporte@prestek.net.br', // Just a placeholder, I'll try to find a real one from the tech
+    qtype: 'su_oss_chamado.protocolo',
+    query: '2026031486695',
     oper: '=',
     page: '1',
-    rp: '10'
+    rp: '1'
 })
 
 async function test() {
     try {
         const resposta = await fetch(url, { method: 'POST', headers, body })
         const dados = await resposta.json()
-        console.log(JSON.stringify(dados, null, 2))
+        console.log(JSON.stringify(dados.registros || dados, null, 2))
     } catch (e) {
         console.error(e)
     }

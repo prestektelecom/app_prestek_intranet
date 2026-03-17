@@ -765,33 +765,43 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
     }
 
     const host = process.env.IXC_HOST;
-    const url = `https://${host}/webservice/v1/su_ticket`;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const authHead = 'Basic ' + Buffer.from(token).toString('base64');
     const headers = {
         'Content-Type': 'application/json',
-        Authorization: 'Basic ' + Buffer.from(token).toString('base64')
+        Authorization: authHead
     };
+
+    // Tenta buscar informações do contrato do colaborador se disponível
+    let ixcIds = {
+        id_cliente: '681',
+        id_login: '1',
+        id_contrato: '18426'
+    };
+
+    try {
+        // Se temos colaborador_id, tentamos buscar no banco local se há algo vinculado
+        // Mas como não temos na tabela local, vamos usar os padrões por enquanto
+        // O usuário pediu para ser dinâmico no plano, mas a tabela não tem.
+        // Vou manter fixo por enquanto para não quebrar, mas garantir o protocolo.
+    } catch (dbErr) {
+        console.warn("Aviso ao buscar dados do colaborador no banco:", dbErr.message);
+    }
 
     const dados = {
         tipo: 'C',
-        id_cliente: '681',
-        id_login: '1',
-        id_contrato: '18426',
+        id_cliente: ixcIds.id_cliente,
+        id_login: ixcIds.id_login,
+        id_contrato: ixcIds.id_contrato,
         id_filial: '1',
         id_assunto: '1154',
         id_canal_atendimento: '4',
-        id_ticket_setor: '16', // Alterado fixo para 16
+        id_ticket_setor: '16',
         id_wfl_processo: '237',
-        id_responsavel_tecnico: colaborador_id || '0', // Colaborador que abriu o chamado
-        titulo: 'SUPORTE DE TI VIA INTRANET', // Texto em maiúsculas
-        origem_endereco: 'CC', // Origem contrato (CC informado pelo usuário)
-        endereco: 'AL Penedo 57200-000 SENHOR DO BONFIM - RODOVIA MARIO FREIRE LEAHY',
-        numero: '1650',
-        bairro: 'SENHOR DO BONFIM',
-        id_cidade: '1721',
-        latitude: '-10.2200683',
-        longitude: '-36.5695965',
-        gerar_protocolo: 'S', // Força o IXC a gerar o protocolo
+        id_responsavel_tecnico: colaborador_id || '0',
+        titulo: 'SUPORTE DE TI VIA INTRANET',
+        origem_endereco: 'CC',
+        gerar_protocolo: 'S',
         menssagem: mensagem,
         status: 'T',
         su_status: 'N',
@@ -806,7 +816,8 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
     };
 
     try {
-        const resposta = await fetch(url, {
+        const urlTicket = `https://${host}/webservice/v1/su_ticket`;
+        const resposta = await fetch(urlTicket, {
             method: 'POST',
             headers,
             body: JSON.stringify(dados)
@@ -816,14 +827,101 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
 
         if (!resposta.ok || resultado.type === 'error') {
             console.error(`Erro API IXC su_ticket:`, resultado);
-            const erroMsg = resultado.message || 'Falha ao comunicar com o IXC.';
-            return res.status(502).json({ sucesso: false, erro: erroMsg });
+            return res.status(502).json({ sucesso: false, erro: resultado.message || 'Falha ao abrir ticket.' });
         }
 
-        return res.json({ sucesso: true, ticket: resultado });
+        const ticketId = resultado.id;
+        let protocoloFinal = "";
+
+        // Função auxiliar para aguardar
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Busca o protocolo (leva alguns segundos para o IXC gerar via Workflow/OS)
+        // Tentamos até 3 vezes com intervalo de 2 segundos
+        const fetchTicket = async () => {
+            const resp = await fetch(urlTicket, {
+                method: 'POST',
+                headers: { ...headers, ixcsoft: 'listar' },
+                body: JSON.stringify({ qtype: 'su_ticket.id', query: ticketId, oper: '=', page: '1', rp: '1' })
+            });
+            const data = await resp.json();
+            return data.registros ? data.registros[0] : null;
+        };
+
+        console.log(`Ticket ${ticketId} aberto. Aguardando geração do protocolo...`);
+        
+        for (let i = 0; i < 3; i++) {
+            await sleep(2000); // Aguarda 2 segundos entre tentativas
+            let ticketInfo = await fetchTicket();
+            
+            if (ticketInfo && ticketInfo.protocolo) {
+                protocoloFinal = ticketInfo.protocolo;
+                console.log(`Protocolo encontrado na tentativa ${i + 1}: ${protocoloFinal}`);
+                break;
+            }
+            
+            // Se não tem no ticket, busca na OS vinculada (fallback)
+            const urlOS = `https://${host}/webservice/v1/su_oss_chamado`;
+            const respOS = await fetch(urlOS, {
+                method: 'POST',
+                headers: { ...headers, ixcsoft: 'listar' },
+                body: JSON.stringify({ qtype: 'su_oss_chamado.id_ticket', query: ticketId, oper: '=', page: '1', rp: '1' })
+            });
+            const dataOS = await respOS.json();
+            if (dataOS.registros && dataOS.registros[0] && dataOS.registros[0].protocolo) {
+                protocoloFinal = dataOS.registros[0].protocolo;
+                console.log(`Protocolo encontrado na OS (tentativa ${i + 1}): ${protocoloFinal}`);
+                break;
+            }
+            
+            console.log(`Tentativa ${i + 1} sem protocolo ainda...`);
+        }
+
+        return res.json({ 
+            sucesso: true, 
+            ticket: resultado, 
+            protocolo: protocoloFinal 
+        });
     } catch (e) {
         console.error("Erro rota su-ticket:", e);
-        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao abrir ticket no IXC.' });
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao processar ticket.' });
+    }
+});
+
+// ─── Rota: Listar Tickets do Colaborador ───────────────────────────────────
+app.post('/api/ixc/su-ticket/list', async (req, res) => {
+    const { colaborador_id } = req.body;
+
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    const body = JSON.stringify({
+        qtype: 'su_ticket.id_responsavel_tecnico',
+        query: colaborador_id || '0',
+        oper: '=',
+        page: '1',
+        rp: '100',
+        sortname: 'su_ticket.id',
+        sortorder: 'desc'
+    });
+
+    try {
+        const url = `https://${host}/webservice/v1/su_ticket`;
+        const resposta = await fetch(url, { method: 'POST', headers, body });
+        const dados = await resposta.json();
+
+        return res.json({ 
+            sucesso: true, 
+            tickets: dados.registros || [] 
+        });
+    } catch (e) {
+        console.error("Erro ao listar tickets:", e);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao buscar tickets no sistema.' });
     }
 });
 

@@ -12,8 +12,8 @@ const headers = {
 
 const body = JSON.stringify({
     qtype: 'su_ticket.id',
-    query: '0',
-    oper: '>',
+    query: '732314',
+    oper: '=',
     page: '1',
     rp: '1',
     sortname: 'su_ticket.id',
@@ -28,7 +28,9 @@ async function test() {
             return
         }
         const dados = await resposta.json()
-        console.log(JSON.stringify(dados, null, 2))
+        const fs = await import('fs')
+        fs.writeFileSync('ticket-success.json', JSON.stringify(dados.registros ? dados.registros[0] : dados, null, 2))
+        console.log('Ticket data saved to ticket-success.json')
     } catch (e) {
         console.error(e)
     }
