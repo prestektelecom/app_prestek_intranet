@@ -1,0 +1,25 @@
+[2026-03-18T01:29:49.409Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-03-18T01:29:49.944Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"733157","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"e5a1562e5c6b6ed9a6860019d746f3af2daf585d"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-17 22:29:51"}]}
+[2026-03-18T01:29:52.955Z] buscando ticket 733157...
+[2026-03-18T01:29:53.121Z] Buscando OS vinculada ao ticket 733157 [TENTATIVA 1]
+[2026-03-18T01:29:53.411Z] ENCONTROU OS! ID: 1711400. Protocolo OS: 2026031489444
+[2026-03-18T01:29:53.412Z] Atualizando OS 1711400 para o técnico 59570
+[2026-03-18T01:29:53.583Z] Erro interno do IXC ao atualizar OS: {"type":"error","message":"<p>Oops! O colaborador selecionado não está vinculado ao setor dessa O.S. Altere o cadastro do mesmo e refaça o agendamento!</p>  <a class=\"notificacao__hyperlink\" style=\"color: #0c76d7 !important;\" href=\"https://wiki.ixcsoft.com.br/pt-br/Folha_de_Pagamento/Colaboradores\">Clique para saber mais!</a>","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-17 22:29:55"}]}
+[2026-03-18T01:29:53.584Z] FIM. Retornando protocolo 2026031489444
+[2026-03-18T01:37:30.309Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-03-18T01:37:30.754Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"733158","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"0c94aabf47c1a11dc676393f080b9589aa4d4b80"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-17 22:37:32"}]}
+[2026-03-18T01:37:33.767Z] buscando ticket 733158...
+[2026-03-18T01:37:33.911Z] Buscando OS vinculada ao ticket 733158 [TENTATIVA 1]
+[2026-03-18T01:37:34.185Z] ENCONTROU OS! ID: 1711406. Protocolo OS: 2026031489450
+[2026-03-18T01:37:34.187Z] Atualizando OS 1711406 para o técnico 59570
+[2026-03-18T01:37:34.331Z] Erro interno do IXC ao atualizar OS: {"type":"error","message":"<p>Oops! O colaborador selecionado não está vinculado ao setor dessa O.S. Altere o cadastro do mesmo e refaça o agendamento!</p>  <a class=\"notificacao__hyperlink\" style=\"color: #0c76d7 !important;\" href=\"https://wiki.ixcsoft.com.br/pt-br/Folha_de_Pagamento/Colaboradores\">Clique para saber mais!</a>","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-17 22:37:35"}]}
+[2026-03-18T01:37:34.332Z] FIM. Retornando protocolo 2026031489450
+[2026-03-18T01:42:59.009Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-03-18T01:42:59.490Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-03-18T01:42:59.995Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"733159","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"7757ebd5f3959906f5c8bc1c97ebe27ec159fa6c"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-17 22:43:01"}]}
+[2026-03-18T01:43:03.001Z] buscando ticket 733159...
+[2026-03-18T01:43:03.178Z] Buscando OS vinculada ao ticket 733159 [TENTATIVA 1]
+[2026-03-18T01:43:03.474Z] ENCONTROU OS! ID: 1711407. Protocolo OS: 2026031489451
+[2026-03-18T01:43:03.476Z] Atualizando OS 1711407 para o técnico 59570
+[2026-03-18T01:43:03.674Z] Técnico 59570 agendado com sucesso na OS 1711407. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1711407","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-17 22:43:05"}]}
+[2026-03-18T01:43:03.675Z] FIM. Retornando protocolo 2026031489451

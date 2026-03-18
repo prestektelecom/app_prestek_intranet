@@ -6,6 +6,7 @@ import express from 'express'
 import cors from 'cors'
 import crypto from 'crypto'
 import pool from './db.js'
+import fs from 'fs'
 
 // Cache para OS abertas global
 let cacheOS = {
@@ -758,7 +759,7 @@ app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
 
 // ─── Rota: Abrir Ticket de Suporte no IXC ────────────────────────────────────
 app.post('/api/ixc/su-ticket', async (req, res) => {
-    const { mensagem, colaborador_id } = req.body;
+    const { mensagem, colaborador_id, tecnico_id } = req.body;
 
     if (!mensagem) {
         return res.status(400).json({ sucesso: false, erro: 'A descrição da situação é obrigatória.' });
@@ -798,7 +799,7 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         id_canal_atendimento: '12',
         id_ticket_setor: '16',
         id_wfl_processo: '237',
-        id_responsavel_tecnico: colaborador_id || '0',
+        id_responsavel_tecnico: tecnico_id || colaborador_id || '0',
         titulo: 'SUPORTE DE TI VIA INTRANET',
         origem_endereco: 'CC',
         endereco: 'AL Penedo 57200-000 SENHOR DO BONFIM - RODOVIA MARIO FREIRE LEAHY, 1650',
@@ -824,6 +825,13 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
 
     try {
         const urlTicket = `https://${host}/webservice/v1/su_ticket`;
+        const log = (msg) => {
+            const line = `[${new Date().toISOString()}] ${msg}\n`;
+            console.log(msg);
+            fs.appendFileSync('ixc_debug.log', line);
+        };
+        log(`== INICIANDO ABERTURA TICK: Tecnico ${tecnico_id} ==`);
+
         const resposta = await fetch(urlTicket, {
             method: 'POST',
             headers,
@@ -831,6 +839,7 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         });
 
         const resultado = await resposta.json();
+        log(`Criado Ticket: ` + JSON.stringify(resultado));
 
         if (!resposta.ok || resultado.type === 'error') {
             console.error(`Erro API IXC su_ticket:`, resultado);
@@ -844,8 +853,9 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         // Busca o protocolo (leva alguns segundos para o IXC gerar via Workflow/OS)
-        // Tentamos até 3 vezes com intervalo de 2 segundos
+        // Tentamos até 6 vezes com intervalo de 3 segundos
         const fetchTicket = async () => {
+            log(`buscando ticket ${ticketId}...`);
             const resp = await fetch(urlTicket, {
                 method: 'POST',
                 headers: { ...headers, ixcsoft: 'listar' },
@@ -857,34 +867,92 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
 
         console.log(`Ticket ${ticketId} aberto. Aguardando geração do protocolo...`);
         
-        for (let i = 0; i < 3; i++) {
-            await sleep(2000); // Aguarda 2 segundos entre tentativas
+        let osIdFinal = null;
+        let osRecord = null;
+
+        for (let i = 0; i < 6; i++) {
+            await sleep(3000); // Aguarda 3 segundos entre tentativas (até 18s no total)
             let ticketInfo = await fetchTicket();
             
             if (ticketInfo && ticketInfo.protocolo) {
                 protocoloFinal = ticketInfo.protocolo;
-                console.log(`Protocolo encontrado na tentativa ${i + 1}: ${protocoloFinal}`);
-                break;
+                log(`Protocolo encontrado na tentativa ${i + 1}: ${protocoloFinal}`);
             }
             
-            // Se não tem no ticket, busca na OS vinculada (fallback)
+            // Busca a OS vinculada sempre, pois precisamos dela para setar o técnico
             const urlOS = `https://${host}/webservice/v1/su_oss_chamado`;
+            log(`Buscando OS vinculada ao ticket ${ticketId} [TENTATIVA ${i+1}]`);
             const respOS = await fetch(urlOS, {
                 method: 'POST',
                 headers: { ...headers, ixcsoft: 'listar' },
                 body: JSON.stringify({ qtype: 'su_oss_chamado.id_ticket', query: ticketId, oper: '=', page: '1', rp: '1' })
             });
             const dataOS = await respOS.json();
-            if (dataOS.registros && dataOS.registros[0] && dataOS.registros[0].protocolo) {
-                protocoloFinal = dataOS.registros[0].protocolo;
-                console.log(`Protocolo encontrado na OS (tentativa ${i + 1}): ${protocoloFinal}`);
-                break;
+            
+            if (dataOS.registros && dataOS.registros[0]) {
+                osRecord = dataOS.registros[0];
+                osIdFinal = osRecord.id;
+                log(`ENCONTROU OS! ID: ${osIdFinal}. Protocolo OS: ${osRecord.protocolo}`);
+                if (!protocoloFinal && osRecord.protocolo) {
+                    protocoloFinal = osRecord.protocolo;
+                }
+                break; // Achamos a OS, podemos sair do loop
             }
             
-            console.log(`Tentativa ${i + 1} sem protocolo ainda...`);
+            log(`Tentativa ${i + 1} sem OS ainda... res: ` + JSON.stringify(dataOS));
         }
 
-        return res.json({ 
+        // Se encontrou a OS e escolheu um técnico, força a atualização da OS
+        // IXC requer que enviemos os dados completos da OS de volta no PUT
+        if (osIdFinal && osRecord && tecnico_id) {
+            log(`Atualizando OS ${osIdFinal} para o técnico ${tecnico_id}`);
+            const updateOsUrl = `https://${host}/webservice/v1/su_oss_chamado/${osIdFinal}`;
+            
+            // Formatando datas para o padrao do IXC (YYYY-MM-DD HH:MM:SS)
+            const agora = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const data_agenda = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())} ${pad(agora.getHours())}:${pad(agora.getMinutes())}:00`;
+            const data_agenda_final = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())} 23:59:59`;
+
+            // Mesclamos o payload original da OS, sobrescrevendo só os campos necessários
+            const updateOsBody = JSON.stringify({
+                ...osRecord,
+                id_tecnico: tecnico_id,
+                data_agenda: data_agenda,
+                data_agenda_final: data_agenda_final,
+                status: 'AG', // Força para status Agendado
+                mensagem_resposta: 'Agendado automaticamente via Intranet'
+            });
+            
+            try {
+                const headersPut = {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Basic ' + Buffer.from(token).toString('base64')
+                };
+                const resUpdateOs = await fetch(updateOsUrl, {
+                    method: 'PUT',
+                    headers: headersPut,
+                    body: updateOsBody
+                });
+                if (!resUpdateOs.ok) {
+                    console.error("Falha requisição PUT atualizar técnico OS:", await resUpdateOs.text());
+                } else {
+                    const putResult = await resUpdateOs.json();
+                    if (putResult.type === 'error') {
+                         log("Erro interno do IXC ao atualizar OS: " + JSON.stringify(putResult));
+                    } else {
+                         log(`Técnico ${tecnico_id} agendado com sucesso na OS ${osIdFinal}. Resposta: ` + JSON.stringify(putResult));
+                    }
+                }
+            } catch (errUpdateOs) {
+                log("Erro no TRY CATCH ao fazer PUT na OS: " + errUpdateOs.message);
+            }
+        } else {
+            log(`Não atualizou a OS. osIdFinal: ${osIdFinal}, tecnicoId: ${tecnico_id}`);
+        }
+
+        log(`FIM. Retornando protocolo ${protocoloFinal}`);
+        return res.json({  
             sucesso: true, 
             ticket: resultado, 
             protocolo: protocoloFinal 

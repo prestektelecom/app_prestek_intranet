@@ -8,6 +8,7 @@ export default function QuickShortcuts({ setCurrentView, user }) {
     const [feedback, setFeedback] = useState(null);
     const [isSuccess, setIsSuccess] = useState(false);
     const [protocoloData, setProtocoloData] = useState(null);
+    const [tecnicoId, setTecnicoId] = useState('59570'); // Default para Márcio
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -43,7 +44,8 @@ export default function QuickShortcuts({ setCurrentView, user }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     mensagem,
-                    colaborador_id 
+                    colaborador_id,
+                    tecnico_id: tecnicoId || null
                 })
             });
 
@@ -129,12 +131,11 @@ export default function QuickShortcuts({ setCurrentView, user }) {
                                         </p>
                                     </div>
         
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">
-                                        Qual problema ou situação está enfrentando?
-                                    </p>
-
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Qual problema ou situação está enfrentando?
+                                    </label>
                                     <textarea
                                         value={mensagem}
                                         onChange={(e) => setMensagem(e.target.value)}
@@ -142,6 +143,20 @@ export default function QuickShortcuts({ setCurrentView, user }) {
                                         className="w-full h-32 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none dark:text-white"
                                         required
                                     />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Agendar para qual técnico?
+                                    </label>
+                                    <select
+                                        value={tecnicoId}
+                                        onChange={(e) => setTecnicoId(e.target.value)}
+                                        className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all dark:text-white"
+                                    >
+                                        <option value="59570">Márcio Eduardo Felix</option>
+                                        <option value="59655">Kariny Alpiano Lima</option>
+                                    </select>
                                 </div>
 
                                 {feedback && (
