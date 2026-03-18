@@ -12,7 +12,7 @@ const headers = {
 
 const body = JSON.stringify({
     qtype: 'su_ticket.id',
-    query: '732314',
+    query: '732982',
     oper: '=',
     page: '1',
     rp: '1',
@@ -29,7 +29,12 @@ async function test() {
         }
         const dados = await resposta.json()
         const fs = await import('fs')
-        fs.writeFileSync('ticket-success.json', JSON.stringify(dados.registros ? dados.registros[0] : dados, null, 2))
+        if (dados.registros && dados.registros[0]) {
+            console.log('Keys:', Object.keys(dados.registros[0]))
+            fs.writeFileSync('ticket-success.json', JSON.stringify(dados.registros[0], null, 2))
+        } else {
+            console.log(dados)
+        }
         console.log('Ticket data saved to ticket-success.json')
     } catch (e) {
         console.error(e)

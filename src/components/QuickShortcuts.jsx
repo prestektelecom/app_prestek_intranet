@@ -6,6 +6,18 @@ export default function QuickShortcuts({ setCurrentView, user }) {
     const [mensagem, setMensagem] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [feedback, setFeedback] = useState(null);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [protocoloData, setProtocoloData] = useState(null);
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setTimeout(() => {
+            setIsSuccess(false);
+            setProtocoloData(null);
+            setFeedback(null);
+            setMensagem('');
+        }, 300);
+    };
 
     // Atalhos rápidos disponíveis no dashboard
     const shortcuts = [
@@ -38,16 +50,9 @@ export default function QuickShortcuts({ setCurrentView, user }) {
             const data = await res.json();
 
             if (data.sucesso) {
-                const protocoloMsg = data.protocolo ? ` Protocolo: ${data.protocolo}` : '';
-                setFeedback({ 
-                    type: 'success', 
-                    text: `Chamado aberto com sucesso no IXC!${protocoloMsg}` 
-                });
+                setProtocoloData(data.protocolo);
+                setIsSuccess(true);
                 setMensagem('');
-                setTimeout(() => {
-                    setIsModalOpen(false);
-                    setFeedback(null);
-                }, 6000); // 6 segundos para dar tempo de ler o protocolo
             } else {
                 setFeedback({ type: 'error', text: data.erro || 'Falha ao abrir chamado.' });
             }
@@ -86,16 +91,47 @@ export default function QuickShortcuts({ setCurrentView, user }) {
                                     Suporte de TI
                                 </h3>
                                 <button
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={handleCloseModal}
                                     className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                                 >
                                     <span className="material-symbols-outlined">close</span>
                                 </button>
                             </div>
 
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                Descreva abaixo a situação ou o problema que você está enfrentando.
-                            </p>
+                            {isSuccess ? (
+                                <div className="text-center py-6 animate-in fade-in zoom-in-95 duration-300">
+                                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="material-symbols-outlined text-4xl">check_circle</span>
+                                    </div>
+                                    <h4 className="text-xl font-bold text-[#1d150c] dark:text-white mb-2">Chamado Aberto!</h4>
+                                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                                        Seu chamado foi encaminhado com sucesso para o setor de T.I. A equipe será notificada e em breve entrará em contato.
+                                    </p>
+                                    {protocoloData && (
+                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Número do Protocolo</p>
+                                            <p className="font-mono text-lg font-bold text-primary">{protocoloData}</p>
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={handleCloseModal}
+                                        className="w-full py-3 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold transition-all shadow-md hover:shadow-lg"
+                                    >
+                                        Entendi, fechar
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-3 mb-5 flex gap-3 text-blue-800 dark:text-blue-300">
+                                        <span className="material-symbols-outlined text-xl shrink-0 mt-0.5">info</span>
+                                        <p className="text-xs leading-relaxed">
+                                            Ao preencher e confirmar abaixo, será aberto um chamado oficial para o <strong>Setor de T.I.</strong> Nossa equipe receberá sua solicitação imediatamente.
+                                        </p>
+                                    </div>
+        
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">
+                                        Qual problema ou situação está enfrentando?
+                                    </p>
 
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
@@ -120,7 +156,7 @@ export default function QuickShortcuts({ setCurrentView, user }) {
                                 <div className="flex gap-3 pt-2">
                                     <button
                                         type="button"
-                                        onClick={() => setIsModalOpen(false)}
+                                        onClick={handleCloseModal}
                                         className="flex-1 py-2 px-4 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                                     >
                                         Cancelar
@@ -128,16 +164,21 @@ export default function QuickShortcuts({ setCurrentView, user }) {
                                     <button
                                         type="submit"
                                         disabled={isLoading || !mensagem.trim()}
-                                        className="flex-1 py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {isLoading ? (
                                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                         ) : (
-                                            'Abrir Chamado'
+                                            <>
+                                                <span className="material-symbols-outlined text-sm">send</span>
+                                                Confirmar e Abrir
+                                            </>
                                         )}
                                     </button>
                                 </div>
                             </form>
+                            </>
+                            )}
                         </div>
                     </div>
                 </div>

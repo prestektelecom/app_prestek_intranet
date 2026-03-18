@@ -10,11 +10,11 @@ const headers = {
     ixcsoft: 'listar'
 }
 
-// Busca o último ticket criado (provavelmente o do teste do usuário)
+// Busca tickets com o título "SUPORTE DE TI VIA INTRANET"
 const body = JSON.stringify({
-    qtype: 'su_ticket.id',
-    query: '0',
-    oper: '>',
+    qtype: 'su_ticket.titulo',
+    query: 'SUPORTE DE TI VIA INTRANET',
+    oper: 'LIKE',
     page: '1',
     rp: '10',
     sortname: 'su_ticket.id',
