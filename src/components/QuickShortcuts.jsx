@@ -22,8 +22,8 @@ export default function QuickShortcuts({ setCurrentView, user }) {
 
     // Atalhos rápidos disponíveis no dashboard
     const shortcuts = [
-        { icon: 'add_box', label: 'Nova Solicitação', action: () => { } },
-        { icon: 'event', label: 'Reservar Sala', action: () => { } },
+        // { icon: 'add_box', label: 'Nova Solicitação', action: () => { } },
+        { icon: 'event', label: 'Reservar Sala', action: () => window.open('https://wa.me/558299220181?text=Quero%20agenda%20a%20sala%20de%20reuni%C3%A7%C3%A3o', '_blank') },
         { icon: 'support_agent', label: 'Suporte de TI', action: () => setIsModalOpen(true) },
         { icon: 'badge', label: 'Meu Perfil', action: () => setCurrentView('settings') },
     ]
