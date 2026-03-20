@@ -1,0 +1,5 @@
+su_oss_chamado_agenda -> Exception
+su_oss_chamado_agendamento -> Exception
+su_oss_chamado_agendar -> Exception
+su_agenda -> Exception
+su_oss_agenda -> Exception

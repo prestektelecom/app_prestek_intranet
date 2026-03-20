@@ -1,0 +1,11 @@
+{
+  "type": "error",
+  "message": "Preencha Filial<br />Preencha Assunto<br />Preencha Setor<br />Preencha Prioridade<br />Preencha Origem do endereço",
+  "atualiza_campos": [
+    {
+      "tipo": "i",
+      "campo": "ultima_atualizacao",
+      "valor": ""
+    }
+  ]
+}

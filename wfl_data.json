@@ -1,0 +1,66 @@
+{
+  "su_oss_chamado_mensagem": {
+    "page": "1",
+    "total": "3965004",
+    "registros": [
+      {
+        "latitude": "",
+        "longitude": "",
+        "gps_time": "0000-00-00 00:00:00",
+        "gera_comissao": "",
+        "id": "3991133",
+        "id_chamado": "1713252",
+        "status": "AG",
+        "data": "2026-03-18 21:22:19",
+        "id_evento": "16",
+        "mensagem": "Agendado via su_oss_chamado_mensagem (Sistema)",
+        "historico": "Usuário MARCIO EDUARDO FELIX, registrou uma mensagem O.S. ID 1713252 em 18/03/2026 às 21:22:19",
+        "id_tecnico": "59570",
+        "id_equipe": "0",
+        "finaliza_processo": "N",
+        "data_inicio": "0000-00-00 00:00:00",
+        "id_proxima_tarefa": "0",
+        "data_final": "0000-00-00 00:00:00",
+        "id_su_diagnostico": "0",
+        "id_diagnostico_especifico": "0",
+        "tipo_cobranca": "",
+        "id_operador": "222",
+        "id_resposta": "0",
+        "id_evento_status": "0"
+      },
+      {
+        "latitude": "",
+        "longitude": "",
+        "gps_time": "",
+        "gera_comissao": "S",
+        "id": "3991132",
+        "id_chamado": "1713252",
+        "status": "A",
+        "data": "2026-03-18 21:22:14",
+        "id_evento": "1",
+        "mensagem": "Processo: CHAMADO SUPORTE DE T.I (Dev). Tarefa: SOLICITAR ATENDIMENTO AO SETOR DE T.I. \nDescrição OS anterior: Disparando do processo ID: 237\n Mensagem do cliente: Teste de agendamento via su_oss_chamado_mensagem",
+        "historico": "",
+        "id_tecnico": "0",
+        "id_equipe": "",
+        "finaliza_processo": "N",
+        "data_inicio": "",
+        "id_proxima_tarefa": "",
+        "data_final": "",
+        "id_su_diagnostico": "",
+        "id_diagnostico_especifico": "",
+        "tipo_cobranca": "NENHUM",
+        "id_operador": "0",
+        "id_resposta": "",
+        "id_evento_status": ""
+      }
+    ]
+  },
+  "su_mensagem": {
+    "type": "error",
+    "message": "Recurso su_mensagem não está disponível!"
+  },
+  "su_ticket_mensagem": {
+    "type": "error",
+    "message": "Recurso su_ticket_mensagem não está disponível!"
+  }
+}
