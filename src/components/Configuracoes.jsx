@@ -515,7 +515,7 @@ export default function Configuracoes({ user }) {
                                         readOnly name="filial_id" type="text" value={filialName} />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">TELEFONE IP</label>
+                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">Telefone IP / Ramal</label>
                                     <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
                                         name="ramal" type="text" value={displayRamal} onChange={handleInputChange} />
                                 </div>

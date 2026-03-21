@@ -705,27 +705,46 @@ app.get('/api/colaboradores', async (req, res) => {
         const dadosIXC = await respostaVal.json();
         const funcionariosIXC = dadosIXC.registros || [];
 
-        // Busca perfis locais para pegar as fotos atualizadas (Lottie ou Upload)
-        const perfisLocais = await pool.query('SELECT funcionario_id, foto_perfil FROM usuarios_perfil');
-        const mapaFotos = perfisLocais.rows.reduce((acc, curr) => {
+        // 1. Fotos: vem de usuarios_perfil
+        const perfisQuery = await pool.query('SELECT funcionario_id, foto_perfil FROM usuarios_perfil');
+        const mapaFotos = perfisQuery.rows.reduce((acc, curr) => {
             if (curr.funcionario_id) acc[curr.funcionario_id] = curr.foto_perfil;
             return acc;
         }, {});
 
-        // Mescla dados do IXC com fotos locais
-        const colaboradores = funcionariosIXC.map(f => ({
-            usuario_id: null, // IXC não traz o usuario_id direto aqui, mas temos o funcionario_id
-            funcionario_id: f.id,
-            funcionario_nome: f.funcionario,
-            usuario_email: f.email,
-            id_departamento: f.id_departamento,
-            filial_id: f.filial_id,
-            id_funcao: f.id_funcao,
-            fone_celular: f.fone_celular,
-            ramal: f.ramal,
-            foto_perfil: mapaFotos[f.id] || f.foto_perfil || null,
-            ativo: f.ativo
-        }));
+        // 2. Ramais editados pelo usuário em Configurações (usuarios_preferencias)
+        //    A tabela usuarios_preferencias já salva o usuario_email diretamente
+        const ramaisQuery = await pool.query(`
+            SELECT usuario_email, valor AS ramal
+            FROM usuarios_preferencias
+            WHERE chave = 'ramal' AND valor IS NOT NULL AND valor <> '' AND valor <> '0'
+        `);
+        const mapaRamaisPorEmail = ramaisQuery.rows.reduce((acc, curr) => {
+            if (curr.usuario_email) acc[curr.usuario_email.toLowerCase()] = curr.ramal;
+            return acc;
+        }, {});
+
+        // Mescla dados do IXC com dados locais de foto e ramal
+        const colaboradores = funcionariosIXC.map(f => {
+            const fotoLocal = mapaFotos[f.id];
+            const emailKey = (f.email || '').toLowerCase();
+            // Ramal salvo pelo usuário em Configurações (via email como chave de ligação)
+            const ramalLocal = mapaRamaisPorEmail[emailKey];
+            return {
+                usuario_id: null,
+                funcionario_id: f.id,
+                funcionario_nome: f.funcionario,
+                usuario_email: f.email,
+                id_departamento: f.id_departamento,
+                filial_id: f.filial_id,
+                id_funcao: f.id_funcao,
+                fone_celular: f.fone_celular,
+                // Prioridade: preferência salva em Configurações > ramal vindo do IXC
+                ramal: ramalLocal !== undefined ? ramalLocal : (f.ramal || null),
+                foto_perfil: fotoLocal || f.foto_perfil || null,
+                ativo: f.ativo
+            };
+        });
 
         return res.json({ sucesso: true, colaboradores });
     } catch (err) {

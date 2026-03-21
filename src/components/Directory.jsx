@@ -268,7 +268,7 @@ function EmployeeCard({ colab, departamentoNome }) {
                 <div className="w-full space-y-2 mt-auto">
                     <div className="flex items-center gap-2 text-xs text-[#a17745] dark:text-orange-300 bg-[#fcfaf8] dark:bg-[#2c2217] p-2 rounded-lg border border-[#f4eee6] dark:border-gray-800">
                         <span className="material-symbols-outlined text-[16px] shrink-0">call</span>
-                        <span className="font-medium truncate">Ramal: {ramal}</span>
+                        <span className="font-medium truncate">Telefone IP / Ramal: {ramal}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-[#a17745] dark:text-orange-300 bg-[#fcfaf8] dark:bg-[#2c2217] p-2 rounded-lg border border-[#f4eee6] dark:border-gray-800">
                         <span className="material-symbols-outlined text-[16px] shrink-0">mail</span>
