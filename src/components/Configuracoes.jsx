@@ -50,6 +50,7 @@ export default function Configuracoes({ user }) {
     // Listas do IXC
     const [departamentosList, setDepartamentosList] = useState([]);
     const [cargosList, setCargosList] = useState([]);
+    const [deptosEmpresaList, setDeptosEmpresaList] = useState([]);
     const [filiaisList, setFiliaisList] = useState([]);
     const [funcoesList, setFuncoesList] = useState([]);
 
@@ -128,19 +129,20 @@ export default function Configuracoes({ user }) {
     useEffect(() => {
         const fetchListas = async () => {
             try {
-                const [resDept, resCargo, resFilial, resFuncao] = await Promise.all([
+                const [resDept, resCargo, resFilial, resFuncao, resDeptEmp] = await Promise.all([
                     fetch('http://localhost:3001/api/departamentos').catch(() => null),
                     fetch('http://localhost:3001/api/cargos').catch(() => null),
                     fetch('http://localhost:3001/api/filiais').catch(() => null),
-                    fetch('http://localhost:3001/api/funcoes').catch(() => null)
+                    fetch('http://localhost:3001/api/funcoes').catch(() => null),
+                    fetch('http://localhost:3001/api/departamentos-empresa').catch(() => null)
                 ]);
                 if (resDept?.ok) {
                     const data = await resDept.json();
-                    if (data.sucesso) setDepartamentosList(data.departamentos);
+                    if (data.sucesso) setDepartamentosList(data.departamentos || []);
                 }
                 if (resCargo?.ok) {
                     const data = await resCargo.json();
-                    if (data.sucesso) setCargosList(data.cargos);
+                    if (data.sucesso) setCargosList(data.cargos || []);
                 }
                 if (resFilial?.ok) {
                     const data = await resFilial.json();
@@ -150,6 +152,10 @@ export default function Configuracoes({ user }) {
                     const data = await resFuncao.json();
                     if (data.sucesso) setFuncoesList(data.funcoes);
                 }
+                if (resDeptEmp?.ok) {
+                    const data = await resDeptEmp.json();
+                    if (data.sucesso) setDeptosEmpresaList(data.departamentos || []);
+                }
             } catch (err) {
                 console.error("Erro ao buscar listas do IXC", err);
             }
@@ -157,14 +163,38 @@ export default function Configuracoes({ user }) {
         fetchListas();
     }, []);
 
+    // Sanitiza avatar: descarta paths inválidos (formato antigo /src/image/)
+    // que só existiam em dist/assets/ e não funcionam no ambiente de desenvolvimento
+    const sanitizarAvatar = (url) => {
+        if (!url) return null;
+        if (typeof url === 'string' && url.startsWith('/src/image/')) return null;
+        return url;
+    };
+
     // AvatarUrl usa o formData (do banco) ou o default do usuário
     // Padronização: Usuário deseja que o avatar inicial seja o da garota-3d (avatar2)
-    const [avatarUrl, setAvatarUrl] = useState(formData.avatarUrl || user?.funcionario?.foto_perfil || avatar2);
+    const [avatarUrl, setAvatarUrl] = useState(
+        sanitizarAvatar(formData.avatarUrl) || sanitizarAvatar(user?.funcionario?.foto_perfil) || avatar2
+    );
 
     useEffect(() => {
-        const currentAvatar = formData.avatarUrl || user?.funcionario?.foto_perfil || avatar2;
+        const rawAvatar = formData.avatarUrl || user?.funcionario?.foto_perfil;
+        const currentAvatar = sanitizarAvatar(rawAvatar) || avatar2;
+
+        // Se o valor salvo estiver no formato inválido, limpa do localStorage
+        if (rawAvatar && !sanitizarAvatar(rawAvatar)) {
+            const saved = localStorage.getItem(`stitch_profile_${safeId}`);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    delete parsed.avatarUrl;
+                    localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(parsed));
+                } catch (e) { /* ignora erros de parse */ }
+            }
+        }
+
         setAvatarUrl(currentAvatar);
-    }, [formData.avatarUrl, user?.funcionario?.foto_perfil]);
+    }, [formData.avatarUrl, user?.funcionario?.foto_perfil, safeId]);
 
     // Fechar menus ao clicar fora
     useEffect(() => {
@@ -260,8 +290,9 @@ export default function Configuracoes({ user }) {
     const displayFilial = pb.filial_id || func.filial_id || '';
 
     // Mapeamento visual: ID -> Nome
-    // Setor (id_departamento) busca na API empresa_setor (cargosList) e departamentos
-    const deptoName = departamentosList.find(d => String(d.id).trim() === String(displayDepto).trim())?.setor
+    // Setor (id_departamento) busca na API departamento (organizacional), empresa_setor (cargosList) e su_ticket_setor
+    const deptoName = deptosEmpresaList.find(d => String(d.id).trim() === String(displayDepto).trim())?.departamento
+        || departamentosList.find(d => String(d.id).trim() === String(displayDepto).trim())?.setor
         || cargosList.find(c => String(c.id).trim() === String(displayDepto).trim())?.setor
         || displayDepto || 'N/D';
     const filialName = filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.fantasia

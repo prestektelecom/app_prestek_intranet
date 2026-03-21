@@ -22,14 +22,16 @@ export default function Dashboard({ setCurrentView, user }) {
         const fetchCargoESetor = async () => {
             let nomeFinal = safeRole;
             try {
-                // Busca tanto departamentos quanto cargos para encontrar o nome do setor
-                const [resDept, resCargo] = await Promise.all([
+                // Busca departamentos (tickets), cargos (empresa_setor) e departamentos (organizacional)
+                const [resDept, resCargo, resDeptEmp] = await Promise.all([
                     fetch('http://localhost:3001/api/departamentos').catch(() => null),
-                    fetch('http://localhost:3001/api/cargos').catch(() => null)
+                    fetch('http://localhost:3001/api/cargos').catch(() => null),
+                    fetch('http://localhost:3001/api/departamentos-empresa').catch(() => null)
                 ]);
 
                 let departamentos = [];
                 let cargos = [];
+                let deptosEmpresa = [];
 
                 if (resDept?.ok) {
                     const data = await resDept.json();
@@ -39,13 +41,19 @@ export default function Dashboard({ setCurrentView, user }) {
                     const data = await resCargo.json();
                     if (data.sucesso) cargos = data.cargos || [];
                 }
+                if (resDeptEmp?.ok) {
+                    const data = await resDeptEmp.json();
+                    if (data.sucesso) deptosEmpresa = data.departamentos || [];
+                }
 
-                // Tenta achar pelo departamento primeiro (igual ao Configuracoes.jsx)
+                // Tenta achar pelo departamento primeiro (organizacional, ticket ou cargo)
                 let deptoName = 'N/D';
                 if (safeDepto) {
+                    const foundDeptEmp = deptosEmpresa.find(d => String(d.id).trim() === String(safeDepto).trim());
                     const foundDept = departamentos.find(d => String(d.id).trim() === String(safeDepto).trim());
                     const foundCargo = cargos.find(c => String(c.id).trim() === String(safeDepto).trim());
-                    deptoName = foundDept?.setor || foundCargo?.setor || safeDepto;
+                    
+                    deptoName = foundDeptEmp?.departamento || foundDept?.setor || foundCargo?.setor || safeDepto;
                 }
 
                 // Se encontrou o departamento, usa ele; senão, cai para id_funcao

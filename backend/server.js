@@ -364,6 +364,37 @@ app.get('/api/departamentos', async (req, res) => {
     }
 })
 
+// ─── Rota: Listar Departamentos Organizacionais (departamento) ─────────
+app.get('/api/departamentos-empresa', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
+    const host = process.env.IXC_HOST
+    const url = `https://${host}/webservice/v1/departamento`
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    }
+
+    const body = JSON.stringify({
+        qtype: 'id',
+        query: '0',
+        oper: '>',
+        page: '1',
+        rp: '1000',
+        sortname: 'id',
+        sortorder: 'asc'
+    })
+
+    try {
+        const resposta = await fetch(url, { method: 'POST', headers, body })
+        const dados = await resposta.json()
+        return res.json({ sucesso: true, departamentos: dados.registros || [] })
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message })
+    }
+})
+
 // ─── Rota: Listar Cargos/Setores da Empresa (empresa_setor) ─────────────
 app.get('/api/cargos', async (req, res) => {
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
@@ -395,11 +426,12 @@ app.get('/api/cargos', async (req, res) => {
     }
 })
 
-// ─── Rota: Listar Funções Reais (funcionarios_funcao) ─────────────────────
-app.get('/api/funcoes', async (req, res) => {
+// ROTA DE TESTE TEMPORÁRIA
+app.get('/api/test-ixc', async (req, res) => {
+    const { endpoint } = req.query;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
     const host = process.env.IXC_HOST
-    const url = `https://${host}/webservice/v1/funcionarios_funcao`
+    const url = `https://${host}/webservice/v1/${endpoint}`
 
     const headers = {
         'Content-Type': 'application/json',
@@ -408,23 +440,24 @@ app.get('/api/funcoes', async (req, res) => {
     }
 
     const body = JSON.stringify({
-        qtype: 'funcionarios_funcao.id',
+        qtype: 'id',
         query: '0',
         oper: '>',
         page: '1',
-        rp: '1000',
-        sortname: 'funcionarios_funcao.funcao',
-        sortorder: 'asc'
+        rp: '1000'
     })
 
     try {
         const resposta = await fetch(url, { method: 'POST', headers, body })
+        if (!resposta.ok) {
+            return res.status(resposta.status).json({ sucesso: false, erro: `Status ${resposta.status}` });
+        }
         const dados = await resposta.json()
-        return res.json({ sucesso: true, funcoes: dados.registros || [] })
+        return res.json({ sucesso: true, registros: dados.registros || [] })
     } catch (e) {
         return res.status(500).json({ sucesso: false, erro: e.message })
     }
-})
+});
 
 // ─── Rota: Listar Filiais ────────────────────────────────────────────────
 app.get('/api/filiais', async (req, res) => {
