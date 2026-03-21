@@ -673,20 +673,63 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
     }
 });
 
-// ─── Rota: Listar todos os Colaboradores (Diretório) ─────────────────────────
+// ─── Rota: Listar todos os Colaboradores Ativos (Diretório) ──────────────────
 app.get('/api/colaboradores', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const host = process.env.IXC_HOST;
+    const url = `https://${host}/webservice/v1/funcionarios`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    // Busca todos os funcionários ativos do IXC
+    const body = JSON.stringify({
+        qtype: 'funcionarios.ativo',
+        query: 'S',
+        oper: '=',
+        page: '1',
+        rp: '1000', // Busca até 1000 funcionários
+        sortname: 'funcionarios.funcionario',
+        sortorder: 'asc'
+    });
+
     try {
-        const result = await pool.query(`
-            SELECT
-                usuario_id, funcionario_id, funcionario_nome, usuario_email,
-                id_departamento, filial_id, id_funcao, fone_celular, ramal,
-                foto_perfil, ativo
-            FROM usuarios_perfil
-            ORDER BY funcionario_nome ASC
-        `);
-        return res.json({ sucesso: true, colaboradores: result.rows });
+        const respostaVal = await fetch(url, { method: 'POST', headers, body });
+        if (!respostaVal.ok) {
+            throw new Error(`Erro API IXC: ${respostaVal.status}`);
+        }
+
+        const dadosIXC = await respostaVal.json();
+        const funcionariosIXC = dadosIXC.registros || [];
+
+        // Busca perfis locais para pegar as fotos atualizadas (Lottie ou Upload)
+        const perfisLocais = await pool.query('SELECT funcionario_id, foto_perfil FROM usuarios_perfil');
+        const mapaFotos = perfisLocais.rows.reduce((acc, curr) => {
+            if (curr.funcionario_id) acc[curr.funcionario_id] = curr.foto_perfil;
+            return acc;
+        }, {});
+
+        // Mescla dados do IXC com fotos locais
+        const colaboradores = funcionariosIXC.map(f => ({
+            usuario_id: null, // IXC não traz o usuario_id direto aqui, mas temos o funcionario_id
+            funcionario_id: f.id,
+            funcionario_nome: f.funcionario,
+            usuario_email: f.email,
+            id_departamento: f.id_departamento,
+            filial_id: f.filial_id,
+            id_funcao: f.id_funcao,
+            fone_celular: f.fone_celular,
+            ramal: f.ramal,
+            foto_perfil: mapaFotos[f.id] || f.foto_perfil || null,
+            ativo: f.ativo
+        }));
+
+        return res.json({ sucesso: true, colaboradores });
     } catch (err) {
-        console.error('Erro ao buscar colaboradores:', err.message);
+        console.error('Erro ao buscar colaboradores no IXC:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar colaboradores.' });
     }
 });
