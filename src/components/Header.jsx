@@ -11,7 +11,7 @@ export default function Header({ currentView, setCurrentView, user }) {
         { id: 'dashboard', label: 'Dashboard' },
         { id: 'services', label: 'Serviços' },
         { id: 'coverage', label: 'Cobertura' },
-        { id: 'directory', label: 'Diretório' },
+        { id: 'directory', label: 'Colaboradores' },
         { id: 'sectors', label: 'Setores' },
         { id: 'schedule', label: 'Plantão' },
         { id: 'offices', label: 'Escritórios' },
