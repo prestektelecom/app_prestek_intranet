@@ -673,6 +673,24 @@ app.put('/api/funcionario/:usuarioId', async (req, res) => {
     }
 });
 
+// ─── Rota: Listar todos os Colaboradores (Diretório) ─────────────────────────
+app.get('/api/colaboradores', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                usuario_id, funcionario_id, funcionario_nome, usuario_email,
+                id_departamento, filial_id, id_funcao, fone_celular, ramal,
+                foto_perfil, ativo
+            FROM usuarios_perfil
+            ORDER BY funcionario_nome ASC
+        `);
+        return res.json({ sucesso: true, colaboradores: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar colaboradores:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar colaboradores.' });
+    }
+});
+
 app.get('/api/usuario/perfil/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
     try {
