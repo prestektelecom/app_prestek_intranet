@@ -417,7 +417,7 @@ export default function Header({ currentView, setCurrentView, user }) {
                                 {item.id === 'dashboard' ? 'dashboard' :
                                     item.id === 'services' ? 'construction' :
                                         item.id === 'coverage' ? 'verified_user' :
-                                            item.id === 'directory' ? 'menu_book' :
+                                            item.id === 'directory' ? 'groups' :
                                                 item.id === 'sectors' ? 'pie_chart' :
                                                     item.id === 'schedule' ? 'schedule' :
                                                         item.id === 'offices' ? 'apartment' :
