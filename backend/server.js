@@ -804,6 +804,50 @@ app.get('/api/configuracoes/:usuarioId', async (req, res) => {
     }
 });
 
+// ─── Rotas: Presença e Colaboradores Online ──────────────────────────────
+app.post('/api/presenca/:usuarioId', async (req, res) => {
+    const { usuarioId } = req.params;
+    try {
+        await pool.query(
+            'UPDATE usuarios_perfil SET ultima_atividade = NOW() WHERE usuario_id = $1',
+            [usuarioId]
+        );
+        return res.json({ sucesso: true });
+    } catch (err) {
+        console.error('Erro ao atualizar presença:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao atualizar presença' });
+    }
+});
+
+app.get('/api/colaboradores/online', async (req, res) => {
+    try {
+        // Considera online quem teve atividade nos últimos 5 minutos
+        const query = `
+            SELECT 
+                usuario_id, funcionario_id, funcionario_nome, usuario_email, 
+                foto_perfil, id_departamento, ultima_atividade
+            FROM usuarios_perfil
+            WHERE ultima_atividade > NOW() - interval '5 minutes'
+            ORDER BY funcionario_nome ASC;
+        `;
+        const result = await pool.query(query);
+        
+        // Formata para o padrão esperado pelo componente
+        const online = result.rows.map(u => ({
+            id: u.funcionario_id || u.usuario_id,
+            nome: u.funcionario_nome || u.usuario_nome || 'Colaborador',
+            email: u.usuario_email,
+            foto: u.foto_perfil,
+            status: 'online'
+        }));
+
+        return res.json({ sucesso: true, colaboradores: online });
+    } catch (err) {
+        console.error('Erro ao buscar colaboradores online:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao buscar colaboradores online' });
+    }
+});
+
 app.post('/api/configuracoes/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
     const { email, chave, valor } = req.body;

@@ -1,13 +1,46 @@
-// Fotos dos membros da equipe disponíveis
-const teamMembers = [
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBaPvCdZv_g_lQUo-xLq4u3u1G_jQRVKyJ8VhVVzNvbpcJOJL9Z6GPnxycxIvcuGhuhJ3gvMH2v9ZQXluRgryCJlFlPn_3VF22zZmO_CBQG2AvzK3e3EPIt1NIKECpP963-lAGHS4fxHQbF-g2iV2FujvZPTf6GiFAJhxjtwYsSBwpJQ9EojNo06PH9MZ8GB0rhleEYdtvMW9xm2iVgh587x6wC6U_5884_588a_czli5Dwl0Rv3TkcxpL6INgBG65h4eDGbWFdENs',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuC_ej9Q2Q8UZ-DcH7DkE2aRpZiQ7xEVO3LLJoPfm7NVz4tBB0B3HivKvjHg7mtBUmM3Jc8DEqKjL5vWVBaQFd0LqVF7jYYmrkO_Y6DZfFuRrFSGkZ4hoytluhsapJlbxdz9lcXCQJAlxjGJhEtGdfLKPvjsqL_L35WVvfOV3h8wvKc60w3lnkQGBCygXyHgWafyoEQF9BoBA9Q_YXI2uPnAsOrMIUtDVPCww3vsRCk0aBctK4qMVd_ZW6XC7h17ovqLRWPGhw7B-Iw',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuC4KmfyZ1CoAmFBCAQFdIm4yPnFFpDTzGALIdgJFhrPriYQBUgpMR85E9g4ljdH0Lw1LJxKEWS6hGcWITVR3lxsIsbG6agcsvgMs0jFZo3A3RWCUXAgTeUL4rzrsXs3YuOlGb-7dNLL_PQpBcXdP2VtV_i9is6poSZ_kpBpXUb0Qq73ED057xDhNnQF3iDBxlr7UVcn6_ya1_jYmNUdNzI6ocM4Ty-0mlqv4DfjQp4uwBcrD4xsGpClJHJy4OZIqlFQv46QzEDd1cs',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDomNrBy2ylRTZpIjHrERpkRJ8jezcTUBx8-YpL-0Qin4Jn2T-_OVjKswI60-eTjycrK6mfBUEMswrxqhvpzzITbAz0VlBhDt2ybb9WqrCtehpo6gKWJD-Tnx_adOQwC3RH6kbfz_WQhVR_1c7pXpQKUVNSNAMCrMCtpxENIqpydgOKswtltMETjUqUgq9N2xylqQ_ebPJDZw4d64w0sPhVxBGef_rEOqLrA5TdrDJk3ODpTONebQYHXkronfJXmue6j5xHQaCbe3A',
-]
+import { useState, useEffect } from 'react';
 
 // Widget de disponibilidade da equipe com fotos empilhadas
 export default function TeamAvailability() {
+    const [onlineMembers, setOnlineMembers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOnline = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/colaboradores/online');
+                const data = await response.json();
+                if (data.sucesso) {
+                    setOnlineMembers(data.colaboradores || []);
+                }
+            } catch (err) {
+                console.error('Erro ao buscar colaboradores online:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOnline();
+        // Atualiza a cada 1 minuto para manter a lista fresca
+        const interval = setInterval(fetchOnline, 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Limita a exibição a 4 avatares
+    const displayedMembers = onlineMembers.slice(0, 4);
+    const extraCount = Math.max(0, onlineMembers.length - 4);
+
+    if (loading && onlineMembers.length === 0) {
+        return (
+            <div className="mt-6 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-lg p-5 shadow-sm animate-pulse">
+                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded mb-4"></div>
+                <div className="flex -space-x-2 mb-3">
+                    {[1, 2, 3].map(i => <div key={i} className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-800 ring-2 ring-white dark:ring-[#1a130b]"></div>)}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="mt-6 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-lg p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
@@ -16,25 +49,39 @@ export default function TeamAvailability() {
             </div>
 
             {/* Fotos empilhadas */}
-            <div className="flex -space-x-2 overflow-hidden mb-3">
-                {teamMembers.map((src, idx) => (
-                    <img
-                        key={idx}
-                        alt="Membro da equipe"
-                        className="inline-block h-8 w-8 rounded-full ring-2 ring-white"
-                        src={src}
-                    />
+            <div className="flex -space-x-2 mb-3">
+                {displayedMembers.map((member, idx) => (
+                    <div key={member.id || idx} className="relative inline-block" title={member.nome}>
+                        <img
+                            alt={member.nome}
+                            className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a130b] object-cover bg-gray-100 dark:bg-gray-800"
+                            src={member.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.nome)}&background=random`}
+                            onError={(e) => {
+                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.nome)}&background=random`;
+                            }}
+                        />
+                        <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-[#1a130b] bg-green-500"></span>
+                    </div>
                 ))}
-                <div className="flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs font-bold text-gray-500">
-                    +4
-                </div>
+                
+                {extraCount > 0 && (
+                    <div className="relative inline-block">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a130b] bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-500 dark:text-gray-400">
+                            +{extraCount}
+                        </div>
+                    </div>
+                )}
+
+                {onlineMembers.length === 0 && !loading && (
+                    <span className="text-xs text-gray-400 italic">Ninguém online no momento</span>
+                )}
             </div>
 
             {/* Status online */}
             <div className="flex items-center gap-2 text-xs text-[#635c55] dark:text-gray-300">
-                <span className="size-2 rounded-full bg-green-500"></span>
-                8 Online agora
+                <span className={`size-2 rounded-full ${onlineMembers.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                {onlineMembers.length} {onlineMembers.length === 1 ? 'Online agora' : 'Online agora'}
             </div>
         </div>
-    )
+    );
 }

@@ -15,6 +15,7 @@ import AdminDashboard from './components/AdminDashboard'
 import TicketsList from './components/TicketsList'
 import NotFound from './components/NotFound'
 import { useTheme } from './hooks/useTheme'
+import { usePresence } from './hooks/usePresence'
 
 export default function App() {
     const [user, setUser] = useState(() => {
@@ -67,6 +68,7 @@ export default function App() {
     }, [currentView])
 
     useTheme() // Initialize theme globally
+    usePresence(user) // Rastreia atividade do usuário logado
 
     // Simulador de is admin status, permitindo apenas mostrar interface de admin se selecionado
     // Tela de login — renderizada isoladamente sem Header/Sidebar
