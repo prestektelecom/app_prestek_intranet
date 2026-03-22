@@ -105,7 +105,7 @@ export default function App() {
                 {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
                 {currentView === 'services' && <ServicesDirectory />}
                 {currentView === 'coverage' && <Coverage />}
-                {currentView === 'directory' && <Directory />}
+                {currentView === 'directory' && <Directory user={user} />}
                 {currentView === 'sectors' && <Sectors />}
                 {currentView === 'schedule' && <Schedule />}
                 {currentView === 'processes' && <Processos />}

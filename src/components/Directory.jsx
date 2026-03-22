@@ -4,7 +4,8 @@ import LottieAvatar from './common/LottieAvatar';
 // Quantidade de colaboradores por página
 const POR_PAGINA = 8;
 
-export default function Directory() {
+export default function Directory({ user }) {
+    const isAdmin = user?.is_admin;
     const [colaboradores, setColaboradores] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
     const [cargos, setCargos] = useState([]);
@@ -19,7 +20,7 @@ export default function Directory() {
         const carregar = async () => {
             try {
                 const [resColab, resDept, resCargo, resDeptTicket] = await Promise.all([
-                    fetch('http://localhost:3001/api/colaboradores').catch(() => null),
+                    fetch(`http://localhost:3001/api/colaboradores${isAdmin ? '?all=true' : ''}`).catch(() => null),
                     fetch('http://localhost:3001/api/departamentos-empresa').catch(() => null),
                     fetch('http://localhost:3001/api/cargos').catch(() => null),
                     fetch('http://localhost:3001/api/departamentos').catch(() => null)
@@ -70,9 +71,9 @@ export default function Directory() {
     const departamentosUnicos = useMemo(() => {
         const ids = [...new Set(colaboradores.map(c => c.id_departamento).filter(Boolean))];
         return ids.map(id => ({ id, nome: resolverDepartamento(id) }))
-            .filter(d => !d.nome.toUpperCase().includes('(INATIVO)'))
+            .filter(d => isAdmin || !d.nome.toUpperCase().includes('(INATIVO)'))
             .sort((a, b) => a.nome.localeCompare(b.nome));
-    }, [colaboradores, departamentos, cargos, deptosEmpresa]);
+    }, [colaboradores, departamentos, cargos, deptosEmpresa, isAdmin]);
 
     // Filtragem por busca e departamento
     const colaboradoresFiltrados = useMemo(() => {

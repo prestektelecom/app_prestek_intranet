@@ -685,13 +685,13 @@ app.get('/api/colaboradores', async (req, res) => {
         ixcsoft: 'listar'
     };
 
-    // Busca todos os funcionários ativos do IXC
+    const includeInactive = req.query.all === 'true';
     const body = JSON.stringify({
-        qtype: 'funcionarios.ativo',
-        query: 'S',
-        oper: '=',
+        qtype: includeInactive ? 'funcionarios.id' : 'funcionarios.ativo',
+        query: includeInactive ? '0' : 'S',
+        oper: includeInactive ? '>' : '=',
         page: '1',
-        rp: '1000', // Busca até 1000 funcionários
+        rp: '1000',
         sortname: 'funcionarios.funcionario',
         sortorder: 'asc'
     });
