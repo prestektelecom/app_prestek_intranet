@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 // Widget de disponibilidade da equipe com fotos empilhadas
-export default function TeamAvailability() {
+export default function TeamAvailability({ user }) {
     const [onlineMembers, setOnlineMembers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -11,7 +11,28 @@ export default function TeamAvailability() {
                 const response = await fetch('http://localhost:3001/api/colaboradores/online');
                 const data = await response.json();
                 if (data.sucesso) {
-                    setOnlineMembers(data.colaboradores || []);
+                    let members = data.colaboradores || [];
+                    
+                    // Ordenação inteligente: Coloca o usuário atual no topo se ele estiver na lista
+                    if (user?.id) {
+                        const currentUserIndex = members.findIndex(m => String(m.id) === String(user.id) || String(m.id) === String(user.funcionario?.id));
+                        if (currentUserIndex > -1) {
+                            const [currentUser] = members.splice(currentUserIndex, 1);
+                            members = [currentUser, ...members];
+                        } else if (user.nome) {
+                            // Se o ping ainda não registrou no banco mas o usuário está com a aba aberta,
+                            // forçamos ele na lista localmente para feedback imediato
+                            const self = {
+                                id: user.id,
+                                nome: user.nome,
+                                foto: user.funcionario?.foto_perfil || null,
+                                status: 'online'
+                            };
+                            members = [self, ...members];
+                        }
+                    }
+                    
+                    setOnlineMembers(members);
                 }
             } catch (err) {
                 console.error('Erro ao buscar colaboradores online:', err);

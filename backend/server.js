@@ -821,25 +821,35 @@ app.post('/api/presenca/:usuarioId', async (req, res) => {
 
 app.get('/api/colaboradores/online', async (req, res) => {
     try {
-        // Considera online quem teve atividade nos últimos 5 minutos
+        // Considera online quem teve atividade nos últimos 5 minutos, e busca a foto customizada
         const query = `
             SELECT 
-                usuario_id, funcionario_id, funcionario_nome, usuario_email, 
-                foto_perfil, id_departamento, ultima_atividade
-            FROM usuarios_perfil
-            WHERE ultima_atividade > NOW() - interval '5 minutes'
-            ORDER BY funcionario_nome ASC;
+                p.usuario_id, p.funcionario_id, p.funcionario_nome, p.usuario_email, 
+                p.foto_perfil as ixc_foto, p.id_departamento, p.ultima_atividade,
+                pref.valor as foto_custom
+            FROM usuarios_perfil p
+            LEFT JOIN usuarios_preferencias pref 
+                ON LOWER(p.usuario_email) = LOWER(pref.usuario_email) AND pref.chave = 'avatarUrl'
+            WHERE p.ultima_atividade > NOW() - interval '5 minutes'
+            ORDER BY p.funcionario_nome ASC;
         `;
         const result = await pool.query(query);
         
         // Formata para o padrão esperado pelo componente
-        const online = result.rows.map(u => ({
-            id: u.funcionario_id || u.usuario_id,
-            nome: u.funcionario_nome || u.usuario_nome || 'Colaborador',
-            email: u.usuario_email,
-            foto: u.foto_perfil,
-            status: 'online'
-        }));
+        const online = result.rows.map(u => {
+            let fotoFim = u.foto_custom || u.ixc_foto || null;
+            if (fotoFim && typeof fotoFim === 'string' && fotoFim.trim().startsWith('<svg')) {
+                fotoFim = null;
+            }
+            
+            return {
+                id: u.funcionario_id || u.usuario_id,
+                nome: u.funcionario_nome || u.usuario_nome || 'Colaborador',
+                email: u.usuario_email,
+                foto: fotoFim,
+                status: 'online'
+            };
+        });
 
         return res.json({ sucesso: true, colaboradores: online });
     } catch (err) {
@@ -1167,3 +1177,4 @@ app.post('/api/ixc/su-ticket/list', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
 })
+// trigger restart
