@@ -69,8 +69,10 @@ export default function Directory() {
     // Lista dos departamentos únicos para o filtro do select
     const departamentosUnicos = useMemo(() => {
         const ids = [...new Set(colaboradores.map(c => c.id_departamento).filter(Boolean))];
-        return ids.map(id => ({ id, nome: resolverDepartamento(id) })).sort((a, b) => a.nome.localeCompare(b.nome));
-    }, [colaboradores, departamentos]);
+        return ids.map(id => ({ id, nome: resolverDepartamento(id) }))
+            .filter(d => !d.nome.toUpperCase().includes('(INATIVO)'))
+            .sort((a, b) => a.nome.localeCompare(b.nome));
+    }, [colaboradores, departamentos, cargos, deptosEmpresa]);
 
     // Filtragem por busca e departamento
     const colaboradoresFiltrados = useMemo(() => {
