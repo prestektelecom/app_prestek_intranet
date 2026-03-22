@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import LottieAvatar from './common/LottieAvatar';
-import defaultAvatar from '../image/avatar/4472613.json';
 
 // Quantidade de colaboradores por página
 const POR_PAGINA = 8;
@@ -108,7 +107,7 @@ export default function Directory() {
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-[#1d150c] dark:text-white text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
-                        Diretório de Colaboradores
+                        Colaboradores
                     </h1>
                     <p className="text-[#a17745] dark:text-orange-300 text-lg">
                         Busque e conecte-se com seus colegas em todos os departamentos.
@@ -251,7 +250,7 @@ function EmployeeCard({ colab, departamentoNome }) {
     const ramal = colab.ramal || '—';
     const isAtivo = colab.ativo === 'S';
     const statusColor = isAtivo ? 'bg-green-500' : 'bg-gray-400';
-    const avatarSrc = colab.foto_perfil || defaultAvatar;
+    const avatarSrc = colab.foto_perfil || null;
 
     return (
         <div className="bg-white dark:bg-[#1a130b] rounded-xl overflow-hidden border border-[#eaddcd] dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow group flex flex-col h-full hover:border-[#ff8c00]/50">

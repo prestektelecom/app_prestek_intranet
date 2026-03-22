@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 const menuItems = [
     { id: 'services', icon: 'construction', label: 'Serviços' },
     { id: 'coverage', icon: 'verified_user', label: 'Cobertura' },
-    { id: 'directory', icon: 'menu_book', label: 'Diretório' },
+    { id: 'directory', icon: 'groups', label: 'Colaboradores' },
     { id: 'sectors', icon: 'pie_chart', label: 'Setores' },
     { id: 'schedule', icon: 'schedule', label: 'Plantão' },
     { id: 'offices', icon: 'apartment', label: 'Escritórios' },

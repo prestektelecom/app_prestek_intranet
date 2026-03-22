@@ -705,10 +705,10 @@ app.get('/api/colaboradores', async (req, res) => {
         const dadosIXC = await respostaVal.json();
         const funcionariosIXC = dadosIXC.registros || [];
 
-        // 1. Fotos: vem de usuarios_perfil
-        const perfisQuery = await pool.query('SELECT funcionario_id, foto_perfil FROM usuarios_perfil');
-        const mapaFotos = perfisQuery.rows.reduce((acc, curr) => {
-            if (curr.funcionario_id) acc[curr.funcionario_id] = curr.foto_perfil;
+        // 1. Fotos salvas via tela de Configurações ficam em usuarios_preferencias como avatarUrl
+        const fotosPrefsResult = await pool.query("SELECT usuario_email, valor FROM usuarios_preferencias WHERE chave = 'avatarUrl'");
+        const mapaFotosPorEmail = fotosPrefsResult.rows.reduce((acc, curr) => {
+            if (curr.usuario_email) acc[curr.usuario_email.toLowerCase()] = curr.valor;
             return acc;
         }, {});
 
@@ -726,24 +726,30 @@ app.get('/api/colaboradores', async (req, res) => {
 
         // Mescla dados do IXC com dados locais de foto e ramal
         const colaboradores = funcionariosIXC.map(f => {
-            const fotoLocal = mapaFotos[f.id];
             const emailKey = (f.email || '').toLowerCase();
+            const fotoLocal = mapaFotosPorEmail[emailKey];
             // Ramal salvo pelo usuário em Configurações (via email como chave de ligação)
             const ramalLocal = mapaRamaisPorEmail[emailKey];
-            return {
-                usuario_id: null,
-                funcionario_id: f.id,
-                funcionario_nome: f.funcionario,
-                usuario_email: f.email,
-                id_departamento: f.id_departamento,
-                filial_id: f.filial_id,
-                id_funcao: f.id_funcao,
-                fone_celular: f.fone_celular,
-                // Prioridade: preferência salva em Configurações > ramal vindo do IXC
-                ramal: ramalLocal !== undefined ? ramalLocal : (f.ramal || null),
-                foto_perfil: fotoLocal || f.foto_perfil || null,
-                ativo: f.ativo
-            };
+                // Evita mostrar o SVG padrão do IXC como foto para quem nunca mudou a imagem
+                let ixcFoto = f.foto_perfil;
+                if (ixcFoto && typeof ixcFoto === 'string' && ixcFoto.trim().startsWith('<svg')) {
+                    ixcFoto = null;
+                }
+
+                return {
+                    usuario_id: null,
+                    funcionario_id: f.id,
+                    funcionario_nome: f.funcionario,
+                    usuario_email: f.email,
+                    id_departamento: f.id_departamento,
+                    filial_id: f.filial_id,
+                    id_funcao: f.id_funcao,
+                    fone_celular: f.fone_celular,
+                    // Prioridade: preferência salva em Configurações > ramal vindo do IXC
+                    ramal: ramalLocal !== undefined ? ramalLocal : (f.ramal || null),
+                    foto_perfil: fotoLocal || ixcFoto || null,
+                    ativo: f.ativo
+                };
         });
 
         return res.json({ sucesso: true, colaboradores });
