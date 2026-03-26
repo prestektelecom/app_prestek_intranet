@@ -1173,7 +1173,67 @@ app.post('/api/ixc/su-ticket/list', async (req, res) => {
     }
 });
 
-// ─── Rota: Diretório de Setores (empresa_setor + funcionários do IXC) ────────
+// ─── Rota Debug: Inspecionar dados de funcionários de um setor ───────────────────────
+app.get('/api/debug/setor/:setorId', async (req, res) => {
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+    const { setorId } = req.params;
+
+    try {
+        const resFunc = await fetch(`https://${host}/webservice/v1/funcionarios`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
+        });
+
+        const dataFunc = await resFunc.json();
+        const funcionarios = (dataFunc.registros || []).filter(f => String(f.id_departamento).trim() === String(setorId).trim());
+        
+        console.log(`-> Debug setor ${setorId}: ${funcionarios.length} funcionários`);
+        return res.json({ sucesso: true, funcionarios: funcionarios.slice(0, 3).map(f => ({ 
+            id: f.id, 
+            nome: f.funcionario, 
+            depto: f.id_departamento,
+            todos_campos: Object.keys(f) 
+        })) });
+    } catch (e) {
+        console.error('Erro debug:', e);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// ─── Rota: Buscar Grupos de Usuários com seus membros ───────────────────────
+app.get('/api/grupos-usuarios', async (req, res) => {
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    try {
+        const resGrupos = await fetch(`https://${host}/webservice/v1/grupos_usuarios`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ qtype: 'id', query: '0', oper: '>', page: '1', rp: '5000', sortname: 'nome', sortorder: 'asc' })
+        });
+
+        const dataGrupos = await resGrupos.json();
+        const grupos = dataGrupos.registros || [];
+        
+        console.log(`-> /api/grupos-usuarios: ${grupos.length} grupos retornados`);
+        return res.json({ sucesso: true, grupos });
+    } catch (e) {
+        console.error('Erro rota /api/grupos-usuarios:', e);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// ─── Rota: Diretório de Setores (empresa_setor + funcionários com SUPERVISOR) ────────
 app.get('/api/setores', async (req, res) => {
     const host = process.env.IXC_HOST;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
@@ -1184,8 +1244,8 @@ app.get('/api/setores', async (req, res) => {
     };
 
     try {
-        // Busca setores ativos (empresa_setor) e funcionários ativos em paralelo
-        const [resSetor, resFunc] = await Promise.all([
+        // Busca setores, funcionários e grupos em paralelo
+        const [resSetor, resFunc, resGrupos] = await Promise.all([
             fetch(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
@@ -1193,21 +1253,54 @@ app.get('/api/setores', async (req, res) => {
             fetch(`https://${host}/webservice/v1/funcionarios`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
+            }),
+            fetch(`https://${host}/webservice/v1/grupos_usuarios`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ qtype: 'id', query: '0', oper: '>', page: '1', rp: '5000', sortname: 'nome', sortorder: 'asc' })
             })
         ]);
 
         const dataSetor = await resSetor.json();
         const dataFunc = await resFunc.json();
+        const dataGrupos = await resGrupos.json();
 
         const setoresRaw = (dataSetor.registros || []).filter(s => s.ativo === 'S');
         const funcionarios = dataFunc.registros || [];
+        const grupos = dataGrupos.registros || [];
 
-        // Agrupa funcionários ativos por setor (id_departamento do funcionário = id do empresa_setor)
+        // Mapeia grupo -> funcionário_id para achado rápido (uma pessoa pode estar em vários grupos)
+        const funcionariosPorGrupo = {};
+        grupos.forEach(grupo => {
+            if (grupo.nome && grupo.id_usuario) {
+                if (!funcionariosPorGrupo[grupo.id_usuario]) {
+                    funcionariosPorGrupo[grupo.id_usuario] = [];
+                }
+                funcionariosPorGrupo[grupo.id_usuario].push(grupo.nome);
+            }
+        });
+
+        // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
             const membros = funcionarios.filter(f =>
                 String(f.id_departamento).trim() === String(setor.id).trim()
             );
-            const responsavel = membros[0] || null;
+            
+            // Procura por supervisores no setor (funcionários com grupo contendo "SUPERVISOR")
+            let responsavel = null;
+            for (const membro of membros) {
+                const gruposDoFuncionario = funcionariosPorGrupo[membro.id] || [];
+                const temSupervisor = gruposDoFuncionario.some(g => g.toUpperCase().includes('SUPERVISOR'));
+                if (temSupervisor) {
+                    responsavel = membro;
+                    break;
+                }
+            }
+            
+            // Se não achar supervisor, pega o primeiro
+            if (!responsavel && membros.length > 0) {
+                responsavel = membros[0];
+            }
+
             return {
                 id: setor.id,
                 nome: setor.setor,
