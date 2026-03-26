@@ -1173,6 +1173,60 @@ app.post('/api/ixc/su-ticket/list', async (req, res) => {
     }
 });
 
+// ─── Rota: Contagem de Funcionários por Departamento ─────────────────────────
+app.get('/api/funcionarios-por-setor', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                id_departamento,
+                id_funcao,
+                COUNT(*) as total
+            FROM usuarios_perfil
+            WHERE ativo = 'S'
+            GROUP BY id_departamento, id_funcao
+        `);
+        // Agrupa por departamento
+        const porDepto = {};
+        result.rows.forEach(row => {
+            const key = row.id_departamento || '0';
+            if (!porDepto[key]) porDepto[key] = 0;
+            porDepto[key] += parseInt(row.total);
+        });
+        return res.json({ sucesso: true, counts: porDepto });
+    } catch (err) {
+        console.error('Erro ao contar funcionários por setor:', err.message);
+        return res.status(500).json({ sucesso: false, erro: err.message });
+    }
+});
+
+// ─── Rota: Listar todos os Funcionários do IXC ───────────────────────────────
+app.get('/api/funcionarios', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const host = process.env.IXC_HOST;
+    const url = `https://${host}/webservice/v1/funcionarios`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+    const body = JSON.stringify({
+        qtype: 'funcionarios.id',
+        query: '0',
+        oper: '>',
+        page: '1',
+        rp: '1000',
+        sortname: 'funcionarios.funcionario',
+        sortorder: 'asc'
+    });
+    try {
+        const resposta = await fetch(url, { method: 'POST', headers, body });
+        const dados = await resposta.json();
+        return res.json({ sucesso: true, funcionarios: dados.registros || [], total: dados.total || 0 });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
