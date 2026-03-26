@@ -1206,7 +1206,36 @@ app.get('/api/debug/setor/:setorId', async (req, res) => {
     }
 });
 
-// ─── Rota: Buscar Mapeamento Usuários <-> Grupos ───────────────────────
+// ─── Rota: Buscar Grupos (names) ───────────────────────
+app.get('/api/grupos', async (req, res) => {
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    try {
+        // Busca grupos_usuarios (qual é o nome do grupo de cada id_grupo)
+        const resGrupos = await fetch(`https://${host}/webservice/v1/grupo`, {
+            method: 'POST', 
+            headers,
+            body: JSON.stringify({ qtype: 'grupo.id', query: '0', oper: '>', page: '1', rp: '1000', sortname: 'grupo.id', sortorder: 'asc' })
+        });
+
+        const dataGrupos = await resGrupos.json();
+        const grupos = dataGrupos.registros || [];
+        
+        console.log(`-> /api/grupos: ${grupos.length} grupos retornados`);
+        return res.json({ sucesso: true, grupos });
+    } catch (e) {
+        console.error('Erro rota /api/grupos:', e);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// ─── Rota: Buscar Usuários com Informações de Grupos ───────────────────────
 app.get('/api/usuarios-grupo', async (req, res) => {
     const host = process.env.IXC_HOST;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
@@ -1217,18 +1246,18 @@ app.get('/api/usuarios-grupo', async (req, res) => {
     };
 
     try {
-        // Tenta POST com body vazio como fallback (alguns endpoints IXC podem exigir POST)
-        const resUG = await fetch(`https://${host}/webservice/v1/usuarios_grupo`, {
+        // Busca usuários (que contém id_grupo)
+        const resUsuarios = await fetch(`https://${host}/webservice/v1/usuarios`, {
             method: 'POST', 
             headers,
-            body: JSON.stringify({ qtype: 'usuarios_grupo.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios_grupo.id', sortorder: 'asc' })
+            body: JSON.stringify({ qtype: 'usuarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios.id', sortorder: 'asc' })
         });
 
-        const dataUG = await resUG.json();
-        const usuariosGrupo = dataUG.registros || [];
+        const dataUsuarios = await resUsuarios.json();
+        const usuarios = dataUsuarios.registros || [];
         
-        console.log(`-> /api/usuarios-grupo: ${usuariosGrupo.length} mapeamentos retornados`);
-        return res.json({ sucesso: true, usuariosGrupo });
+        console.log(`-> /api/usuarios-grupo: ${usuarios.length} usuários retornados`);
+        return res.json({ sucesso: true, usuarios });
     } catch (e) {
         console.error('Erro rota /api/usuarios-grupo:', e);
         return res.status(500).json({ sucesso: false, erro: e.message });
@@ -1246,8 +1275,8 @@ app.get('/api/setores', async (req, res) => {
     };
 
     try {
-        // Busca setores, funcionários e mapeamento usuários-grupos em paralelo
-        const [resSetor, resFunc, resUG] = await Promise.all([
+        // Busca setores, funcionários e usuários (com grupos) em paralelo
+        const [resSetor, resFunc, resUsuarios] = await Promise.all([
             fetch(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
@@ -1256,31 +1285,29 @@ app.get('/api/setores', async (req, res) => {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
             }),
-            fetch(`https://${host}/webservice/v1/usuarios_grupo`, {
-                method: 'GET', headers
+            fetch(`https://${host}/webservice/v1/usuarios`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ qtype: 'usuarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios.id', sortorder: 'asc' })
             })
         ]);
 
         const dataSetor = await resSetor.json();
         const dataFunc = await resFunc.json();
-        const dataUG = await resUG.json();
+        const dataUsuarios = await resUsuarios.json();
 
         const setoresRaw = (dataSetor.registros || []).filter(s => s.ativo === 'S');
         const funcionarios = dataFunc.registros || [];
-        const usuariosGrupo = dataUG.registros || [];
+        const usuarios = dataUsuarios.registros || [];
 
-        // Mapeia id_usuario -> [nomes de grupos] para achado rápido
+        // Mapeia id_usuario -> grupo (o campo que contém "SUPERVISOR")
         const gruposPorUsuario = {};
-        usuariosGrupo.forEach(ug => {
-            // Mapeia a partir de id_usuario (pode variar o nome do campo)
-            const usuarioId = ug.id_usuario || ug.usuario_id || ug.user_id;
-            const nomeGrupo = ug.grupo || ug.name || ug.nome;
-            
-            if (usuarioId && nomeGrupo) {
-                if (!gruposPorUsuario[usuarioId]) {
-                    gruposPorUsuario[usuarioId] = [];
-                }
-                gruposPorUsuario[usuarioId].push(nomeGrupo);
+        usuarios.forEach(usr => {
+            // Procura por campos que possam conter o grupo
+            // Tenta vários nomes possíveis
+            const grupo = usr.grupo || usr.grupos || usr.nome_grupo || usr.group || usr.name_group || '';
+            if (grupo && (usr.id || usr.id_usuario || usr.usuario_id)) {
+                const idUsuario = usr.id || usr.id_usuario || usr.usuario_id;
+                gruposPorUsuario[idUsuario] = grupo;
             }
         });
 
@@ -1293,10 +1320,8 @@ app.get('/api/setores', async (req, res) => {
             // Procura por supervisores no setor (funcionários com grupo contendo "SUPERVISOR")
             let responsavel = null;
             for (const membro of membros) {
-                const gruposDoFuncionario = gruposPorUsuario[membro.id] || [];
-                const temSupervisor = gruposDoFuncionario.some(g => 
-                    g.toUpperCase().includes('SUPERVISOR') || g.toUpperCase().includes('SUPERVISOR(A)')
-                );
+                const grupoDoFuncionario = gruposPorUsuario[membro.id] || '';
+                const temSupervisor = grupoDoFuncionario.toUpperCase().includes('SUPERVISOR');
                 if (temSupervisor) {
                     responsavel = membro;
                     break;
@@ -1322,7 +1347,7 @@ app.get('/api/setores', async (req, res) => {
             };
         });
 
-        console.log(`-> /api/setores: ${setores.length} setores retornados (${setores.filter(s=>s.totalMembros>0).length} com membros, ${Object.keys(gruposPorUsuario).length} usuários com grupos)`);
+        console.log(`-> /api/setores: ${setores.length} setores, ${usuarios.length} usuários, ${Object.keys(gruposPorUsuario).length} com grupos`);
         return res.json({ sucesso: true, setores });
     } catch (e) {
         console.error('Erro rota /api/setores:', e);
