@@ -138,7 +138,7 @@ export default function AdminDashboard({ setCurrentView }) {
                                     <div className="p-2 rounded bg-blue-50 text-blue-500">
                                         <span className="material-symbols-outlined">trending_up</span>
                                     </div>
-                                    <span class="text-[#078810] text-xs font-bold bg-green-100 px-2 py-1 rounded">+5%</span>
+                                    <span className="text-[#078810] text-xs font-bold bg-green-100 px-2 py-1 rounded">+5%</span>
                                 </div>
                                 <div>
                                     <p className="text-[#a17745] dark:text-orange-300 text-sm font-medium mb-1">Visitantes Mensais</p>

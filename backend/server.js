@@ -1328,6 +1328,52 @@ app.get('/api/usuarios-grupo', async (req, res) => {
     }
 });
 
+// ─── Helper: Busca automática de grupos SUPERVISOR(A) no IXC ─────────────────
+// Tenta buscar do IXC todos os grupos cujo nome contém "SUPERVISOR".
+// Se o endpoint estiver disponível (permissão liberada), sincroniza o banco local
+// e retorna os IDs. Caso contrário, usa o que está configurado manualmente.
+async function buscarIdsGruposSupervisores(host, headers) {
+    try {
+        // Tenta buscar grupos com "SUPERVISOR" no nome
+        const res = await fetch(`https://${host}/webservice/v1/usuarios_grupo`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                qtype: 'usuarios_grupo.grupo',
+                query: 'SUPERVISOR',
+                oper: 'like',
+                page: '1',
+                rp: '200',
+                sortname: 'usuarios_grupo.id',
+                sortorder: 'asc'
+            })
+        });
+        const data = await res.json();
+
+        if (data.registros && Array.isArray(data.registros) && data.registros.length > 0) {
+            // Permissão liberada! Sincroniza o banco local automaticamente
+            const idsIXC = data.registros
+                .filter(g => g.grupo && g.grupo.toUpperCase().includes('SUPERVISOR'))
+                .map(g => String(g.id));
+
+            if (idsIXC.length > 0) {
+                // Atualiza o banco local com os IDs encontrados no IXC
+                await pool.query('DELETE FROM grupos_supervisores');
+                const values = idsIXC.map((id, i) => `($${i + 1})`).join(', ');
+                await pool.query(`INSERT INTO grupos_supervisores (id_grupo) VALUES ${values} ON CONFLICT DO NOTHING`, idsIXC);
+                console.log(`✅ Auto-sync: ${idsIXC.length} grupos SUPERVISOR(A) sincronizados do IXC:`, idsIXC);
+                return new Set(idsIXC);
+            }
+        }
+    } catch (e) {
+        // endpoint indisponível — silencioso, usa fallback
+    }
+
+    // Fallback: usa IDs configurados manualmente no banco local
+    const result = await pool.query('SELECT id_grupo FROM grupos_supervisores');
+    return new Set(result.rows.map(r => String(r.id_grupo)));
+}
+
 // ─── Rota: Diretório de Setores (empresa_setor + funcionários com SUPERVISOR) ────────
 app.get('/api/setores', async (req, res) => {
     const host = process.env.IXC_HOST;
@@ -1371,9 +1417,8 @@ app.get('/api/setores', async (req, res) => {
             }
         });
 
-        // Busca IDs de grupos de supervisor configurados no banco local
-        const resultGruposSup = await pool.query('SELECT id_grupo FROM grupos_supervisores');
-        const idsGruposSupervisor = new Set(resultGruposSup.rows.map(r => String(r.id_grupo)));
+        // Busca IDs dos grupos SUPERVISOR(A): tenta IXC primeiro, fallback no banco local
+        const idsGruposSupervisor = await buscarIdsGruposSupervisores(host, headers);
 
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
