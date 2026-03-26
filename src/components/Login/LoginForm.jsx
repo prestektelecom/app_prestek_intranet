@@ -77,16 +77,16 @@ export default function LoginForm({
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs py-1">
-                    <label className="flex items-center gap-2.5 cursor-pointer group">
+                <div className="flex items-center justify-between text-sm py-3">
+                    <label className="flex items-center gap-3 cursor-pointer group">
                         <div className="relative flex items-center justify-center">
                             <input
                                 type="checkbox"
-                                className="peer appearance-none w-4.5 h-4.5 border-2 border-slate-300 dark:border-slate-600 rounded-[5px] checked:bg-[#ff8c00] checked:border-[#ff8c00] transition-colors cursor-pointer"
+                                className="peer appearance-none w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded-[5px] checked:bg-[#ff8c00] checked:border-[#ff8c00] transition-colors cursor-pointer"
                                 checked={lembrar || credValida}
                                 onChange={(e) => setLembrar(e.target.checked)}
                             />
-                            <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
