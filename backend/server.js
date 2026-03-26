@@ -1365,9 +1365,13 @@ app.get('/api/setores', async (req, res) => {
 
         // Mapeia id_funcionario -> id_grupo (usando field 'funcionario' como chave)
         const gruposPorFuncionario = {};
+        // Conta total de membros ativos por grupo (para priorizar grupos mais específicos)
+        const totalMembrosPorGrupo = {};
         usuarios.forEach(usr => {
             if (usr.funcionario && usr.id_grupo) {
                 gruposPorFuncionario[usr.funcionario] = usr.id_grupo;
+                const g = String(usr.id_grupo);
+                totalMembrosPorGrupo[g] = (totalMembrosPorGrupo[g] || 0) + 1;
             }
         });
 
@@ -1382,20 +1386,22 @@ app.get('/api/setores', async (req, res) => {
             );
             
             // Procura por supervisores no setor (funcionários cujo id_grupo está na lista configurada)
+            // Prioriza o grupo com menos membros totais (mais específico/exclusivo)
             let responsavel = null;
             if (idsGruposSupervisor.size > 0) {
+                const candidatos = [];
                 for (const membro of membros) {
                     const idGrupoDoFuncionario = gruposPorFuncionario[membro.id];
                     if (idGrupoDoFuncionario && idsGruposSupervisor.has(String(idGrupoDoFuncionario))) {
-                        responsavel = membro;
-                        break;
+                        const totalNoGrupo = totalMembrosPorGrupo[String(idGrupoDoFuncionario)] || 9999;
+                        candidatos.push({ membro, totalNoGrupo });
                     }
                 }
-            }
-            
-            // Se não achar supervisor, não exibe responsável
-            if (!responsavel) {
-                responsavel = null;
+                if (candidatos.length > 0) {
+                    // Ordena por menor total de membros no grupo (grupo mais exclusivo tem prioridade)
+                    candidatos.sort((a, b) => a.totalNoGrupo - b.totalNoGrupo);
+                    responsavel = candidatos[0].membro;
+                }
             }
 
             return {
