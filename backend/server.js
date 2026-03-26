@@ -1173,7 +1173,7 @@ app.post('/api/ixc/su-ticket/list', async (req, res) => {
     }
 });
 
-// ─── Rota: Diretório de Setores (departamentos + funcionários do IXC) ────────
+// ─── Rota: Diretório de Setores (empresa_setor + funcionários do IXC) ────────
 app.get('/api/setores', async (req, res) => {
     const host = process.env.IXC_HOST;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
@@ -1184,11 +1184,11 @@ app.get('/api/setores', async (req, res) => {
     };
 
     try {
-        // Busca departamentos e funcionários em paralelo
-        const [resDept, resFunc] = await Promise.all([
-            fetch(`https://${host}/webservice/v1/departamento`, {
+        // Busca setores ativos (empresa_setor) e funcionários ativos em paralelo
+        const [resSetor, resFunc] = await Promise.all([
+            fetch(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
-                body: JSON.stringify({ qtype: 'id', query: '0', oper: '>', page: '1', rp: '1000', sortname: 'id', sortorder: 'asc' })
+                body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
             }),
             fetch(`https://${host}/webservice/v1/funcionarios`, {
                 method: 'POST', headers,
@@ -1196,33 +1196,33 @@ app.get('/api/setores', async (req, res) => {
             })
         ]);
 
-        const dataDept = await resDept.json();
+        const dataSetor = await resSetor.json();
         const dataFunc = await resFunc.json();
 
-        const departamentos = dataDept.registros || [];
+        const setoresRaw = (dataSetor.registros || []).filter(s => s.ativo === 'S');
         const funcionarios = dataFunc.registros || [];
 
-        // Agrupa funcionários ativos por departamento
-        const setores = departamentos
-            .map(dept => {
-                const membros = funcionarios.filter(f =>
-                    String(f.id_departamento).trim() === String(dept.id).trim() && f.ativo === 'S'
-                );
-                const responsavel = membros[0] || null;
-                return {
-                    id: dept.id,
-                    nome: dept.departamento,
-                    totalMembros: membros.length,
-                    responsavel: responsavel ? {
-                        id: responsavel.id,
-                        nome: responsavel.funcionario,
-                        foto: responsavel.foto_perfil || null,
-                        ramal: responsavel.ramal || null
-                    } : null
-                };
-            })
-            .filter(s => s.totalMembros > 0);
+        // Agrupa funcionários ativos por setor (id_departamento do funcionário = id do empresa_setor)
+        const setores = setoresRaw.map(setor => {
+            const membros = funcionarios.filter(f =>
+                String(f.id_departamento).trim() === String(setor.id).trim()
+            );
+            const responsavel = membros[0] || null;
+            return {
+                id: setor.id,
+                nome: setor.setor,
+                cor: setor.cor || null,
+                totalMembros: membros.length,
+                responsavel: responsavel ? {
+                    id: responsavel.id,
+                    nome: responsavel.funcionario,
+                    foto: responsavel.foto_perfil || null,
+                    ramal: responsavel.ramal || null
+                } : null
+            };
+        });
 
+        console.log(`-> /api/setores: ${setores.length} setores retornados (${setores.filter(s=>s.totalMembros>0).length} com membros)`);
         return res.json({ sucesso: true, setores });
     } catch (e) {
         console.error('Erro rota /api/setores:', e);
