@@ -77,33 +77,24 @@ export default function LoginForm({
                     </div>
                 </div>
 
-                {!credValida ? (
-                    <div className="flex items-center justify-between text-xs py-1">
-                        <label className="flex items-center gap-2.5 cursor-pointer group">
-                            <div className="relative flex items-center justify-center">
-                                <input
-                                    type="checkbox"
-                                    className="peer appearance-none w-4.5 h-4.5 border-2 border-slate-300 dark:border-slate-600 rounded-[5px] checked:bg-[#ff8c00] checked:border-[#ff8c00] transition-colors cursor-pointer"
-                                    checked={lembrar}
-                                    onChange={(e) => setLembrar(e.target.checked)}
-                                />
-                                <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <span className="text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 font-medium transition-colors">
-                                Confiar neste dispositivo por 7 dias
-                            </span>
-                        </label>
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center gap-2 text-xs py-1 text-emerald-600 dark:text-emerald-400">
-                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                        <span className="font-medium">Acesso salvo por 7 dias</span>
-                    </div>
-                )}
+                <div className="flex items-center justify-between text-xs py-1">
+                    <label className="flex items-center gap-2.5 cursor-pointer group">
+                        <div className="relative flex items-center justify-center">
+                            <input
+                                type="checkbox"
+                                className="peer appearance-none w-4.5 h-4.5 border-2 border-slate-300 dark:border-slate-600 rounded-[5px] checked:bg-[#ff8c00] checked:border-[#ff8c00] transition-colors cursor-pointer"
+                                checked={lembrar || credValida}
+                                onChange={(e) => setLembrar(e.target.checked)}
+                            />
+                            <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <span className="text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 font-medium transition-colors">
+                            Confiar neste dispositivo por 7 dias
+                        </span>
+                    </label>
+                </div>
 
                 <button
                     type="submit"
