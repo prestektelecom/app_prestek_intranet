@@ -2,17 +2,19 @@ import pkg from 'pg';
 const { Pool } = pkg;
 import 'dotenv/config';
 
-const pool = new Pool(
-    process.env.DATABASE_URL
-        ? { connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: false } : false }
-        : {
-            host: process.env.DB_HOST || process.env.PGHOST,
-            port: process.env.DB_PORT || process.env.PGPORT || 5432,
-            database: process.env.DB_NAME || process.env.PGDATABASE,
-            user: process.env.DB_USER || process.env.PGUSER,
-            password: process.env.DB_PASSWORD || process.env.PGPASSWORD,
-          }
-);
+// Prioriza variáveis DB_* explícitas; usa DATABASE_URL do Replit como fallback
+const pool = process.env.DB_HOST
+    ? new Pool({
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT) || 5432,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+    })
+    : new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: false } : false
+    });
 
 pool.connect((err, client, release) => {
     if (err) {

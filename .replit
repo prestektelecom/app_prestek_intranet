@@ -61,3 +61,12 @@ externalPort = 3001
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "node backend/server.js & npx serve dist -l 5000"]
 build = ["bash", "-c", "npm run build"]
+
+[userenv]
+
+[userenv.shared]
+DB_HOST = "201.150.48.6"
+DB_PORT = "5432"
+DB_NAME = "prestek_db_postgres"
+DB_USER = "prestek"
+PORT = "3001"
