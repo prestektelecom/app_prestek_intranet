@@ -92,7 +92,7 @@ export default function LoginForm({
                                 </svg>
                             </div>
                             <span className="text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 font-medium transition-colors">
-                                Confiar por 7 dias
+                                Confiar neste dispositivo por 7 dias
                             </span>
                         </label>
                     </div>
