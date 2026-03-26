@@ -8,7 +8,7 @@ export default function TeamAvailability({ user }) {
     useEffect(() => {
         const fetchOnline = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/colaboradores/online');
+                const response = await fetch('/api/colaboradores/online');
                 const data = await response.json();
                 if (data.sucesso) {
                     let members = data.colaboradores || [];

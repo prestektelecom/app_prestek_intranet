@@ -39,7 +39,7 @@ export default function QuickShortcuts({ setCurrentView, user }) {
         const colaborador_id = user?.funcionario?.id;
 
         try {
-            const res = await fetch('http://localhost:3001/api/ixc/su-ticket', {
+            const res = await fetch('/api/ixc/su-ticket', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 

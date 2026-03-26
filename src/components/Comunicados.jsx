@@ -20,7 +20,7 @@ export default function Comunicados({ user }) {
     const fetchComunicados = async () => {
         try {
             setLoading(true);
-            const res = await fetch('http://localhost:3001/api/comunicados');
+            const res = await fetch('/api/comunicados');
             const data = await res.json();
             if (data.sucesso) {
                 setComunicados(data.comunicados);
@@ -68,7 +68,7 @@ export default function Comunicados({ user }) {
         const id = itemToDelete;
         setItemToDelete(null);
         try {
-            const res = await fetch(`http://localhost:3001/api/comunicados/${id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/comunicados/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.sucesso) {
                 fetchComunicados();
@@ -90,7 +90,7 @@ export default function Comunicados({ user }) {
                 criado_por: user?.nome || user?.funcionario?.funcionario || 'Admin'
             };
 
-            const url = editingId ? `http://localhost:3001/api/comunicados/${editingId}` : 'http://localhost:3001/api/comunicados';
+            const url = editingId ? `/api/comunicados/${editingId}` : '/api/comunicados';
             const method = editingId ? 'PUT' : 'POST';
 
             const res = await fetch(url, {

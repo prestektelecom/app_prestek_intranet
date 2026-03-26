@@ -42,7 +42,7 @@ export default function Header({ currentView, setCurrentView, user }) {
     useEffect(() => {
         const fetchUrgentCount = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/comunicados');
+                const response = await fetch('/api/comunicados');
                 if (response.ok) {
                     const data = await response.json();
                     if (data.sucesso && data.comunicados) {
@@ -72,9 +72,9 @@ export default function Header({ currentView, setCurrentView, user }) {
             try {
                 // Busca departamentos (tickets), cargos (empresa_setor) e departamentos (organizacional)
                 const [resDept, resCargo, resDeptEmp] = await Promise.all([
-                    fetch('http://localhost:3001/api/departamentos').catch(() => null),
-                    fetch('http://localhost:3001/api/cargos').catch(() => null),
-                    fetch('http://localhost:3001/api/departamentos-empresa').catch(() => null)
+                    fetch('/api/departamentos').catch(() => null),
+                    fetch('/api/cargos').catch(() => null),
+                    fetch('/api/departamentos-empresa').catch(() => null)
                 ]);
 
                 let departamentos = [];

@@ -9,7 +9,7 @@ export default function AnnouncementsList({ setCurrentView }) {
         const fetchUrgents = async () => {
             try {
                 setLoading(true);
-                const res = await fetch('http://localhost:3001/api/comunicados');
+                const res = await fetch('/api/comunicados');
                 const data = await res.json();
                 if (data.sucesso) {
                     // Filtrar apenas urgentes e ordenar por data decrescente

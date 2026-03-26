@@ -68,8 +68,8 @@ export default function Configuracoes({ user }) {
 
                 // Carrega em paralelo: perfil do banco + preferências do usuário
                 const [resPerfil, resPref] = await Promise.all([
-                    fetch(`http://localhost:3001/api/usuario/perfil/${safeId}`).catch(() => null),
-                    fetch(`http://localhost:3001/api/configuracoes/${safeId}`).catch(() => null)
+                    fetch(`/api/usuario/perfil/${safeId}`).catch(() => null),
+                    fetch(`/api/configuracoes/${safeId}`).catch(() => null)
                 ]);
 
                 let dadosPerfil = null;
@@ -130,11 +130,11 @@ export default function Configuracoes({ user }) {
         const fetchListas = async () => {
             try {
                 const [resDept, resCargo, resFilial, resFuncao, resDeptEmp] = await Promise.all([
-                    fetch('http://localhost:3001/api/departamentos').catch(() => null),
-                    fetch('http://localhost:3001/api/cargos').catch(() => null),
-                    fetch('http://localhost:3001/api/filiais').catch(() => null),
-                    fetch('http://localhost:3001/api/funcoes').catch(() => null),
-                    fetch('http://localhost:3001/api/departamentos-empresa').catch(() => null)
+                    fetch('/api/departamentos').catch(() => null),
+                    fetch('/api/cargos').catch(() => null),
+                    fetch('/api/filiais').catch(() => null),
+                    fetch('/api/funcoes').catch(() => null),
+                    fetch('/api/departamentos-empresa').catch(() => null)
                 ]);
                 if (resDept?.ok) {
                     const data = await resDept.json();
@@ -249,7 +249,7 @@ export default function Configuracoes({ user }) {
             const dadosParaSalvar = Object.entries(formData)
                 .filter(([chave]) => !CAMPOS_READONLY.includes(chave));
             const promessas = dadosParaSalvar.map(([chave, valor]) =>
-                fetch(`http://localhost:3001/api/configuracoes/${safeId}`, {
+                fetch(`/api/configuracoes/${safeId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: safeEmail, chave, valor: valor ?? '' })
@@ -258,7 +258,7 @@ export default function Configuracoes({ user }) {
             await Promise.all(promessas);
 
             // Sincroniza dados críticos (como celular, nome, ramal) com a API IXC
-            await fetch(`http://localhost:3001/api/funcionario/${safeId}`, {
+            await fetch(`/api/funcionario/${safeId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

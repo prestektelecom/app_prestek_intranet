@@ -19,7 +19,7 @@ export default function Sidebar({ currentView, setCurrentView }) {
     useEffect(() => {
         const fetchUrgents = async () => {
             try {
-                const res = await fetch('http://localhost:3001/api/comunicados');
+                const res = await fetch('/api/comunicados');
                 const data = await res.json();
                 if (data.sucesso) {
                     const count = data.comunicados.filter(item => item.tipo === 'Urgente').length;

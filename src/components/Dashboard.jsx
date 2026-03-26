@@ -17,6 +17,7 @@ export default function Dashboard({ setCurrentView, user }) {
     const func = user?.funcionario ?? {};
     const safeRole = func.id_funcao || 'Colaborador';
     const safeDepto = func.id_departamento || '';
+    const funcId = func.id || user?.id; // Fallback para user.id se func.id estiver vazio
 
     useEffect(() => {
         const fetchCargoESetor = async () => {
@@ -24,9 +25,9 @@ export default function Dashboard({ setCurrentView, user }) {
             try {
                 // Busca departamentos (tickets), cargos (empresa_setor) e departamentos (organizacional)
                 const [resDept, resCargo, resDeptEmp] = await Promise.all([
-                    fetch('http://localhost:3001/api/departamentos').catch(() => null),
-                    fetch('http://localhost:3001/api/cargos').catch(() => null),
-                    fetch('http://localhost:3001/api/departamentos-empresa').catch(() => null)
+                    fetch('/api/departamentos').catch(() => null),
+                    fetch('/api/cargos').catch(() => null),
+                    fetch('/api/departamentos-empresa').catch(() => null)
                 ]);
 
                 let departamentos = [];
@@ -76,12 +77,12 @@ export default function Dashboard({ setCurrentView, user }) {
     useEffect(() => {
         const fetchOsCount = async () => {
             setOsLoading(true);
-            if (!func.id) {
+            if (!funcId) {
                 setOsLoading(false);
                 return;
             }
             try {
-                const res = await fetch(`http://localhost:3001/api/os-chamados/${func.id}`);
+                const res = await fetch(`/api/os-chamados/${funcId}`);
                 const data = await res.json();
                 if (data.sucesso) {
                     setOsCount(data.quantidade);
@@ -95,14 +96,14 @@ export default function Dashboard({ setCurrentView, user }) {
         };
 
         fetchOsCount();
-    }, [func.id]);
+    }, [funcId]);
 
     useEffect(() => {
         const fetchProximoPlantao = async () => {
             if (!user?.id) return;
             setPlantaoLoading(true);
             try {
-                const res = await fetch(`http://localhost:3001/api/plantoes/meu-proximo/${user.id}`);
+                const res = await fetch(`/api/plantoes/meu-proximo/${user.id}`);
                 const data = await res.json();
                 if (data.sucesso && data.proximo) {
                     setProximoPlantao(data.proximo);

@@ -8,7 +8,7 @@ export default function Schedule() {
     useEffect(() => {
         const fetchPlantoes = async () => {
             try {
-                const res = await fetch('http://localhost:3001/api/plantoes');
+                const res = await fetch('/api/plantoes');
                 const data = await res.json();
                 if (data.sucesso) {
                     setPlantoes(data.plantoes);

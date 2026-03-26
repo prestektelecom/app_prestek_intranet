@@ -11,7 +11,7 @@ export default function TicketsList({ user }) {
         try {
             // No backend real, poderíamos ter uma rota /api/ixc/list-tickets
             // Por enquanto, vamos usar a rota genérica que já existe no backend para listar tickets
-            const res = await fetch('http://localhost:3001/api/ixc/su-ticket/list', {
+            const res = await fetch('/api/ixc/su-ticket/list', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 

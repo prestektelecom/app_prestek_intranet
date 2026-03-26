@@ -20,10 +20,10 @@ export default function Directory({ user }) {
         const carregar = async () => {
             try {
                 const [resColab, resDept, resCargo, resDeptTicket] = await Promise.all([
-                    fetch(`http://localhost:3001/api/colaboradores${isAdmin ? '?all=true' : ''}`).catch(() => null),
-                    fetch('http://localhost:3001/api/departamentos-empresa').catch(() => null),
-                    fetch('http://localhost:3001/api/cargos').catch(() => null),
-                    fetch('http://localhost:3001/api/departamentos').catch(() => null)
+                    fetch(`/api/colaboradores${isAdmin ? '?all=true' : ''}`).catch(() => null),
+                    fetch('/api/departamentos-empresa').catch(() => null),
+                    fetch('/api/cargos').catch(() => null),
+                    fetch('/api/departamentos').catch(() => null)
                 ]);
 
                 if (resColab?.ok) {
