@@ -217,7 +217,7 @@ export default function Sectors() {
                                     ramal={setor.responsavel?.ramal && setor.responsavel.ramal !== '0' ? setor.responsavel.ramal : null}
                                     title={setor.nome}
                                     description={getDescricaoForSetor(setor.nome)}
-                                    managerName={setor.responsavel?.nome || 'Não atribuído'}
+                                    managerName={setor.responsavel?.nome || null}
                                     managerImg={setor.responsavel?.foto || null}
                                     teamCount={setor.totalMembros}
                                 />
@@ -287,21 +287,27 @@ function SectorCard({ icon, ramal, title, description, managerName, managerImg, 
             </div>
 
             <div className="flex items-center gap-3 py-4 border-y border-[#f4eee6] dark:border-gray-800">
-                {managerImg ? (
-                    <div
-                        className="size-10 rounded-full bg-gray-200 bg-cover bg-center border border-[#eaddcd] dark:border-gray-800 shrink-0"
-                        style={{ backgroundImage: `url('${managerImg}')` }}
-                        title={`Responsável: ${managerName}`}
-                    ></div>
+                {managerName ? (
+                    <>
+                        {managerImg ? (
+                            <div
+                                className="size-10 rounded-full bg-gray-200 bg-cover bg-center border border-[#eaddcd] dark:border-gray-800 shrink-0"
+                                style={{ backgroundImage: `url('${managerImg}')` }}
+                                title={`Responsável: ${managerName}`}
+                            ></div>
+                        ) : (
+                            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#eaddcd] dark:border-gray-800 shrink-0">
+                                <span className="material-symbols-outlined text-primary text-[20px]">person</span>
+                            </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] text-[#a17745] dark:text-orange-300 font-black uppercase tracking-wider mb-0.5">Responsável</p>
+                            <p className="text-sm font-bold text-[#1d150c] dark:text-white truncate">{managerName}</p>
+                        </div>
+                    </>
                 ) : (
-                    <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#eaddcd] dark:border-gray-800 shrink-0">
-                        <span className="material-symbols-outlined text-primary text-[20px]">person</span>
-                    </div>
+                    <div className="flex-1 min-w-0" />
                 )}
-                <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-[#a17745] dark:text-orange-300 font-black uppercase tracking-wider mb-0.5">Responsável</p>
-                    <p className="text-sm font-bold text-[#1d150c] dark:text-white truncate">{managerName}</p>
-                </div>
                 <div className="text-right pl-3 border-l border-[#f4eee6] dark:border-gray-800 shrink-0">
                     <p className="text-[10px] text-[#a17745] dark:text-orange-300 font-black uppercase tracking-wider mb-0.5">Equipe</p>
                     <p className="text-sm font-bold text-[#1d150c] dark:text-white">{teamCount}</p>

@@ -1,4 +1,8 @@
+import { useState } from 'react';
+import GruposSupervisores from './GruposSupervisores';
+
 export default function AdminDashboard({ setCurrentView }) {
+    const [abaAtiva, setAbaAtiva] = useState('painel');
     return (
         <div className="flex h-screen w-full flex-col font-display bg-[#f8f7f5] text-[#1d150c] dark:text-white overflow-x-hidden absolute inset-0 z-50">
             {/* Header Administrativo */}
@@ -49,7 +53,7 @@ export default function AdminDashboard({ setCurrentView }) {
                         </div>
                         <div className="flex flex-col gap-1">
                             <p className="px-3 py-2 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider">Menu Principal</p>
-                            <button className="flex items-center gap-3 px-3 py-2.5 rounded bg-primary/10 text-primary group transition-colors w-full text-left">
+                            <button onClick={() => setAbaAtiva('painel')} className={`flex items-center gap-3 px-3 py-2.5 rounded transition-colors w-full text-left ${abaAtiva === 'painel' ? 'bg-primary/10 text-primary' : 'hover:bg-[#eaddcd] text-[#1d150c] dark:text-white'}`}>
                                 <span className="material-symbols-outlined text-xl">dashboard</span>
                                 <p className="text-sm font-bold leading-normal">Painel de Controle</p>
                             </button>
@@ -57,9 +61,9 @@ export default function AdminDashboard({ setCurrentView }) {
                                 <span className="material-symbols-outlined text-xl text-[#a17745] dark:text-orange-300 group-hover:text-primary transition-colors">group</span>
                                 <p className="text-sm font-medium leading-normal">Gerenciar Usuários</p>
                             </button>
-                            <button className="flex items-center gap-3 px-3 py-2.5 rounded hover:bg-[#eaddcd] text-[#1d150c] dark:text-white transition-colors group w-full text-left">
-                                <span className="material-symbols-outlined text-xl text-[#a17745] dark:text-orange-300 group-hover:text-primary transition-colors">inventory_2</span>
-                                <p className="text-sm font-medium leading-normal">Gerenciar Serviços</p>
+                            <button onClick={() => setAbaAtiva('grupos-supervisores')} className={`flex items-center gap-3 px-3 py-2.5 rounded transition-colors group w-full text-left ${abaAtiva === 'grupos-supervisores' ? 'bg-primary/10 text-primary' : 'hover:bg-[#eaddcd] text-[#1d150c] dark:text-white'}`}>
+                                <span className={`material-symbols-outlined text-xl transition-colors ${abaAtiva === 'grupos-supervisores' ? 'text-primary' : 'text-[#a17745] dark:text-orange-300 group-hover:text-primary'}`}>manage_accounts</span>
+                                <p className="text-sm font-medium leading-normal">Grupos Supervisor(a)</p>
                             </button>
                             <button className="flex items-center gap-3 px-3 py-2.5 rounded hover:bg-[#eaddcd] text-[#1d150c] dark:text-white transition-colors group w-full text-left">
                                 <span className="material-symbols-outlined text-xl text-[#a17745] dark:text-orange-300 group-hover:text-primary transition-colors">pie_chart</span>
@@ -88,8 +92,16 @@ export default function AdminDashboard({ setCurrentView }) {
                 </aside>
 
                 {/* Main Content Administrativo */}
-                <main className="flex-1 overflow-y-auto bg-[#f8f7f5] p-6 lg:p-10 scrollbar-hide">
+                <main className="flex-1 overflow-y-auto bg-[#f8f7f5] dark:bg-[#0f0a05] p-6 lg:p-10 scrollbar-hide">
                     <div className="max-w-[1200px] mx-auto flex flex-col gap-8">
+
+                        {/* Seção: Grupos Supervisor(a) */}
+                        {abaAtiva === 'grupos-supervisores' && (
+                            <GruposSupervisores />
+                        )}
+
+                        {/* Seção: Painel de Controle */}
+                        {abaAtiva === 'painel' && <>
                         <div className="flex flex-wrap justify-between items-end gap-4">
                             <div className="flex flex-col gap-1">
                                 <h1 className="text-[#1d150c] dark:text-white tracking-tight text-3xl lg:text-4xl font-extrabold leading-tight">Visão Geral do Painel</h1>
@@ -277,6 +289,7 @@ export default function AdminDashboard({ setCurrentView }) {
                                 <p className="text-[#a17745] dark:text-orange-300 text-sm">Executar um diagnóstico nos serviços do portal da intranet.</p>
                             </div>
                         </div>
+                        </>}
                     </div>
                 </main>
             </div>

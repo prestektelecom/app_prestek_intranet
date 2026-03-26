@@ -1235,6 +1235,37 @@ app.get('/api/grupos', async (req, res) => {
     }
 });
 
+// ─── Rotas: Admin — Gerenciar Grupos de Supervisor ──────────────────────────
+
+// GET: retorna todos os ids configurados como supervisor
+app.get('/api/admin/grupos-supervisores', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id_grupo FROM grupos_supervisores ORDER BY id_grupo::int');
+        return res.json({ sucesso: true, ids: result.rows.map(r => r.id_grupo) });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// POST: adiciona ou remove um id_grupo da lista de supervisores
+app.post('/api/admin/grupos-supervisores', async (req, res) => {
+    const { id_grupo, acao } = req.body; // acao: 'adicionar' | 'remover'
+    if (!id_grupo || !acao) return res.status(400).json({ sucesso: false, erro: 'id_grupo e acao são obrigatórios' });
+    try {
+        if (acao === 'adicionar') {
+            await pool.query('INSERT INTO grupos_supervisores (id_grupo) VALUES ($1) ON CONFLICT DO NOTHING', [String(id_grupo)]);
+        } else if (acao === 'remover') {
+            await pool.query('DELETE FROM grupos_supervisores WHERE id_grupo = $1', [String(id_grupo)]);
+        } else {
+            return res.status(400).json({ sucesso: false, erro: 'Ação inválida' });
+        }
+        const result = await pool.query('SELECT id_grupo FROM grupos_supervisores ORDER BY id_grupo::int');
+        return res.json({ sucesso: true, ids: result.rows.map(r => r.id_grupo) });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 // ─── Rota: Listar todos os id_grupo com seus membros (diagnóstico) ──────────
 app.get('/api/debug/grupos-membros', async (req, res) => {
     const host = process.env.IXC_HOST;
@@ -1340,8 +1371,9 @@ app.get('/api/setores', async (req, res) => {
             }
         });
 
-        // ID_GRUPO para SUPERVISOR é 74
-        const ID_GRUPO_SUPERVISOR = 74;
+        // Busca IDs de grupos de supervisor configurados no banco local
+        const resultGruposSup = await pool.query('SELECT id_grupo FROM grupos_supervisores');
+        const idsGruposSupervisor = new Set(resultGruposSup.rows.map(r => String(r.id_grupo)));
 
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
@@ -1349,19 +1381,21 @@ app.get('/api/setores', async (req, res) => {
                 String(f.id_departamento).trim() === String(setor.id).trim()
             );
             
-            // Procura por supervisores no setor (funcionários com id_grupo === 74)
+            // Procura por supervisores no setor (funcionários cujo id_grupo está na lista configurada)
             let responsavel = null;
-            for (const membro of membros) {
-                const idGrupoDoFuncionario = gruposPorFuncionario[membro.id];
-                if (idGrupoDoFuncionario === ID_GRUPO_SUPERVISOR || idGrupoDoFuncionario === '74') {
-                    responsavel = membro;
-                    break;
+            if (idsGruposSupervisor.size > 0) {
+                for (const membro of membros) {
+                    const idGrupoDoFuncionario = gruposPorFuncionario[membro.id];
+                    if (idGrupoDoFuncionario && idsGruposSupervisor.has(String(idGrupoDoFuncionario))) {
+                        responsavel = membro;
+                        break;
+                    }
                 }
             }
             
-            // Se não achar supervisor, pega o primeiro
-            if (!responsavel && membros.length > 0) {
-                responsavel = membros[0];
+            // Se não achar supervisor, não exibe responsável
+            if (!responsavel) {
+                responsavel = null;
             }
 
             return {
