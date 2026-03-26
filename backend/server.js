@@ -1235,6 +1235,39 @@ app.get('/api/grupos', async (req, res) => {
     }
 });
 
+// ─── Rota: Listar todos os id_grupo com seus membros (diagnóstico) ──────────
+app.get('/api/debug/grupos-membros', async (req, res) => {
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+    try {
+        const resU = await fetch(`https://${host}/webservice/v1/usuarios`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ qtype: 'usuarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios.id', sortorder: 'asc' })
+        });
+        const dataU = await resU.json();
+        const usuarios = dataU.registros || [];
+
+        const porGrupo = {};
+        for (const u of usuarios) {
+            const gid = u.id_grupo || '0';
+            if (!porGrupo[gid]) porGrupo[gid] = [];
+            porGrupo[gid].push({ id: u.id, nome: u.nome, status: u.status, funcionario: u.funcionario });
+        }
+        const resultado = Object.entries(porGrupo)
+            .sort((a, b) => Number(a[0]) - Number(b[0]))
+            .map(([id_grupo, membros]) => ({ id_grupo, total: membros.length, membros }));
+
+        return res.json({ sucesso: true, total_grupos: resultado.length, grupos: resultado });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 // ─── Rota: Buscar Usuários com Informações de Grupos ───────────────────────
 app.get('/api/usuarios-grupo', async (req, res) => {
     const host = process.env.IXC_HOST;
