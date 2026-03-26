@@ -1299,17 +1299,16 @@ app.get('/api/setores', async (req, res) => {
         const funcionarios = dataFunc.registros || [];
         const usuarios = dataUsuarios.registros || [];
 
-        // Mapeia id_usuario -> grupo (o campo que contém "SUPERVISOR")
-        const gruposPorUsuario = {};
+        // Mapeia id_funcionario -> id_grupo (usando field 'funcionario' como chave)
+        const gruposPorFuncionario = {};
         usuarios.forEach(usr => {
-            // Procura por campos que possam conter o grupo
-            // Tenta vários nomes possíveis
-            const grupo = usr.grupo || usr.grupos || usr.nome_grupo || usr.group || usr.name_group || '';
-            if (grupo && (usr.id || usr.id_usuario || usr.usuario_id)) {
-                const idUsuario = usr.id || usr.id_usuario || usr.usuario_id;
-                gruposPorUsuario[idUsuario] = grupo;
+            if (usr.funcionario && usr.id_grupo) {
+                gruposPorFuncionario[usr.funcionario] = usr.id_grupo;
             }
         });
+
+        // ID_GRUPO para SUPERVISOR é 74
+        const ID_GRUPO_SUPERVISOR = 74;
 
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
@@ -1317,12 +1316,11 @@ app.get('/api/setores', async (req, res) => {
                 String(f.id_departamento).trim() === String(setor.id).trim()
             );
             
-            // Procura por supervisores no setor (funcionários com grupo contendo "SUPERVISOR")
+            // Procura por supervisores no setor (funcionários com id_grupo === 74)
             let responsavel = null;
             for (const membro of membros) {
-                const grupoDoFuncionario = gruposPorUsuario[membro.id] || '';
-                const temSupervisor = grupoDoFuncionario.toUpperCase().includes('SUPERVISOR');
-                if (temSupervisor) {
+                const idGrupoDoFuncionario = gruposPorFuncionario[membro.id];
+                if (idGrupoDoFuncionario === ID_GRUPO_SUPERVISOR || idGrupoDoFuncionario === '74') {
                     responsavel = membro;
                     break;
                 }
@@ -1347,7 +1345,7 @@ app.get('/api/setores', async (req, res) => {
             };
         });
 
-        console.log(`-> /api/setores: ${setores.length} setores, ${usuarios.length} usuários, ${Object.keys(gruposPorUsuario).length} com grupos`);
+        console.log(`-> /api/setores: ${setores.length} setores, ${usuarios.length} usuários, ${Object.keys(gruposPorFuncionario).length} com grupos`);
         return res.json({ sucesso: true, setores });
     } catch (e) {
         console.error('Erro rota /api/setores:', e);
