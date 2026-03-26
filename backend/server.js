@@ -1173,6 +1173,63 @@ app.post('/api/ixc/su-ticket/list', async (req, res) => {
     }
 });
 
+// ─── Rota: Diretório de Setores (departamentos + funcionários do IXC) ────────
+app.get('/api/setores', async (req, res) => {
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    try {
+        // Busca departamentos e funcionários em paralelo
+        const [resDept, resFunc] = await Promise.all([
+            fetch(`https://${host}/webservice/v1/departamento`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ qtype: 'id', query: '0', oper: '>', page: '1', rp: '1000', sortname: 'id', sortorder: 'asc' })
+            }),
+            fetch(`https://${host}/webservice/v1/funcionarios`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
+            })
+        ]);
+
+        const dataDept = await resDept.json();
+        const dataFunc = await resFunc.json();
+
+        const departamentos = dataDept.registros || [];
+        const funcionarios = dataFunc.registros || [];
+
+        // Agrupa funcionários ativos por departamento
+        const setores = departamentos
+            .map(dept => {
+                const membros = funcionarios.filter(f =>
+                    String(f.id_departamento).trim() === String(dept.id).trim() && f.ativo === 'S'
+                );
+                const responsavel = membros[0] || null;
+                return {
+                    id: dept.id,
+                    nome: dept.departamento,
+                    totalMembros: membros.length,
+                    responsavel: responsavel ? {
+                        id: responsavel.id,
+                        nome: responsavel.funcionario,
+                        foto: responsavel.foto_perfil || null,
+                        ramal: responsavel.ramal || null
+                    } : null
+                };
+            })
+            .filter(s => s.totalMembros > 0);
+
+        return res.json({ sucesso: true, setores });
+    } catch (e) {
+        console.error('Erro rota /api/setores:', e);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)

@@ -1,6 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+// Mapa de ícones por palavra-chave no nome do departamento
+const ICON_MAP = [
+    { keys: ['ti', 'tecnologia', 'infra', 'infrastructure', 'tech', 'sistema'], icon: 'dns' },
+    { keys: ['comercial', 'venda', 'marketing', 'mkt', 'negocio'], icon: 'storefront' },
+    { keys: ['rh', 'recursos humanos', 'gente', 'people', 'gestão de pessoas'], icon: 'groups' },
+    { keys: ['financeiro', 'financ', 'jurídico', 'juridico', 'contabil', 'fiscal'], icon: 'account_balance' },
+    { keys: ['suporte', 'atendimento', 'helpdesk', 'cliente'], icon: 'support_agent' },
+    { keys: ['operação', 'operacoes', 'operações', 'logistica', 'operacional'], icon: 'precision_manufacturing' },
+    { keys: ['admin', 'administrativo', 'diretoria', 'gestão', 'gerência'], icon: 'business_center' },
+    { keys: ['projetos', 'project'], icon: 'folder_managed' },
+    { keys: ['campo', 'técnico', 'tecnico', 'instalação', 'instalacao'], icon: 'construction' },
+];
+
+function getIconForSetor(nome) {
+    const nomeLower = (nome || '').toLowerCase();
+    for (const entry of ICON_MAP) {
+        if (entry.keys.some(k => nomeLower.includes(k))) return entry.icon;
+    }
+    return 'corporate_fare';
+}
 
 export default function Sectors() {
+    const [setores, setSetores] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [erro, setErro] = useState(null);
+
+    useEffect(() => {
+        const fetchSetores = async () => {
+            try {
+                setLoading(true);
+                const res = await fetch('/api/setores');
+                const data = await res.json();
+                if (data.sucesso) {
+                    setSetores(data.setores);
+                } else {
+                    setErro('Erro ao carregar setores.');
+                }
+            } catch (e) {
+                console.error('Erro ao buscar setores:', e);
+                setErro('Não foi possível conectar ao servidor.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSetores();
+    }, []);
+
     return (
         <main className="layout-container flex h-full grow flex-col px-4 md:px-10 lg:px-40 py-8 overflow-y-auto w-full">
             <div className="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
@@ -69,10 +115,17 @@ export default function Sectors() {
                     </div>
                 </div>
 
-                {/* Diretório de Setores (Grid) */}
+                {/* Diretório de Setores (Grid) - Dados reais do IXC */}
                 <div className="space-y-6">
                     <div className="flex items-center justify-between border-b border-[#eaddcd] dark:border-gray-800 pb-4">
-                        <h2 className="text-[#1d150c] dark:text-white text-2xl font-black leading-tight">Diretório de Setores</h2>
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-[#1d150c] dark:text-white text-2xl font-black leading-tight">Diretório de Setores</h2>
+                            {!loading && (
+                                <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-black rounded-full">
+                                    {setores.length} setores
+                                </span>
+                            )}
+                        </div>
                         <div className="flex gap-2">
                             <button className="p-2 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-primary shadow-sm" title="Visualização em Grade">
                                 <span className="material-symbols-outlined">grid_view</span>
@@ -83,62 +136,54 @@ export default function Sectors() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <SectorCard
-                            icon="storefront"
-                            ext="402"
-                            title="Setor Comercial"
-                            desc="Responsável por parcerias B2B, aquisição de clientes e estratégias de expansão de mercado em todas as regiões."
-                            managerName="Elena Rodriguez"
-                            managerImg="https://lh3.googleusercontent.com/aida-public/AB6AXuA8J7on3DVWvZwqwYdfNGXQwipXm0-EN2i6Me-NESAtSeXXVItKB3LQ1k1RH08bLpVA1ivniT2qnhR--babzHdpFhA5z6GwZ-u6oTTpuNL_4Q3I0_atK6VK5odPyeeS5t7e7CyJlrg86uB_6JpuqcI-tDCA8WE4szOmNu_gQvdyGOh1Hlsdli1U-AbDfxCi9AxuTvWAkHICjXCQ8KUacH5-cWqiBipGO4p2A3oEhb47Vq7Bbw9X_uxDZ16s1Q2emquFEL2l3P7i3Vc"
-                            teamCount="24"
-                        />
-                        <SectorCard
-                            icon="dns"
-                            ext="105"
-                            title="Tecnologia & Infra"
-                            desc="Gerencia servidores internos, desenvolvimento de software, cibersegurança e provisionamento de hardware."
-                            managerName="Sarah Lin"
-                            managerImg="https://lh3.googleusercontent.com/aida-public/AB6AXuCcFwfxJG1wFdVOhaVphE8aF1c3JgHa50IYc0_qBtdqhJsoAzHHLatxAFhx98DsIACm_Oot1jjJ2bDZKZ29Ngg9o3G84oqS76K1-_JuvuR5mz8nwd0Suq5axvoXJxUoU-HLOTts0NQpJlghIyJ6uMcfLhUzzX-lJcpW8rxoMhxWzdC_JdK3SJk0_-B4Rp4KyaD8o35SU0K8gQMxVdan1-WhLMhqg1LZsNhd-COBRe4U9libx7TOOrgM93Bde6Ssf6ePhx23QCiqFCk"
-                            teamCount="42"
-                        />
-                        <SectorCard
-                            icon="groups"
-                            ext="220"
-                            title="Recursos Humanos"
-                            desc="Supervisiona recrutamento, relações com funcionários, administração de benefícios e iniciativas de cultura empresarial."
-                            managerName="James Wilson"
-                            managerImg="https://lh3.googleusercontent.com/aida-public/AB6AXuA1o2uFrWYBCQUbfIPgbjfyWL5j6QOXyfvOUzUdRp1YqL8bAFowhrLpR_kqlTUUL4O4gz6y-wKx90YCJ3nXseXfhPFicZbAtcW9Qk7xZwfSQceYsptj6c36UWTAtHyNf7UQlHRe1hD8Z7RWFK6Ybckms5mt8SvhFoUannnUpQahsHg8VX4UcEhEWmzvcRa2ePmp1N--s1Xj_QWbi0qeODLykyxdF-S_juh3wjRUZCiyWUjhto0A5xTS1tflidhvzQ1cF2PbnAc0Lng"
-                            teamCount="8"
-                        />
-                        <SectorCard
-                            icon="precision_manufacturing"
-                            ext="301"
-                            title="Operações"
-                            desc="Garante a eficiência operacional do dia a dia, gestão de logística e otimização de processos."
-                            managerName="Marcus Cole"
-                            managerImg="https://lh3.googleusercontent.com/aida-public/AB6AXuC_4AX3DmzrEhEJckKZUUuW1k2mfyzbk_cVjUFbaPEXTXLCIsay3-2YBB6bgfm5IkOYVxcwAwI6SZELS_oLfeFQYurOLNBhqUliTdz4iNsEO94VDaU-xyyJTw7dslow-DW0LMyKAOBal4JY2YvVVp7HaXvyHDBU4zj4gQO4_7VKItaupKBsTCiIyftmuuppCc6tvi546g1V4zVrFtflSxyabdGtvD4_XlFeaK7SUjx7AOUc30a5JcoH9GLVGdX-VeTKTkGOIECi_mc"
-                            teamCount="56"
-                        />
-                        <SectorCard
-                            icon="account_balance"
-                            ext="500"
-                            title="Financeiro & Jurídico"
-                            desc="Lida com orçamento, contabilidade, conformidade e assuntos jurídicos da corporação."
-                            managerName="Amanda Lee"
-                            managerImg="https://lh3.googleusercontent.com/aida-public/AB6AXuCxp0Kz0E90uwEtQg6FXYvwsiTTUgupAyPTR87QhawqdttRv-JzNSNP__hIZ2R6s0f9nwZ4_sMg5GpLYPEbuajtlSeZpH3HGAz5gMIBmZeua5kOlsrOag3_Fu4i67mqwpMtatt7JNwPEck5l1h8P9aOaLNKmjTj7tY9pqffdlHC82zd2HnRO6Vwpx1fFz9TkqMe_n_V6VtHMAQGO-qs0spk9eGEc-e9awc4yMdkt5R-pBh8uQnyrut_Ir1BLIDQxzN_eqpi5yOJsN8"
-                            teamCount="12"
-                        />
-                        <SectorCard
-                            icon="support_agent"
-                            ext="610"
-                            title="Suporte ao Cliente"
-                            desc="Suporte de primeira linha para consultas de clientes, resolução de problemas técnicos e pesquisas de satisfação."
-                            managerName="David Kim"
-                            managerImg="https://lh3.googleusercontent.com/aida-public/AB6AXuC1oW8W8Q45k8R7jQeXriH0d9o0NnvktFDDBHC9aLOVUXSwUu8Sh4vYLpKKIfJEMyUiSI3UI7CqLiVL218Taqhy32XnBMUKP5HKfrqGe9-D4k7csbvo5jTol1Ij4YdKSJniCjdmRajceyUJoj7cB-oB8YlLRjtyJ2c9UsruwoZbIwUu36EORlI8ZFctm5WBk9-FmKQN1mfGC3DvOLkg-X2XNXS1hFX-JcqRDtEjx2EcmamoOzCdbX0kAQs_1Pb7SBttuV5mft5UGdg"
-                            teamCount="35"
-                        />
-                    </div>
+                    {/* Estado de carregamento */}
+                    {loading && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <div key={i} className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 p-6 animate-pulse">
+                                    <div className="flex justify-between mb-5">
+                                        <div className="size-12 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+                                        <div className="w-20 h-6 rounded bg-gray-200 dark:bg-gray-700"></div>
+                                    </div>
+                                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-full mb-1"></div>
+                                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-5/6"></div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Estado de erro */}
+                    {!loading && erro && (
+                        <div className="flex flex-col items-center justify-center py-20 text-center">
+                            <span className="material-symbols-outlined text-5xl text-red-400 mb-4">error_outline</span>
+                            <p className="text-[#1d150c] dark:text-white font-bold text-lg mb-1">Não foi possível carregar os setores</p>
+                            <p className="text-[#a17745] dark:text-orange-300 text-sm">{erro}</p>
+                        </div>
+                    )}
+
+                    {/* Grid de setores */}
+                    {!loading && !erro && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {setores.map(setor => (
+                                <SectorCard
+                                    key={setor.id}
+                                    icon={getIconForSetor(setor.nome)}
+                                    ramal={setor.responsavel?.ramal || null}
+                                    title={setor.nome}
+                                    managerName={setor.responsavel?.nome || 'Não atribuído'}
+                                    managerImg={setor.responsavel?.foto || null}
+                                    teamCount={setor.totalMembros}
+                                />
+                            ))}
+                            {setores.length === 0 && (
+                                <div className="col-span-3 flex flex-col items-center justify-center py-16 text-center">
+                                    <span className="material-symbols-outlined text-5xl text-[#eaddcd] mb-4">domain_disabled</span>
+                                    <p className="text-[#a17745] dark:text-orange-300 font-semibold">Nenhum setor encontrado.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer contextualizado */}
@@ -171,7 +216,7 @@ function OrgNode({ icon, title, name }) {
 }
 
 // Subcomponente Card de Setor
-function SectorCard({ icon, ext, title, desc, managerName, managerImg, teamCount }) {
+function SectorCard({ icon, ramal, title, managerName, managerImg, teamCount }) {
     return (
         <div className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 p-6 flex flex-col gap-5 hover:border-[#ff8c00]/50 hover:shadow-md transition-all group relative overflow-hidden">
             {/* Linha colorida de destaque no hover */}
@@ -181,27 +226,34 @@ function SectorCard({ icon, ext, title, desc, managerName, managerImg, teamCount
                 <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                     <span className="material-symbols-outlined text-[28px]">{icon}</span>
                 </div>
-                <span className="px-2.5 py-1 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded font-black text-[11px] text-[#a17745] dark:text-orange-300 tracking-widest uppercase">
-                    Ramal {ext}
-                </span>
+                {ramal && (
+                    <span className="px-2.5 py-1 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded font-black text-[11px] text-[#a17745] dark:text-orange-300 tracking-widest uppercase">
+                        Ramal {ramal}
+                    </span>
+                )}
             </div>
 
             <div>
                 <h3 className="text-xl font-bold text-[#1d150c] dark:text-white mb-2">{title}</h3>
-                <p className="text-sm text-[#a17745] dark:text-orange-300 font-medium leading-relaxed line-clamp-2">{desc}</p>
             </div>
 
-            <div className="flex items-center gap-3 py-4 border-y border-[#f4eee6]">
-                <div
-                    className="size-10 rounded-full bg-gray-200 bg-cover bg-center border border-[#eaddcd] dark:border-gray-800"
-                    style={{ backgroundImage: `url('${managerImg}')` }}
-                    title={`Líder do setor: ${managerName}`}
-                ></div>
-                <div className="flex-1">
+            <div className="flex items-center gap-3 py-4 border-y border-[#f4eee6] dark:border-gray-800">
+                {managerImg ? (
+                    <div
+                        className="size-10 rounded-full bg-gray-200 bg-cover bg-center border border-[#eaddcd] dark:border-gray-800 shrink-0"
+                        style={{ backgroundImage: `url('${managerImg}')` }}
+                        title={`Responsável: ${managerName}`}
+                    ></div>
+                ) : (
+                    <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#eaddcd] dark:border-gray-800 shrink-0">
+                        <span className="material-symbols-outlined text-primary text-[20px]">person</span>
+                    </div>
+                )}
+                <div className="flex-1 min-w-0">
                     <p className="text-[10px] text-[#a17745] dark:text-orange-300 font-black uppercase tracking-wider mb-0.5">Responsável</p>
-                    <p className="text-sm font-bold text-[#1d150c] dark:text-white">{managerName}</p>
+                    <p className="text-sm font-bold text-[#1d150c] dark:text-white truncate">{managerName}</p>
                 </div>
-                <div className="text-right pl-3 border-l border-[#f4eee6]">
+                <div className="text-right pl-3 border-l border-[#f4eee6] dark:border-gray-800 shrink-0">
                     <p className="text-[10px] text-[#a17745] dark:text-orange-300 font-black uppercase tracking-wider mb-0.5">Equipe</p>
                     <p className="text-sm font-bold text-[#1d150c] dark:text-white">{teamCount}</p>
                 </div>
