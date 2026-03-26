@@ -1,0 +1,189 @@
+
+//Inserir----------------------------
+let request = require("request");
+let token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';
+let options = { method: 'POST',
+  url: 'https://HOST/webservice/v1/usuarios',
+  headers:
+   {
+     'Content-Type': 'application/json',
+     Authorization: 'Basic ' + new Buffer.from(token).toString('base64')
+   },
+  body:{
+    'id_grupo': '',
+    'tipo_alcada': 'ADM',
+    'nome': '',
+    'email': '',
+    'senha': '',
+    'status': 'A',
+    'fieldset_user_group_inactive': '',
+    'tipo_acesso': 'A',
+    'template': 'vg',
+    'scheme': 'light',
+    'funcionario': '',
+    'dica_colaborador': '',
+    'imagem': '',
+    'dica_imagem': '',
+    'acesso_webservice': 'S',
+    'acesso_token': '',
+    'user_callcenter': 'S',
+    'callcenter': '',
+    'alter_passwd_date': 'NULL',
+    'language': 'Pt-Br',
+    'caixa_fn_receber': '',
+    'id_caixa': '',
+    'vendedor_padrao': '',
+    'recebimentos_dia_atual': 'N',
+    'pagamentos_dia_atual': 'N',
+    'lancamentos_dia_atual': 'S',
+    'filtrar_plano_venda_filial_contrato': 'N',
+    'permitir_alterar_versao_chaves': 'N',
+    'desc_parc_atraso': 'P',
+    'desc_max_recebimento': '0.00',
+    'desc_max_monetario': '',
+    'desc_max_venda': '0.00',
+    'desc_max_renegociacao': '0.00',
+    'permite_alterar_comunicacao_fn_apagar': 'N',
+    'filtra_departamento_ticket': 'N',
+    'filtra_funcionario_ticket': 'N',
+    'mostrar_ticket_sem_funcionario': 'S',
+    'filtra_setor': 'N',
+    'filtra_funcionario': 'N',
+    'mostrar_os_sem_funcionario': 'S',
+    'inmap_filtra_vendedor': 'S',
+    'dica_filtra_responsavel': '',
+    'filtra_colaborador_quadro_kanban': 'S',
+    'crm_filtra_vendedor': 'S',
+    'administrador_kanban': 'N',
+    'enviar_monitoramento_host': 'S',
+    'enviar_notificacao_backup': 'S',
+    'permite_inutilizar_patrimonio': 'N',
+    'permite_ver_diferenca': 'S'
+  },
+  json: true
+ };
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+
+  console.log(body);
+});
+
+//Deletar----------------------------
+let request = require("request");
+let token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';
+let options = { method: 'DELETE',
+  url: 'https://HOST/webservice/v1/usuarios/Id_a_deletar',
+  headers:
+   {
+     'Content-Type': 'application/json',
+     Authorization: 'Basic ' + new Buffer.from(token).toString('base64')
+   }
+ };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+
+  console.log(body);
+});
+
+//Editar----------------------------
+let request = require("request");
+let token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';
+let options = { method: 'PUT',
+  url: 'https://HOST/webservice/v1/usuarios/Id_a_editar',
+  headers:
+   {
+     'Content-Type': 'application/json',
+     Authorization: 'Basic ' + new Buffer.from(token).toString('base64')
+   },
+  body:
+   {
+    "id_grupo": "",
+    "tipo_alcada": "ADM",
+    "nome": "",
+    "email": "",
+    "senha": "",
+    "status": "A",
+    "fieldset_user_group_inactive": "",
+    "tipo_acesso": "A",
+    "template": "vg",
+    "scheme": "light",
+    "funcionario": "",
+    "dica_colaborador": "",
+    "imagem": "",
+    "dica_imagem": "",
+    "acesso_webservice": "S",
+    "acesso_token": "",
+    "user_callcenter": "S",
+    "callcenter": "",
+    "alter_passwd_date": "NULL",
+    "language": "Pt-Br",
+    "caixa_fn_receber": "",
+    "id_caixa": "",
+    "vendedor_padrao": "",
+    "recebimentos_dia_atual": "N",
+    "pagamentos_dia_atual": "N",
+    "lancamentos_dia_atual": "S",
+    "filtrar_plano_venda_filial_contrato": "N",
+    "permitir_alterar_versao_chaves": "N",
+    "desc_parc_atraso": "P",
+    "desc_max_recebimento": "0.00",
+    "desc_max_monetario": "",
+    "desc_max_venda": "0.00",
+    "desc_max_renegociacao": "0.00",
+    "permite_alterar_comunicacao_fn_apagar": "N",
+    "filtra_departamento_ticket": "N",
+    "filtra_funcionario_ticket": "N",
+    "mostrar_ticket_sem_funcionario": "S",
+    "filtra_setor": "N",
+    "filtra_funcionario": "N",
+    "mostrar_os_sem_funcionario": "S",
+    "inmap_filtra_vendedor": "S",
+    "dica_filtra_responsavel": "",
+    "filtra_colaborador_quadro_kanban": "S",
+    "crm_filtra_vendedor": "S",
+    "administrador_kanban": "N",
+    "enviar_monitoramento_host": "S",
+    "enviar_notificacao_backup": "S",
+    "permite_inutilizar_patrimonio": "N",
+    "permite_ver_diferenca": "S"
+   },
+  json: true
+  };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+
+  console.log(body);
+});
+
+//Listar----------------------------
+let request = require("request");
+let token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';
+let options = { method: 'GET',
+  url: 'https://HOST/webservice/v1/usuarios',
+  headers:
+   {
+     'Content-Type': 'application/json',
+     Authorization: 'Basic ' + new Buffer.from(token).toString('base64'),
+     ixcsoft: 'listar'
+   },
+  body:
+   { qtype: 'usuarios.id',
+     query: '0',
+     oper: '>',
+     page: '1',
+     rp: '20',
+     sortname: 'usuarios.id',
+     sortorder: 'desc'
+   },
+  json: true
+  };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+
+  console.log(body);
+});
+
+                    

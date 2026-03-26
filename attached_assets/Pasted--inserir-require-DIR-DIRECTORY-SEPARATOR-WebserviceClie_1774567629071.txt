@@ -1,0 +1,171 @@
+
+//inserir----------------------------
+require(__DIR__ . DIRECTORY_SEPARATOR . 'WebserviceClient.php');
+$host = 'https://SEU_DOMINIO/webservice/v1';
+$token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';//token gerado no cadastro do usuario (verificar permissões)
+$selfSigned = true; //true para certificado auto assinado
+$api = new IXCsoft\WebserviceClient($host, $token, $selfSigned);
+$dados = array(
+    'grupo' => '',
+    'tipo_alcada' => 'ADM',
+    'descricao' => '',
+    'ativo' => 'S',
+    'campo_dica_inativar_grupo' => '',
+    'enable_totp_group' => '2',
+    'fieldset_tfa_grupo' => '',
+    'redes' => '10.0.0.0/8;172.16.0.0/12;192.168.0.0/16;',
+    'horarios' => '',
+    'filtrar_filiais' => 'S',
+    'filtra_grid_filial' => 'S',
+    'fiberdocs_filtro_filial' => 'S',
+    'filtrar_requisicao_material' => 'S',
+    'filtrar_transferencia_material_confirmacao' => 'S',
+    'filtrar_grid_os_cliente' => 'S',
+    'exporta_xls' => 'S',
+    'permite_atualizar' => 'S',
+    'permite_chamar_suporte' => 'S',
+    'permite_alteracao_data_base_grupo' => 'S',
+    'visualizar_auditoria' => 'S',
+    'habilitar_barra_pesquisa' => 'S',
+    'permite_listar_caixas' => 'S',
+    'permissao_tipo' => 'L',
+    'permissao_bt_form' => 'H',
+    'permissao_campo_form' => 'H',
+    'poermissao_bt_grid' => 'H',
+    'acesso_upvoty_ixc' => 'N',
+    'expire_password' => '0',
+    'expire_password_days' => '',
+    'tempo_limite_sessao_minutos' => '0',
+    'retrospectiva' => '',
+    'visualizar_retro' => 'S',
+    'permissao_retrospectiva' => 'E',
+    'dica_usuarios' => '',
+    'acesso_querybuilder' => 'N',
+    'visualizar_visoes_querybuilder' => 'S',
+    'acesso_avancado_querybuilder' => 'N',
+    'dashboard_padrao' => 'dash_principal',
+    'dash_principal' => 'P',
+    'dash_contratos' => 'P',
+    'dash_cobrancas' => 'P',
+    'dash_financeiro' => 'P',
+    'dash_contas_a_receber' => 'P',
+    'dash_contas_a_pagar' => 'P',
+    'dash_cliente_chave' => 'P',
+    'dash_acessos' => 'P',
+    'dash_atendimento' => 'P',
+    'dash_ordem_servico' => 'P',
+    'dash_ordem_servico_user' => 'P',
+    'dash_crm' => 'P',
+    'dash_crm_pessoa_fisica' => 'P',
+    'dash_crm_corporativo' => 'P',
+    'dash_crm_user' => 'P',
+    'dash_negociacoes' => 'P',
+    'dash_serverinfo' => 'P',
+    'dash_radius' => 'P',
+    'dash_monitoramento_fibra' => 'P',
+    'dash_faturas' => 'P'
+);
+$api->post('usuarios_grupo', $dados);
+$retorno = $api->getRespostaConteudo(false);// false para json | true para array
+?>
+
+//editar-----------------------------
+require(__DIR__ . DIRECTORY_SEPARATOR . 'WebserviceClient.php');
+$host = 'https://SEU_DOMINIO/webservice/v1';
+$token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';//token gerado no cadastro do usuario (verificar permissões)
+$selfSigned = true; //true para certificado auto assinado
+$api = new IXCsoft\WebserviceClient($host, $token, $selfSigned);
+$dados = array(
+    'grupo' => '',
+    'tipo_alcada' => 'ADM',
+    'descricao' => '',
+    'ativo' => 'S',
+    'campo_dica_inativar_grupo' => '',
+    'enable_totp_group' => '2',
+    'fieldset_tfa_grupo' => '',
+    'redes' => '10.0.0.0/8;172.16.0.0/12;192.168.0.0/16;',
+    'horarios' => '',
+    'filtrar_filiais' => 'S',
+    'filtra_grid_filial' => 'S',
+    'fiberdocs_filtro_filial' => 'S',
+    'filtrar_requisicao_material' => 'S',
+    'filtrar_transferencia_material_confirmacao' => 'S',
+    'filtrar_grid_os_cliente' => 'S',
+    'exporta_xls' => 'S',
+    'permite_atualizar' => 'S',
+    'permite_chamar_suporte' => 'S',
+    'permite_alteracao_data_base_grupo' => 'S',
+    'visualizar_auditoria' => 'S',
+    'habilitar_barra_pesquisa' => 'S',
+    'permite_listar_caixas' => 'S',
+    'permissao_tipo' => 'L',
+    'permissao_bt_form' => 'H',
+    'permissao_campo_form' => 'H',
+    'poermissao_bt_grid' => 'H',
+    'acesso_upvoty_ixc' => 'N',
+    'expire_password' => '0',
+    'expire_password_days' => '',
+    'tempo_limite_sessao_minutos' => '0',
+    'retrospectiva' => '',
+    'visualizar_retro' => 'S',
+    'permissao_retrospectiva' => 'E',
+    'dica_usuarios' => '',
+    'acesso_querybuilder' => 'N',
+    'visualizar_visoes_querybuilder' => 'S',
+    'acesso_avancado_querybuilder' => 'N',
+    'dashboard_padrao' => 'dash_principal',
+    'dash_principal' => 'P',
+    'dash_contratos' => 'P',
+    'dash_cobrancas' => 'P',
+    'dash_financeiro' => 'P',
+    'dash_contas_a_receber' => 'P',
+    'dash_contas_a_pagar' => 'P',
+    'dash_cliente_chave' => 'P',
+    'dash_acessos' => 'P',
+    'dash_atendimento' => 'P',
+    'dash_ordem_servico' => 'P',
+    'dash_ordem_servico_user' => 'P',
+    'dash_crm' => 'P',
+    'dash_crm_pessoa_fisica' => 'P',
+    'dash_crm_corporativo' => 'P',
+    'dash_crm_user' => 'P',
+    'dash_negociacoes' => 'P',
+    'dash_serverinfo' => 'P',
+    'dash_radius' => 'P',
+    'dash_monitoramento_fibra' => 'P',
+    'dash_faturas' => 'P'
+);
+$registro = '1';//registro a ser editado
+$api->put('usuarios_grupo', $dados, $registro);
+$retorno = $api->getRespostaConteudo(false);// false para json | true para array
+
+
+//deletar-----------------------------
+require(__DIR__ . DIRECTORY_SEPARATOR . 'WebserviceClient.php');
+$host = 'https://SEU_DOMINIO/webservice/v1';
+$token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';//token gerado no cadastro do usuario (verificar permissões)
+$selfSigned = true; //true para certificado auto assinado
+$api = new IXCsoft\WebserviceClient($host, $token, $selfSigned);
+$registro = '1';//registro a ser deletado
+$api->delete('usuarios_grupo', $registro);
+$retorno = $api->getRespostaConteudo(false);// false para json | true para array
+
+
+//listar-----------------------------
+require(__DIR__ . DIRECTORY_SEPARATOR . 'WebserviceClient.php');
+$host = 'https://SEU_DOMINIO/webservice/v1';
+$token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';//token gerado no cadastro do usuario (verificar permissões)
+$selfSigned = true; //true para certificado auto assinado
+$api = new IXCsoft\WebserviceClient($host, $token, $selfSigned);
+$params = array(
+    'qtype' => 'usuarios_grupo.id',//campo de filtro
+    'query' => '1',//valor para consultar
+    'oper' => '=',//operador da consulta
+    'page' => '1',//página a ser mostrada
+    'rp' => '20',//quantidade de registros por página
+    'sortname' => 'usuarios_grupo.id',//campo para ordenar a consulta
+    'sortorder' => 'desc'//ordenação (asc= crescente | desc=decrescente)
+);
+$api->get('usuarios_grupo', $params);
+$retorno = $api->getRespostaConteudo(false);// false para json | true para array
+                    
