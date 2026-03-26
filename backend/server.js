@@ -1206,8 +1206,8 @@ app.get('/api/debug/setor/:setorId', async (req, res) => {
     }
 });
 
-// ─── Rota: Buscar Grupos de Usuários com seus membros ───────────────────────
-app.get('/api/grupos-usuarios', async (req, res) => {
+// ─── Rota: Buscar Mapeamento Usuários <-> Grupos ───────────────────────
+app.get('/api/usuarios-grupo', async (req, res) => {
     const host = process.env.IXC_HOST;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const headers = {
@@ -1217,18 +1217,20 @@ app.get('/api/grupos-usuarios', async (req, res) => {
     };
 
     try {
-        const resGrupos = await fetch(`https://${host}/webservice/v1/grupos_usuarios`, {
-            method: 'POST', headers,
-            body: JSON.stringify({ qtype: 'id', query: '0', oper: '>', page: '1', rp: '5000', sortname: 'nome', sortorder: 'asc' })
+        // Tenta POST com body vazio como fallback (alguns endpoints IXC podem exigir POST)
+        const resUG = await fetch(`https://${host}/webservice/v1/usuarios_grupo`, {
+            method: 'POST', 
+            headers,
+            body: JSON.stringify({ qtype: 'usuarios_grupo.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios_grupo.id', sortorder: 'asc' })
         });
 
-        const dataGrupos = await resGrupos.json();
-        const grupos = dataGrupos.registros || [];
+        const dataUG = await resUG.json();
+        const usuariosGrupo = dataUG.registros || [];
         
-        console.log(`-> /api/grupos-usuarios: ${grupos.length} grupos retornados`);
-        return res.json({ sucesso: true, grupos });
+        console.log(`-> /api/usuarios-grupo: ${usuariosGrupo.length} mapeamentos retornados`);
+        return res.json({ sucesso: true, usuariosGrupo });
     } catch (e) {
-        console.error('Erro rota /api/grupos-usuarios:', e);
+        console.error('Erro rota /api/usuarios-grupo:', e);
         return res.status(500).json({ sucesso: false, erro: e.message });
     }
 });
@@ -1244,8 +1246,8 @@ app.get('/api/setores', async (req, res) => {
     };
 
     try {
-        // Busca setores, funcionários e grupos em paralelo
-        const [resSetor, resFunc, resGrupos] = await Promise.all([
+        // Busca setores, funcionários e mapeamento usuários-grupos em paralelo
+        const [resSetor, resFunc, resUG] = await Promise.all([
             fetch(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
@@ -1254,28 +1256,31 @@ app.get('/api/setores', async (req, res) => {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
             }),
-            fetch(`https://${host}/webservice/v1/grupos_usuarios`, {
-                method: 'POST', headers,
-                body: JSON.stringify({ qtype: 'id', query: '0', oper: '>', page: '1', rp: '5000', sortname: 'nome', sortorder: 'asc' })
+            fetch(`https://${host}/webservice/v1/usuarios_grupo`, {
+                method: 'GET', headers
             })
         ]);
 
         const dataSetor = await resSetor.json();
         const dataFunc = await resFunc.json();
-        const dataGrupos = await resGrupos.json();
+        const dataUG = await resUG.json();
 
         const setoresRaw = (dataSetor.registros || []).filter(s => s.ativo === 'S');
         const funcionarios = dataFunc.registros || [];
-        const grupos = dataGrupos.registros || [];
+        const usuariosGrupo = dataUG.registros || [];
 
-        // Mapeia grupo -> funcionário_id para achado rápido (uma pessoa pode estar em vários grupos)
-        const funcionariosPorGrupo = {};
-        grupos.forEach(grupo => {
-            if (grupo.nome && grupo.id_usuario) {
-                if (!funcionariosPorGrupo[grupo.id_usuario]) {
-                    funcionariosPorGrupo[grupo.id_usuario] = [];
+        // Mapeia id_usuario -> [nomes de grupos] para achado rápido
+        const gruposPorUsuario = {};
+        usuariosGrupo.forEach(ug => {
+            // Mapeia a partir de id_usuario (pode variar o nome do campo)
+            const usuarioId = ug.id_usuario || ug.usuario_id || ug.user_id;
+            const nomeGrupo = ug.grupo || ug.name || ug.nome;
+            
+            if (usuarioId && nomeGrupo) {
+                if (!gruposPorUsuario[usuarioId]) {
+                    gruposPorUsuario[usuarioId] = [];
                 }
-                funcionariosPorGrupo[grupo.id_usuario].push(grupo.nome);
+                gruposPorUsuario[usuarioId].push(nomeGrupo);
             }
         });
 
@@ -1288,8 +1293,10 @@ app.get('/api/setores', async (req, res) => {
             // Procura por supervisores no setor (funcionários com grupo contendo "SUPERVISOR")
             let responsavel = null;
             for (const membro of membros) {
-                const gruposDoFuncionario = funcionariosPorGrupo[membro.id] || [];
-                const temSupervisor = gruposDoFuncionario.some(g => g.toUpperCase().includes('SUPERVISOR'));
+                const gruposDoFuncionario = gruposPorUsuario[membro.id] || [];
+                const temSupervisor = gruposDoFuncionario.some(g => 
+                    g.toUpperCase().includes('SUPERVISOR') || g.toUpperCase().includes('SUPERVISOR(A)')
+                );
                 if (temSupervisor) {
                     responsavel = membro;
                     break;
@@ -1315,7 +1322,7 @@ app.get('/api/setores', async (req, res) => {
             };
         });
 
-        console.log(`-> /api/setores: ${setores.length} setores retornados (${setores.filter(s=>s.totalMembros>0).length} com membros)`);
+        console.log(`-> /api/setores: ${setores.length} setores retornados (${setores.filter(s=>s.totalMembros>0).length} com membros, ${Object.keys(gruposPorUsuario).length} usuários com grupos)`);
         return res.json({ sucesso: true, setores });
     } catch (e) {
         console.error('Erro rota /api/setores:', e);

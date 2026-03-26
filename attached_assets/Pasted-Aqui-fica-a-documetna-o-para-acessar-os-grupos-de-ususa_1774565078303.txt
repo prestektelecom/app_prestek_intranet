@@ -1,0 +1,207 @@
+Aqui fica a documetnação para acessar os grupos de ususarios 
+//Inserir----------------------------
+let request = require("request");
+let token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';
+let options = { method: 'POST',
+  url: 'https://HOST/webservice/v1/usuarios_grupo',
+  headers:
+   {
+     'Content-Type': 'application/json',
+     Authorization: 'Basic ' + new Buffer.from(token).toString('base64')
+   },
+  body:{
+    'grupo': '',
+    'tipo_alcada': 'ADM',
+    'descricao': '',
+    'ativo': 'S',
+    'campo_dica_inativar_grupo': '',
+    'enable_totp_group': '2',
+    'fieldset_tfa_grupo': '',
+    'redes': '10.0.0.0/8;172.16.0.0/12;192.168.0.0/16;',
+    'horarios': '',
+    'filtrar_filiais': 'S',
+    'filtra_grid_filial': 'S',
+    'fiberdocs_filtro_filial': 'S',
+    'filtrar_requisicao_material': 'S',
+    'filtrar_transferencia_material_confirmacao': 'S',
+    'filtrar_grid_os_cliente': 'S',
+    'exporta_xls': 'S',
+    'permite_atualizar': 'S',
+    'permite_chamar_suporte': 'S',
+    'permite_alteracao_data_base_grupo': 'S',
+    'visualizar_auditoria': 'S',
+    'habilitar_barra_pesquisa': 'S',
+    'permite_listar_caixas': 'S',
+    'permissao_tipo': 'L',
+    'permissao_bt_form': 'H',
+    'permissao_campo_form': 'H',
+    'poermissao_bt_grid': 'H',
+    'acesso_upvoty_ixc': 'N',
+    'expire_password': '0',
+    'expire_password_days': '',
+    'tempo_limite_sessao_minutos': '0',
+    'retrospectiva': '',
+    'visualizar_retro': 'S',
+    'permissao_retrospectiva': 'E',
+    'dica_usuarios': '',
+    'acesso_querybuilder': 'N',
+    'visualizar_visoes_querybuilder': 'S',
+    'acesso_avancado_querybuilder': 'N',
+    'dashboard_padrao': 'dash_principal',
+    'dash_principal': 'P',
+    'dash_contratos': 'P',
+    'dash_cobrancas': 'P',
+    'dash_financeiro': 'P',
+    'dash_contas_a_receber': 'P',
+    'dash_contas_a_pagar': 'P',
+    'dash_cliente_chave': 'P',
+    'dash_acessos': 'P',
+    'dash_atendimento': 'P',
+    'dash_ordem_servico': 'P',
+    'dash_ordem_servico_user': 'P',
+    'dash_crm': 'P',
+    'dash_crm_pessoa_fisica': 'P',
+    'dash_crm_corporativo': 'P',
+    'dash_crm_user': 'P',
+    'dash_negociacoes': 'P',
+    'dash_serverinfo': 'P',
+    'dash_radius': 'P',
+    'dash_monitoramento_fibra': 'P',
+    'dash_faturas': 'P'
+  },
+  json: true
+ };
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+
+  console.log(body);
+});
+
+//Deletar----------------------------
+let request = require("request");
+let token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';
+let options = { method: 'DELETE',
+  url: 'https://HOST/webservice/v1/usuarios_grupo/Id_a_deletar',
+  headers:
+   {
+     'Content-Type': 'application/json',
+     Authorization: 'Basic ' + new Buffer.from(token).toString('base64')
+   }
+ };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+
+  console.log(body);
+});
+
+//Editar----------------------------
+let request = require("request");
+let token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';
+let options = { method: 'PUT',
+  url: 'https://HOST/webservice/v1/usuarios_grupo/Id_a_editar',
+  headers:
+   {
+     'Content-Type': 'application/json',
+     Authorization: 'Basic ' + new Buffer.from(token).toString('base64')
+   },
+  body:
+   {
+    "grupo": "",
+    "tipo_alcada": "ADM",
+    "descricao": "",
+    "ativo": "S",
+    "campo_dica_inativar_grupo": "",
+    "enable_totp_group": "2",
+    "fieldset_tfa_grupo": "",
+    "redes": "10.0.0.0/8;172.16.0.0/12;192.168.0.0/16;",
+    "horarios": "",
+    "filtrar_filiais": "S",
+    "filtra_grid_filial": "S",
+    "fiberdocs_filtro_filial": "S",
+    "filtrar_requisicao_material": "S",
+    "filtrar_transferencia_material_confirmacao": "S",
+    "filtrar_grid_os_cliente": "S",
+    "exporta_xls": "S",
+    "permite_atualizar": "S",
+    "permite_chamar_suporte": "S",
+    "permite_alteracao_data_base_grupo": "S",
+    "visualizar_auditoria": "S",
+    "habilitar_barra_pesquisa": "S",
+    "permite_listar_caixas": "S",
+    "permissao_tipo": "L",
+    "permissao_bt_form": "H",
+    "permissao_campo_form": "H",
+    "poermissao_bt_grid": "H",
+    "acesso_upvoty_ixc": "N",
+    "expire_password": "0",
+    "expire_password_days": "",
+    "tempo_limite_sessao_minutos": "0",
+    "retrospectiva": "",
+    "visualizar_retro": "S",
+    "permissao_retrospectiva": "E",
+    "dica_usuarios": "",
+    "acesso_querybuilder": "N",
+    "visualizar_visoes_querybuilder": "S",
+    "acesso_avancado_querybuilder": "N",
+    "dashboard_padrao": "dash_principal",
+    "dash_principal": "P",
+    "dash_contratos": "P",
+    "dash_cobrancas": "P",
+    "dash_financeiro": "P",
+    "dash_contas_a_receber": "P",
+    "dash_contas_a_pagar": "P",
+    "dash_cliente_chave": "P",
+    "dash_acessos": "P",
+    "dash_atendimento": "P",
+    "dash_ordem_servico": "P",
+    "dash_ordem_servico_user": "P",
+    "dash_crm": "P",
+    "dash_crm_pessoa_fisica": "P",
+    "dash_crm_corporativo": "P",
+    "dash_crm_user": "P",
+    "dash_negociacoes": "P",
+    "dash_serverinfo": "P",
+    "dash_radius": "P",
+    "dash_monitoramento_fibra": "P",
+    "dash_faturas": "P"
+   },
+  json: true
+  };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+
+  console.log(body);
+});
+
+//Listar----------------------------
+let request = require("request");
+let token = '6:4dacdb8e47193e8cbbabe508c3c59b4547e463817b1d9b9a1d20ab4812fe1a62';
+let options = { method: 'GET',
+  url: 'https://HOST/webservice/v1/usuarios_grupo',
+  headers:
+   {
+     'Content-Type': 'application/json',
+     Authorization: 'Basic ' + new Buffer.from(token).toString('base64'),
+     ixcsoft: 'listar'
+   },
+  body:
+   { qtype: 'usuarios_grupo.id',
+     query: '0',
+     oper: '>',
+     page: '1',
+     rp: '20',
+     sortname: 'usuarios_grupo.id',
+     sortorder: 'desc'
+   },
+  json: true
+  };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+
+  console.log(body);
+});
+
+                    
