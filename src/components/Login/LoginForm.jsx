@@ -7,8 +7,8 @@ export default function LoginForm({
     credValida, handleSubmit 
 }) {
     return (
-        <div className="p-6 sm:p-8 pt-8 relative z-10">
-            <div className="mb-6 text-center">
+        <div className="p-7 sm:p-10 pt-10 relative z-10">
+            <div className="mb-8 text-center">
                 <h2 className="text-lg font-bold">Acesso ao Sistema</h2>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Insira suas credenciais</p>
             </div>
@@ -22,9 +22,9 @@ export default function LoginForm({
                 </div>
             )}
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form className="space-y-5" onSubmit={handleSubmit}>
                 <div className="group">
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 transition-colors group-focus-within:text-[#ff8c00]">
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 transition-colors group-focus-within:text-[#ff8c00]">
                         E-mail ou Usuário
                     </label>
                     <div className="relative flex items-center">
@@ -35,7 +35,7 @@ export default function LoginForm({
                             type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:ring-2 focus:ring-[#ff8c00]/30 focus:border-[#ff8c00] transition-all outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium text-sm"
+                            className="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:ring-2 focus:ring-[#ff8c00]/30 focus:border-[#ff8c00] transition-all outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium text-sm"
                             placeholder="Seu usuário IXC"
                             disabled={carregando}
                         />
@@ -43,7 +43,7 @@ export default function LoginForm({
                 </div>
 
                 <div className="group">
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 transition-colors group-focus-within:text-[#ff8c00]">
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 transition-colors group-focus-within:text-[#ff8c00]">
                         Senha
                     </label>
                     <div className="relative flex items-center">
@@ -54,7 +54,7 @@ export default function LoginForm({
                             type={mostrarSenha ? "text" : "password"}
                             value={senha}
                             onChange={(e) => setSenha(e.target.value)}
-                            className="w-full pl-12 pr-12 py-3 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:ring-2 focus:ring-[#ff8c00]/30 focus:border-[#ff8c00] transition-all outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium text-sm"
+                            className="w-full pl-12 pr-12 py-3.5 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:ring-2 focus:ring-[#ff8c00]/30 focus:border-[#ff8c00] transition-all outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium text-sm"
                             placeholder="Sua senha"
                             disabled={carregando}
                         />
@@ -77,7 +77,7 @@ export default function LoginForm({
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between text-sm py-3">
+                <div className="flex items-center justify-between text-sm py-3 mt-1 mb-1">
                     <label className="flex items-center gap-3 cursor-pointer group">
                         <div className="relative flex items-center justify-center">
                             <input
@@ -99,7 +99,7 @@ export default function LoginForm({
                 <button
                     type="submit"
                     disabled={carregando}
-                    className="relative w-full overflow-hidden bg-gradient-to-r from-[#ff8c00] to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-[#ff8c00]/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-wait"
+                    className="relative w-full overflow-hidden bg-gradient-to-r from-[#ff8c00] to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-[#ff8c00]/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-wait mt-2"
                 >
                     {carregando ? (
                         <span className="flex items-center justify-center gap-2 text-sm">
@@ -115,7 +115,7 @@ export default function LoginForm({
                 </button>
             </form>
 
-            <div className="relative my-6">
+            <div className="relative my-7">
                 <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-slate-200/80 dark:border-slate-700/80"></div>
                 </div>
@@ -126,8 +126,8 @@ export default function LoginForm({
                 </div>
             </div>
 
-            <div className="text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800">
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Problemas ao acessar? 
                     <a href="#" className="inline-flex items-center gap-1 text-[#ff8c00] font-bold hover:text-orange-600 transition-colors ml-1.5 hover:underline underline-offset-4">
                         TI Prestek
