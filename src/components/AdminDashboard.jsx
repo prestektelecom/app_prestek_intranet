@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import GruposSupervisores from './GruposSupervisores';
+import ResponsaveisManual from './ResponsaveisManual';
 
 export default function AdminDashboard({ setCurrentView }) {
     const [abaAtiva, setAbaAtiva] = useState('painel');
@@ -95,9 +96,44 @@ export default function AdminDashboard({ setCurrentView }) {
                 <main className="flex-1 overflow-y-auto bg-[#f8f7f5] dark:bg-[#0f0a05] p-6 lg:p-10 scrollbar-hide">
                     <div className="max-w-[1200px] mx-auto flex flex-col gap-8">
 
-                        {/* Seção: Grupos Supervisor(a) */}
+                        {/* Seção: Grupos Supervisor(a) + Responsáveis Manuais */}
                         {abaAtiva === 'grupos-supervisores' && (
-                            <GruposSupervisores />
+                            <div className="flex flex-col gap-10">
+                                {/* Painel 1: Grupos Supervisor */}
+                                <div className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 shadow-sm p-6 md:p-8">
+                                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#eaddcd] dark:border-gray-800">
+                                        <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                            <span className="material-symbols-outlined">manage_accounts</span>
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg font-bold text-[#1d150c] dark:text-white">Grupos de Supervisor(a)</h2>
+                                            <p className="text-xs text-[#a17745] dark:text-orange-300">Define quais grupos do IXC identificam automaticamente o responsável de cada setor.</p>
+                                        </div>
+                                    </div>
+                                    <GruposSupervisores />
+                                </div>
+
+                                {/* Divisor */}
+                                <div className="flex items-center gap-4">
+                                    <div className="flex-1 h-px bg-[#eaddcd] dark:bg-gray-800" />
+                                    <span className="text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-widest">Configuração Manual</span>
+                                    <div className="flex-1 h-px bg-[#eaddcd] dark:bg-gray-800" />
+                                </div>
+
+                                {/* Painel 2: Responsável Manual por Setor */}
+                                <div className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 shadow-sm p-6 md:p-8">
+                                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#eaddcd] dark:border-gray-800">
+                                        <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                            <span className="material-symbols-outlined">edit_note</span>
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg font-bold text-[#1d150c] dark:text-white">Responsável Manual por Setor</h2>
+                                            <p className="text-xs text-[#a17745] dark:text-orange-300">Sobrescreve manualmente o responsável exibido no Diretório. Tem prioridade sobre os grupos acima.</p>
+                                        </div>
+                                    </div>
+                                    <ResponsaveisManual />
+                                </div>
+                            </div>
                         )}
 
                         {/* Seção: Painel de Controle */}
