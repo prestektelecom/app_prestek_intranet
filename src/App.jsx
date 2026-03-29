@@ -108,7 +108,7 @@ export default function App() {
                 {currentView === 'services' && <ServicesDirectory />}
                 {currentView === 'coverage' && <Coverage />}
                 {currentView === 'directory' && <Directory user={user} />}
-                {currentView === 'sectors' && <Sectors />}
+                {currentView === 'sectors' && <Sectors user={user} />}
                 {currentView === 'schedule' && <Schedule />}
                 {currentView === 'processes' && <Processos />}
                 {currentView === 'announcements' && <Comunicados user={user} />}

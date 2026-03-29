@@ -1302,6 +1302,29 @@ app.post('/api/admin/responsaveis-manuais', async (req, res) => {
     }
 });
 
+// ─── Rotas: Admin — Gerenciar Descrições de Setores ────────────────────────
+app.post('/api/admin/setores-descricoes', async (req, res) => {
+    const { id_setor, descricao, atualizado_por } = req.body;
+    if (!id_setor) return res.status(400).json({ sucesso: false, erro: 'id_setor é obrigatório' });
+
+    try {
+        if (!descricao || descricao.trim() === '') {
+            await pool.query('DELETE FROM setores_descricoes WHERE id_setor = $1', [String(id_setor)]);
+        } else {
+            const query = `
+                INSERT INTO setores_descricoes (id_setor, descricao, atualizado_por, atualizado_em) 
+                VALUES ($1, $2, $3, NOW())
+                ON CONFLICT (id_setor) DO UPDATE 
+                SET descricao = EXCLUDED.descricao, atualizado_por = EXCLUDED.atualizado_por, atualizado_em = NOW();
+            `;
+            await pool.query(query, [String(id_setor), descricao, atualizado_por || 'Sistema']);
+        }
+        return res.json({ sucesso: true });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 // ─── Rota: Listar todos os id_grupo com seus membros (diagnóstico) ──────────
 app.get('/api/debug/grupos-membros', async (req, res) => {
     const host = process.env.IXC_HOST;
@@ -1465,6 +1488,15 @@ app.get('/api/setores', async (req, res) => {
             });
         } catch (e) {}
 
+        // Busca descrições customizadas de setores
+        let descricoesManuais = {};
+        try {
+            const descResult = await pool.query('SELECT * FROM setores_descricoes');
+            descResult.rows.forEach(r => {
+                descricoesManuais[String(r.id_setor)] = r.descricao;
+            });
+        } catch (e) {}
+
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
             const membros = funcionarios.filter(f =>
@@ -1512,6 +1544,7 @@ app.get('/api/setores', async (req, res) => {
                 id: setor.id,
                 nome: setor.setor,
                 cor: setor.cor || null,
+                descricao_customizada: descricoesManuais[String(setor.id)] || null,
                 totalMembros: membros.length,
                 responsavel: responsavel ? {
                     id: responsavel.id,
