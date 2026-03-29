@@ -5,6 +5,11 @@
       "source": "czlonkowski/n8n-skills",
       "sourceType": "github",
       "computedHash": "52998bacfadee37835bfa434d08a23c76fa04092f757660708fe014c3594877c"
+    },
+    "redis-development": {
+      "source": "redis/agent-skills",
+      "sourceType": "github",
+      "computedHash": "993ad240385d830a9717796a4b76e835ed737bfc9d3e10a4528e00bacd58cbf8"
     }
   }
 }
