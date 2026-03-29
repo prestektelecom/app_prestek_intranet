@@ -11,7 +11,8 @@ import fs from 'fs'
 // Cache para OS abertas global
 let cacheOS = {
     dados: null,
-    timestamp: 0
+    timestamp: 0,
+    promise: null
 };
 
 const app = express()
@@ -530,36 +531,49 @@ app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
         }
 
         // 2. Verificar Cache Global (1 minuto)
+        let cacheStatus = 'HIT';
         const agora = Date.now();
         if (!cacheOS.dados || (agora - cacheOS.timestamp > 60000)) {
-            console.log("-> Cache expirado ou vazio em /api/os-chamados. Buscando OS abertas no IXC...");
-            const statusAtivos = ['A', 'AG', 'AS', 'EN', 'AN', 'EX'];
-            const promises = statusAtivos.map(async (status) => {
-                const body = JSON.stringify({
-                    qtype: 'su_oss_chamado.status',
-                    query: status,
-                    oper: '=',
-                    page: '1',
-                    rp: '10000'
-                });
-                try {
-                    const resp = await fetch(url, { method: 'POST', headers, body });
-                    const json = await resp.json();
-                    return json.registros || [];
-                } catch (err) {
-                    return [];
-                }
-            });
-            const resultados = await Promise.all(promises);
-            cacheOS = {
-                dados: resultados.flat(),
-                timestamp: agora
-            };
-            console.log(`-> Cache atualizado. Total de OS abertas na empresa: ${cacheOS.dados.length}`);
+            cacheStatus = 'MISS';
+            if (!cacheOS.promise) {
+                console.log("-> Cache expirado ou vazio em /api/os-chamados. Buscando OS abertas no IXC...");
+                cacheOS.promise = (async () => {
+                    try {
+                        const statusAtivos = ['A', 'AG', 'AS', 'EN', 'AN', 'EX'];
+                        const promises = statusAtivos.map(async (status) => {
+                            const body = JSON.stringify({
+                                qtype: 'su_oss_chamado.status',
+                                query: status,
+                                oper: '=',
+                                page: '1',
+                                rp: '10000'
+                            });
+                            try {
+                                const resp = await fetch(url, { method: 'POST', headers, body });
+                                const json = await resp.json();
+                                return json.registros || [];
+                            } catch (err) {
+                                return [];
+                            }
+                        });
+                        const resultados = await Promise.all(promises);
+                        cacheOS.dados = resultados.flat();
+                        cacheOS.timestamp = Date.now();
+                        console.log(`-> Cache atualizado. Total de OS abertas na empresa: ${cacheOS.dados.length}`);
+                    } catch (error) {
+                        console.error('-> Erro ao atualizar cache de OS:', error.message);
+                    } finally {
+                        cacheOS.promise = null; // Libera independente de sucesso ou falha
+                    }
+                })();
+            }
+            // Aguarda a promessa que está em andamento (seja a recém-criada ou de uma req concorrente)
+            await cacheOS.promise;
         }
 
         // 3. Filtrar localmente e contar
-        const registrosDoTecnico = cacheOS.dados.filter(os => String(os.id_tecnico) === String(ixcTecnicoId));
+        const dadosAFiltrar = cacheOS.dados || [];
+        const registrosDoTecnico = dadosAFiltrar.filter(os => String(os.id_tecnico) === String(ixcTecnicoId));
         console.log(`-> Usuario ${funcionarioId} (Tecnico ${ixcTecnicoId}): ${registrosDoTecnico.length} OS encontrada.`);
 
         const statusCount = { A: 0, AG: 0, AS: 0, EN: 0, AN: 0, EX: 0, OUTROS: 0 };
@@ -573,7 +587,7 @@ app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
             sucesso: true, 
             quantidade: registrosDoTecnico.length, 
             statusCount,
-            cacheStatus: cacheOS.timestamp === agora ? 'MISS' : 'HIT'
+            cacheStatus
         });
 
     } catch (e) {
