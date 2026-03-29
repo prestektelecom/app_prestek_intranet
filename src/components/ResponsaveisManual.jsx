@@ -53,8 +53,8 @@ export default function ResponsaveisManual() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id_setor: String(id_setor),
-                    id_funcionario: String(funcionario.funcionario_id),
-                    nome: funcionario.funcionario_nome,
+                    id_funcionario: String(funcionario.funcionario_id || funcionario.id),
+                    nome: funcionario.funcionario_nome || funcionario.nome,
                     acao: 'definir'
                 })
             });
@@ -103,8 +103,8 @@ export default function ResponsaveisManual() {
     const funcionariosFiltrados = useMemo(() => {
         const termo = buscaFunc.toLowerCase().trim();
         return funcionarios
-            .filter(f => f.ativo === 'S' || f.ativo === true)
-            .filter(f => !termo || (f.funcionario_nome || '').toLowerCase().includes(termo))
+            .filter(f => f.ativo === 'S' || f.ativo === true || f.status === 'online')
+            .filter(f => !termo || (f.funcionario_nome || f.nome || '').toLowerCase().includes(termo))
             .slice(0, 30);
     }, [funcionarios, buscaFunc]);
 
@@ -127,7 +127,7 @@ export default function ResponsaveisManual() {
     }
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 mt-6 pt-6 border-t border-[#eaddcd] dark:border-gray-800">
             {/* Cabeçalho */}
             <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
@@ -298,7 +298,7 @@ export default function ResponsaveisManual() {
                                             )}
                                             {funcionariosFiltrados.map(func => (
                                                 <button
-                                                    key={func.funcionario_id}
+                                                    key={func.funcionario_id || func.id}
                                                     onClick={() => definirResponsavel(setor.id, func)}
                                                     className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-primary/10 transition-colors border-b border-[#f4eee6] dark:border-gray-800 last:border-0"
                                                 >
@@ -306,7 +306,7 @@ export default function ResponsaveisManual() {
                                                         <span className="material-symbols-outlined text-primary text-[16px]">person</span>
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="text-sm font-medium text-[#1d150c] dark:text-white truncate">{func.funcionario_nome}</p>
+                                                        <p className="text-sm font-medium text-[#1d150c] dark:text-white truncate">{func.funcionario_nome || func.nome}</p>
                                                         {func.usuario_email && (
                                                             <p className="text-xs text-[#a17745] dark:text-orange-300 truncate">{func.usuario_email}</p>
                                                         )}

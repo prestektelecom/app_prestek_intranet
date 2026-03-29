@@ -1266,37 +1266,36 @@ app.post('/api/admin/grupos-supervisores', async (req, res) => {
     }
 });
 
-// ─── Rotas: Admin — Responsáveis Manuais por Setor ───────────────────────────
-
-// GET: retorna todos os responsáveis manuais configurados
+// ─── Rotas: Admin — Gerenciar Responsáveis Manuais ────────────────────────
 app.get('/api/admin/responsaveis-manuais', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM setor_responsavel_manual ORDER BY id_setor::int');
+        const result = await pool.query('SELECT * FROM responsaveis_manuais');
         return res.json({ sucesso: true, responsaveis: result.rows });
     } catch (e) {
         return res.status(500).json({ sucesso: false, erro: e.message });
     }
 });
 
-// POST: define ou limpa o responsável manual de um setor
 app.post('/api/admin/responsaveis-manuais', async (req, res) => {
-    const { id_setor, id_funcionario, nome, acao } = req.body;
+    const { id_setor, id_funcionario, nome, acao } = req.body; // acao: 'definir' | 'limpar'
     if (!id_setor || !acao) return res.status(400).json({ sucesso: false, erro: 'id_setor e acao são obrigatórios' });
+    
     try {
         if (acao === 'definir') {
-            if (!id_funcionario) return res.status(400).json({ sucesso: false, erro: 'id_funcionario é obrigatório para definir' });
-            await pool.query(
-                `INSERT INTO setor_responsavel_manual (id_setor, id_funcionario, nome, atualizado_em)
-                 VALUES ($1, $2, $3, NOW())
-                 ON CONFLICT (id_setor) DO UPDATE SET id_funcionario = EXCLUDED.id_funcionario, nome = EXCLUDED.nome, atualizado_em = NOW()`,
-                [String(id_setor), String(id_funcionario), nome || null]
-            );
+            const query = `
+                INSERT INTO responsaveis_manuais (id_setor, id_funcionario, nome, atualizado_em) 
+                VALUES ($1, $2, $3, NOW())
+                ON CONFLICT (id_setor) DO UPDATE 
+                SET id_funcionario = EXCLUDED.id_funcionario, nome = EXCLUDED.nome, atualizado_em = NOW();
+            `;
+            await pool.query(query, [String(id_setor), String(id_funcionario), nome]);
         } else if (acao === 'limpar') {
-            await pool.query('DELETE FROM setor_responsavel_manual WHERE id_setor = $1', [String(id_setor)]);
+            await pool.query('DELETE FROM responsaveis_manuais WHERE id_setor = $1', [String(id_setor)]);
         } else {
             return res.status(400).json({ sucesso: false, erro: 'Ação inválida' });
         }
-        const result = await pool.query('SELECT * FROM setor_responsavel_manual ORDER BY id_setor::int');
+        
+        const result = await pool.query('SELECT * FROM responsaveis_manuais');
         return res.json({ sucesso: true, responsaveis: result.rows });
     } catch (e) {
         return res.status(500).json({ sucesso: false, erro: e.message });
@@ -1422,21 +1421,20 @@ app.get('/api/setores', async (req, res) => {
     };
 
     try {
-        // Busca setores, funcionários, usuários (com grupos) e responsáveis manuais em paralelo
-        const [resSetor, resFunc, resUsuarios, resManual] = await Promise.all([
+        // Busca setores, funcionários e usuários (com grupos) em paralelo
+        const [resSetor, resFunc, resUsuarios] = await Promise.all([
             fetch(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
             }),
             fetch(`https://${host}/webservice/v1/funcionarios`, {
                 method: 'POST', headers,
-                body: JSON.stringify({ qtype: 'funcionarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
+                body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
             }),
             fetch(`https://${host}/webservice/v1/usuarios`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'usuarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios.id', sortorder: 'asc' })
-            }),
-            pool.query('SELECT * FROM setor_responsavel_manual')
+            })
         ]);
 
         const dataSetor = await resSetor.json();
@@ -1446,16 +1444,6 @@ app.get('/api/setores', async (req, res) => {
         const setoresRaw = (dataSetor.registros || []).filter(s => s.ativo === 'S');
         const funcionarios = dataFunc.registros || [];
         const usuarios = dataUsuarios.registros || [];
-
-        // Mapa de responsáveis manuais: id_setor -> { id_funcionario, nome }
-        const responsaveisManuais = {};
-        (resManual.rows || []).forEach(r => {
-            responsaveisManuais[String(r.id_setor)] = r;
-        });
-
-        // Mapa id_funcionario -> objeto funcionário completo
-        const funcionarioPorId = {};
-        funcionarios.forEach(f => { funcionarioPorId[String(f.id)] = f; });
 
         // Mapeia id_funcionario -> id_grupo (usando field 'funcionario' como chave)
         const gruposPorFuncionario = {};
@@ -1468,25 +1456,44 @@ app.get('/api/setores', async (req, res) => {
         // Busca IDs dos grupos SUPERVISOR(A): tenta IXC primeiro, fallback no banco local
         const idsGruposSupervisor = await buscarIdsGruposSupervisores(host, headers);
 
+        // Busca responsáveis definidos manualmente para sobrescrever quando aplicável
+        let responsaveisManuais = {};
+        try {
+            const manResult = await pool.query('SELECT * FROM responsaveis_manuais');
+            manResult.rows.forEach(r => {
+                responsaveisManuais[String(r.id_setor)] = r;
+            });
+        } catch (e) {}
+
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
             const membros = funcionarios.filter(f =>
                 String(f.id_departamento).trim() === String(setor.id).trim()
             );
             
-            // Prioridade 1: responsável definido manualmente pelo admin
+            // Procura por supervisores no setor (funcionários cujo id_grupo está na lista configurada)
             let responsavel = null;
-            const manualEntry = responsaveisManuais[String(setor.id)];
-            if (manualEntry) {
-                const funcManual = funcionarioPorId[String(manualEntry.id_funcionario)];
+            
+            // Prioridade 1: Definição manual por setor
+            if (responsaveisManuais[String(setor.id)]) {
+                const rManual = responsaveisManuais[String(setor.id)];
+                // Procurar os dados completos do funcionario na lista geral (ou apenas no setor)
+                const funcManual = funcionarios.find(f => String(f.id) === String(rManual.id_funcionario));
+                
                 if (funcManual) {
                     responsavel = funcManual;
-                    responsavel._manual = true;
+                } else {
+                    // Fallback se não encontrar os dados completos dele nos ativos momentaneamente
+                    responsavel = {
+                        id: rManual.id_funcionario,
+                        funcionario: rManual.nome,
+                        foto_perfil: null,
+                        ramal: null
+                    };
                 }
             }
-
-            // Prioridade 2: supervisor automático via grupo (lógica atual)
-            if (!responsavel && idsGruposSupervisor.size > 0) {
+            // Prioridade 2: Grupos Supervisor
+            else if (idsGruposSupervisor.size > 0) {
                 for (const membro of membros) {
                     const idGrupoDoFuncionario = gruposPorFuncionario[membro.id];
                     if (idGrupoDoFuncionario && idsGruposSupervisor.has(String(idGrupoDoFuncionario))) {
@@ -1494,6 +1501,11 @@ app.get('/api/setores', async (req, res) => {
                         break;
                     }
                 }
+            }
+            
+            // Se não achar supervisor, não exibe responsável
+            if (!responsavel) {
+                responsavel = null;
             }
 
             return {
@@ -1505,8 +1517,7 @@ app.get('/api/setores', async (req, res) => {
                     id: responsavel.id,
                     nome: responsavel.funcionario,
                     foto: responsavel.foto_perfil || null,
-                    ramal: responsavel.ramal || null,
-                    manual: responsavel._manual || false
+                    ramal: responsavel.ramal || null
                 } : null
             };
         });

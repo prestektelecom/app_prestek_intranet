@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS grupos_supervisores (
+    id_grupo VARCHAR(50) PRIMARY KEY,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
