@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function TicketsList({ user }) {
+export default function TicketsList({ user, setCurrentView }) {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -43,12 +43,18 @@ export default function TicketsList({ user }) {
         <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark py-8 px-4 md:px-10">
             <div className="flex flex-col w-full max-w-[1200px] mx-auto gap-8">
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-[#a17745] dark:text-orange-300 text-sm font-medium">
-                        <span className="material-symbols-outlined text-[18px]">home</span>
-                        <span>/</span>
-                        <span>Meu Atendimento</span>
-                        <span>/</span>
-                        <span className="text-[#1d150c] dark:text-white">Meus Chamados</span>
+                    <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
+                        <button 
+                            onClick={() => setCurrentView('dashboard')}
+                            className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-lg">home</span>
+                            Início
+                        </button>
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                        <span className="text-[#a17745] dark:text-orange-300 font-medium">Meu Atendimento</span>
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">Meus Chamados</span>
                     </div>
                     <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Meus Chamados</h1>
                     <p className="text-[#a17745] dark:text-orange-300 text-base font-normal leading-normal max-w-2xl">

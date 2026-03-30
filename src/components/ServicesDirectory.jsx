@@ -1,15 +1,26 @@
-export default function ServicesDirectory() {
+export default function ServicesDirectory({ setCurrentView }) {
     return (
         <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark py-8 px-4 md:px-10">
             <div className="flex flex-col w-full max-w-[1200px] mx-auto gap-8">
                 {/* Header Section */}
                 <div className="flex flex-col gap-4">
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                        <button className="hover:text-primary transition-colors">Início</button>
-                        <span className="material-symbols-outlined text-xs">chevron_right</span>
-                        <button className="hover:text-primary transition-colors">Dashboard</button>
-                        <span className="material-symbols-outlined text-xs">chevron_right</span>
-                        <span className="font-medium text-slate-900 dark:text-white">Serviços</span>
+                    <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
+                        <button 
+                            onClick={() => setCurrentView('dashboard')}
+                            className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-lg">home</span>
+                            Início
+                        </button>
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                        <button 
+                            onClick={() => setCurrentView('dashboard')}
+                            className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer"
+                        >
+                            Dashboard
+                        </button>
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">Serviços Internos</span>
                     </div>
 
                     <div className="flex flex-wrap justify-between items-end gap-4">

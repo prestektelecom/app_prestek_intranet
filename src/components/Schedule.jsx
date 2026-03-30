@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LottieAvatar from './common/LottieAvatar';
 
-export default function Schedule() {
+export default function Schedule({ setCurrentView }) {
     const [plantoes, setPlantoes] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -52,10 +52,13 @@ export default function Schedule() {
         <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto">
             {/* Breadcrumbs */}
             <div className="flex flex-wrap items-center gap-2 mb-8">
-                <a className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1" href="#">
+                <button 
+                    onClick={() => setCurrentView('dashboard')}
+                    className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                >
                     <span className="material-symbols-outlined text-lg">home</span>
                     Início
-                </a>
+                </button>
                 <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
                 <a className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors" href="#">Processos Internos</a>
                 <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
