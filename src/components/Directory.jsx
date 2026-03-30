@@ -12,7 +12,14 @@ export default function Directory({ user }) {
     const [deptosEmpresa, setDeptosEmpresa] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [busca, setBusca] = useState('');
-    const [deptoFiltro, setDeptoFiltro] = useState('');
+    const [deptoFiltro, setDeptoFiltro] = useState(() => {
+        const savedFilter = sessionStorage.getItem('@Stitch:directoryFilter');
+        if (savedFilter) {
+            sessionStorage.removeItem('@Stitch:directoryFilter');
+            return savedFilter;
+        }
+        return '';
+    });
     const [pagina, setPagina] = useState(1);
 
     // Carrega colaboradores e departamentos em paralelo

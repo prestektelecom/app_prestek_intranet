@@ -256,6 +256,7 @@ export default function Sectors({ user, setCurrentView }) {
                                     teamCount={setor.totalMembros}
                                     isAdmin={isAdmin}
                                     onSaveDescription={handleSaveDescription}
+                                    setCurrentView={setCurrentView}
                                 />
                             ))}
                             {setores.length === 0 && (
@@ -298,7 +299,7 @@ function OrgNode({ icon, title, name }) {
 }
 
 // Subcomponente Card de Setor
-function SectorCard({ id, icon, ramal, title, description, managerName, managerImg, teamCount, isAdmin, onSaveDescription }) {
+function SectorCard({ id, icon, ramal, title, description, managerName, managerImg, teamCount, isAdmin, onSaveDescription, setCurrentView }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editDesc, setEditDesc] = useState(description || '');
 
@@ -307,6 +308,11 @@ function SectorCard({ id, icon, ramal, title, description, managerName, managerI
             onSaveDescription(id, editDesc);
         }
         setIsEditing(false);
+    };
+
+    const handleVerEquipe = () => {
+        sessionStorage.setItem('@Stitch:directoryFilter', id);
+        setCurrentView('directory');
     };
 
     return (
@@ -412,10 +418,10 @@ function SectorCard({ id, icon, ramal, title, description, managerName, managerI
             </div>
 
             <div className="flex gap-3 mt-auto pt-1">
-                <button className="flex-1 py-2.5 px-3 rounded-lg border-2 border-[#eaddcd] dark:border-gray-800 text-[#1d150c] dark:text-white font-bold text-sm hover:border-primary hover:text-primary transition-colors focus:outline-none">
+                <button onClick={handleVerEquipe} className="flex-1 py-2.5 px-3 rounded-lg border-2 border-[#eaddcd] dark:border-gray-800 text-[#1d150c] dark:text-white font-bold text-sm hover:border-primary hover:text-primary transition-colors focus:outline-none cursor-pointer">
                     Ver Equipe
                 </button>
-                <button className="flex items-center justify-center size-11 rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border-2 border-transparent hover:border-primary/30 text-primary hover:bg-primary/5 transition-colors" title="Contatar Setor">
+                <button className="flex items-center justify-center size-11 rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border-2 border-transparent hover:border-primary/30 text-primary hover:bg-primary/5 transition-colors cursor-pointer" title="Contatar Setor">
                     <span className="material-symbols-outlined text-[22px]">mail</span>
                 </button>
             </div>
