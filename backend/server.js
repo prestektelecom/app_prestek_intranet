@@ -1577,6 +1577,146 @@ app.get('/api/setores', async (req, res) => {
     }
 });
 
+// ─── Rota: Listar Planos de Negociação (Diretório) ───────────────────────────
+app.get('/api/planos-negociacoes', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const host = process.env.IXC_HOST;
+    const url = `https://${host}/webservice/v1/crm_planos_negociacoes`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    const body = JSON.stringify({
+        qtype: 'crm_planos_negociacoes.ativo',
+        query: 'S',
+        oper: '=',
+        page: '1',
+        rp: '1000',
+        sortname: 'crm_planos_negociacoes.id',
+        sortorder: 'asc'
+    });
+
+    try {
+        const respostaVal = await fetch(url, { method: 'POST', headers, body });
+        if (!respostaVal.ok) throw new Error(`Erro API IXC: ${respostaVal.status}`);
+
+        const dadosIXC = await respostaVal.json();
+        const planosIXC = dadosIXC.registros || [];
+
+        // Busca o metadata do banco de dados PostgreSQL
+        const resultMeta = await pool.query('SELECT plano_id, prazo_instalacao, taxa_instalacao FROM planos_metadata');
+        const mapaMetadados = {};
+        resultMeta.rows.forEach(row => {
+            mapaMetadados[row.plano_id] = {
+                prazo_instalacao: row.prazo_instalacao,
+                taxa_instalacao: row.taxa_instalacao
+            };
+        });
+
+        const planos = planosIXC.map(plano => {
+            const meta = mapaMetadados[String(plano.id)] || {};
+            return {
+                ...plano,
+                prazo_instalacao: meta.prazo_instalacao || '3 Dias', // Valor padrão
+                taxa_instalacao: meta.taxa_instalacao || 'Grátis' // Valor padrão
+            };
+        });
+
+        return res.json({ sucesso: true, planos });
+    } catch (err) {
+        console.error('Erro ao buscar planos de negociação no IXC:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar planos de negociação.' });
+    }
+});
+
+// ─── Rota: Atualizar Planos de Negociação ──────────────────────────────
+app.put('/api/planos-negociacoes/:id', async (req, res) => {
+    const { id } = req.params;
+    const formData = req.body; // Contém prazo_instalacao e outros dados
+    
+    // Atualiza ou insere o Prazo de Instalação Local
+    if (formData.prazo_instalacao !== undefined || formData.taxa_instalacao !== undefined) {
+        try {
+            await pool.query(`
+                INSERT INTO planos_metadata (plano_id, prazo_instalacao, taxa_instalacao, atualizado_em)
+                VALUES ($1, $2, $3, NOW())
+                ON CONFLICT (plano_id) DO UPDATE SET
+                    prazo_instalacao = COALESCE(EXCLUDED.prazo_instalacao, planos_metadata.prazo_instalacao),
+                    taxa_instalacao = COALESCE(EXCLUDED.taxa_instalacao, planos_metadata.taxa_instalacao),
+                    atualizado_em = NOW();
+            `, [String(id), formData.prazo_instalacao, formData.taxa_instalacao]);
+        } catch (e) {
+            console.error('Erro ao salvar metadados do plano localmente:', e);
+        }
+    }
+
+    // Remove campos que eram somente locais antes de mandar pro IXC
+    const updateData = { ...formData };
+    delete updateData.prazo_instalacao;
+    delete updateData.taxa_instalacao;
+
+    if (Object.keys(updateData).length > 0) {
+        const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+        const host = process.env.IXC_HOST;
+        
+        // Antes de atualizar tudo, precisamos do objeto completo do banco para o IXC aceitar as colunas obrigatorias (ou enviamos somente os disponiveis? No IXC as vezes PUT requer objeto quase igual, mas o snippet mostrou o corpo todo).
+        // Na verdade o snippet mostrou todas. Vamos buscar o objeto atual e mergear.
+        
+        try {
+            const getHeaders = {
+                'Content-Type': 'application/json',
+                Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+                ixcsoft: 'listar'
+            };
+            const rGet = await fetch(`https://${host}/webservice/v1/crm_planos_negociacoes`, {
+                method: 'POST',
+                headers: getHeaders,
+                body: JSON.stringify({
+                    qtype: 'crm_planos_negociacoes.id',
+                    query: id,
+                    oper: '=',
+                    page: '1',
+                    rp: '1'
+                })
+            });
+            
+            if (rGet.ok) {
+                const jGet = await rGet.json();
+                if (jGet.total > 0) {
+                    const objBase = jGet.registros[0];
+                    const objFinal = { ...objBase, ...updateData };
+                    
+                    const headersPut = {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Basic ' + Buffer.from(token).toString('base64')
+                    };
+                    const urlPut = `https://${host}/webservice/v1/crm_planos_negociacoes/${id}`;
+
+                    const resposta = await fetch(urlPut, { 
+                        method: 'PUT', 
+                        headers: headersPut, 
+                        body: JSON.stringify(objFinal) 
+                    });
+
+                    if (!resposta.ok) {
+                        const textoErro = await resposta.text();
+                        console.error('Erro ao gravar PUT IXC:', textoErro);
+                        return res.status(502).json({ sucesso: false, erro: 'Falha ao atualizar plano no IXC.' });
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Erro requisição PUT crm_planos_negociacoes:', err.message);
+            return res.status(500).json({ sucesso: false, erro: 'Erro interno ao atualizar plano.' });
+        }
+    }
+    
+    return res.json({ sucesso: true, mensagem: 'Plano atualizado.' });
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
