@@ -127,6 +127,20 @@ export default function ServicesDirectory({ setCurrentView }) {
 
     const totalVendasMes = plans.reduce((acc, p) => acc + (p.vendas_mes || 0), 0);
 
+    const getStatusCount = (prefix) => {
+        if (!statusCounts) return 0;
+        return Object.entries(statusCounts).reduce((acc, [key, count]) => {
+            if (key.startsWith(prefix + '_')) return acc + count;
+            return acc;
+        }, 0);
+    };
+
+    const countAtivo = getStatusCount('A');
+    const countInativo = getStatusCount('I');
+    const countPre = getStatusCount('P');
+    const countNegativado = getStatusCount('N');
+    const countDesistiu = getStatusCount('D');
+
     return (
         <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark py-8 px-4 md:px-10">
             <div className="flex flex-col w-full max-w-[1200px] mx-auto gap-8">
@@ -157,60 +171,62 @@ export default function ServicesDirectory({ setCurrentView }) {
                             <p className="text-base text-slate-500 dark:text-slate-400">Gerencie planos de internet, detalhes de serviços e prazos de instalação.</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
-                            {/* Ativo Ativo */}
+                            {/* Ativo */}
                             <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">check_circle</span>
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ativo Ativo</p>
-                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{statusCounts?.['A_A'] || 0}</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ativo</p>
+                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{countAtivo}</p>
                                 </div>
                             </div>
                             
-                            {/* Ativo Bloqueio Automático */}
+                            {/* Inativo */}
+                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <div className="p-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-xl">power_off</span>
+                                </div>
+                                <div className="flex flex-col justify-center">
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Inativo</p>
+                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{countInativo}</p>
+                                </div>
+                            </div>
+
+                            {/* Pré-contratos */}
+                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-xl">schedule</span>
+                                </div>
+                                <div className="flex flex-col justify-center">
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pré-contratos</p>
+                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{countPre}</p>
+                                </div>
+                            </div>
+                            
+                            {/* Negativados */}
                             <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">gpp_maybe</span>
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ativo Bloq. Auto</p>
-                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{statusCounts?.['A_CA'] || 0}</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Negativados</p>
+                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{countNegativado}</p>
                                 </div>
                             </div>
                             
-                            {/* Pré Contrato Desativado */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                                <div className="p-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">schedule</span>
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pré Desativado</p>
-                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{statusCounts?.['P_D'] || 0}</p>
-                                </div>
-                            </div>
-                            
-                            {/* Pré Contrato Aguardando Assinatura */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">draw</span>
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pré Aguardando</p>
-                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{statusCounts?.['P_AA'] || 0}</p>
-                                </div>
-                            </div>
-                            
-                            {/* Desistiu Desativado */}
+                            {/* Desistiu */}
                             <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">cancel</span>
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Desistiu Desativado</p>
-                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{statusCounts?.['D_D'] || 0}</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Desistiu</p>
+                                    <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{countDesistiu}</p>
                                 </div>
                             </div>
+                            
+                            {/* Total no Mês */}
                             <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="p-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">trending_up</span>
