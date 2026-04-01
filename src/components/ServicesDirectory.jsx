@@ -61,12 +61,6 @@ export default function ServicesDirectory({ setCurrentView }) {
         }
     };
 
-    const getMargin = (idString) => {
-        const id = parseInt(idString) || 0;
-        const margins = [25, 30, 35, 40, 50];
-        return margins[id % margins.length];
-    };
-
     const formatCurrency = (val) => {
         const num = parseFloat(val);
         if (isNaN(num)) return val || 'R$ 0,00';
@@ -91,6 +85,8 @@ export default function ServicesDirectory({ setCurrentView }) {
     };
 
     // Filter and Sort plans logic
+    const maxVendas = Math.max(...plans.map(p => p.vendas_mes || 0), 1);
+    
     const filteredPlans = plans.filter(p => {
         if (filter === 'All') return true;
         const desc = (p.descricao || '').toUpperCase();
@@ -105,12 +101,9 @@ export default function ServicesDirectory({ setCurrentView }) {
             let aValue = a[sortConfig.key];
             let bValue = b[sortConfig.key];
 
-            if (sortConfig.key === 'valor_mensal' || sortConfig.key === 'taxa_instalacao') {
+            if (sortConfig.key === 'valor_mensal' || sortConfig.key === 'taxa_instalacao' || sortConfig.key === 'vendas_mes') {
                 aValue = parseFloat(aValue) || 0;
                 bValue = parseFloat(bValue) || 0;
-            } else if (sortConfig.key === 'margem') {
-                aValue = getMargin(a.id);
-                bValue = getMargin(b.id);
             } else {
                 aValue = (aValue || '').toString().toLowerCase();
                 bValue = (bValue || '').toString().toLowerCase();
@@ -126,10 +119,9 @@ export default function ServicesDirectory({ setCurrentView }) {
         });
     }
 
-    const fiberPlans = plans.filter(p => {
-        const desc = (p.descricao || '').toUpperCase();
-        return desc.includes('FIBRA') || desc.includes('MEGA') || true;
-    }).slice(0, 8); // fallback: showing top 8 plans in carousel
+    const fiberPlans = [...plans]
+        .sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0))
+        .slice(0, 8); // top 8 plans by sales in carousel
 
     return (
         <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark py-8 px-4 md:px-10">
@@ -233,10 +225,10 @@ export default function ServicesDirectory({ setCurrentView }) {
                                             )}
                                         </div>
                                     </th>
-                                    <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col" onClick={() => handleSort('margem')}>
+                                    <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col" onClick={() => handleSort('vendas_mes')}>
                                         <div className="flex items-center gap-1">
-                                            MARGEM (%)
-                                            {sortConfig.key === 'margem' && (
+                                            VENDAS NO MÊS
+                                            {sortConfig.key === 'vendas_mes' && (
                                                 <span className="material-symbols-outlined text-[1rem]">
                                                     {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
                                                 </span>
@@ -264,8 +256,11 @@ export default function ServicesDirectory({ setCurrentView }) {
                                     </tr>
                                 ) : (
                                     filteredPlans.map(plan => {
-                                        const margin = getMargin(plan.id);
-                                        const marginColor = margin >= 40 ? 'bg-green-500' : margin >= 30 ? 'bg-primary' : 'bg-orange-400';
+                                        const vendas = plan.vendas_mes || 0;
+                                        const maxVendasLocal = Math.max(maxVendas, 10); // scale up if total sales are very low
+                                        const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
+                                        const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
+                                        
                                         return (
                                             <tr key={plan.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
@@ -285,10 +280,10 @@ export default function ServicesDirectory({ setCurrentView }) {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="h-2 w-16 rounded-full bg-slate-100 dark:bg-slate-600">
-                                                            <div className={`h-2 rounded-full ${marginColor}`} style={{ width: `${margin}%` }}></div>
+                                                        <div className="h-2 w-20 rounded-full bg-slate-100 dark:bg-slate-600">
+                                                            <div className={`h-2 rounded-full ${barColor}`} style={{ width: `${vendasRatio}%` }}></div>
                                                         </div>
-                                                        <span className="text-xs font-medium">{margin}%</span>
+                                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{vendas}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
@@ -339,8 +334,12 @@ export default function ServicesDirectory({ setCurrentView }) {
                             </div>
                         ) : (
                             fiberPlans.map((plan, index) => {
-                                const margin = getMargin(plan.id);
-                                const isFeatured = index === 1; // Highlight the 2nd plan just for visual variance
+                                const vendas = plan.vendas_mes || 0;
+                                const maxVendasLocal = Math.max(maxVendas, 10);
+                                const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
+                                const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
+
+                                const isFeatured = index === 0; // Highlight the best seller
                                 
                                 return (
                                     <div key={plan.id} className={`group relative flex flex-col min-w-[300px] md:min-w-[320px] snap-center rounded-xl p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${isFeatured ? 'border-2 border-primary bg-white dark:bg-slate-800 dark:border-primary shadow-md' : 'border border-slate-200 bg-white dark:bg-[#1a130b] dark:border-slate-700 dark:bg-slate-800'}`}>
@@ -367,9 +366,16 @@ export default function ServicesDirectory({ setCurrentView }) {
                                                 <span className="text-slate-500 dark:text-slate-400">Prazo</span>
                                                 <span className="font-medium text-slate-900 dark:text-white">{plan.prazo_instalacao || 'Não definido'}</span>
                                             </div>
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-slate-500 dark:text-slate-400">Margem Estimada</span>
-                                                <span className={`font-bold ${margin >= 40 ? 'text-green-600 dark:text-green-400' : 'text-orange-500 dark:text-orange-400'}`}>{margin}%</span>
+                                            <div className="flex justify-between text-sm items-center">
+                                                <span className="text-slate-500 dark:text-slate-400">Vendas no Mês</span>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-1.5 w-12 rounded-full bg-slate-100 dark:bg-slate-600">
+                                                        <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${vendasRatio}%` }}></div>
+                                                    </div>
+                                                    <span className={`font-bold ${barColor.replace('bg-', 'text-').replace('-500', isFeatured ? '-100' : '-600').replace('-400', '-500')} ${isFeatured ? '' : 'dark:text-slate-200'}`}>
+                                                        {vendas}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                         <button 

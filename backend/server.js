@@ -1616,12 +1616,47 @@ app.get('/api/planos-negociacoes', async (req, res) => {
             };
         });
 
+        // Contagem de "Vendas no Mês" via tabela cliente_contrato
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        
+        let planCounts = {};
+        try {
+            const urlContratos = `https://${host}/webservice/v1/cliente_contrato`;
+            const bodyContratos = JSON.stringify({
+                qtype: 'cliente_contrato.data_cadastro_sistema',
+                query: firstDay,
+                oper: '>=',
+                page: '1',
+                rp: '5000',
+                sortname: 'cliente_contrato.id',
+                sortorder: 'desc'
+            });
+
+            const resContratos = await fetch(urlContratos, { method: 'POST', headers, body: bodyContratos });
+            if (resContratos.ok) {
+                const dadosContratos = await resContratos.json();
+                if (dadosContratos.registros) {
+                    dadosContratos.registros.forEach(reg => {
+                        const planId = reg.id_vd_contrato;
+                        if (planId) {
+                            planCounts[planId] = (planCounts[planId] || 0) + 1;
+                        }
+                    });
+                }
+            }
+        } catch (errContrato) {
+            console.error('Erro ao buscar contratos do mês:', errContrato.message);
+        }
+
         const planos = planosIXC.map(plano => {
             const meta = mapaMetadados[String(plano.id)] || {};
+            // Inject vendas_mes into plan
             return {
                 ...plano,
                 prazo_instalacao: meta.prazo_instalacao || '3 Dias', // Valor padrão
-                taxa_instalacao: meta.taxa_instalacao || 'Grátis' // Valor padrão
+                taxa_instalacao: meta.taxa_instalacao || 'Grátis', // Valor padrão
+                vendas_mes: planCounts[String(plano.id_plano)] || 0
             };
         });
 
