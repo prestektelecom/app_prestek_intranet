@@ -33,12 +33,12 @@ async function verify() {
             dadosContratos.registros.forEach(reg => {
                 const isValid = String(reg.id_motivo_inclusao) === '1';
                 if (isValid) {
-                    const st = reg.status || 'Desconhecido';
+                    const st = `status: ${reg.status || '??'} | status_internet: ${reg.status_internet || '??'}`;
                     statuses[st] = (statuses[st] || 0) + 1;
                 }
             });
         }
-        console.log("Status encontrados:", statuses);
+        console.log("Combinações encontradas:", statuses);
     } catch(err) {
         console.error(err);
     }

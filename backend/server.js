@@ -1621,6 +1621,7 @@ app.get('/api/planos-negociacoes', async (req, res) => {
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
         
         let planCounts = {};
+        let statusCounts = {};
         try {
             const urlContratos = `https://${host}/webservice/v1/cliente_contrato`;
             const bodyContratos = JSON.stringify({
@@ -1639,8 +1640,12 @@ app.get('/api/planos-negociacoes', async (req, res) => {
                 if (dadosContratos.registros) {
                     dadosContratos.registros.forEach(reg => {
                         const planId = reg.id_vd_contrato;
-                        if (planId) {
+                        if (planId && String(reg.id_motivo_inclusao) === '1') {
                             planCounts[planId] = (planCounts[planId] || 0) + 1;
+                            const st = reg.status || '';
+                            const stInt = reg.status_internet || '';
+                            const comp = `${st}_${stInt}`;
+                            statusCounts[comp] = (statusCounts[comp] || 0) + 1;
                         }
                     });
                 }
@@ -1660,7 +1665,7 @@ app.get('/api/planos-negociacoes', async (req, res) => {
             };
         });
 
-        return res.json({ sucesso: true, planos });
+        return res.json({ sucesso: true, planos, status_counts: statusCounts });
     } catch (err) {
         console.error('Erro ao buscar planos de negociação no IXC:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar planos de negociação.' });
