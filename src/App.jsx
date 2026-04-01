@@ -105,7 +105,7 @@ export default function App() {
                 )}
                 {/* Renderização baseada em currentView */}
                 {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
-                {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} />}
+                {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} user={user} />}
                 {currentView === 'coverage' && <Coverage />}
                 {currentView === 'directory' && <Directory user={user} />}
                 {currentView === 'sectors' && <Sectors user={user} setCurrentView={setCurrentView} />}

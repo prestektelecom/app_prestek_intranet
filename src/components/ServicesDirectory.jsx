@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function ServicesDirectory({ setCurrentView }) {
+export default function ServicesDirectory({ setCurrentView, user }) {
+    const isAdmin = user?.is_admin;
     const [plans, setPlans] = useState([]);
     const [statusCounts, setStatusCounts] = useState({});
     const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +74,7 @@ export default function ServicesDirectory({ setCurrentView }) {
 
     const scrollCarousel = (direction) => {
         if (carouselRef.current) {
-            const scrollAmount = direction === 'left' ? -350 : 350;
+            const scrollAmount = direction === 'left' ? -280 : 280;
             carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         }
     };
@@ -123,7 +124,7 @@ export default function ServicesDirectory({ setCurrentView }) {
 
     const fiberPlans = [...plans]
         .sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0))
-        .slice(0, 8); // top 8 plans by sales in carousel
+        .slice(0, 3);
 
     const totalVendasMes = plans.reduce((acc, p) => acc + (p.vendas_mes || 0), 0);
 
@@ -368,12 +369,14 @@ export default function ServicesDirectory({ setCurrentView }) {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button 
-                                                        onClick={() => handleEditClick(plan)}
-                                                        className="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary cursor-pointer transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined">edit_square</span>
-                                                    </button>
+                                                    {isAdmin && (
+                                                        <button 
+                                                            onClick={() => handleEditClick(plan)}
+                                                            className="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary cursor-pointer transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined">edit_square</span>
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         )
@@ -384,90 +387,152 @@ export default function ServicesDirectory({ setCurrentView }) {
                     </div>
                 </div>
 
-                {/* Plans Overview Carousel */}
-                <div className="mt-8 flex flex-col gap-6">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Visão Geral dos Planos de Fibra</h3>
-                        <div className="flex items-center gap-2">
-                            <button 
-                                onClick={() => scrollCarousel('left')}
-                                className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                            >
-                                <span className="material-symbols-outlined text-sm">arrow_back</span>
-                            </button>
-                            <button 
-                                onClick={() => scrollCarousel('right')}
-                                className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                            >
-                                <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                            </button>
+                {/* Top 3 Podium */}
+                <div className="mt-8 flex flex-col gap-5">
+                    <div className="flex items-center justify-center gap-3">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top 3 Planos Mais Vendidos</h3>
+                        <div className="hidden sm:flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                                <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Prata
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400">
+                                <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Bronze
+                            </span>
                         </div>
                     </div>
 
-                    <div 
-                        ref={carouselRef}
-                        className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide smooth-scroll"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    >
+                    <div className="flex items-end justify-center gap-5">
                         {isLoading ? (
-                            <div className="w-full flex justify-center py-10">
+                            <div className="flex justify-center py-10">
                                 <span className="material-symbols-outlined animate-spin text-3xl text-primary">autorenew</span>
                             </div>
                         ) : (
-                            fiberPlans.map((plan, index) => {
-                                const vendas = plan.vendas_mes || 0;
-                                const maxVendasLocal = Math.max(maxVendas, 10);
-                                const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
-                                const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
+                            (() => {
+                                // Reorder: [2nd, 1st, 3rd]
+                                const podiumOrder = fiberPlans.length >= 3
+                                    ? [fiberPlans[1], fiberPlans[0], fiberPlans[2]]
+                                    : fiberPlans;
+                                const displayRanks = fiberPlans.length >= 3 ? [2, 1, 3] : fiberPlans.map((_, i) => i + 1);
 
-                                const isFeatured = index === 0; // Highlight the best seller
-                                
-                                return (
-                                    <div key={plan.id} className={`group relative flex flex-col min-w-[300px] md:min-w-[320px] snap-center rounded-xl p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${isFeatured ? 'border-2 border-primary bg-white dark:bg-slate-800 dark:border-primary shadow-md' : 'border border-slate-200 bg-white dark:bg-[#1a130b] dark:border-slate-700 dark:bg-slate-800'}`}>
-                                        {isFeatured && (
-                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-bold text-white shadow-sm">
-                                                MAIS VENDIDO
+                                return podiumOrder.map((plan, i) => {
+                                    if (!plan) return null;
+                                    const rank = displayRanks[i];
+                                    const vendas = plan.vendas_mes || 0;
+                                    const maxVendasLocal = Math.max(maxVendas, 10);
+                                    const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
+                                    const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
+
+                                    const isGold = rank === 1;
+                                    const isSilver = rank === 2;
+                                    const isBronze = rank === 3;
+
+                                    const rc = {
+                                        1: {
+                                            border: 'border-2 border-amber-400 dark:border-amber-500',
+                                            label: 'OURO',
+                                            glow: 'shadow-xl shadow-amber-500/20',
+                                            titleColor: 'text-amber-600 dark:text-amber-400',
+                                            btn: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white hover:from-amber-600 hover:to-yellow-600',
+                                            numBg: 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white',
+                                            badgeColor: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white',
+                                        },
+                                        2: {
+                                            border: 'border-2 border-slate-300 dark:border-slate-600',
+                                            label: 'PRATA',
+                                            glow: 'shadow-md shadow-slate-400/10',
+                                            titleColor: 'text-slate-600 dark:text-slate-300',
+                                            btn: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white hover:from-slate-500 hover:to-slate-600',
+                                            numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white',
+                                            badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white',
+                                        },
+                                        3: {
+                                            border: 'border-2 border-orange-300 dark:border-orange-600',
+                                            label: 'BRONZE',
+                                            glow: 'shadow-md shadow-orange-500/10',
+                                            titleColor: 'text-orange-600 dark:text-orange-400',
+                                            btn: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-600 hover:to-amber-700',
+                                            numBg: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white',
+                                            badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white',
+                                        },
+                                    }[rank];
+
+                                    return (
+                                        <div
+                                            key={plan.id}
+                                            className={`relative flex flex-col rounded-xl bg-white dark:bg-slate-800 transition-all hover:-translate-y-1 ${rc.border} ${rc.glow} ${
+                                                isGold
+                                                    ? 'w-[260px] md:w-[290px] p-5 self-stretch'
+                                                    : 'w-[230px] md:w-[250px] p-4 mt-6'
+                                            }`}
+                                        >
+                                            {/* Rank + Badge row */}
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className={`flex items-center justify-center rounded-full font-extrabold ${rc.numBg} ${isGold ? 'w-9 h-9 text-base' : 'w-7 h-7 text-xs'}`}>
+                                                    {rank}
+                                                </div>
+                                                <span className={`inline-flex items-center gap-0.5 rounded-full font-extrabold uppercase tracking-wider ${rc.badgeColor} ${isGold ? 'px-2.5 py-1 text-[10px]' : 'px-2 py-0.5 text-[9px]'}`}>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: isGold ? 12 : 10 }}>workspace_premium</span>
+                                                    {rc.label}
+                                                </span>
                                             </div>
-                                        )}
-                                        <div className={`absolute right-4 top-4 rounded-full p-2 ${isFeatured ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500'}`}>
-                                            <span className="material-symbols-outlined">{isFeatured ? 'local_fire_department' : 'speed'}</span>
-                                        </div>
-                                        <h4 className={`text-lg font-bold pr-10 ${isFeatured ? 'text-primary' : 'text-slate-900 dark:text-white'} truncate`}>{plan.descricao}</h4>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 truncate">Sincronizado via IXC</p>
-                                        <div className="mt-6 flex items-baseline gap-1">
-                                            <span className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(plan.valor_mensal)}</span>
-                                            <span className="text-sm font-medium text-slate-500">/mês</span>
-                                        </div>
-                                        <div className="mt-6 flex flex-col gap-3 border-t border-dashed border-slate-200 pt-4 dark:border-slate-700">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-slate-500 dark:text-slate-400">Instalação</span>
-                                                <span className="font-medium text-slate-900 dark:text-white">{plan.taxa_instalacao ? formatCurrency(plan.taxa_instalacao) : 'Não definida'}</span>
+
+                                            {/* Crown icon for gold */}
+                                            {isGold && (
+                                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 shadow-lg shadow-amber-500/30">
+                                                    <span className="material-symbols-outlined text-white text-xl">crown</span>
+                                                </div>
+                                            )}
+
+                                            {/* Plan Name */}
+                                            <h4 className={`font-bold ${rc.titleColor} truncate leading-tight ${isGold ? 'text-base mt-1' : 'text-sm'}`}>{plan.descricao}</h4>
+                                            <p className={`text-slate-400 dark:text-slate-500 ${isGold ? 'text-[11px] mt-1' : 'text-[10px] mt-0.5'}`}>Sincronizado via IXC</p>
+
+                                            {/* Price */}
+                                            <div className={`flex items-baseline gap-1 ${isGold ? 'mt-4' : 'mt-3'}`}>
+                                                <span className={`font-extrabold ${rc.titleColor} ${isGold ? 'text-2xl' : 'text-xl'}`}>{formatCurrency(plan.valor_mensal)}</span>
+                                                <span className="text-xs font-medium text-slate-400">/mês</span>
                                             </div>
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-slate-500 dark:text-slate-400">Prazo</span>
-                                                <span className="font-medium text-slate-900 dark:text-white">{plan.prazo_instalacao || 'Não definido'}</span>
-                                            </div>
-                                            <div className="flex justify-between text-sm items-center">
-                                                <span className="text-slate-500 dark:text-slate-400">Vendas no Mês</span>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-1.5 w-12 rounded-full bg-slate-100 dark:bg-slate-600">
-                                                        <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${vendasRatio}%` }}></div>
+
+                                            {/* Details */}
+                                            <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-slate-700 ${isGold ? 'mt-4 gap-2.5 pt-3' : 'mt-3 gap-2 pt-3'}`}>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-slate-400 dark:text-slate-500">Instalação</span>
+                                                    <span className="font-semibold text-slate-700 dark:text-slate-300">{plan.taxa_instalacao ? formatCurrency(plan.taxa_instalacao) : 'N/D'}</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-slate-400 dark:text-slate-500">Prazo</span>
+                                                    <span className="font-semibold text-slate-700 dark:text-slate-300 truncate ml-2 max-w-[120px]" title={plan.prazo_instalacao}>{plan.prazo_instalacao || 'N/D'}</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs items-center">
+                                                    <span className="text-slate-400 dark:text-slate-500">Vendas/mês</span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className={`h-1.5 rounded-full bg-slate-100 dark:bg-slate-600 overflow-hidden ${isGold ? 'w-14' : 'w-10'}`}>
+                                                            <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${Math.max(vendasRatio, vendas > 0 ? 10 : 0)}%` }}></div>
+                                                        </div>
+                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{vendas}</span>
                                                     </div>
-                                                    <span className={`font-bold ${barColor.replace('bg-', 'text-').replace('-500', isFeatured ? '-100' : '-600').replace('-400', '-500')} ${isFeatured ? '' : 'dark:text-slate-200'}`}>
-                                                        {vendas}
-                                                    </span>
                                                 </div>
                                             </div>
+
+                                            {/* Edit Button - Admin Only */}
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => handleEditClick(plan)}
+                                                    className={`w-full rounded-lg font-semibold transition-all cursor-pointer ${rc.btn} ${isGold ? 'mt-4 px-4 py-2.5 text-sm' : 'mt-3 px-3 py-2 text-xs'}`}
+                                                >
+                                                    <span className="flex items-center justify-center gap-1">
+                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 16 : 14 }}>edit</span>
+                                                        Editar
+                                                    </span>
+                                                </button>
+                                            )}
                                         </div>
-                                        <button 
-                                            onClick={() => handleEditClick(plan)}
-                                            className={`mt-6 w-full rounded-lg px-4 py-2 text-sm font-semibold transition-all cursor-pointer ${isFeatured ? 'bg-primary text-white shadow-sm hover:bg-orange-600 focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-800' : 'bg-slate-50 text-slate-900 hover:bg-slate-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600'}`}
-                                        >
-                                            Editar Plano
-                                        </button>
-                                    </div>
-                                )
-                            })
+                                    );
+                                });
+                            })()
                         )}
                     </div>
                 </div>
