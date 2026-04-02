@@ -387,6 +387,193 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                     </div>
                 </div>
 
+                {/* Technical Services Section */}
+                <div className="mt-8 flex flex-col gap-5">
+                    <div className="flex flex-col gap-1">
+                        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-2xl text-[#a17745] dark:text-orange-300">build</span>
+                            Serviços Técnicos e Complementares
+                        </h2>
+                        <p className="text-base text-slate-500 dark:text-slate-400">Serviços técnicos especializados para infraestrutura de rede e suporte de TI.</p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800 relative">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                                <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-700/50 dark:text-slate-400">
+                                    <tr>
+                                        <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col">
+                                            SERVIÇOS
+                                        </th>
+                                        <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col">
+                                            VALOR
+                                        </th>
+                                        <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col">
+                                            PRAZO
+                                        </th>
+                                        <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col">
+                                            PAGAMENTO
+                                        </th>
+                                        <th className="px-6 py-4 font-semibold text-right" scope="col">
+                                            AÇÕES
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-slate-700">
+                                    {[
+                                        {
+                                            service: "Instalação de roteador",
+                                            value: "R$ 50,00",
+                                            deadline: "Até 5 dias úteis",
+                                            payment: "À vista ou 2x Boleto",
+                                            icon: "router",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "Mudar roteador de local",
+                                            value: "R$ 30,00 + custo material",
+                                            deadline: "Até 5 dias úteis",
+                                            payment: "À vista ou 2x Boleto",
+                                            icon: "swap_horiz",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "Configurar roteador",
+                                            value: "R$ 50,00",
+                                            deadline: "Até 5 dias úteis",
+                                            payment: "À vista ou 2x Boleto",
+                                            icon: "settings",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "Manutenção interna",
+                                            value: "R$ 50,00",
+                                            deadline: "Até 5 dias úteis",
+                                            payment: "À vista ou 2x Boleto",
+                                            icon: "build",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "Mudar de titularidade",
+                                            value: "R$ 0,00",
+                                            deadline: "Até 24 horas",
+                                            payment: "",
+                                            icon: "people",
+                                            isFree: true
+                                        },
+                                        {
+                                            service: "Mudar tecnologia",
+                                            value: "ℹ️ Consulte o NOC",
+                                            deadline: "",
+                                            payment: "",
+                                            icon: "info",
+                                            isSpecial: true
+                                        },
+                                        {
+                                            service: "Mudar senha no local",
+                                            value: "R$ 50,00",
+                                            deadline: "Até 5 dias",
+                                            payment: "À vista ou 2x Boleto",
+                                            icon: "password",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "Extensão de rede",
+                                            value: "Custo de material",
+                                            deadline: "Até 5 dias",
+                                            payment: "À vista ou 1x Boleto",
+                                            icon: "lan",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "IP fixo",
+                                            value: "R$ 99,90 À vista (ANUAL)",
+                                            deadline: "24h",
+                                            payment: "À vista (ANUAL) ou 12x R$9,90 junto mensalidade",
+                                            icon: "static_ip",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "Roteador 360º WI-FI",
+                                            value: "R$ 50,00",
+                                            deadline: "Até 5 dias",
+                                            payment: "Adicional mensal fatura: R$ 20,00",
+                                            icon: "wifi_tethering",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "Alteração de senha WI-FI",
+                                            value: "",
+                                            deadline: "Até 5 dias",
+                                            payment: "",
+                                            icon: "wifi_lock",
+                                            isFree: true
+                                        },
+                                        {
+                                            service: "Trocar Comodato",
+                                            value: "R$ 50,00",
+                                            deadline: "Até 5 dias",
+                                            payment: "À vista ou 2x Boleto",
+                                            icon: "swap_vertical_circle",
+                                            isFree: false
+                                        },
+                                        {
+                                            service: "Solicitação de Comodato",
+                                            value: "R$ 50,00",
+                                            deadline: "Até 5 dias",
+                                            payment: "À vista ou 2x Boleto",
+                                            icon: "add_task",
+                                            isFree: false
+                                        }
+                                    ].map((item, index) => (
+                                        <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                            <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
+                                                        <span className="material-symbols-outlined text-lg">{item.icon}</span>
+                                                    </div>
+                                                    {item.service}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {item.isFree ? (
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-0.5 text-sm font-bold text-green-700 dark:text-green-400">
+                                                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                                                        GRÁTIS
+                                                    </span>
+                                                ) : item.isSpecial ? (
+                                                    <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                        {item.value}
+                                                    </span>
+                                                ) : (
+                                                    <span className="font-semibold text-orange-600 dark:text-orange-400">
+                                                        {item.value}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
+                                                {item.deadline || <span className="text-slate-400 font-normal italic">Não definido</span>}
+                                            </td>
+                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
+                                                {item.payment || <span className="text-slate-400 font-normal italic">-</span>}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button 
+                                                    onClick={() => console.log(`Solicitar: ${item.service}`)}
+                                                    className="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary cursor-pointer transition-colors"
+                                                    title={`Solicitar ${item.service}`}
+                                                >
+                                                    <span className="material-symbols-outlined">edit_document</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Top 3 Podium */}
                 <div className="mt-8 flex flex-col gap-5">
                     <div className="flex items-center justify-center gap-3">

@@ -10,6 +10,11 @@
       "source": "redis/agent-skills",
       "sourceType": "github",
       "computedHash": "993ad240385d830a9717796a4b76e835ed737bfc9d3e10a4528e00bacd58cbf8"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
     }
   }
 }
