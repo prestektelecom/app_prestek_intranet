@@ -13,6 +13,25 @@ export default function ServicesDirectory({ setCurrentView, user }) {
     const [editForm, setEditForm] = useState({ prazo_instalacao: '', taxa_instalacao: '' });
     const [isSaving, setIsSaving] = useState(false);
 
+    // Technical Services State
+    const [techServices, setTechServices] = useState([
+        { id: 1, service: "Instalação de roteador", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "router", isFree: false },
+        { id: 2, service: "Mudar roteador de local", value: "R$ 30,00 + custo material", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "swap_horiz", isFree: false },
+        { id: 3, service: "Configurar roteador", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "settings", isFree: false },
+        { id: 4, service: "Manutenção interna", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "build", isFree: false },
+        { id: 5, service: "Mudar de titularidade", value: "R$ 0,00", deadline: "Até 24 horas", payment: "", icon: "people", isFree: true },
+        { id: 6, service: "Mudar tecnologia", value: "ℹ️ Consulte o NOC", deadline: "", payment: "", icon: "info", isSpecial: true },
+        { id: 7, service: "Mudar senha no local", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "password", isFree: false },
+        { id: 8, service: "Extensão de rede", value: "Custo de material", deadline: "Até 5 dias", payment: "À vista ou 1x Boleto", icon: "lan", isFree: false },
+        { id: 9, service: "IP fixo", value: "R$ 99,90 À vista (ANUAL)", deadline: "24h", payment: "À vista (ANUAL) ou 12x R$9,90 junto mensalidade", icon: "dns", isFree: false },
+        { id: 10, service: "Roteador 360º WI-FI", value: "R$ 50,00", deadline: "Até 5 dias", payment: "Adicional mensal fatura: R$ 20,00", icon: "wifi_tethering", isFree: false },
+        { id: 11, service: "Alteração de senha WI-FI", value: "", deadline: "Até 5 dias", payment: "", icon: "wifi_lock", isFree: true },
+        { id: 12, service: "Trocar Comodato", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "swap_vertical_circle", isFree: false },
+        { id: 13, service: "Solicitação de Comodato", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "add_task", isFree: false }
+    ]);
+    const [editingTechService, setEditingTechService] = useState(null);
+    const [editTechForm, setEditTechForm] = useState({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
+
     useEffect(() => {
         fetchPlans();
     }, []);
@@ -53,7 +72,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
             });
             if (response.ok) {
                 setEditingPlan(null);
-                fetchPlans(); // Refresh the list
+                fetchPlans();
             } else {
                 console.error("Failed to save plan");
             }
@@ -62,6 +81,45 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleEditTechClick = (service) => {
+        setEditingTechService(service);
+        setEditTechForm({ 
+            service: service.service, 
+            value: service.value, 
+            deadline: service.deadline, 
+            payment: service.payment,
+            icon: service.icon 
+        });
+    };
+
+    const handleDeleteTechClick = (id) => {
+        if (confirm('Tem certeza que deseja excluir este serviço?')) {
+            setTechServices(techServices.filter(s => s.id !== id));
+        }
+    };
+
+    const handleSaveTechEdit = () => {
+        if (!editingTechService || !editingTechService.id) {
+            const newId = Math.max(...techServices.map(s => s.id), 0) + 1;
+            const newService = {
+                id: newId,
+                service: editTechForm.service || 'Novo Serviço',
+                value: editTechForm.value || '',
+                deadline: editTechForm.deadline || '',
+                payment: editTechForm.payment || '',
+                icon: editTechForm.icon || 'build',
+                isFree: editTechForm.value === 'R$ 0,00'
+            };
+            setTechServices([...techServices, newService]);
+        } else {
+            setTechServices(techServices.map(s => 
+                s.id === editingTechService.id ? { ...s, ...editTechForm } : s
+            ));
+        }
+        setEditingTechService(null);
+        setEditTechForm({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
     };
 
     const formatCurrency = (val) => {
@@ -91,7 +149,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
     const maxVendas = Math.max(...plans.map(p => p.vendas_mes || 0), 1);
     
     const filteredPlans = plans.filter(p => {
-        if (filter === 'All') return true;
+        if (filter === 'All' || filter === 'Technical') return true;
         const desc = (p.descricao || '').toUpperCase();
         if (filter === 'PF' && !desc.includes('P. JURIDICA') && !desc.includes('LINK')) return true;
         if (filter === 'PJ' && desc.includes('P. JURIDICA')) return true;
@@ -243,7 +301,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
                 {/* Filters */}
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {['All', 'PF', 'PJ', 'Link'].map(f => (
+                    {['All', 'PF', 'PJ', 'Link', 'Technical'].map(f => (
                         <button 
                             key={f}
                             onClick={() => setFilter(f)}
@@ -257,11 +315,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             {f === 'PF' && <><span className="material-symbols-outlined text-lg">person</span>Internet PF</>}
                             {f === 'PJ' && <><span className="material-symbols-outlined text-lg">business</span>Internet PJ</>}
                             {f === 'Link' && <><span className="material-symbols-outlined text-lg">router</span>Link Dedicado</>}
+                            {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>Serviços Técnicos</>}
                         </button>
                     ))}
                 </div>
 
-                {/* Services Table */}
+                {/* Services Table - Não mostrar quando filter é Technical */}
+                {filter !== 'Technical' && (
                 <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800 relative min-h-[300px]">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
@@ -386,9 +446,11 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </table>
                     </div>
                 </div>
+                )}
 
-                {/* Technical Services Section */}
-                <div className="mt-8 flex flex-col gap-5">
+                {/* Technical Services Section - Mostrar apenas quando filter é Technical */}
+                {filter === 'Technical' && (
+                <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-1">
                         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-2xl text-[#a17745] dark:text-orange-300">build</span>
@@ -396,6 +458,19 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </h2>
                         <p className="text-base text-slate-500 dark:text-slate-400">Serviços técnicos especializados para infraestrutura de rede e suporte de TI.</p>
                     </div>
+
+                    {isAdmin && (
+                        <button 
+                            onClick={() => {
+                                setEditingTechService({ id: null });
+                                setEditTechForm({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
+                            }}
+                            className="self-start flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-orange-600 transition-colors cursor-pointer font-medium text-sm"
+                        >
+                            <span className="material-symbols-outlined">add</span>
+                            Novo Serviço
+                        </button>
+                    )}
 
                     <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800 relative">
                         <div className="overflow-x-auto">
@@ -420,113 +495,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-slate-700">
-                                    {[
-                                        {
-                                            service: "Instalação de roteador",
-                                            value: "R$ 50,00",
-                                            deadline: "Até 5 dias úteis",
-                                            payment: "À vista ou 2x Boleto",
-                                            icon: "router",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "Mudar roteador de local",
-                                            value: "R$ 30,00 + custo material",
-                                            deadline: "Até 5 dias úteis",
-                                            payment: "À vista ou 2x Boleto",
-                                            icon: "swap_horiz",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "Configurar roteador",
-                                            value: "R$ 50,00",
-                                            deadline: "Até 5 dias úteis",
-                                            payment: "À vista ou 2x Boleto",
-                                            icon: "settings",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "Manutenção interna",
-                                            value: "R$ 50,00",
-                                            deadline: "Até 5 dias úteis",
-                                            payment: "À vista ou 2x Boleto",
-                                            icon: "build",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "Mudar de titularidade",
-                                            value: "R$ 0,00",
-                                            deadline: "Até 24 horas",
-                                            payment: "",
-                                            icon: "people",
-                                            isFree: true
-                                        },
-                                        {
-                                            service: "Mudar tecnologia",
-                                            value: "ℹ️ Consulte o NOC",
-                                            deadline: "",
-                                            payment: "",
-                                            icon: "info",
-                                            isSpecial: true
-                                        },
-                                        {
-                                            service: "Mudar senha no local",
-                                            value: "R$ 50,00",
-                                            deadline: "Até 5 dias",
-                                            payment: "À vista ou 2x Boleto",
-                                            icon: "password",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "Extensão de rede",
-                                            value: "Custo de material",
-                                            deadline: "Até 5 dias",
-                                            payment: "À vista ou 1x Boleto",
-                                            icon: "lan",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "IP fixo",
-                                            value: "R$ 99,90 À vista (ANUAL)",
-                                            deadline: "24h",
-                                            payment: "À vista (ANUAL) ou 12x R$9,90 junto mensalidade",
-                                            icon: "static_ip",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "Roteador 360º WI-FI",
-                                            value: "R$ 50,00",
-                                            deadline: "Até 5 dias",
-                                            payment: "Adicional mensal fatura: R$ 20,00",
-                                            icon: "wifi_tethering",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "Alteração de senha WI-FI",
-                                            value: "",
-                                            deadline: "Até 5 dias",
-                                            payment: "",
-                                            icon: "wifi_lock",
-                                            isFree: true
-                                        },
-                                        {
-                                            service: "Trocar Comodato",
-                                            value: "R$ 50,00",
-                                            deadline: "Até 5 dias",
-                                            payment: "À vista ou 2x Boleto",
-                                            icon: "swap_vertical_circle",
-                                            isFree: false
-                                        },
-                                        {
-                                            service: "Solicitação de Comodato",
-                                            value: "R$ 50,00",
-                                            deadline: "Até 5 dias",
-                                            payment: "À vista ou 2x Boleto",
-                                            icon: "add_task",
-                                            isFree: false
-                                        }
-                                    ].map((item, index) => (
-                                        <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                    {techServices.map((item) => (
+                                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                             <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                                 <div className="flex items-center gap-3">
                                                     <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
@@ -558,13 +528,32 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 {item.payment || <span className="text-slate-400 font-normal italic">-</span>}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button 
-                                                    onClick={() => console.log(`Solicitar: ${item.service}`)}
-                                                    className="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary cursor-pointer transition-colors"
-                                                    title={`Solicitar ${item.service}`}
-                                                >
-                                                    <span className="material-symbols-outlined">edit_document</span>
-                                                </button>
+                                                {isAdmin ? (
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button 
+                                                            onClick={() => handleEditTechClick(item)}
+                                                            className="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary cursor-pointer transition-colors"
+                                                            title={`Editar ${item.service}`}
+                                                        >
+                                                            <span className="material-symbols-outlined">edit</span>
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDeleteTechClick(item.id)}
+                                                            className="text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-500 cursor-pointer transition-colors"
+                                                            title={`Excluir ${item.service}`}
+                                                        >
+                                                            <span className="material-symbols-outlined">delete</span>
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button 
+                                                        onClick={() => console.log(`Solicitar: ${item.service}`)}
+                                                        className="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary cursor-pointer transition-colors"
+                                                        title={`Solicitar ${item.service}`}
+                                                    >
+                                                        <span className="material-symbols-outlined">edit_document</span>
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -573,8 +562,10 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </div>
                     </div>
                 </div>
+                )}
 
-                {/* Top 3 Podium */}
+                {/* Top 3 Podium - Não mostrar quando filter é Technical */}
+                {filter !== 'Technical' && (
                 <div className="mt-8 flex flex-col gap-5">
                     <div className="flex items-center justify-center gap-3">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top 3 Planos Mais Vendidos</h3>
@@ -723,9 +714,9 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         )}
                     </div>
                 </div>
-            </div>
+                )}
 
-            {/* Edit Modal */}
+                {/* Edit Modal */}
             {editingPlan && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -798,6 +789,114 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                     </div>
                 </div>
             )}
+            
+            {/* Edit Tech Service Modal */}
+            {editingTechService && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                                    {editingTechService?.id ? 'Editar Serviço Técnico' : 'Novo Serviço Técnico'}
+                                </h3>
+                                <button 
+                                    onClick={() => setEditingTechService(null)}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6 flex flex-col gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serviço</label>
+                                <input 
+                                    type="text" 
+                                    value={editTechForm.service} 
+                                    onChange={(e) => setEditTechForm({...editTechForm, service: e.target.value})}
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Valor</label>
+                                <input 
+                                    type="text" 
+                                    value={editTechForm.value} 
+                                    onChange={(e) => setEditTechForm({...editTechForm, value: e.target.value})}
+                                    placeholder="Ex: R$ 50,00"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prazo</label>
+                                <input 
+                                    type="text" 
+                                    value={editTechForm.deadline} 
+                                    onChange={(e) => setEditTechForm({...editTechForm, deadline: e.target.value})}
+                                    placeholder="Ex: Até 5 dias úteis"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pagamento</label>
+                                <input 
+                                    type="text" 
+                                    value={editTechForm.payment} 
+                                    onChange={(e) => setEditTechForm({...editTechForm, payment: e.target.value})}
+                                    placeholder="Ex: À vista ou 2x Boleto"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ícone</label>
+                                <div className="flex items-center gap-3">
+                                    <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
+                                        <span className="material-symbols-outlined text-lg">{editTechForm.icon || 'build'}</span>
+                                    </div>
+                                    <select 
+                                        value={editTechForm.icon} 
+                                        onChange={(e) => setEditTechForm({...editTechForm, icon: e.target.value})}
+                                        className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    >
+                                        <option value="router">Router</option>
+                                        <option value="swap_horiz">Swap Horizontal</option>
+                                        <option value="settings">Settings</option>
+                                        <option value="build">Build</option>
+                                        <option value="people">People</option>
+                                        <option value="info">Info</option>
+                                        <option value="password">Password</option>
+                                        <option value="lan">LAN</option>
+                                        <option value="dns">DNS</option>
+                                        <option value="wifi_tethering">Wi-Fi Tethering</option>
+                                        <option value="wifi_lock">Wi-Fi Lock</option>
+                                        <option value="swap_vertical_circle">Swap Circle</option>
+                                        <option value="add_task">Add Task</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+                            <button 
+                                onClick={() => setEditingTechService(null)}
+                                className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={handleSaveTechEdit}
+                                className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2"
+                            >
+                                Salvar Alterações
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
 
         </main>
     )
