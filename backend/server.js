@@ -210,11 +210,11 @@ app.post('/api/login', async (req, res) => {
         })
 
     } catch (erro) {
-        console.error('Erro de requisição para API IXC:', erro.message)
+        console.error('Erro interno no servidor:', erro.message);
         return res.status(500).json({
             sucesso: false,
-            erro: 'Erro interno do servidor.'
-        })
+            erro: `Erro interno no servidor: ${erro.message}`
+        });
     }
 })
 
@@ -1755,6 +1755,137 @@ app.put('/api/planos-negociacoes/:id', async (req, res) => {
     }
     
     return res.json({ sucesso: true, mensagem: 'Plano atualizado.' });
+});
+
+// ─── ROTAS: Serviços Técnicos ─────────────────────────────────────
+// GET - Listar todos os serviços técnicos
+app.get('/api/servicos-tecnicos', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM servicos_tecnicos ORDER BY id');
+        return res.json({ sucesso: true, dados: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar serviços técnicos:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao buscar serviços técnicos.' });
+    }
+});
+
+// POST - Criar novo serviço técnico
+app.post('/api/servicos-tecnicos', async (req, res) => {
+    const { servico, valor, prazo, pagamento, icon, is_free, is_special } = req.body;
+    try {
+        const result = await pool.query(`
+            INSERT INTO servicos_tecnicos (servico, valor, prazo, pagamento, icon, is_free, is_special)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `, [servico, valor, prazo, pagamento, icon || 'build', is_free || false, is_special || false]);
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao criar serviço técnico:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao criar serviço técnico.' });
+    }
+});
+
+// PUT - Atualizar serviço técnico
+app.put('/api/servicos-tecnicos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { servico, valor, prazo, pagamento, icon, is_free, is_special } = req.body;
+    try {
+        const result = await pool.query(`
+            UPDATE servicos_tecnicos 
+            SET servico = COALESCE($1, servico), valor = COALESCE($2, valor), prazo = COALESCE($3, prazo),
+                pagamento = COALESCE($4, pagamento), icon = COALESCE($5, icon), 
+                is_free = COALESCE($6, is_free), is_special = COALESCE($7, is_special)
+            WHERE id = $8
+            RETURNING *
+        `, [servico, valor, prazo, pagamento, icon, is_free, is_special, id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Serviço técnico não encontrado.' });
+        }
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar serviço técnico:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao atualizar serviço técnico.' });
+    }
+});
+
+// DELETE - Excluir serviço técnico
+app.delete('/api/servicos-tecnicos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM servicos_tecnicos WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Serviço técnico não encontrado.' });
+        }
+        return res.json({ sucesso: true, mensagem: 'Serviço técnico excluído.' });
+    } catch (err) {
+        console.error('Erro ao excluir serviço técnico:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao excluir serviço técnico.' });
+    }
+});
+
+// ─── ROTAS: Pacotes de Streaming ─────────────────────────────────
+// GET - Listar todos os pacotes de streaming
+app.get('/api/pacotes-streaming', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM pacotes_streaming ORDER BY id');
+        return res.json({ sucesso: true, dados: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar pacotes de streaming:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao buscar pacotes de streaming.' });
+    }
+});
+
+// POST - Criar novo pacote de streaming
+app.post('/api/pacotes-streaming', async (req, res) => {
+    const { servico, valor, periodicidade, icon } = req.body;
+    try {
+        const result = await pool.query(`
+            INSERT INTO pacotes_streaming (servico, valor, periodicidade, icon)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `, [servico, valor, periodicidade || 'Mensal', icon || 'play_circle']);
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao criar pacote de streaming:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao criar pacote de streaming.' });
+    }
+});
+
+// PUT - Atualizar pacote de streaming
+app.put('/api/pacotes-streaming/:id', async (req, res) => {
+    const { id } = req.params;
+    const { servico, valor, periodicidade, icon } = req.body;
+    try {
+        const result = await pool.query(`
+            UPDATE pacotes_streaming 
+            SET servico = COALESCE($1, servico), valor = COALESCE($2, valor), 
+                periodicidade = COALESCE($3, periodicidade), icon = COALESCE($4, icon)
+            WHERE id = $5
+            RETURNING *
+        `, [servico, valor, periodicidade, icon, id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Pacote de streaming não encontrado.' });
+        }
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar pacote de streaming:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao atualizar pacote de streaming.' });
+    }
+});
+
+// DELETE - Excluir pacote de streaming
+app.delete('/api/pacotes-streaming/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM pacotes_streaming WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Pacote de streaming não encontrado.' });
+        }
+        return res.json({ sucesso: true, mensagem: 'Pacote de streaming excluído.' });
+    } catch (err) {
+        console.error('Erro ao excluir pacote de streaming:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao excluir pacote de streaming.' });
+    }
 });
 
 // ─── Inicialização ───────────────────────────────────────────────

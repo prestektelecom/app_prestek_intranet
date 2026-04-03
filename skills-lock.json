@@ -11,6 +11,11 @@
       "sourceType": "github",
       "computedHash": "52998bacfadee37835bfa434d08a23c76fa04092f757660708fe014c3594877c"
     },
+    "postgresql-table-design": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "d7d040ee506a300c08a64b9ef6de9aa677b6d7251e33c3c87e0608f821a9506d"
+    },
     "redis-development": {
       "source": "redis/agent-skills",
       "sourceType": "github",

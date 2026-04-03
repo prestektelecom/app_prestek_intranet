@@ -32,8 +32,24 @@ export default function ServicesDirectory({ setCurrentView, user }) {
     const [editingTechService, setEditingTechService] = useState(null);
     const [editTechForm, setEditTechForm] = useState({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
 
+    // Streaming Services State
+    const [streamingServices, setStreamingServices] = useState([
+        { id: 1, service: "LEVEDUCA", value: "R$ 6,00", deadline: "Mensal", icon: "school" },
+        { id: 2, service: "ITTV SMART MINI 32c", value: "R$ 10,00", deadline: "Mensal", icon: "smart_display" },
+        { id: 3, service: "ITTV SMART TOTAL 108c", value: "R$ 20,00", deadline: "Mensal", icon: "smart_display" },
+        { id: 4, service: "LEVEDUCA+WATCH+PARAMOUNT", value: "R$ 19,90", deadline: "Mensal", icon: "movie" },
+        { id: 5, service: "LEVEDUCA+WATCH+PARAMOUNT+ITTV 108c", value: "R$ 29,90", deadline: "Mensal", icon: "movie" },
+        { id: 6, service: "LEVEDUCA+WATCH+PARAMOUNT+MAX", value: "R$ 39,90", deadline: "Mensal", icon: "movie" },
+        { id: 7, service: "LEVEDUCA+WATCH+PARAMOUNT+MAX+ITTV 108c", value: "R$ 66,00", deadline: "Mensal", icon: "movie" },
+        { id: 8, service: "LEVEDUCA+WATCH+PARAMOUNT+MAX+PREMIERE+ITTV 102c", value: "R$ 126,00", deadline: "Mensal", icon: "sports_soccer" }
+    ]);
+    const [editingStreamingService, setEditingStreamingService] = useState(null);
+    const [editStreamingForm, setEditStreamingForm] = useState({ service: '', value: '', deadline: 'Mensal', icon: 'play_circle' });
+
     useEffect(() => {
         fetchPlans();
+        fetchServicosTecnicos();
+        fetchPacotesStreaming();
     }, []);
 
     const fetchPlans = async () => {
@@ -51,6 +67,49 @@ export default function ServicesDirectory({ setCurrentView, user }) {
             console.error("Error fetching plans:", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchServicosTecnicos = async () => {
+        try {
+            const response = await fetch('/api/servicos-tecnicos');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.dados && data.dados.length > 0) {
+                    setTechServices(data.dados.map(s => ({
+                        id: Number(s.id),
+                        service: s.servico,
+                        value: s.valor || '',
+                        deadline: s.prazo || '',
+                        payment: s.pagamento || '',
+                        icon: s.icon || 'build',
+                        isFree: s.is_free,
+                        isSpecial: s.is_special
+                    })));
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching servicos tecnicos:", error);
+        }
+    };
+
+    const fetchPacotesStreaming = async () => {
+        try {
+            const response = await fetch('/api/pacotes-streaming');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.dados && data.dados.length > 0) {
+                    setStreamingServices(data.dados.map(s => ({
+                        id: Number(s.id),
+                        service: s.servico,
+                        value: s.valor || '',
+                        deadline: s.periodicidade || 'Mensal',
+                        icon: s.icon || 'play_circle'
+                    })));
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching pacotes streaming:", error);
         }
     };
 
@@ -94,32 +153,123 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         });
     };
 
-    const handleDeleteTechClick = (id) => {
-        if (confirm('Tem certeza que deseja excluir este serviço?')) {
-            setTechServices(techServices.filter(s => s.id !== id));
+    const handleDeleteTechClick = async (id) => {
+        if (window.confirm('Tem certeza que deseja excluir este serviço?')) {
+            try {
+                const response = await fetch(`/api/servicos-tecnicos/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    setTechServices(prev => prev.filter(s => s.id !== id));
+                    alert('Serviço excluído com sucesso!');
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    alert('Erro ao excluir: ' + (data.erro || 'Falha no servidor'));
+                }
+            } catch (error) {
+                console.error("Error deleting tech:", error);
+                alert('Erro de conexão ao servidor.');
+            }
         }
     };
 
-    const handleSaveTechEdit = () => {
-        if (!editingTechService || !editingTechService.id) {
-            const newId = Math.max(...techServices.map(s => s.id), 0) + 1;
-            const newService = {
-                id: newId,
-                service: editTechForm.service || 'Novo Serviço',
-                value: editTechForm.value || '',
-                deadline: editTechForm.deadline || '',
-                payment: editTechForm.payment || '',
-                icon: editTechForm.icon || 'build',
-                isFree: editTechForm.value === 'R$ 0,00'
-            };
-            setTechServices([...techServices, newService]);
-        } else {
-            setTechServices(techServices.map(s => 
-                s.id === editingTechService.id ? { ...s, ...editTechForm } : s
-            ));
+    const handleSaveTechEdit = async () => {
+        const payload = {
+            servico: editTechForm.service || 'Novo Serviço',
+            valor: editTechForm.value || '',
+            prazo: editTechForm.deadline || '',
+            pagamento: editTechForm.payment || '',
+            icon: editTechForm.icon || 'build',
+            is_free: editTechForm.value === 'R$ 0,00',
+            is_special: false
+        };
+
+        try {
+            if (!editingTechService || !editingTechService.id) {
+                const response = await fetch('/api/servicos-tecnicos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    fetchServicosTecnicos();
+                }
+            } else {
+                const response = await fetch(`/api/servicos-tecnicos/${editingTechService.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    fetchServicosTecnicos();
+                }
+            }
+        } catch (error) {
+            console.error("Error saving servico tecnico:", error);
         }
         setEditingTechService(null);
         setEditTechForm({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
+    };
+
+    const handleEditStreamingClick = (service) => {
+        setEditingStreamingService(service);
+        setEditStreamingForm({ 
+            service: service.service, 
+            value: service.value, 
+            deadline: service.deadline, 
+            icon: service.icon 
+        });
+    };
+
+    const handleDeleteStreamingClick = async (id) => {
+        if (window.confirm('Tem certeza que deseja excluir este pacote?')) {
+            try {
+                const response = await fetch(`/api/pacotes-streaming/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    setStreamingServices(prev => prev.filter(s => s.id !== id));
+                    alert('Pacote excluído com sucesso!');
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    alert('Erro ao excluir: ' + (data.erro || 'Falha no servidor'));
+                }
+            } catch (error) {
+                console.error("Error deleting streaming:", error);
+                alert('Erro de conexão ao servidor.');
+            }
+        }
+    };
+
+    const handleSaveStreamingEdit = async () => {
+        const payload = {
+            servico: editStreamingForm.service || 'Novo Pacote',
+            valor: editStreamingForm.value || '',
+            periodicidade: editStreamingForm.deadline || 'Mensal',
+            icon: editStreamingForm.icon || 'play_circle'
+        };
+
+        try {
+            if (!editingStreamingService || !editingStreamingService.id) {
+                const response = await fetch('/api/pacotes-streaming', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    fetchPacotesStreaming();
+                }
+            } else {
+                const response = await fetch(`/api/pacotes-streaming/${editingStreamingService.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    fetchPacotesStreaming();
+                }
+            }
+        } catch (error) {
+            console.error("Error saving pacote streaming:", error);
+        }
+        setEditingStreamingService(null);
+        setEditStreamingForm({ service: '', value: '', deadline: 'Mensal', icon: 'play_circle' });
     };
 
     const formatCurrency = (val) => {
@@ -301,7 +451,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
                 {/* Filters */}
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {['All', 'PF', 'PJ', 'Link', 'Technical'].map(f => (
+                    {['All', 'PF', 'PJ', 'Link', 'Technical', 'Streaming'].map(f => (
                         <button 
                             key={f}
                             onClick={() => setFilter(f)}
@@ -316,12 +466,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             {f === 'PJ' && <><span className="material-symbols-outlined text-lg">business</span>Internet PJ</>}
                             {f === 'Link' && <><span className="material-symbols-outlined text-lg">router</span>Link Dedicado</>}
                             {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>Serviços Técnicos</>}
+                            {f === 'Streaming' && <><span className="material-symbols-outlined text-lg">play_circle</span>Streaming's</>}
                         </button>
                     ))}
                 </div>
 
-                {/* Services Table - Não mostrar quando filter é Technical */}
-                {filter !== 'Technical' && (
+                {/* Services Table - Não mostrar quando filter é Technical ou Streaming */}
+                {filter !== 'Technical' && filter !== 'Streaming' && (
                 <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800 relative min-h-[300px]">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
@@ -564,7 +715,88 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                 </div>
                 )}
 
-                {/* Top 3 Podium - Não mostrar quando filter é Technical */}
+                {/* Streaming Services Section */}
+                {filter === 'Streaming' && (
+                <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-1">
+                        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-2xl text-[#a17745] dark:text-orange-300">play_circle</span>
+                            Pacotes de Streaming
+                        </h2>
+                        <p className="text-base text-slate-500 dark:text-slate-400">Assinaturas de streaming inclusas nos planos combos.</p>
+                    </div>
+
+                    {isAdmin && (
+                        <button 
+                            onClick={() => {
+                                setEditingStreamingService({ id: null });
+                                setEditStreamingForm({ service: '', value: '', deadline: 'Mensal', icon: 'play_circle' });
+                            }}
+                            className="self-start flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-orange-600 transition-colors cursor-pointer font-medium text-sm"
+                        >
+                            <span className="material-symbols-outlined">add</span>
+                            Novo Pacote
+                        </button>
+                    )}
+
+                    <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800 relative">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                                <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-700/50 dark:text-slate-400">
+                                    <tr>
+                                        <th className="px-6 py-4 font-semibold" scope="col">PACOTE</th>
+                                        <th className="px-6 py-4 font-semibold" scope="col">VALOR MENSAL</th>
+                                        <th className="px-6 py-4 font-semibold" scope="col">PERÍODO</th>
+                                        <th className="px-6 py-4 font-semibold text-right" scope="col">AÇÕES</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-slate-700">
+                                    {streamingServices.map((item) => (
+                                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                            <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
+                                                        <span className="material-symbols-outlined text-lg">{item.icon}</span>
+                                                    </div>
+                                                    {item.service}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-sm font-bold text-green-700 dark:text-green-400">
+                                                    {item.value}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
+                                                {item.deadline}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                {isAdmin ? (
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button 
+                                                            onClick={() => handleEditStreamingClick(item)}
+                                                            className="text-slate-400 hover:text-primary dark:text-slate-500 dark:hover:text-primary cursor-pointer transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined">edit</span>
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDeleteStreamingClick(item.id)}
+                                                            className="text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-500 cursor-pointer transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined">delete</span>
+                                                        </button>
+                                                    </div>
+                                                ) : null}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                )}
+
+                {/* Top 3 Podium - Não mostrar quando filter é Technical ou Streaming */}
                 {filter !== 'Technical' && (
                 <div className="mt-8 flex flex-col gap-5">
                     <div className="flex items-center justify-center gap-3">
@@ -888,6 +1120,97 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             </button>
                             <button 
                                 onClick={handleSaveTechEdit}
+                                className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2"
+                            >
+                                Salvar Alterações
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Edit Streaming Service Modal */}
+            {editingStreamingService && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                                    {editingStreamingService?.id ? 'Editar Pacote de Streaming' : 'Novo Pacote de Streaming'}
+                                </h3>
+                                <button 
+                                    onClick={() => setEditingStreamingService(null)}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6 flex flex-col gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pacote</label>
+                                <input 
+                                    type="text" 
+                                    value={editStreamingForm.service} 
+                                    onChange={(e) => setEditStreamingForm({...editStreamingForm, service: e.target.value})}
+                                    placeholder="Ex: LEVEDUCA+WATCH+PARAMOUNT"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Valor Mensal</label>
+                                <input 
+                                    type="text" 
+                                    value={editStreamingForm.value} 
+                                    onChange={(e) => setEditStreamingForm({...editStreamingForm, value: e.target.value})}
+                                    placeholder="Ex: R$ 19,90"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Período</label>
+                                <input 
+                                    type="text" 
+                                    value={editStreamingForm.deadline} 
+                                    onChange={(e) => setEditStreamingForm({...editStreamingForm, deadline: e.target.value})}
+                                    placeholder="Ex: Mensal"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ícone</label>
+                                <div className="flex items-center gap-3">
+                                    <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
+                                        <span className="material-symbols-outlined text-lg">{editStreamingForm.icon || 'play_circle'}</span>
+                                    </div>
+                                    <select 
+                                        value={editStreamingForm.icon} 
+                                        onChange={(e) => setEditStreamingForm({...editStreamingForm, icon: e.target.value})}
+                                        className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    >
+                                        <option value="play_circle">Play Circle</option>
+                                        <option value="smart_display">Smart Display</option>
+                                        <option value="movie">Movie</option>
+                                        <option value="school">School</option>
+                                        <option value="sports_soccer">Sports</option>
+                                        <option value="tv">TV</option>
+                                        <option value="subscriptions">Subscriptions</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+                            <button 
+                                onClick={() => setEditingStreamingService(null)}
+                                className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={handleSaveStreamingEdit}
                                 className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2"
                             >
                                 Salvar Alterações

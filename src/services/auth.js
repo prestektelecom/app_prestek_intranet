@@ -17,7 +17,17 @@ export async function loginUsuario(email, senha) {
             body: JSON.stringify({ email, senha })
         })
 
-        const dados = await resposta.json()
+        if (!resposta.ok) {
+            const rawBody = await resposta.text().catch(() => '');
+            try {
+                const errorData = JSON.parse(rawBody);
+                return { erro: errorData.erro || `Erro no servidor (${resposta.status})` };
+            } catch (jsonErr) {
+                return { erro: `O servidor respondeu com erro (${resposta.status}). Verifique se o backend está ativo.` };
+            }
+        }
+
+        const dados = await resposta.json();
 
         if (!dados.sucesso) {
             return { erro: dados.erro }
@@ -28,6 +38,7 @@ export async function loginUsuario(email, senha) {
         return {
             usuario: dados.usuario,
             funcionario: dados.funcionario ?? null,
+            is_admin: dados.usuario?.is_admin || false,
             host: dados.host
         }
 

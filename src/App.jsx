@@ -76,7 +76,8 @@ export default function App() {
         return <Login onLogin={(resultado) => {
             const userData = {
                 ...resultado.usuario,
-                funcionario: resultado.funcionario
+                funcionario: resultado.funcionario,
+                is_admin: resultado.usuario?.is_admin || false
             }
             setUser(userData)
 
