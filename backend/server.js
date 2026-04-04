@@ -1610,7 +1610,8 @@ app.get('/api/planos-negociacoes', async (req, res) => {
         const resultMeta = await pool.query('SELECT plano_id, prazo_instalacao, taxa_instalacao FROM planos_metadata');
         const mapaMetadados = {};
         resultMeta.rows.forEach(row => {
-            mapaMetadados[row.plano_id] = {
+            const key = (row.plano_id || '').toString().trim();
+            mapaMetadados[key] = {
                 prazo_instalacao: row.prazo_instalacao,
                 taxa_instalacao: row.taxa_instalacao
             };
@@ -1655,13 +1656,14 @@ app.get('/api/planos-negociacoes', async (req, res) => {
         }
 
         const planos = planosIXC.map(plano => {
-            const meta = mapaMetadados[String(plano.id)] || {};
+            const planoId = String(plano.id || '').trim();
+            const meta = mapaMetadados[planoId] || {};
             // Inject vendas_mes into plan
             return {
                 ...plano,
-                prazo_instalacao: meta.prazo_instalacao || '3 Dias', // Valor padrão
-                taxa_instalacao: meta.taxa_instalacao || 'Grátis', // Valor padrão
-                vendas_mes: planCounts[String(plano.id_plano)] || 0
+                prazo_instalacao: (meta.prazo_instalacao && meta.prazo_instalacao.trim()) ? meta.prazo_instalacao : '3 Dias', 
+                taxa_instalacao: (meta.taxa_instalacao && meta.taxa_instalacao.trim()) ? meta.taxa_instalacao : 'Grátis',
+                vendas_mes: planCounts[planoId] || planCounts[String(plano.id_plano || '').trim()] || 0
             };
         });
 
