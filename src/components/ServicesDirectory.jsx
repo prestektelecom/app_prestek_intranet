@@ -801,7 +801,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                 )}
 
                 {/* Top 3 Podium - Não mostrar quando filter é Technical ou Streaming */}
-                {filter !== 'Technical' && (
+                {filter !== 'Technical' && filter !== 'Streaming' && (
                 <div className="mt-8 flex flex-col gap-5">
                     <div className="flex items-center justify-center gap-3">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top 3 Planos Mais Vendidos</h3>
