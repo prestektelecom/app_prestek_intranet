@@ -929,15 +929,6 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                         </div>
                                                     </div>
                                                 </div>
-
-                                                {isAdmin && (
-                                                    <button onClick={() => handleEditClick(plan)} className={`w-full rounded-lg font-semibold transition-all cursor-pointer ${rc.btn} ${isGold ? 'mt-3 sm:mt-4 px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-sm' : 'mt-2 sm:mt-3 px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs'}`}>
-                                                        <span className="flex items-center justify-center gap-1">
-                                                            <span className="material-symbols-outlined" style={{ fontSize: isGold ? 16 : 14 }}>edit</span>
-                                                            Editar
-                                                        </span>
-                                                    </button>
-                                                )}
                                             </div>
                                         );
                                     });
