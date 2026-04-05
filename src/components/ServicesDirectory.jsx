@@ -48,12 +48,27 @@ export default function ServicesDirectory({ setCurrentView, user }) {
     const [editingStreamingService, setEditingStreamingService] = useState(null);
     const [editStreamingForm, setEditStreamingForm] = useState({ service: '', value: '', deadline: 'Mensal', icon: 'play_circle' });
 
+    const [topVendors, setTopVendors] = useState([]);
+
+    const [activeSlide, setActiveSlide] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
+
     useEffect(() => {
         fetchPlans();
         fetchServicosTecnicos();
         fetchPacotesStreaming();
+        fetchTopVendors();
     }, []);
 
+    useEffect(() => {
+        let interval;
+        if (!isHovered) {
+             interval = setInterval(() => {
+                 setActiveSlide((prev) => (prev === 0 ? 1 : 0));
+             }, 3000);
+        }
+        return () => clearInterval(interval);
+    }, [isHovered]);
     const fetchPlans = async () => {
         setIsLoading(true);
         try {
@@ -118,6 +133,20 @@ export default function ServicesDirectory({ setCurrentView, user }) {
             }
         } catch (error) {
             console.error("Error fetching pacotes streaming:", error);
+        }
+    };
+
+    const fetchTopVendors = async () => {
+        try {
+            const response = await fetch('/api/top-vendedores');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.dados) {
+                    setTopVendors(data.dados);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching top vendors:", error);
         }
     };
 
@@ -541,7 +570,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                         const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
                                         
                                         return (
-                                            <tr key={plan.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                            <tr key={plan.id} className="group hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                                     <div className="flex items-center gap-3">
                                                         <div className="rounded bg-primary/10 p-2 text-primary dark:bg-primary/20">
@@ -560,8 +589,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="relative group">
-                                                        <button className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-primary/20 hover:text-primary dark:hover:bg-primary/20 transition-all cursor-pointer shadow-sm hover:shadow-md">
+                                                    <div className="relative flex justify-center">
+                                                        <button className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-primary/20 group-hover:text-primary dark:group-hover:bg-primary/20 transition-all cursor-pointer shadow-sm group-hover:shadow-md">
                                                             <span className="material-symbols-outlined text-lg">more_horiz</span>
                                                         </button>
                                                         <div className={`absolute right-0 ${isFirstRows ? 'top-full mt-2' : 'bottom-full mb-2'} px-4 py-3 bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-700 dark:to-slate-800 text-white text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-2xl border border-slate-600/30 backdrop-blur-sm`} style={{ minWidth: '200px' }}>
@@ -802,154 +831,222 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                 </div>
                 )}
 
-                {/* Top 3 Podium - Não mostrar quando filter é Technical ou Streaming */}
                 {filter !== 'Technical' && filter !== 'Streaming' && (
-                <div className="mt-8 flex flex-col gap-5">
-                    <div className="flex items-center justify-center gap-3">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top 3 Planos Mais Vendidos</h3>
-                        <div className="hidden sm:flex items-center gap-1.5">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
-                                <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
-                            </span>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
-                                <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Prata
-                            </span>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400">
-                                <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Bronze
-                            </span>
+                <div 
+                    className="mt-8 relative overflow-hidden"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                >
+                    {/* Carousel Navigation */}
+                    <div className="absolute top-2 sm:top-1 right-2 z-10 flex gap-2">
+                        <button onClick={() => setActiveSlide(0)} className={`w-2.5 h-2.5 rounded-full transition-colors ${activeSlide === 0 ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 hover:dark:bg-slate-500'}`}></button>
+                        <button onClick={() => setActiveSlide(1)} className={`w-2.5 h-2.5 rounded-full transition-colors ${activeSlide === 1 ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 hover:dark:bg-slate-500'}`}></button>
+                    </div>
+
+                    <div 
+                        className="flex transition-transform duration-700 ease-in-out"
+                        style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+                    >
+                    
+                    {/* TOP 3 PLANOS */}
+                    <div className="w-full shrink-0 flex flex-col gap-5 px-1 py-2">
+                        <div className="flex items-center justify-center gap-3">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top 3 Planos</h3>
+                            <div className="hidden sm:flex items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Prata
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Bronze
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-end justify-center gap-3 sm:gap-5">
+                            {isLoading ? (
+                                <div className="flex justify-center py-10 w-full">
+                                    <span className="material-symbols-outlined animate-spin text-3xl text-primary">autorenew</span>
+                                </div>
+                            ) : (
+                                (() => {
+                                    // Reorder: [2nd, 1st, 3rd]
+                                    const podiumOrder = fiberPlans.length >= 3
+                                        ? [fiberPlans[1], fiberPlans[0], fiberPlans[2]]
+                                        : fiberPlans;
+                                    const displayRanks = fiberPlans.length >= 3 ? [2, 1, 3] : fiberPlans.map((_, i) => i + 1);
+
+                                    return podiumOrder.map((plan, i) => {
+                                        if (!plan) return null;
+                                        const rank = displayRanks[i];
+                                        const vendas = plan.vendas_mes || 0;
+                                        const maxVendasLocal = Math.max(maxVendas, 10);
+                                        const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
+                                        const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
+
+                                        const isGold = rank === 1;
+                                        const isSilver = rank === 2;
+                                        const isBronze = rank === 3;
+
+                                        const rc = {
+                                            1: { border: 'border-2 border-amber-400 dark:border-amber-500', label: 'OURO', glow: 'shadow-xl shadow-amber-500/20', titleColor: 'text-amber-600 dark:text-amber-400', numBg: 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white', badgeColor: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white', btn: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white hover:from-amber-600 hover:to-yellow-600' },
+                                            2: { border: 'border-2 border-slate-300 dark:border-slate-600', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white', btn: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white hover:from-slate-500 hover:to-slate-600' },
+                                            3: { border: 'border-2 border-orange-300 dark:border-orange-600', label: 'BRONZE', glow: 'shadow-md shadow-orange-500/10', titleColor: 'text-orange-600 dark:text-orange-400', numBg: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white', badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white', btn: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-600 hover:to-amber-700' },
+                                        }[rank];
+
+                                        return (
+                                            <div key={'plan-'+plan.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-slate-800 transition-all hover:-translate-y-1 ${rc.border} ${rc.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className={`flex items-center justify-center rounded-full font-extrabold ${rc.numBg} ${isGold ? 'w-8 h-8 text-sm sm:w-9 sm:h-9 sm:text-base' : 'w-6 h-6 text-[10px] sm:w-7 sm:h-7 sm:text-xs'}`}>{rank}</div>
+                                                    <span className={`inline-flex items-center gap-0.5 rounded-full font-extrabold uppercase tracking-wider ${rc.badgeColor} ${isGold ? 'px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px]' : 'px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[8px] sm:text-[9px]'}`}>
+                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 12 : 10 }}>workspace_premium</span>
+                                                        <span className="hidden sm:inline">{rc.label}</span>
+                                                    </span>
+                                                </div>
+                                                {isGold && (
+                                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 shadow-lg shadow-amber-500/30">
+                                                        <span className="material-symbols-outlined text-white text-xl">crown</span>
+                                                    </div>
+                                                )}
+                                                <h4 className={`font-bold ${rc.titleColor} truncate leading-tight ${isGold ? 'text-sm sm:text-base mt-1' : 'text-xs sm:text-sm'}`} title={plan.descricao}>{plan.descricao}</h4>
+                                                <p className={`text-slate-400 dark:text-slate-500 ${isGold ? 'text-[10px] sm:text-[11px] mt-1' : 'text-[9px] sm:text-[10px] mt-0.5'}`}>Sincronizado via IXC</p>
+                                                
+                                                <div className={`flex items-baseline gap-1 ${isGold ? 'mt-3 sm:mt-4' : 'mt-2 sm:mt-3'}`}>
+                                                    <span className={`font-extrabold ${rc.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>{formatCurrency(plan.valor_mensal)}</span>
+                                                    <span className="text-[10px] sm:text-xs font-medium text-slate-400">/mês</span>
+                                                </div>
+
+                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-slate-700 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
+                                                    <div className="flex justify-between text-[10px] sm:text-xs items-center">
+                                                        <span className="text-slate-400 dark:text-slate-500">Vendas</span>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className={`h-1 sm:h-1.5 rounded-full bg-slate-100 dark:bg-slate-600 overflow-hidden ${isGold ? 'w-10 sm:w-14' : 'w-8 sm:w-10'}`}>
+                                                                <div className={`h-full rounded-full ${barColor}`} style={{ width: `${Math.max(vendasRatio, vendas > 0 ? 10 : 0)}%` }}></div>
+                                                            </div>
+                                                            <span className="font-bold text-slate-700 dark:text-slate-300">{vendas}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {isAdmin && (
+                                                    <button onClick={() => handleEditClick(plan)} className={`w-full rounded-lg font-semibold transition-all cursor-pointer ${rc.btn} ${isGold ? 'mt-3 sm:mt-4 px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-sm' : 'mt-2 sm:mt-3 px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs'}`}>
+                                                        <span className="flex items-center justify-center gap-1">
+                                                            <span className="material-symbols-outlined" style={{ fontSize: isGold ? 16 : 14 }}>edit</span>
+                                                            Editar
+                                                        </span>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    });
+                                })()
+                            )}
                         </div>
                     </div>
 
-                    <div className="flex items-end justify-center gap-5">
-                        {isLoading ? (
-                            <div className="flex justify-center py-10">
-                                <span className="material-symbols-outlined animate-spin text-3xl text-primary">autorenew</span>
+
+                    {/* TOP 3 COLABORADORAS */}
+                    <div className="w-full shrink-0 flex flex-col gap-5 px-1 py-2">
+                        <div className="flex items-center justify-center gap-3">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top 3 Colaboradoras</h3>
+                            <div className="hidden sm:flex items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Prata
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Bronze
+                                </span>
                             </div>
-                        ) : (
-                            (() => {
-                                // Reorder: [2nd, 1st, 3rd]
-                                const podiumOrder = fiberPlans.length >= 3
-                                    ? [fiberPlans[1], fiberPlans[0], fiberPlans[2]]
-                                    : fiberPlans;
-                                const displayRanks = fiberPlans.length >= 3 ? [2, 1, 3] : fiberPlans.map((_, i) => i + 1);
+                        </div>
 
-                                return podiumOrder.map((plan, i) => {
-                                    if (!plan) return null;
-                                    const rank = displayRanks[i];
-                                    const vendas = plan.vendas_mes || 0;
-                                    const maxVendasLocal = Math.max(maxVendas, 10);
-                                    const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
-                                    const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
+                        <div className="flex items-end justify-center gap-3 sm:gap-5">
+                            {isLoading ? (
+                                <div className="flex justify-center py-10 w-full">
+                                    <span className="material-symbols-outlined animate-spin text-3xl text-primary">autorenew</span>
+                                </div>
+                            ) : topVendors.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-10 w-full">
+                                    <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-5xl mb-2">emoji_events</span>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Nenhuma venda registrada.</p>
+                                </div>
+                            ) : (
+                                (() => {
+                                    const maxVendasVendor = topVendors.length > 0 ? Math.max(...topVendors.map(v => v.vendas_mes)) : 0;
+                                    // Reorder: [2nd, 1st, 3rd]
+                                    const podiumOrder = topVendors.length >= 3
+                                        ? [topVendors[1], topVendors[0], topVendors[2]]
+                                        : topVendors;
+                                    const displayRanks = topVendors.length >= 3 ? [2, 1, 3] : topVendors.map((_, i) => i + 1);
 
-                                    const isGold = rank === 1;
-                                    const isSilver = rank === 2;
-                                    const isBronze = rank === 3;
+                                    return podiumOrder.map((vendor, i) => {
+                                        if (!vendor) return null;
+                                        const rank = displayRanks[i];
+                                        const vendas = vendor.vendas_mes || 0;
+                                        const maxVendasLocal = Math.max(maxVendasVendor, 5); 
+                                        const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
+                                        
+                                        const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
 
-                                    const rc = {
-                                        1: {
-                                            border: 'border-2 border-amber-400 dark:border-amber-500',
-                                            label: 'OURO',
-                                            glow: 'shadow-xl shadow-amber-500/20',
-                                            titleColor: 'text-amber-600 dark:text-amber-400',
-                                            btn: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white hover:from-amber-600 hover:to-yellow-600',
-                                            numBg: 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white',
-                                            badgeColor: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white',
-                                        },
-                                        2: {
-                                            border: 'border-2 border-slate-300 dark:border-slate-600',
-                                            label: 'PRATA',
-                                            glow: 'shadow-md shadow-slate-400/10',
-                                            titleColor: 'text-slate-600 dark:text-slate-300',
-                                            btn: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white hover:from-slate-500 hover:to-slate-600',
-                                            numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white',
-                                            badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white',
-                                        },
-                                        3: {
-                                            border: 'border-2 border-orange-300 dark:border-orange-600',
-                                            label: 'BRONZE',
-                                            glow: 'shadow-md shadow-orange-500/10',
-                                            titleColor: 'text-orange-600 dark:text-orange-400',
-                                            btn: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-600 hover:to-amber-700',
-                                            numBg: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white',
-                                            badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white',
-                                        },
-                                    }[rank];
+                                        const isGold = rank === 1;
+                                        const isSilver = rank === 2;
+                                        const isBronze = rank === 3;
 
-                                    return (
-                                        <div
-                                            key={plan.id}
-                                            className={`relative flex flex-col rounded-xl bg-white dark:bg-slate-800 transition-all hover:-translate-y-1 ${rc.border} ${rc.glow} ${
-                                                isGold
-                                                    ? 'w-[260px] md:w-[290px] p-5 self-stretch'
-                                                    : 'w-[230px] md:w-[250px] p-4 mt-6'
-                                            }`}
-                                        >
-                                            {/* Rank + Badge row */}
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className={`flex items-center justify-center rounded-full font-extrabold ${rc.numBg} ${isGold ? 'w-9 h-9 text-base' : 'w-7 h-7 text-xs'}`}>
-                                                    {rank}
+                                        const rc = {
+                                            1: { border: 'border-2 border-amber-400 dark:border-amber-500', label: 'OURO', glow: 'shadow-xl shadow-amber-500/20', titleColor: 'text-amber-600 dark:text-amber-400', numBg: 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white', badgeColor: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white' },
+                                            2: { border: 'border-2 border-slate-300 dark:border-slate-600', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white' },
+                                            3: { border: 'border-2 border-orange-300 dark:border-orange-600', label: 'BRONZE', glow: 'shadow-md shadow-orange-500/10', titleColor: 'text-orange-600 dark:text-orange-400', numBg: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white', badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white' },
+                                        }[rank];
+
+                                        return (
+                                            <div key={'colab-'+vendor.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-slate-800 transition-all hover:-translate-y-1 ${rc?.border} ${rc?.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className={`flex items-center justify-center rounded-full font-extrabold ${rc?.numBg} ${isGold ? 'w-8 h-8 text-sm sm:w-9 sm:h-9 sm:text-base' : 'w-6 h-6 text-[10px] sm:w-7 sm:h-7 sm:text-xs'}`}>{rank}</div>
+                                                    <span className={`inline-flex items-center gap-0.5 rounded-full font-extrabold uppercase tracking-wider ${rc?.badgeColor} ${isGold ? 'px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px]' : 'px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[8px] sm:text-[9px]'}`}>
+                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 12 : 10 }}>workspace_premium</span>
+                                                        <span className="hidden sm:inline">{rc?.label}</span>
+                                                    </span>
                                                 </div>
-                                                <span className={`inline-flex items-center gap-0.5 rounded-full font-extrabold uppercase tracking-wider ${rc.badgeColor} ${isGold ? 'px-2.5 py-1 text-[10px]' : 'px-2 py-0.5 text-[9px]'}`}>
-                                                    <span className="material-symbols-outlined" style={{ fontSize: isGold ? 12 : 10 }}>workspace_premium</span>
-                                                    {rc.label}
-                                                </span>
-                                            </div>
 
-                                            {/* Crown icon for gold */}
-                                            {isGold && (
-                                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 shadow-lg shadow-amber-500/30">
-                                                    <span className="material-symbols-outlined text-white text-xl">crown</span>
+                                                {isGold && (
+                                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 shadow-lg shadow-amber-500/30">
+                                                        <span className="material-symbols-outlined text-white text-xl">crown</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="flex items-center gap-2 sm:gap-3">
+                                                    <div className={`flex shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
+                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 20 : 16 }}>person</span>
+                                                    </div>
+                                                    <div className="overflow-hidden">
+                                                        <h4 className={`font-bold ${rc?.titleColor} truncate leading-tight ${isGold ? 'text-sm sm:text-base mt-0' : 'text-xs sm:text-sm mt-0'}`} title={vendor.nome}>{vendor.nome.split(' ')[0]}</h4>
+                                                        <p className={`text-slate-400 dark:text-slate-500 ${isGold ? 'text-[9px] sm:text-[11px] mt-0.5' : 'text-[8px] sm:text-[10px] mt-0.5'}`}>Vendedora</p>
+                                                    </div>
                                                 </div>
-                                            )}
 
-                                            {/* Plan Name */}
-                                            <h4 className={`font-bold ${rc.titleColor} truncate leading-tight ${isGold ? 'text-base mt-1' : 'text-sm'}`}>{plan.descricao}</h4>
-                                            <p className={`text-slate-400 dark:text-slate-500 ${isGold ? 'text-[11px] mt-1' : 'text-[10px] mt-0.5'}`}>Sincronizado via IXC</p>
-
-                                            {/* Price */}
-                                            <div className={`flex items-baseline gap-1 ${isGold ? 'mt-4' : 'mt-3'}`}>
-                                                <span className={`font-extrabold ${rc.titleColor} ${isGold ? 'text-2xl' : 'text-xl'}`}>{formatCurrency(plan.valor_mensal)}</span>
-                                                <span className="text-xs font-medium text-slate-400">/mês</span>
-                                            </div>
-
-                                            {/* Details */}
-                                            <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-slate-700 ${isGold ? 'mt-4 gap-2.5 pt-3' : 'mt-3 gap-2 pt-3'}`}>
-                                                <div className="flex justify-between text-xs">
-                                                    <span className="text-slate-400 dark:text-slate-500">Instalação</span>
-                                                    <span className="font-semibold text-slate-700 dark:text-slate-300">{plan.taxa_instalacao ? formatCurrency(plan.taxa_instalacao) : 'N/D'}</span>
-                                                </div>
-                                                <div className="flex justify-between text-xs">
-                                                    <span className="text-slate-400 dark:text-slate-500">Prazo</span>
-                                                    <span className="font-semibold text-slate-700 dark:text-slate-300 truncate ml-2 max-w-[120px]" title={plan.prazo_instalacao}>{plan.prazo_instalacao || 'N/D'}</span>
-                                                </div>
-                                                <div className="flex justify-between text-xs items-center">
-                                                    <span className="text-slate-400 dark:text-slate-500">Vendas/mês</span>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className={`h-1.5 rounded-full bg-slate-100 dark:bg-slate-600 overflow-hidden ${isGold ? 'w-14' : 'w-10'}`}>
-                                                            <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${Math.max(vendasRatio, vendas > 0 ? 10 : 0)}%` }}></div>
+                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-slate-700 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
+                                                    <div className="flex justify-between text-[10px] sm:text-xs items-center">
+                                                        <span className="text-slate-400 dark:text-slate-500">Vendas</span>
+                                                        <span className={`font-extrabold ${rc?.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>{vendas}</span>
+                                                    </div>
+                                                    <div className="w-full">
+                                                        <div className={`h-1 sm:h-1.5 rounded-full bg-slate-100 dark:bg-slate-600 overflow-hidden w-full mt-1`}>
+                                                            <div className={`h-full rounded-full ${barColor}`} style={{ width: `${Math.max(vendasRatio, vendas > 0 ? 10 : 0)}%` }}></div>
                                                         </div>
-                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{vendas}</span>
                                                     </div>
                                                 </div>
                                             </div>
+                                        );
+                                    });
+                                })()
+                            )}
+                        </div>
+                    </div>
 
-                                            {/* Edit Button - Admin Only */}
-                                            {isAdmin && (
-                                                <button
-                                                    onClick={() => handleEditClick(plan)}
-                                                    className={`w-full rounded-lg font-semibold transition-all cursor-pointer ${rc.btn} ${isGold ? 'mt-4 px-4 py-2.5 text-sm' : 'mt-3 px-3 py-2 text-xs'}`}
-                                                >
-                                                    <span className="flex items-center justify-center gap-1">
-                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 16 : 14 }}>edit</span>
-                                                        Editar
-                                                    </span>
-                                                </button>
-                                            )}
-                                        </div>
-                                    );
-                                });
-                            })()
-                        )}
                     </div>
                 </div>
                 )}

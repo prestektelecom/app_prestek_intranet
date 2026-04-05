@@ -1890,6 +1890,88 @@ app.delete('/api/pacotes-streaming/:id', async (req, res) => {
     }
 });
 
+// ─── Rota: Top 3 Colaboradoras (Vendedores) ──────────────────────
+app.get('/api/top-vendedores', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const host = process.env.IXC_HOST;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    try {
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+
+        // 1. Fetch Contratos do Mes
+        const urlContratos = `https://${host}/webservice/v1/cliente_contrato`;
+        const bodyContratos = JSON.stringify({
+            qtype: 'cliente_contrato.data_cadastro_sistema',
+            query: firstDay,
+            oper: '>=',
+            page: '1',
+            rp: '5000',
+            sortname: 'cliente_contrato.id',
+            sortorder: 'desc'
+        });
+        const resContratos = await fetch(urlContratos, { method: 'POST', headers, body: bodyContratos });
+        let vendedorCounts = {};
+        let totalVendasGlobais = 0;
+        if (resContratos.ok) {
+            const dadosContratos = await resContratos.json();
+            if (dadosContratos.registros) {
+                dadosContratos.registros.forEach(reg => {
+                    if (String(reg.id_motivo_inclusao) === '1') {
+                        totalVendasGlobais++;
+                        const vId = reg.id_vendedor;
+                        if (vId && vId !== '' && vId !== '0') {
+                            vendedorCounts[vId] = (vendedorCounts[vId] || 0) + 1;
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Pick Top 3
+        const top3Ids = Object.keys(vendedorCounts)
+            .sort((a, b) => vendedorCounts[b] - vendedorCounts[a])
+            .slice(0, 3);
+            
+        // 2. Fetch Vendedor Details
+        let result = [];
+        for (const id of top3Ids) {
+            const urlVendedor = `https://${host}/webservice/v1/vendedor`;
+            const bodyVendedor = JSON.stringify({
+                qtype: 'vendedor.id',
+                query: id,
+                oper: '=',
+                page: '1',
+                rp: '1'
+            });
+            const resVend = await fetch(urlVendedor, { method: 'POST', headers, body: bodyVendedor });
+            if (resVend.ok) {
+                const dadosVend = await resVend.json();
+                if (dadosVend.registros && dadosVend.registros.length > 0) {
+                    const vend = dadosVend.registros[0];
+                    result.push({
+                        id,
+                        nome: vend.nome || 'Vendedor ' + id,
+                        vendas_mes: vendedorCounts[id]
+                    });
+                }
+            }
+        }
+        
+        result.sort((a, b) => b.vendas_mes - a.vendas_mes);
+        
+        return res.json({ sucesso: true, dados: result, total_vendas: totalVendasGlobais });
+    } catch (e) {
+        console.error('Erro ao buscar top vendedores:', e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno' });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
