@@ -1890,7 +1890,7 @@ app.delete('/api/pacotes-streaming/:id', async (req, res) => {
     }
 });
 
-// ─── Rota: Top 3 Colaboradoras (Vendedores) ──────────────────────
+// ─── Rota: Top 3 Colaboradoras (Vendedores) + Ticket Médio ────────────
 app.get('/api/top-vendedores', async (req, res) => {
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const host = process.env.IXC_HOST;
@@ -1904,7 +1904,30 @@ app.get('/api/top-vendedores', async (req, res) => {
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
 
-        // 1. Fetch Contratos do Mes
+        // 1. Fetch Planos para obter o valor de cada plano (valor_mensal)
+        const urlPlanos = `https://${host}/webservice/v1/crm_planos_negociacoes`;
+        const bodyPlanos = JSON.stringify({
+            qtype: 'crm_planos_negociacoes.ativo',
+            query: 'S',
+            oper: '=',
+            page: '1',
+            rp: '1000'
+        });
+        const resPlanos = await fetch(urlPlanos, { method: 'POST', headers, body: bodyPlanos });
+        let planPrices = {};
+        if (resPlanos.ok) {
+            const dadosPlanos = await resPlanos.json();
+            if (dadosPlanos.registros) {
+                dadosPlanos.registros.forEach(plano => {
+                    planPrices[String(plano.id)] = parseFloat(plano.valor_mensal || 0);
+                    if (plano.id_plano) {
+                        planPrices[String(plano.id_plano)] = parseFloat(plano.valor_mensal || 0);
+                    }
+                });
+            }
+        }
+
+        // 2. Fetch Contratos do Mes
         const urlContratos = `https://${host}/webservice/v1/cliente_contrato`;
         const bodyContratos = JSON.stringify({
             qtype: 'cliente_contrato.data_cadastro_sistema',
@@ -1916,8 +1939,10 @@ app.get('/api/top-vendedores', async (req, res) => {
             sortorder: 'desc'
         });
         const resContratos = await fetch(urlContratos, { method: 'POST', headers, body: bodyContratos });
-        let vendedorCounts = {};
+        
+        let vendedorStats = {};
         let totalVendasGlobais = 0;
+        
         if (resContratos.ok) {
             const dadosContratos = await resContratos.json();
             if (dadosContratos.registros) {
@@ -1925,22 +1950,46 @@ app.get('/api/top-vendedores', async (req, res) => {
                     if (String(reg.id_motivo_inclusao) === '1') {
                         totalVendasGlobais++;
                         const vId = reg.id_vendedor;
+                        const planId = reg.id_vd_contrato || reg.id_tipo_contrato;
+                        let valorPlano = 0;
+                        if (planId && planPrices[String(planId)]) {
+                            valorPlano = planPrices[String(planId)];
+                        }
+
                         if (vId && vId !== '' && vId !== '0') {
-                            vendedorCounts[vId] = (vendedorCounts[vId] || 0) + 1;
+                            if (!vendedorStats[vId]) {
+                                vendedorStats[vId] = { count: 0, revenue: 0 };
+                            }
+                            vendedorStats[vId].count += 1;
+                            vendedorStats[vId].revenue += valorPlano;
                         }
                     }
                 });
             }
         }
         
-        // Pick Top 3
-        const top3Ids = Object.keys(vendedorCounts)
-            .sort((a, b) => vendedorCounts[b] - vendedorCounts[a])
+        // Compute Ticket Medio
+        Object.keys(vendedorStats).forEach(vId => {
+            const stat = vendedorStats[vId];
+            stat.ticketMedio = stat.count > 0 ? (stat.revenue / stat.count) : 0;
+        });
+
+        // 3. Pick Top 3 Vendas
+        const top3VendasIds = Object.keys(vendedorStats)
+            .sort((a, b) => vendedorStats[b].count - vendedorStats[a].count)
             .slice(0, 3);
             
-        // 2. Fetch Vendedor Details
-        let result = [];
-        for (const id of top3Ids) {
+        // 4. Pick Top 3 Ticket Medio (Excluir quem não tem vendas ou ticket zero)
+        const top3TicketIds = Object.keys(vendedorStats)
+            .filter(vId => vendedorStats[vId].ticketMedio > 0)
+            .sort((a, b) => vendedorStats[b].ticketMedio - vendedorStats[a].ticketMedio)
+            .slice(0, 3);
+            
+        const allRelevantIds = Array.from(new Set([...top3VendasIds, ...top3TicketIds]));
+
+        // 5. Fetch Vendedor Details
+        let repMap = {};
+        for (const id of allRelevantIds) {
             const urlVendedor = `https://${host}/webservice/v1/vendedor`;
             const bodyVendedor = JSON.stringify({
                 qtype: 'vendedor.id',
@@ -1954,20 +2003,31 @@ app.get('/api/top-vendedores', async (req, res) => {
                 const dadosVend = await resVend.json();
                 if (dadosVend.registros && dadosVend.registros.length > 0) {
                     const vend = dadosVend.registros[0];
-                    result.push({
-                        id,
-                        nome: vend.nome || 'Vendedor ' + id,
-                        vendas_mes: vendedorCounts[id]
-                    });
+                    repMap[id] = vend.nome || 'Vendedor ' + id;
+                } else {
+                    repMap[id] = 'Vendedor ' + id;
                 }
+            } else {
+                repMap[id] = 'Vendedor ' + id;
             }
         }
         
-        result.sort((a, b) => b.vendas_mes - a.vendas_mes);
+        // Build final arrays
+        const topVendors = top3VendasIds.map(id => ({
+            id,
+            nome: repMap[id],
+            vendas_mes: vendedorStats[id].count
+        }));
         
-        return res.json({ sucesso: true, dados: result, total_vendas: totalVendasGlobais });
+        const topTicket = top3TicketIds.map(id => ({
+            id,
+            nome: repMap[id],
+            ticket_medio: vendedorStats[id].ticketMedio
+        }));
+        
+        return res.json({ sucesso: true, dados: topVendors, topTicket, total_vendas: totalVendasGlobais });
     } catch (e) {
-        console.error('Erro ao buscar top vendedores:', e.message);
+        console.error('Erro ao buscar top vendedores (com ticket medio):', e.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno' });
     }
 });

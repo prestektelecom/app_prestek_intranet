@@ -49,6 +49,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
     const [editStreamingForm, setEditStreamingForm] = useState({ service: '', value: '', deadline: 'Mensal', icon: 'play_circle' });
 
     const [topVendors, setTopVendors] = useState([]);
+    const [topTicket, setTopTicket] = useState([]);
 
     const [activeSlide, setActiveSlide] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
@@ -64,7 +65,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         let interval;
         if (!isHovered) {
              interval = setInterval(() => {
-                 setActiveSlide((prev) => (prev === 0 ? 1 : 0));
+                 setActiveSlide((prev) => (prev === 2 ? 0 : prev + 1));
              }, 3000);
         }
         return () => clearInterval(interval);
@@ -143,6 +144,9 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                 const data = await response.json();
                 if (data.dados) {
                     setTopVendors(data.dados);
+                }
+                if (data.topTicket) {
+                    setTopTicket(data.topTicket);
                 }
             }
         } catch (error) {
@@ -841,6 +845,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                     <div className="absolute top-2 sm:top-1 right-2 z-10 flex gap-2">
                         <button onClick={() => setActiveSlide(0)} className={`w-2.5 h-2.5 rounded-full transition-colors ${activeSlide === 0 ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 hover:dark:bg-slate-500'}`}></button>
                         <button onClick={() => setActiveSlide(1)} className={`w-2.5 h-2.5 rounded-full transition-colors ${activeSlide === 1 ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 hover:dark:bg-slate-500'}`}></button>
+                        <button onClick={() => setActiveSlide(2)} className={`w-2.5 h-2.5 rounded-full transition-colors ${activeSlide === 2 ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 hover:dark:bg-slate-500'}`}></button>
                     </div>
 
                     <div 
@@ -1027,6 +1032,107 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                     <div className="w-full">
                                                         <div className={`h-1 sm:h-1.5 rounded-full bg-slate-100 dark:bg-slate-600 overflow-hidden w-full mt-1`}>
                                                             <div className={`h-full rounded-full ${barColor}`} style={{ width: `${Math.max(vendasRatio, vendas > 0 ? 10 : 0)}%` }}></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    });
+                                })()
+                            )}
+                        </div>
+                    </div>
+
+
+                    {/* TOP 3 COLABORADORAS (TICKET MÉDIO) */}
+                    <div className="w-full shrink-0 flex flex-col gap-5 px-1 py-2">
+                        <div className="flex items-center justify-center gap-3">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Ticket Médio</h3>
+                            <div className="hidden sm:flex items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Prata
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400">
+                                    <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Bronze
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-end justify-center gap-3 sm:gap-5">
+                            {isLoading ? (
+                                <div className="flex justify-center py-10 w-full">
+                                    <span className="material-symbols-outlined animate-spin text-3xl text-primary">autorenew</span>
+                                </div>
+                            ) : topTicket.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-10 w-full">
+                                    <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-5xl mb-2">request_quote</span>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Nenhum ticket médio registrado.</p>
+                                </div>
+                            ) : (
+                                (() => {
+                                    const maxTicket = topTicket.length > 0 ? Math.max(...topTicket.map(v => v.ticket_medio)) : 0;
+                                    // Reorder: [2nd, 1st, 3rd]
+                                    const podiumOrder = topTicket.length >= 3
+                                        ? [topTicket[1], topTicket[0], topTicket[2]]
+                                        : topTicket;
+                                    const displayRanks = topTicket.length >= 3 ? [2, 1, 3] : topTicket.map((_, i) => i + 1);
+
+                                    return podiumOrder.map((vendor, i) => {
+                                        if (!vendor) return null;
+                                        const rank = displayRanks[i];
+                                        const ticket = vendor.ticket_medio || 0;
+                                        const maxTicketLocal = Math.max(maxTicket, 50); 
+                                        const ticketRatio = Math.min((ticket / maxTicketLocal) * 100, 100);
+                                        
+                                        const barColor = 'bg-emerald-500';
+
+                                        const isGold = rank === 1;
+                                        const isSilver = rank === 2;
+                                        const isBronze = rank === 3;
+
+                                        const rc = {
+                                            1: { border: 'border-2 border-emerald-400 dark:border-emerald-500', label: 'OURO', glow: 'shadow-xl shadow-emerald-500/20', titleColor: 'text-emerald-700 dark:text-emerald-400', numBg: 'bg-gradient-to-br from-emerald-400 to-green-500 text-white', badgeColor: 'bg-gradient-to-r from-emerald-400 to-green-500 text-white' },
+                                            2: { border: 'border-2 border-slate-300 dark:border-slate-600', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white' },
+                                            3: { border: 'border-2 border-orange-300 dark:border-orange-600', label: 'BRONZE', glow: 'shadow-md shadow-orange-500/10', titleColor: 'text-orange-600 dark:text-orange-400', numBg: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white', badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white' },
+                                        }[rank];
+
+                                        return (
+                                            <div key={'tmedio-'+vendor.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-slate-800 transition-all hover:-translate-y-1 ${rc?.border} ${rc?.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className={`flex items-center justify-center rounded-full font-extrabold ${rc?.numBg} ${isGold ? 'w-8 h-8 text-sm sm:w-9 sm:h-9 sm:text-base' : 'w-6 h-6 text-[10px] sm:w-7 sm:h-7 sm:text-xs'}`}>{rank}</div>
+                                                    <span className={`inline-flex items-center gap-0.5 rounded-full font-extrabold uppercase tracking-wider ${rc?.badgeColor} ${isGold ? 'px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px]' : 'px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[8px] sm:text-[9px]'}`}>
+                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 12 : 10 }}>workspace_premium</span>
+                                                        <span className="hidden sm:inline">{rc?.label}</span>
+                                                    </span>
+                                                </div>
+
+                                                {isGold && (
+                                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 shadow-lg shadow-emerald-500/30">
+                                                        <span className="material-symbols-outlined text-white text-xl">crown</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="flex items-center gap-2 sm:gap-3">
+                                                    <div className={`flex shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
+                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 20 : 16 }}>person</span>
+                                                    </div>
+                                                    <div className="overflow-hidden">
+                                                        <h4 className={`font-bold ${rc?.titleColor} truncate leading-tight ${isGold ? 'text-sm sm:text-base mt-0' : 'text-xs sm:text-sm mt-0'}`} title={vendor.nome}>{vendor.nome.split(' ')[0]}</h4>
+                                                        <p className={`text-slate-400 dark:text-slate-500 ${isGold ? 'text-[9px] sm:text-[11px] mt-0.5' : 'text-[8px] sm:text-[10px] mt-0.5'}`}>Vendedora</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-slate-700 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
+                                                    <div className="flex justify-between text-[10px] sm:text-xs items-center">
+                                                        <span className="text-slate-400 dark:text-slate-500">Valor Médio</span>
+                                                        <span className={`font-extrabold ${rc?.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>{formatCurrency(ticket)}</span>
+                                                    </div>
+                                                    <div className="w-full">
+                                                        <div className={`h-1 sm:h-1.5 rounded-full bg-slate-100 dark:bg-slate-600 overflow-hidden w-full mt-1`}>
+                                                            <div className={`h-full rounded-full ${barColor}`} style={{ width: `${Math.max(ticketRatio, ticket > 0 ? 10 : 0)}%` }}></div>
                                                         </div>
                                                     </div>
                                                 </div>
