@@ -1590,9 +1590,9 @@ app.get('/api/planos-negociacoes', async (req, res) => {
     };
 
     const body = JSON.stringify({
-        qtype: 'crm_planos_negociacoes.id',
-        query: '0',
-        oper: '>',
+        qtype: 'crm_planos_negociacoes.ativo',
+        query: 'S',
+        oper: '=',
         page: '1',
         rp: '1000',
         sortname: 'crm_planos_negociacoes.id',
@@ -1655,31 +1655,19 @@ app.get('/api/planos-negociacoes', async (req, res) => {
             console.error('Erro ao buscar contratos do mês:', errContrato.message);
         }
 
-        const planosAux = [];
-        planosIXC.forEach(plano => {
+        const planos = planosIXC.map(plano => {
             const planoId = String(plano.id || '').trim();
-            const idPlano = String(plano.id_plano || '').trim();
-            const vendasMes = planCounts[planoId] || planCounts[idPlano] || 0;
-            
-            // Só retorna se for Ativo ('S') OU se tiver vendas no mês atual
-            if (plano.ativo === 'S' || vendasMes > 0) {
-                const meta = mapaMetadados[planoId] || {};
-                let desc = plano.descricao || '';
-                // Adiciona [INATIVO] ao nome se não for ativo para deixar claro
-                if (plano.ativo !== 'S') {
-                    desc = '[INATIVO] ' + desc;
-                }
-                planosAux.push({
-                    ...plano,
-                    descricao: desc,
-                    prazo_instalacao: (meta.prazo_instalacao && meta.prazo_instalacao.trim()) ? meta.prazo_instalacao : '3 Dias', 
-                    taxa_instalacao: (meta.taxa_instalacao && meta.taxa_instalacao.trim()) ? meta.taxa_instalacao : 'Grátis',
-                    vendas_mes: vendasMes
-                });
-            }
+            const meta = mapaMetadados[planoId] || {};
+            // Inject vendas_mes into plan
+            return {
+                ...plano,
+                prazo_instalacao: (meta.prazo_instalacao && meta.prazo_instalacao.trim()) ? meta.prazo_instalacao : '3 Dias', 
+                taxa_instalacao: (meta.taxa_instalacao && meta.taxa_instalacao.trim()) ? meta.taxa_instalacao : 'Grátis',
+                vendas_mes: planCounts[planoId] || planCounts[String(plano.id_plano || '').trim()] || 0
+            };
         });
 
-        return res.json({ sucesso: true, planos: planosAux, status_counts: statusCounts });
+        return res.json({ sucesso: true, planos, status_counts: statusCounts });
     } catch (err) {
         console.error('Erro ao buscar planos de negociação no IXC:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar planos de negociação.' });
