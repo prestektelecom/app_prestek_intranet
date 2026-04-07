@@ -371,8 +371,6 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         .sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0))
         .slice(0, 3);
 
-    const totalVendasMes = plans.reduce((acc, p) => acc + (p.vendas_mes || 0), 0);
-
     const getStatusCount = (prefix) => {
         if (!statusCounts) return 0;
         return Object.entries(statusCounts).reduce((acc, [key, count]) => {
@@ -386,6 +384,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
     const countPre = getStatusCount('P');
     const countNegativado = getStatusCount('N');
     const countDesistiu = getStatusCount('D');
+
+    const totalVendasMes = countAtivo + countInativo + countPre + countNegativado + countDesistiu;
 
     return (
         <main className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark py-8 px-4 md:px-10">
