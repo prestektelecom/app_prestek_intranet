@@ -545,14 +545,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                             )}
                                         </div>
                                     </th>
-                                    <th className="px-6 py-4 font-semibold text-center" scope="col">DETALHES</th>
                                     <th className="px-6 py-4 font-semibold text-right" scope="col">AÇÕES</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-slate-700">
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan="4" className="px-6 py-12 text-center text-slate-500">
                                             <div className="flex flex-col items-center gap-2">
                                                 <span className="material-symbols-outlined animate-spin text-3xl text-primary">autorenew</span>
                                                 <p>Carregando planos do IXC...</p>
@@ -561,15 +560,14 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     </tr>
                                 ) : filteredPlans.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan="4" className="px-6 py-12 text-center text-slate-500">
                                             <p>Nenhum plano encontrado.</p>
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredPlans.map((plan, index) => {
-                                        const isFirstRows = index < 3;
+                                    filteredPlans.map((plan) => {
                                         const vendas = plan.vendas_mes || 0;
-                                        const maxVendasLocal = Math.max(maxVendas, 10); // scale up if total sales are very low
+                                        const maxVendasLocal = Math.max(maxVendas, 10);
                                         const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
                                         const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
                                         
@@ -580,7 +578,17 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                         <div className="rounded bg-primary/10 p-2 text-primary dark:bg-primary/20">
                                                             <span className="material-symbols-outlined">wifi</span>
                                                         </div>
-                                                        {plan.descricao}
+                                                        <div>
+                                                            <div>{plan.descricao}</div>
+                                                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex gap-3">
+                                                                {plan.taxa_instalacao && (
+                                                                    <span><span className="font-semibold text-amber-600 dark:text-amber-400">Taxa:</span> {formatCurrency(plan.taxa_instalacao)}</span>
+                                                                )}
+                                                                {plan.prazo_instalacao && (
+                                                                    <span><span className="font-semibold text-cyan-600 dark:text-cyan-400">Prazo:</span> {plan.prazo_instalacao}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">{formatCurrency(plan.valor_mensal)}</td>
@@ -590,32 +598,6 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                             <div className={`h-2 rounded-full ${barColor}`} style={{ width: `${vendasRatio}%` }}></div>
                                                         </div>
                                                         <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{vendas}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="relative flex justify-center">
-                                                        <button className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-primary/20 group-hover:text-primary dark:group-hover:bg-primary/20 transition-all cursor-pointer shadow-sm group-hover:shadow-md">
-                                                            <span className="material-symbols-outlined text-lg">more_horiz</span>
-                                                        </button>
-                                                        <div className={`absolute right-0 ${isFirstRows ? 'top-full mt-2' : 'bottom-full mb-2'} px-4 py-3 bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-700 dark:to-slate-800 text-white text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-2xl border border-slate-600/30 backdrop-blur-sm`} style={{ minWidth: '200px' }}>
-                                                            <div className="flex flex-col gap-2">
-                                                                <div className="flex items-center justify-between gap-3 border-b border-slate-600/30 pb-2">
-                                                                    <span className="text-slate-300 flex items-center gap-1">
-                                                                        <span className="material-symbols-outlined text-[14px]">payments</span>
-                                                                        Taxa Instalação
-                                                                    </span>
-                                                                    <span className="font-bold text-amber-400">{plan.taxa_instalacao ? formatCurrency(plan.taxa_instalacao) : '--'}</span>
-                                                                </div>
-                                                                <div className="flex items-center justify-between gap-3">
-                                                                    <span className="text-slate-300 flex items-center gap-1">
-                                                                        <span className="material-symbols-outlined text-[14px]">schedule</span>
-                                                                        Prazo
-                                                                    </span>
-                                                                    <span className="font-bold text-cyan-400">{plan.prazo_instalacao || '--'}</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className={`absolute ${isFirstRows ? 'bottom-full mb-[-6px]' : 'top-full mt-[-6px]'} right-4 border-6 border-transparent ${isFirstRows ? 'border-b-slate-800 dark:border-b-slate-700' : 'border-t-slate-800 dark:border-t-slate-700'}`}></div>
-                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">

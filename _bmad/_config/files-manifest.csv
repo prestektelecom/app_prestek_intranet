@@ -1,6 +1,6 @@
 type,name,module,path,hash
 "csv","agent-manifest","_config","_config/agent-manifest.csv","d61e885757ee2c2ad146e5b876563144107b99c5de9ef4ed80b46f434bd1f951"
-"yaml","manifest","_config","_config/manifest.yaml","37e544426089d3ddf5224a76921b38de6c194abe5d11f9bd3ce5efed79c6aa4b"
+"yaml","manifest","_config","_config/manifest.yaml","02e41a15c4dded2cb52365ab1f99d8585ea8c95ae01618eb85703324c44f5e16"
 "csv","brain-methods","core","core/bmad-brainstorming/brain-methods.csv","0ab5878b1dbc9e3fa98cb72abfc3920a586b9e2b42609211bb0516eefd542039"
 "csv","methods","core","core/bmad-advanced-elicitation/methods.csv","e08b2e22fec700274982e37be608d6c3d1d4d0c04fa0bae05aa9dba2454e6141"
 "csv","module-help","core","core/module-help.csv","79cb3524f9ee81751b6faf549e67cbaace7fa96f71b93b09db1da8e29bf9db81"
@@ -39,5 +39,5 @@ type,name,module,path,hash
 "py","bmad_init","core","core/bmad-init/scripts/bmad_init.py","1b09aaadd599d12ba11bd61e86cb9ce7ce85e2d83f725ad8567b99ff00cbceeb"
 "py","test_analyze_sources","core","core/bmad-distillator/scripts/tests/test_analyze_sources.py","d90525311f8010aaf8d7d9212a370468a697866190bae78c35d0aae9b7f23fdf"
 "py","test_bmad_init","core","core/bmad-init/scripts/tests/test_bmad_init.py","84daa73b4e6adf4adbf203081a570b16859e090104a554ae46a295c9af3cb9bb"
-"yaml","config","core","core/config.yaml","c9873f07e5ad681980638afeee765367f01021a288fbd45ee3a03843bc82aed7"
+"yaml","config","core","core/config.yaml","32dabb4edb0e154f77ddfda51cc81e996f8a1dcbacd21c6384142af24c2a4ecc"
 "yaml","core-module","core","core/bmad-init/resources/core-module.yaml","eff85de02831f466e46a6a093d860642220295556a09c59e1b7f893950a6cdc9"
