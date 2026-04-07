@@ -47,3 +47,38 @@
 [2026-03-19T18:00:40.789Z] Atualizando OS 1714237 para o técnico 59570
 [2026-03-19T18:00:41.272Z] Técnico 59570 agendado com sucesso na OS 1714237. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1714237","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-19 15:00:41"}]}
 [2026-03-19T18:00:41.277Z] FIM. Retornando protocolo 2026031476
+[2026-03-30T19:44:24.750Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-03-30T19:44:29.359Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-03-30T19:44:30.317Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"739917","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"bc6bf7ff24bde96287374073cff69b15cd1e1518"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-30 16:44:34"}]}
+[2026-03-30T19:44:33.356Z] buscando ticket 739917...
+[2026-03-30T19:44:33.582Z] Buscando OS vinculada ao ticket 739917 [TENTATIVA 1]
+[2026-03-30T19:44:33.950Z] ENCONTROU OS! ID: 1727054. Protocolo OS: 20260320101
+[2026-03-30T19:44:33.961Z] Atualizando OS 1727054 para o técnico 59570
+[2026-03-30T19:44:34.134Z] Técnico 59570 agendado com sucesso na OS 1727054. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1727054","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-03-30 16:44:38"}]}
+[2026-03-30T19:44:34.150Z] FIM. Retornando protocolo 20260320101
+[2026-04-02T17:09:40.290Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-04-02T17:09:41.009Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"742128","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"0b5080c3be370ecb9a6456f511e045e7667427a9"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-02 14:09:40"}]}
+[2026-04-02T17:10:10.857Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-04-02T17:10:17.937Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"742129","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"98a08b92d84cb55cb959e3d2d2e84f9acceb4df1"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-02 14:10:16"}]}
+[2026-04-02T17:10:20.959Z] buscando ticket 742129...
+[2026-04-02T17:10:21.112Z] Buscando OS vinculada ao ticket 742129 [TENTATIVA 1]
+[2026-04-02T17:10:21.538Z] ENCONTROU OS! ID: 1731693. Protocolo OS: 20260426703
+[2026-04-02T17:10:21.544Z] Atualizando OS 1731693 para o técnico 59570
+[2026-04-02T17:10:21.731Z] Técnico 59570 agendado com sucesso na OS 1731693. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1731693","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-02 14:10:21"}]}
+[2026-04-02T17:10:21.733Z] FIM. Retornando protocolo 20260426703
+[2026-04-02T17:12:05.249Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-04-02T17:12:06.352Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"742131","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"375f307fc866a180256e61c5617663b637300c06"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-02 14:12:06"}]}
+[2026-04-02T17:12:09.384Z] buscando ticket 742131...
+[2026-04-02T17:12:09.825Z] Buscando OS vinculada ao ticket 742131 [TENTATIVA 1]
+[2026-04-02T17:12:10.479Z] ENCONTROU OS! ID: 1731695. Protocolo OS: 20260426707
+[2026-04-02T17:12:10.482Z] Atualizando OS 1731695 para o técnico 59570
+[2026-04-02T17:12:11.787Z] Técnico 59570 agendado com sucesso na OS 1731695. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1731695","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-02 14:12:10"}]}
+[2026-04-02T17:12:11.807Z] FIM. Retornando protocolo 20260426707
+[2026-04-02T18:22:36.278Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-04-02T18:22:36.899Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"742171","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"bfdc34e2a2133a84db613eaaa0769a437dfbec9a"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-02 15:22:36"}]}
+[2026-04-02T18:22:39.916Z] buscando ticket 742171...
+[2026-04-02T18:22:40.129Z] Buscando OS vinculada ao ticket 742171 [TENTATIVA 1]
+[2026-04-02T18:22:40.509Z] ENCONTROU OS! ID: 1731797. Protocolo OS: 20260426857
+[2026-04-02T18:22:40.514Z] Atualizando OS 1731797 para o técnico 59570
+[2026-04-02T18:22:40.706Z] Técnico 59570 agendado com sucesso na OS 1731797. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1731797","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-02 15:22:40"}]}
+[2026-04-02T18:22:40.708Z] FIM. Retornando protocolo 20260426857
