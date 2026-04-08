@@ -1,0 +1,10 @@
+{
+  "permission": {
+    "read": {
+      "C:/Users/FelixBR/Desktop/stitch/.opencode/get-shit-done/*": "allow"
+    },
+    "external_directory": {
+      "C:/Users/FelixBR/Desktop/stitch/.opencode/get-shit-done/*": "allow"
+    }
+  }
+}

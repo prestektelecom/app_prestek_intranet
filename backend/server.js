@@ -2180,7 +2180,8 @@ app.get('/api/cobertura-ixc', async (req, res) => {
 
         contratos.forEach(c => {
             const cidId = String(c.cidade || '').trim();
-            const bairro = String(c.bairro || '').trim();
+            // Normalizar bairro: trim + uppercase para eliminar duplicatas por caixa
+            const bairro = String(c.bairro || '').trim().toUpperCase();
             if (!cidId || cidId === '0' || cidId === '') return;
             cidadeIdsSet.add(cidId);
             const chave = `${cidId}::${bairro}`;
@@ -2224,7 +2225,8 @@ app.get('/api/cobertura-ixc', async (req, res) => {
         );
         const mapaLocal = {}; // "cidade_ixc_id::bairro" -> row
         localResult.rows.forEach(row => {
-            const chave = `${row.cidade_ixc_id}::${row.bairro}`;
+            // Normalizar bairro para uppercase — consistente com o agrupamento do IXC
+            const chave = `${row.cidade_ixc_id}::${String(row.bairro || '').toUpperCase()}`;
             mapaLocal[chave] = row;
         });
 
