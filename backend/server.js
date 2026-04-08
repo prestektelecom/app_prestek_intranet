@@ -2032,6 +2032,270 @@ app.get('/api/top-vendedores', async (req, res) => {
     }
 });
 
+// ─── ROTAS: Cobertura de Cidades ─────────────────────────────────
+// GET - Listar todas as cidades com cobertura (paginado)
+app.get('/api/cobertura', async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const busca = req.query.busca || '';
+    const tecnologia = req.query.tecnologia || '';
+    const status = req.query.status || '';
+
+    try {
+        const condicoes = [];
+        const params = [];
+        let idx = 1;
+
+        if (busca) {
+            condicoes.push(`(LOWER(cidade) LIKE $${idx} OR LOWER(bairro) LIKE $${idx})`);
+            params.push(`%${busca.toLowerCase()}%`);
+            idx++;
+        }
+        if (tecnologia) {
+            condicoes.push(`tecnologia = $${idx}`);
+            params.push(tecnologia);
+            idx++;
+        }
+        if (status) {
+            condicoes.push(`status = $${idx}`);
+            params.push(status);
+            idx++;
+        }
+
+        const where = condicoes.length > 0 ? `WHERE ${condicoes.join(' AND ')}` : '';
+
+        const countResult = await pool.query(
+            `SELECT COUNT(*) FROM cobertura_cidades ${where}`,
+            params
+        );
+        const total = parseInt(countResult.rows[0].count);
+
+        const result = await pool.query(
+            `SELECT * FROM cobertura_cidades ${where} ORDER BY estado, cidade, bairro LIMIT $${idx} OFFSET $${idx + 1}`,
+            [...params, limit, offset]
+        );
+
+        return res.json({ sucesso: true, dados: result.rows, total, page, limit });
+    } catch (err) {
+        console.error('Erro ao listar cobertura:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao listar cobertura.' });
+    }
+});
+
+// POST - Criar nova entrada de cobertura
+app.post('/api/cobertura', async (req, res) => {
+    const { estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura } = req.body;
+    if (!cidade || !bairro) return res.status(400).json({ sucesso: false, erro: 'Cidade e bairro são obrigatórios.' });
+    try {
+        const result = await pool.query(`
+            INSERT INTO cobertura_cidades (estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `, [estado || 'AL', cidade, bairro, tecnologia || 'FTTH', velocidade_maxima || '100 MEGA', status || 'Ativo', percentual_cobertura ?? 100]);
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao criar cobertura:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao criar cobertura.' });
+    }
+});
+
+// PUT - Atualizar entrada de cobertura
+app.put('/api/cobertura/:id', async (req, res) => {
+    const { id } = req.params;
+    const { estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura } = req.body;
+    try {
+        const result = await pool.query(`
+            UPDATE cobertura_cidades
+            SET estado = COALESCE($1, estado),
+                cidade = COALESCE($2, cidade),
+                bairro = COALESCE($3, bairro),
+                tecnologia = COALESCE($4, tecnologia),
+                velocidade_maxima = COALESCE($5, velocidade_maxima),
+                status = COALESCE($6, status),
+                percentual_cobertura = COALESCE($7, percentual_cobertura),
+                updated_at = NOW()
+            WHERE id = $8
+            RETURNING *
+        `, [estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, id]);
+        if (result.rows.length === 0) return res.status(404).json({ sucesso: false, erro: 'Registro não encontrado.' });
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar cobertura:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao atualizar cobertura.' });
+    }
+});
+
+// DELETE - Remover entrada de cobertura
+app.delete('/api/cobertura/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM cobertura_cidades WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) return res.status(404).json({ sucesso: false, erro: 'Registro não encontrado.' });
+        return res.json({ sucesso: true, mensagem: 'Registro de cobertura excluído.' });
+    } catch (err) {
+        console.error('Erro ao excluir cobertura:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao excluir cobertura.' });
+    }
+});
+
+// ─── ROTA: Cobertura — Cidades Atendidas via IXC (híbrido) ──────────────────
+// Descobre automaticamente quais cidades/bairros a empresa atende consultando
+// cliente_contrato → resolve nomes via endpoint cidade do IXC
+// Mescla com dados manuais locais (tecnologia, velocidade, status, %)
+app.get('/api/cobertura-ixc', async (req, res) => {
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos
+
+    try {
+        // 1. Buscar contratos do IXC — extrair cidade_id e bairro únicos
+        const bodyContratos = JSON.stringify({
+            qtype: 'cliente_contrato.status',
+            query: 'A',  // apenas contratos ativos
+            oper: '=',
+            page: '1',
+            rp: '9999',
+            sortname: 'cliente_contrato.id',
+            sortorder: 'asc'
+        });
+
+        const resContratos = await fetch(`https://${host}/webservice/v1/cliente_contrato`, {
+            method: 'POST', headers, body: bodyContratos
+        });
+
+        if (!resContratos.ok) throw new Error(`Erro ao buscar contratos: ${resContratos.status}`);
+        const dadosContratos = await resContratos.json();
+        const contratos = dadosContratos.registros || [];
+
+        // 2. Agrupar por cidade_id + bairro (normalizado)
+        const mapaGrupos = {}; // chave: "cidade_id::bairro"
+        const cidadeIdsSet = new Set();
+
+        contratos.forEach(c => {
+            const cidId = String(c.cidade || '').trim();
+            const bairro = String(c.bairro || '').trim();
+            if (!cidId || cidId === '0' || cidId === '') return;
+            cidadeIdsSet.add(cidId);
+            const chave = `${cidId}::${bairro}`;
+            if (!mapaGrupos[chave]) {
+                mapaGrupos[chave] = { cidade_ixc_id: cidId, bairro, total_contratos: 0 };
+            }
+            mapaGrupos[chave].total_contratos += 1;
+        });
+
+        const cidadeIds = Array.from(cidadeIdsSet);
+        console.log(`-> /api/cobertura-ixc: ${contratos.length} contratos, ${cidadeIds.length} cidades únicas, ${Object.keys(mapaGrupos).length} combos cidade+bairro`);
+
+        // 3. Buscar nomes das cidades por lote (POST com oper 'in' não existe no IXC, então buscamos tudo)
+        const mapaCidades = {}; // cidade_id -> { nome, uf }
+        if (cidadeIds.length > 0) {
+            const bodyCidades = JSON.stringify({
+                qtype: 'cidade.id',
+                query: '0',
+                oper: '>',
+                page: '1',
+                rp: '9999',
+                sortname: 'cidade.nome',
+                sortorder: 'asc'
+            });
+            const resCidades = await fetch(`https://${host}/webservice/v1/cidade`, {
+                method: 'POST', headers, body: bodyCidades
+            });
+            if (resCidades.ok) {
+                const dadosCidades = await resCidades.json();
+                (dadosCidades.registros || []).forEach(cid => {
+                    if (cidadeIdsSet.has(String(cid.id))) {
+                        mapaCidades[String(cid.id)] = { nome: cid.nome || 'Cidade ' + cid.id, uf: cid.uf || 'AL' };
+                    }
+                });
+            }
+        }
+
+        // 4. Buscar overrides manuais do banco local
+        const localResult = await pool.query(
+            'SELECT * FROM cobertura_cidades WHERE cidade_ixc_id IS NOT NULL'
+        );
+        const mapaLocal = {}; // "cidade_ixc_id::bairro" -> row
+        localResult.rows.forEach(row => {
+            const chave = `${row.cidade_ixc_id}::${row.bairro}`;
+            mapaLocal[chave] = row;
+        });
+
+        // 5. Montar resposta mesclada
+        const resultado = Object.values(mapaGrupos).map(grupo => {
+            const chave = `${grupo.cidade_ixc_id}::${grupo.bairro}`;
+            const cidInfo = mapaCidades[grupo.cidade_ixc_id] || { nome: `Cidade ${grupo.cidade_ixc_id}`, uf: 'AL' };
+            const local = mapaLocal[chave] || {};
+            return {
+                // Identificação IXC (auto)
+                cidade_ixc_id: grupo.cidade_ixc_id,
+                cidade: cidInfo.nome,
+                estado: cidInfo.uf,
+                bairro: grupo.bairro || '(sem bairro)',
+                total_contratos: grupo.total_contratos,
+                // Override manual (banco local) — null se não configurado
+                id_local: local.id || null,
+                tecnologia: local.tecnologia || null,
+                velocidade_maxima: local.velocidade_maxima || null,
+                status: local.status || null,
+                percentual_cobertura: local.percentual_cobertura !== undefined ? local.percentual_cobertura : null,
+                tem_override: !!local.id
+            };
+        });
+
+        // Ordenar por estado, cidade, bairro
+        resultado.sort((a, b) => {
+            const k1 = `${a.estado}${a.cidade}${a.bairro}`;
+            const k2 = `${b.estado}${b.cidade}${b.bairro}`;
+            return k1.localeCompare(k2);
+        });
+
+        return res.json({ sucesso: true, dados: resultado, total: resultado.length });
+    } catch (e) {
+        console.error('Erro em /api/cobertura-ixc:', e.message);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// POST /api/cobertura-ixc/override — salva ou atualiza os campos manuais de uma entrada IXC
+app.post('/api/cobertura-ixc/override', async (req, res) => {
+    const { cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura } = req.body;
+    if (!cidade_ixc_id || !bairro) {
+        return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
+    }
+    try {
+        const result = await pool.query(`
+            INSERT INTO cobertura_cidades
+                (cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+            ON CONFLICT (cidade_ixc_id, bairro) DO UPDATE SET
+                cidade              = EXCLUDED.cidade,
+                estado              = EXCLUDED.estado,
+                tecnologia          = COALESCE(EXCLUDED.tecnologia, cobertura_cidades.tecnologia),
+                velocidade_maxima   = COALESCE(EXCLUDED.velocidade_maxima, cobertura_cidades.velocidade_maxima),
+                status              = COALESCE(EXCLUDED.status, cobertura_cidades.status),
+                percentual_cobertura= COALESCE(EXCLUDED.percentual_cobertura, cobertura_cidades.percentual_cobertura),
+                updated_at          = NOW()
+            RETURNING *
+        `, [
+            String(cidade_ixc_id), cidade || '', estado || 'AL', bairro,
+            tecnologia || 'FTTH', velocidade_maxima || '100 MEGA',
+            status || 'Ativo', percentual_cobertura ?? 100
+        ]);
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao salvar override:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao salvar configuração.' });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)

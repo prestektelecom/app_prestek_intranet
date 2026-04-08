@@ -1,6 +1,306 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
+// ─── Constantes ───────────────────────────────────────────────────
+const TECNOLOGIAS = ['FTTH', 'Rádio', 'UTP'];
+const STATUS_OPCOES = ['Ativo', 'Expansão', 'Inativo'];
+const VELOCIDADES = ['10 MEGA', '20 MEGA', '50 MEGA', '100 MEGA', '200 MEGA', '300 MEGA', '500 MEGA', '1 GIGA'];
+
+const TECH_STYLES = {
+    FTTH:  { cls: 'bg-purple-100 text-purple-700', icon: 'fiber_manual_record' },
+    Rádio: { cls: 'bg-blue-100 text-blue-700',     icon: 'settings_input_antenna' },
+    UTP:   { cls: 'bg-green-100 text-green-700',   icon: 'cable' },
+};
+
+const STATUS_BAR = {
+    Ativo:    { barCls: 'bg-green-500',  textCls: 'text-green-600' },
+    Expansão: { barCls: 'bg-blue-500',   textCls: 'text-blue-500' },
+    Inativo:  { barCls: 'bg-red-400',    textCls: 'text-red-500' },
+};
+
+// ─── Modal Override (configurar campos manuais de uma linha IXC) ──
+function OverrideModal({ registro, onFechar, onSalvar }) {
+    const [form, setForm] = useState({
+        tecnologia: registro.tecnologia || 'FTTH',
+        velocidade_maxima: registro.velocidade_maxima || '100 MEGA',
+        status: registro.status || 'Ativo',
+        percentual_cobertura: registro.percentual_cobertura ?? 100,
+    });
+    const [salvando, setSalvando] = useState(false);
+    const [erro, setErro] = useState('');
+
+    const handleChange = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }));
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSalvando(true);
+        setErro('');
+        try {
+            const resp = await fetch('/api/cobertura-ixc/override', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cidade_ixc_id: registro.cidade_ixc_id,
+                    cidade: registro.cidade,
+                    estado: registro.estado,
+                    bairro: registro.bairro,
+                    ...form,
+                    percentual_cobertura: parseInt(form.percentual_cobertura)
+                })
+            });
+            const dados = await resp.json();
+            if (!dados.sucesso) throw new Error(dados.erro || 'Erro desconhecido');
+            onSalvar();
+        } catch (e) {
+            setErro(e.message);
+        } finally {
+            setSalvando(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-[#1a130b] rounded-2xl shadow-2xl w-full max-w-md border border-[#f4eee6]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#f4eee6]">
+                    <div>
+                        <h3 className="text-[#1d150c] dark:text-white font-bold text-lg">Configurar Cobertura</h3>
+                        <p className="text-xs text-[#a17745] dark:text-orange-300 mt-0.5">
+                            {registro.cidade} — {registro.bairro}
+                        </p>
+                    </div>
+                    <button onClick={onFechar} className="text-[#a17745] dark:text-orange-300 hover:text-primary p-1 rounded-full hover:bg-gray-100 transition-colors">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <form onSubmit={handleSubmit} className="px-6 py-5 grid grid-cols-2 gap-4">
+                    {/* Info somente leitura */}
+                    <div className="col-span-2 bg-[#fcfaf8] dark:bg-[#2c2217] rounded-lg px-4 py-3 flex items-center gap-3">
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300">info</span>
+                        <div>
+                            <p className="text-xs text-[#a17745] dark:text-orange-300">
+                                Cidade e bairro são gerados automaticamente pelo IXC.
+                            </p>
+                            <p className="text-xs text-[#a17745] dark:text-orange-300 font-semibold mt-0.5">
+                                {registro.total_contratos} contrato(s) ativo(s) neste bairro
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Tecnologia */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Tecnologia</label>
+                        <select
+                            className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary"
+                            value={form.tecnologia}
+                            onChange={e => handleChange('tecnologia', e.target.value)}
+                        >
+                            {TECNOLOGIAS.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Velocidade */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Veloc. Máxima</label>
+                        <select
+                            className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary"
+                            value={form.velocidade_maxima}
+                            onChange={e => handleChange('velocidade_maxima', e.target.value)}
+                        >
+                            {VELOCIDADES.map(v => <option key={v} value={v}>{v}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Status */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Status</label>
+                        <select
+                            className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary"
+                            value={form.status}
+                            onChange={e => handleChange('status', e.target.value)}
+                        >
+                            {STATUS_OPCOES.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Percentual */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">
+                            Cobertura: <span className="text-primary font-bold">{form.percentual_cobertura}%</span>
+                        </label>
+                        <input
+                            type="range" min={0} max={100} step={1}
+                            className="accent-primary mt-2"
+                            value={form.percentual_cobertura}
+                            onChange={e => handleChange('percentual_cobertura', e.target.value)}
+                        />
+                    </div>
+
+                    {erro && (
+                        <div className="col-span-2 bg-red-50 border border-red-200 text-red-600 rounded-lg px-3 py-2 text-sm">
+                            {erro}
+                        </div>
+                    )}
+
+                    <div className="col-span-2 flex gap-3 justify-end pt-2">
+                        <button type="button" onClick={onFechar} className="px-4 py-2 text-sm border border-[#f4eee6] rounded-lg text-[#a17745] dark:text-orange-300 hover:bg-gray-100 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" disabled={salvando} className="px-5 py-2 text-sm bg-primary hover:bg-[#cc7000] text-white rounded-lg font-semibold transition-colors disabled:opacity-60 flex items-center gap-2">
+                            {salvando && <span className="material-symbols-outlined text-[16px] animate-spin">autorenew</span>}
+                            Salvar Configuração
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// ─── Linha da tabela IXC ──────────────────────────────────────────
+function RowIXC({ row, onConfigurar }) {
+    const tech = TECH_STYLES[row.tecnologia] || null;
+    const stat = STATUS_BAR[row.status] || null;
+
+    return (
+        <tr className="hover:bg-gray-50 dark:hover:bg-[#2c2217] transition-colors">
+            <td className="px-6 py-4 font-medium text-[#1d150c] dark:text-white">
+                <div className="flex items-center gap-3">
+                    <div className="size-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 text-xs">
+                        {row.estado}
+                    </div>
+                    <div>
+                        <span>{row.cidade}</span>
+                        <span className="ml-2 text-xs text-[#a17745] dark:text-orange-300">
+                            #{row.cidade_ixc_id}
+                        </span>
+                    </div>
+                </div>
+            </td>
+
+            <td className="px-6 py-4 text-[#a17745] dark:text-orange-300">{row.bairro}</td>
+
+            {/* Tecnologia */}
+            <td className="px-6 py-4">
+                {tech ? (
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${tech.cls}`}>
+                        <span className="material-symbols-outlined text-[14px]">{tech.icon}</span>
+                        {row.tecnologia}
+                    </span>
+                ) : (
+                    <span className="inline-flex items-center gap-1 text-xs text-[#a17745] dark:text-orange-300 italic">
+                        <span className="material-symbols-outlined text-[14px]">pending</span>
+                        Não definido
+                    </span>
+                )}
+            </td>
+
+            {/* Velocidade */}
+            <td className="px-6 py-4 font-semibold text-[#1d150c] dark:text-white">
+                {row.velocidade_maxima || <span className="text-[#a17745] dark:text-orange-300 italic text-xs">—</span>}
+            </td>
+
+            {/* Status + Barra */}
+            <td className="px-6 py-4">
+                {stat ? (
+                    <div className="flex flex-col gap-1 w-28">
+                        <div className="flex justify-between text-xs text-[#a17745] dark:text-orange-300">
+                            <span>{row.status}</span>
+                            <span className={`font-bold ${stat.textCls}`}>{row.percentual_cobertura}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-gray-200 dark:bg-[#3a2c20] rounded-full overflow-hidden">
+                            <div className={`h-full ${stat.barCls} transition-all`} style={{ width: `${row.percentual_cobertura}%` }} />
+                        </div>
+                    </div>
+                ) : (
+                    <span className="inline-flex items-center gap-1 text-xs text-[#a17745] dark:text-orange-300 italic">
+                        <span className="material-symbols-outlined text-[14px]">settings</span>
+                        Configurar
+                    </span>
+                )}
+            </td>
+
+            {/* Contratos */}
+            <td className="px-6 py-4 text-center">
+                <span className="text-xs font-semibold text-[#1d150c] dark:text-white bg-gray-100 dark:bg-[#2c2217] px-2 py-1 rounded-full">
+                    {row.total_contratos}
+                </span>
+            </td>
+
+            {/* Ações */}
+            <td className="px-6 py-4 text-right">
+                <button
+                    onClick={() => onConfigurar(row)}
+                    title={row.tem_override ? 'Editar configuração' : 'Configurar dados de cobertura'}
+                    className={`transition-colors p-1 rounded-full flex items-center justify-center ml-auto ${row.tem_override
+                        ? 'text-[#a17745] dark:text-orange-300 hover:text-primary hover:bg-gray-100 dark:hover:bg-[#3a2c20]'
+                        : 'text-primary hover:bg-primary/10'
+                    }`}
+                >
+                    <span className="material-symbols-outlined text-[20px]">
+                        {row.tem_override ? 'edit' : 'tune'}
+                    </span>
+                </button>
+            </td>
+        </tr>
+    );
+}
+
+// ─── Componente Principal ─────────────────────────────────────────
 export default function Coverage() {
+    const [dados, setDados] = useState([]);
+    const [dadosFiltrados, setDadosFiltrados] = useState([]);
+    const [carregando, setCarregando] = useState(true);
+    const [busca, setBusca] = useState('');
+    const [filtroTec, setFiltroTec] = useState('');
+    const [filtroStatus, setFiltroStatus] = useState('');
+    const [page, setPage] = useState(1);
+    const [modalOverride, setModalOverride] = useState(null);
+    const LIMIT = 15;
+
+    const carregar = useCallback(async () => {
+        setCarregando(true);
+        try {
+            const resp = await fetch('/api/cobertura-ixc');
+            const json = await resp.json();
+            if (json.sucesso) setDados(json.dados || []);
+        } catch (e) {
+            console.error('Erro ao carregar cobertura IXC:', e);
+        } finally {
+            setCarregando(false);
+        }
+    }, []);
+
+    useEffect(() => { carregar(); }, [carregar]);
+
+    // Filtrar localmente (dados já vêm completos)
+    useEffect(() => {
+        let filtrado = [...dados];
+        if (busca) {
+            const b = busca.toLowerCase();
+            filtrado = filtrado.filter(r =>
+                r.cidade?.toLowerCase().includes(b) || r.bairro?.toLowerCase().includes(b)
+            );
+        }
+        if (filtroTec) filtrado = filtrado.filter(r => r.tecnologia === filtroTec);
+        if (filtroStatus) filtrado = filtrado.filter(r => r.status === filtroStatus);
+        setDadosFiltrados(filtrado);
+        setPage(1);
+    }, [dados, busca, filtroTec, filtroStatus]);
+
+    const totalPaginas = Math.ceil(dadosFiltrados.length / LIMIT);
+    const pagAtual = dadosFiltrados.slice((page - 1) * LIMIT, page * LIMIT);
+
+    // Stats resumo
+    const totalComConfig = dados.filter(d => d.tem_override).length;
+    const totalSemConfig = dados.length - totalComConfig;
+    const cidadesUnicas = new Set(dados.map(d => d.cidade_ixc_id)).size;
+
+    const handleSalvarOverride = () => {
+        setModalOverride(null);
+        carregar();
+    };
+
+    const limparFiltros = () => { setBusca(''); setFiltroTec(''); setFiltroStatus(''); setPage(1); };
+
     return (
         <main className="layout-container flex h-full grow flex-col px-4 md:px-10 lg:px-40 py-8 overflow-y-auto">
             <div className="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
@@ -8,78 +308,94 @@ export default function Coverage() {
                 {/* Header */}
                 <div className="flex flex-wrap justify-between items-end gap-4 mb-8">
                     <div className="flex flex-col gap-2">
-                        <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Mapa de Cobertura de Rede</h1>
+                        <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
+                            Mapa de Cobertura de Rede
+                        </h1>
                         <p className="text-[#a17745] dark:text-orange-300 text-base font-normal max-w-2xl">
-                            Verifique a disponibilidade de serviço entre regiões, tipos de tecnologia (FTTH, Rádio, UTP) e gerencie novas solicitações.
+                            Cidades e bairros atendidos detectados automaticamente via contratos ativos no IXC. Configure tecnologia, velocidade e percentual por região.
                         </p>
                     </div>
-                    <button className="flex items-center justify-center gap-2 h-10 px-5 bg-primary hover:bg-[#cc7000] transition-colors rounded-lg text-white text-sm font-bold shadow-sm hover:shadow-md">
-                        <span className="material-symbols-outlined text-[20px]">add_location_alt</span>
-                        <span>Solicitar Cobertura</span>
+                    <button
+                        onClick={carregar}
+                        disabled={carregando}
+                        className="flex items-center justify-center gap-2 h-10 px-5 bg-primary hover:bg-[#cc7000] transition-colors rounded-lg text-white text-sm font-bold shadow-sm hover:shadow-md disabled:opacity-60"
+                    >
+                        <span className={`material-symbols-outlined text-[20px] ${carregando ? 'animate-spin' : ''}`}>sync</span>
+                        <span>{carregando ? 'Sincronizando...' : 'Sincronizar IXC'}</span>
                     </button>
                 </div>
+
+                {/* Cards de resumo */}
+                {!carregando && dados.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        {[
+                            { icon: 'location_city', label: 'Cidades Atendidas', valor: cidadesUnicas, cor: 'text-primary' },
+                            { icon: 'home_pin', label: 'Combos Cidade+Bairro', valor: dados.length, cor: 'text-blue-600' },
+                            { icon: 'check_circle', label: 'Configurados', valor: totalComConfig, cor: 'text-green-600' },
+                            { icon: 'pending', label: 'Sem Configuração', valor: totalSemConfig, cor: 'text-orange-500' },
+                        ].map((c, i) => (
+                            <div key={i} className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#f4eee6] px-5 py-4 flex items-center gap-4 shadow-sm">
+                                <div className="p-2 bg-gray-100 dark:bg-[#2c2217] rounded-lg">
+                                    <span className={`material-symbols-outlined ${c.cor} text-[24px]`}>{c.icon}</span>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-[#a17745] dark:text-orange-300 font-medium">{c.label}</p>
+                                    <p className="text-xl font-black text-[#1d150c] dark:text-white">{c.valor}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Filtros */}
                 <div className="flex flex-wrap gap-3 mb-6 items-center bg-white dark:bg-[#1a130b] p-4 rounded-xl shadow-sm border border-[#f4eee6]">
                     <span className="text-[#a17745] dark:text-orange-300 text-sm font-semibold uppercase tracking-wider mr-2">FILTROS:</span>
 
-                    {['Tecnologia: Todas', 'Velocidade: Qualquer', 'Estado: Alagoas', 'Cidade: Todas'].map((filter, i) => (
-                        <button key={i} className="group flex h-9 items-center justify-center gap-x-2 rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] hover:bg-[#f4eee6] dark:bg-gray-800 border border-[#f4eee6] px-3 transition-colors">
-                            <span className="material-symbols-outlined text-[#1d150c] dark:text-white text-[20px]">
-                                {i === 0 ? 'router' : i === 1 ? 'speed' : i === 2 ? 'map' : 'location_city'}
-                            </span>
-                            <span className="text-[#1d150c] dark:text-white text-sm font-medium">{filter}</span>
-                            <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-[20px]">arrow_drop_down</span>
-                        </button>
-                    ))}
+                    <div className="flex items-center gap-2 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#f4eee6] rounded-lg px-3 h-9">
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-[18px]">search</span>
+                        <input
+                            className="bg-transparent text-sm text-[#1d150c] dark:text-white placeholder:text-[#a17745] focus:outline-none w-36"
+                            placeholder="Cidade ou bairro"
+                            value={busca}
+                            onChange={e => setBusca(e.target.value)}
+                        />
+                    </div>
+
+                    <select
+                        className="flex h-9 items-center rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#f4eee6] px-3 text-sm text-[#1d150c] dark:text-white focus:outline-none"
+                        value={filtroTec}
+                        onChange={e => setFiltroTec(e.target.value)}
+                    >
+                        <option value="">Tecnologia: Todas</option>
+                        {TECNOLOGIAS.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+
+                    <select
+                        className="flex h-9 items-center rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#f4eee6] px-3 text-sm text-[#1d150c] dark:text-white focus:outline-none"
+                        value={filtroStatus}
+                        onChange={e => setFiltroStatus(e.target.value)}
+                    >
+                        <option value="">Status: Todos</option>
+                        {STATUS_OPCOES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
 
                     <div className="ml-auto flex items-center">
-                        <button className="text-primary text-sm font-medium hover:underline">Limpar Filtros</button>
+                        <button onClick={limparFiltros} className="text-primary text-sm font-medium hover:underline">Limpar Filtros</button>
                     </div>
                 </div>
 
-                {/* Mapa */}
-                <div className="relative w-full h-[500px] rounded-xl overflow-hidden shadow-md mb-8 group border border-[#f4eee6] bg-slate-100">
-                    <div
-                        className="absolute inset-0 bg-cover bg-center opacity-90 transition-opacity group-hover:opacity-100"
-                        title="Mapa interativo mostrando nós de cobertura de rede"
-                        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAa3DiRl9fKvb3i9sliS-uQ1Rz_9sd7Q4tgI2H11g3lcThXjibRJx_TdY3ka7Ues4h-uYyhGzKR9sNEnZxlUtpOar_Pz5tcnUm2VxDqFXD3W0H8Zj_sDMLClfbCHHa_pgGVWcwGqZtM79aHNmkHoZczHwOeNb5Vk9HgxfHgKki-1BvM9WbsIXLHhkwjaSAst8_Zmtucvjynymsd8SboYoWppeeE0znFdr3p3pH7gmzelH1mi0NxjQRqwzbpT-uGZqzNOcWdkZ_BXn0')" }}
-                    ></div>
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
-
-                    <div className="absolute top-4 left-4 right-4 md:left-6 md:w-80 z-10">
-                        <div className="flex w-full items-center bg-white dark:bg-[#1a130b] rounded-lg shadow-lg h-12 px-4">
-                            <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300">search</span>
-                            <input className="flex-1 bg-transparent border-none focus:ring-0 text-[#1d150c] dark:text-white placeholder:text-[#a17745] dark:text-orange-300 ml-2 font-normal focus:outline-none" placeholder="Buscar cidade ou bairro" />
-                        </div>
-                    </div>
-
-                    <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
-                        <button className="size-10 bg-white dark:bg-[#1a130b] hover:bg-gray-50 rounded-lg shadow-lg flex items-center justify-center text-[#1d150c] dark:text-white transition-colors">
-                            <span className="material-symbols-outlined">add</span>
-                        </button>
-                        <button className="size-10 bg-white dark:bg-[#1a130b] hover:bg-gray-50 rounded-lg shadow-lg flex items-center justify-center text-[#1d150c] dark:text-white transition-colors">
-                            <span className="material-symbols-outlined">remove</span>
-                        </button>
-                        <button className="size-10 bg-primary hover:bg-[#cc7000] rounded-lg shadow-lg flex items-center justify-center text-white mt-2 transition-colors">
-                            <span className="material-symbols-outlined">my_location</span>
-                        </button>
-                    </div>
-
-                    {/* Marcadores */}
-                    <Marker top="50%" left="33%" label="Batalha (FTTH)" color="text-primary" />
-                    <Marker top="40%" left="60%" label="Delmiro Gouveia" color="text-green-600" />
-                    <Marker top="70%" left="70%" label="Penedo" color="text-blue-600" />
-                </div>
-
-                {/* Tabela de Dados */}
+                {/* Tabela */}
                 <div className="bg-white dark:bg-[#1a130b] rounded-xl shadow-sm border border-[#f4eee6] overflow-hidden">
                     <div className="px-6 py-5 border-b border-[#f4eee6] flex justify-between items-center bg-gray-50/50">
-                        <h2 className="text-[#1d150c] dark:text-white text-xl font-bold">Cidades com Cobertura</h2>
-                        <button className="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
-                            Exportar Dados <span className="material-symbols-outlined text-sm">download</span>
-                        </button>
+                        <div>
+                            <h2 className="text-[#1d150c] dark:text-white text-xl font-bold">Cidades com Cobertura</h2>
+                            <p className="text-xs text-[#a17745] dark:text-orange-300 mt-0.5">
+                                Fonte: contratos ativos no IXC · Clique em <span className="font-bold">tune</span> para configurar os campos manuais
+                            </p>
+                        </div>
+                        {carregando && (
+                            <span className="material-symbols-outlined text-[#a17745] text-[20px] animate-spin">autorenew</span>
+                        )}
                     </div>
 
                     <div className="overflow-x-auto">
@@ -90,110 +406,75 @@ export default function Coverage() {
                                     <th className="px-6 py-4 whitespace-nowrap">BAIRRO</th>
                                     <th className="px-6 py-4 whitespace-nowrap">TECNOLOGIA</th>
                                     <th className="px-6 py-4 whitespace-nowrap">VELOC. MÁXIMA</th>
-                                    <th className="px-6 py-4 whitespace-nowrap">STATUS</th>
+                                    <th className="px-6 py-4 whitespace-nowrap">STATUS / COBERTURA</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-center">CONTRATOS</th>
                                     <th className="px-6 py-4 text-right whitespace-nowrap">AÇÕES</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#f4eee6] text-sm">
-                                <TableRow city="Delmiro Gouveia" neighborhood="Centro" tech="FTTH" speed="500 MEGA" status="Ativo" percent="98" state="AL" />
-                                <TableRow city="Batalha" neighborhood="Zona Rural" tech="Rádio" speed="20 MEGA" status="Ativo" percent="85" techColor="blue" state="AL" />
-                                <TableRow city="Penedo" neighborhood="Santa Luzia" tech="UTP" speed="100 MEGA" status="Ativo" percent="92" techColor="green" state="AL" />
-                                <TableRow city="Delmiro Gouveia" neighborhood="Novo Horizonte" tech="FTTH" speed="300 MEGA" status="Expansão" percent="45" statusColor="blue" state="AL" />
+                                {carregando && pagAtual.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-16 text-center text-[#a17745] dark:text-orange-300">
+                                            <span className="material-symbols-outlined text-5xl animate-spin block mx-auto mb-3">autorenew</span>
+                                            Buscando cidades no IXC...
+                                        </td>
+                                    </tr>
+                                ) : pagAtual.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-16 text-center text-[#a17745] dark:text-orange-300">
+                                            <span className="material-symbols-outlined text-5xl block mx-auto mb-3">location_off</span>
+                                            Nenhuma cidade encontrada com os filtros aplicados.
+                                        </td>
+                                    </tr>
+                                ) : pagAtual.map((row, i) => (
+                                    <RowIXC key={`${row.cidade_ixc_id}::${row.bairro}::${i}`} row={row} onConfigurar={setModalOverride} />
+                                ))}
                             </tbody>
                         </table>
                     </div>
 
-                    <div className="px-6 py-4 border-t border-[#f4eee6] bg-gray-50 flex items-center justify-between">
-                        <p className="text-sm text-[#a17745] dark:text-orange-300">Mostrando 1 a 4 de 28 entradas</p>
-                        <div className="flex gap-2">
-                            <button className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-white dark:bg-[#1a130b] text-[#a17745] dark:text-orange-300 disabled:opacity-50 hover:bg-gray-100 transition-colors">Anterior</button>
-                            <button className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-primary text-white">1</button>
-                            <button className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-white hover:bg-gray-100 transition-colors">2</button>
-                            <button className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-white hover:bg-gray-100 transition-colors">3</button>
-                            <button className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-white dark:bg-[#1a130b] text-[#a17745] dark:text-orange-300 hover:bg-gray-100 transition-colors">Próximo</button>
+                    {/* Paginação */}
+                    <div className="px-6 py-4 border-t border-[#f4eee6] bg-gray-50 dark:bg-[#1a130b] flex items-center justify-between flex-wrap gap-3">
+                        <p className="text-sm text-[#a17745] dark:text-orange-300">
+                            Mostrando {dadosFiltrados.length > 0 ? ((page - 1) * LIMIT + 1) : 0} a {Math.min(page * LIMIT, dadosFiltrados.length)} de {dadosFiltrados.length} entradas
+                        </p>
+                        <div className="flex gap-2 flex-wrap">
+                            <button
+                                disabled={page <= 1}
+                                onClick={() => setPage(p => p - 1)}
+                                className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-white dark:bg-[#1a130b] text-[#a17745] dark:text-orange-300 disabled:opacity-40 hover:bg-gray-100 transition-colors"
+                            >
+                                Anterior
+                            </button>
+                            {Array.from({ length: Math.min(totalPaginas, 7) }, (_, i) => i + 1).map(p => (
+                                <button
+                                    key={p}
+                                    onClick={() => setPage(p)}
+                                    className={`px-3 py-1 text-sm border border-[#f4eee6] rounded transition-colors ${p === page ? 'bg-primary text-white' : 'bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-white hover:bg-gray-100'}`}
+                                >
+                                    {p}
+                                </button>
+                            ))}
+                            <button
+                                disabled={page >= totalPaginas}
+                                onClick={() => setPage(p => p + 1)}
+                                className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-white dark:bg-[#1a130b] text-[#a17745] dark:text-orange-300 disabled:opacity-40 hover:bg-gray-100 transition-colors"
+                            >
+                                Próximo
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Modal Override */}
+            {modalOverride && (
+                <OverrideModal
+                    registro={modalOverride}
+                    onFechar={() => setModalOverride(null)}
+                    onSalvar={handleSalvarOverride}
+                />
+            )}
         </main>
-    );
-}
-
-// Subcomponente para marcadores no mapa
-function Marker({ top, left, label, color }) {
-    return (
-        <div
-            className="absolute flex flex-col items-center group/marker cursor-pointer -translate-y-1/2 -translate-x-1/2"
-            style={{ top, left }}
-        >
-            <div className="bg-white dark:bg-[#1a130b] px-2 py-1 rounded shadow-md text-xs font-bold mb-1 opacity-0 group-hover/marker:opacity-100 transition-opacity whitespace-nowrap text-[#1d150c] dark:text-white">
-                {label}
-            </div>
-            <span className={`material-symbols-outlined ${color} text-4xl drop-shadow-md`}>location_on</span>
-        </div>
-    );
-}
-
-// Subcomponente para as linhas da tabela
-function TableRow({ city, neighborhood, tech, speed, status, percent, techColor = "purple", statusColor = "orange", state }) {
-
-    const techClasses = {
-        purple: "bg-purple-100 text-purple-700",
-        blue: "bg-blue-100 text-blue-700",
-        green: "bg-green-100 text-green-700"
-    };
-
-    const statusColors = {
-        green: "bg-green-500",
-        orange: "bg-orange-400",
-        blue: "bg-blue-500",
-    };
-
-    const techIcons = {
-        "FTTH": "fiber_manual_record",
-        "Rádio": "settings_input_antenna",
-        "UTP": "cable"
-    };
-
-    const theStatusColor = status === "Ativo" && parseInt(percent) >= 90 ? "green"
-        : status === "Ativo" ? "orange"
-            : "blue";
-
-    return (
-        <tr className="hover:bg-gray-50 transition-colors">
-            <td className="px-6 py-4 font-medium text-[#1d150c] dark:text-white">
-                <div className="flex items-center gap-3">
-                    <div className="size-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
-                        {state}
-                    </div>
-                    {city}
-                </div>
-            </td>
-            <td className="px-6 py-4 text-[#a17745] dark:text-orange-300">{neighborhood}</td>
-            <td className="px-6 py-4">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${techClasses[techColor] || techClasses.purple}`}>
-                    <span className="material-symbols-outlined text-[14px]">{techIcons[tech] || "fiber_manual_record"}</span> {tech}
-                </span>
-            </td>
-            <td className="px-6 py-4 font-semibold text-[#1d150c] dark:text-white">{speed}</td>
-            <td className="px-6 py-4">
-                <div className="flex flex-col gap-1 w-24">
-                    <div className="flex justify-between text-xs text-[#a17745] dark:text-orange-300">
-                        <span>{status}</span>
-                        <span className={`font-bold ${theStatusColor === 'green' ? 'text-green-600' :
-                                theStatusColor === 'orange' ? 'text-orange-500' : 'text-blue-500'
-                            }`}>{percent}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                        <div className={`h-full ${statusColors[theStatusColor]}`} style={{ width: `${percent}%` }}></div>
-                    </div>
-                </div>
-            </td>
-            <td className="px-6 py-4 text-right">
-                <button className="text-[#a17745] dark:text-orange-300 hover:text-primary transition-colors p-1 rounded-full hover:bg-gray-100 flex items-center justify-center ml-auto">
-                    <span className="material-symbols-outlined">more_vert</span>
-                </button>
-            </td>
-        </tr>
     );
 }
