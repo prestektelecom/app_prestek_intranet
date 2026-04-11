@@ -2277,13 +2277,13 @@ app.post('/api/cobertura-ixc/override', async (req, res) => {
             INSERT INTO cobertura_cidades
                 (cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, updated_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
-            ON CONFLICT (cidade_ixc_id, bairro) DO UPDATE SET
+            ON CONFLICT (cidade_ixc_id, bairro) WHERE cidade_ixc_id IS NOT NULL DO UPDATE SET
                 cidade              = EXCLUDED.cidade,
                 estado              = EXCLUDED.estado,
-                tecnologia          = COALESCE(EXCLUDED.tecnologia, cobertura_cidades.tecnologia),
-                velocidade_maxima   = COALESCE(EXCLUDED.velocidade_maxima, cobertura_cidades.velocidade_maxima),
-                status              = COALESCE(EXCLUDED.status, cobertura_cidades.status),
-                percentual_cobertura= COALESCE(EXCLUDED.percentual_cobertura, cobertura_cidades.percentual_cobertura),
+                tecnologia          = EXCLUDED.tecnologia,
+                velocidade_maxima   = EXCLUDED.velocidade_maxima,
+                status              = EXCLUDED.status,
+                percentual_cobertura= EXCLUDED.percentual_cobertura,
                 updated_at          = NOW()
             RETURNING *
         `, [
