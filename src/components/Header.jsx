@@ -164,7 +164,7 @@ export default function Header({ currentView, setCurrentView, user }) {
     }, [notificationsRef]);
 
     return (
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] px-4 md:px-6 py-3 shrink-0 h-16 z-40 shadow-sm sticky top-0 transition-colors duration-200">
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] px-4 md:px-6 py-3 shrink-0 h-16 z-[1000] shadow-sm sticky top-0 transition-colors duration-200">
             {/* Logo + Busca + Navegação Condicional */}
             <div className="flex items-center gap-4 xl:gap-8 flex-1">
                 {/* Botão Menu Hambúrguer (Mobile) - Touch Friendly (min-44px) */}

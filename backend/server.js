@@ -2248,6 +2248,8 @@ app.get('/api/cobertura-ixc', async (req, res) => {
                 velocidade_maxima: local.velocidade_maxima || null,
                 status: local.status || null,
                 percentual_cobertura: local.percentual_cobertura !== undefined ? local.percentual_cobertura : null,
+                latitude:  local.latitude  != null ? parseFloat(local.latitude)  : null,
+                longitude: local.longitude != null ? parseFloat(local.longitude) : null,
                 tem_override: !!local.id
             };
         });
@@ -2268,15 +2270,18 @@ app.get('/api/cobertura-ixc', async (req, res) => {
 
 // POST /api/cobertura-ixc/override — salva ou atualiza os campos manuais de uma entrada IXC
 app.post('/api/cobertura-ixc/override', async (req, res) => {
-    const { cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura } = req.body;
+    const { cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, latitude, longitude } = req.body;
     if (!cidade_ixc_id || !bairro) {
         return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
     }
+    // Converte coordenadas — aceita null/undefined (não sobrescreve com null se omitido)
+    const lat = latitude  != null && latitude  !== '' ? parseFloat(latitude)  : null;
+    const lng = longitude != null && longitude !== '' ? parseFloat(longitude) : null;
     try {
         const result = await pool.query(`
             INSERT INTO cobertura_cidades
-                (cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+                (cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, latitude, longitude, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
             ON CONFLICT (cidade_ixc_id, bairro) WHERE cidade_ixc_id IS NOT NULL DO UPDATE SET
                 cidade              = EXCLUDED.cidade,
                 estado              = EXCLUDED.estado,
@@ -2284,12 +2289,15 @@ app.post('/api/cobertura-ixc/override', async (req, res) => {
                 velocidade_maxima   = EXCLUDED.velocidade_maxima,
                 status              = EXCLUDED.status,
                 percentual_cobertura= EXCLUDED.percentual_cobertura,
+                latitude            = COALESCE(EXCLUDED.latitude,  cobertura_cidades.latitude),
+                longitude           = COALESCE(EXCLUDED.longitude, cobertura_cidades.longitude),
                 updated_at          = NOW()
             RETURNING *
         `, [
             String(cidade_ixc_id), cidade || '', estado || 'AL', bairro,
             tecnologia || 'FTTH', velocidade_maxima || '100 MEGA',
-            status || 'Ativo', percentual_cobertura ?? 100
+            status || 'Ativo', percentual_cobertura ?? 100,
+            lat, lng
         ]);
         return res.json({ sucesso: true, dado: result.rows[0] });
     } catch (err) {

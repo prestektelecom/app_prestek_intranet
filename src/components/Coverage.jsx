@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import CoverageMap from './CoverageMap';
 
 // ─── Constantes ───────────────────────────────────────────────────
 const TECNOLOGIAS = ['FTTH', 'Rádio', 'UTP'];
@@ -17,6 +18,75 @@ const STATUS_BAR = {
     Inativo:  { barCls: 'bg-red-400',    textCls: 'text-red-500' },
 };
 
+// ─── Mini-mapa para seleção de coordenadas ────────────────────────
+function MapaPicker({ lat, lng, onChange }) {
+    const containerRef = useRef(null);
+    const mapRef       = useRef(null);
+
+    useEffect(() => {
+        if (!containerRef.current || mapRef.current) return;
+        import('leaflet').then(({ default: L }) => {
+            const center = (lat && lng) ? [lat, lng] : [-10.5, -36.5];
+            const zoom   = (lat && lng) ? 14 : 9;
+            const map = L.map(containerRef.current, { center, zoom, zoomControl: true });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 18,
+            }).addTo(map);
+
+            let marker = null;
+            // Se já tem coordenadas, coloca marcador inicial
+            if (lat && lng) {
+                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                marker.on('dragend', () => {
+                    const p = marker.getLatLng();
+                    onChange(p.lat.toFixed(7), p.lng.toFixed(7));
+                });
+            }
+
+            // Clicar no mapa → posiciona/move marcador
+            map.on('click', (e) => {
+                const { lat: clat, lng: clng } = e.latlng;
+                if (marker) {
+                    marker.setLatLng([clat, clng]);
+                } else {
+                    marker = L.marker([clat, clng], { draggable: true }).addTo(map);
+                    marker.on('dragend', () => {
+                        const p = marker.getLatLng();
+                        onChange(p.lat.toFixed(7), p.lng.toFixed(7));
+                    });
+                }
+                onChange(clat.toFixed(7), clng.toFixed(7));
+            });
+
+            mapRef.current = { map, getMarker: () => marker, setMarker: (m) => { marker = m; }, L };
+        });
+        return () => {
+            if (mapRef.current) { mapRef.current.map.remove(); mapRef.current = null; }
+        };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Quando lat/lng mudam via campos de texto → mover marcador
+    useEffect(() => {
+        if (!mapRef.current || !lat || !lng) return;
+        const { map, getMarker, setMarker, L } = mapRef.current;
+        let m = getMarker();
+        if (m) {
+            m.setLatLng([lat, lng]);
+        } else {
+            m = L.marker([lat, lng], { draggable: true }).addTo(map);
+            m.on('dragend', () => {
+                const p = m.getLatLng();
+                onChange(parseFloat(p.lat.toFixed(7)), parseFloat(p.lng.toFixed(7)));
+            });
+            setMarker(m);
+        }
+        map.setView([lat, lng], Math.max(map.getZoom(), 13));
+    }, [lat, lng]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    return <div ref={containerRef} style={{ height: '240px', width: '100%', borderRadius: '8px' }} />;
+}
+
 // ─── Modal Override (configurar campos manuais de uma linha IXC) ──
 function OverrideModal({ registro, onFechar, onSalvar }) {
     const [form, setForm] = useState({
@@ -24,11 +94,31 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
         velocidade_maxima: registro.velocidade_maxima || '100 MEGA',
         status: registro.status || 'Ativo',
         percentual_cobertura: registro.percentual_cobertura ?? 100,
+        latitude:  registro.latitude  ?? '',
+        longitude: registro.longitude ?? '',
     });
-    const [salvando, setSalvando] = useState(false);
-    const [erro, setErro] = useState('');
+    const [salvando, setSalvando]       = useState(false);
+    const [erro, setErro]               = useState('');
+    const [mapaAberto, setMapaAberto]   = useState(!!(registro.latitude && registro.longitude));
+    // Debounce para atualizar mapa ao digitar coordenadas
+    const coordsDebounceRef = useRef(null);
 
     const handleChange = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }));
+
+    const handleCoordChange = (campo, valor) => {
+        // Normaliza vírgula → ponto (locale pt-BR pode usar vírgula como decimal)
+        const normalizado = String(valor).replace(',', '.');
+        setForm(f => ({ ...f, [campo]: normalizado }));
+    };
+
+    // Lat/lng parseados (para o mapa) — normaliza vírgula antes de converter
+    const latNum = parseFloat(String(form.latitude).replace(',', '.'));
+    const lngNum = parseFloat(String(form.longitude).replace(',', '.'));
+    const coordsValidas = !isNaN(latNum) && !isNaN(lngNum);
+
+    const handleMapaClick = (lat, lng) => {
+        setForm(f => ({ ...f, latitude: lat, longitude: lng }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -43,8 +133,12 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     cidade: registro.cidade,
                     estado: registro.estado,
                     bairro: registro.bairro,
-                    ...form,
-                    percentual_cobertura: parseInt(form.percentual_cobertura)
+                    tecnologia: form.tecnologia,
+                    velocidade_maxima: form.velocidade_maxima,
+                    status: form.status,
+                    percentual_cobertura: parseInt(form.percentual_cobertura),
+                    latitude:  form.latitude  !== '' ? parseFloat(String(form.latitude).replace(',', '.'))  : null,
+                    longitude: form.longitude !== '' ? parseFloat(String(form.longitude).replace(',', '.')) : null,
                 })
             });
             const dados = await resp.json();
@@ -58,8 +152,9 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-[#1a130b] rounded-2xl shadow-2xl w-full max-w-md border border-[#f4eee6]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+            <div className="bg-white dark:bg-[#1a130b] rounded-2xl shadow-2xl w-full max-w-lg border border-[#f4eee6] my-4">
+                {/* Cabeçalho */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#f4eee6]">
                     <div>
                         <h3 className="text-[#1d150c] dark:text-white font-bold text-lg">Configurar Cobertura</h3>
@@ -71,6 +166,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
+
                 <form onSubmit={handleSubmit} className="px-6 py-5 grid grid-cols-2 gap-4">
                     {/* Info somente leitura */}
                     <div className="col-span-2 bg-[#fcfaf8] dark:bg-[#2c2217] rounded-lg px-4 py-3 flex items-center gap-3">
@@ -134,6 +230,65 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                         />
                     </div>
 
+                    {/* ─── Seção Localização ─── */}
+                    <div className="col-span-2 border-t border-[#f4eee6] pt-3">
+                        <button
+                            type="button"
+                            onClick={() => setMapaAberto(v => !v)}
+                            className="flex items-center gap-2 text-sm font-semibold text-[#a17745] dark:text-orange-300 hover:text-primary transition-colors mb-3"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">pin_drop</span>
+                            Localização do Bairro
+                            <span className="material-symbols-outlined text-[16px]">
+                                {mapaAberto ? 'expand_less' : 'expand_more'}
+                            </span>
+                            {coordsValidas && (
+                                <span className="ml-1 text-xs text-green-600 font-normal">✓ definida</span>
+                            )}
+                        </button>
+
+                        {/* Campos de texto lat/lng */}
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Latitude</label>
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder="-9.9170800"
+                                    className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                                    value={form.latitude}
+                                    onChange={e => handleCoordChange('latitude', e.target.value)}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Longitude</label>
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder="-36.5560000"
+                                    className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                                    value={form.longitude}
+                                    onChange={e => handleCoordChange('longitude', e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Mini-mapa colapsável */}
+                        {mapaAberto && (
+                            <div className="rounded-xl overflow-hidden border border-[#f4eee6]">
+                                <div className="bg-[#fcfaf8] dark:bg-[#2c2217] px-3 py-2 text-xs text-[#a17745] dark:text-orange-300 flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[14px]">touch_app</span>
+                                    Clique no mapa para definir a posição exata do bairro
+                                </div>
+                                <MapaPicker
+                                    lat={coordsValidas ? latNum : null}
+                                    lng={coordsValidas ? lngNum : null}
+                                    onChange={handleMapaClick}
+                                />
+                            </div>
+                        )}
+                    </div>
+
                     {erro && (
                         <div className="col-span-2 bg-red-50 border border-red-200 text-red-600 rounded-lg px-3 py-2 text-sm">
                             {erro}
@@ -154,14 +309,18 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
         </div>
     );
 }
-
 // ─── Linha da tabela IXC ──────────────────────────────────────────
-function RowIXC({ row, onConfigurar }) {
+function RowIXC({ row, onConfigurar, selecionada, onSelecionar }) {
     const tech = TECH_STYLES[row.tecnologia] || null;
     const stat = STATUS_BAR[row.status] || null;
 
     return (
-        <tr className="hover:bg-gray-50 dark:hover:bg-[#2c2217] transition-colors">
+        <tr
+            onClick={() => onSelecionar(row.cidade_ixc_id)}
+            className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2c2217] transition-colors ${
+                selecionada ? 'ring-2 ring-inset ring-primary/40 bg-primary/5 dark:bg-primary/10' : ''
+            }`}
+        >
             <td className="px-6 py-4 font-medium text-[#1d150c] dark:text-white">
                 <div className="flex items-center gap-3">
                     <div className="size-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 text-xs">
@@ -254,6 +413,7 @@ export default function Coverage() {
     const [filtroStatus, setFiltroStatus] = useState('');
     const [page, setPage] = useState(1);
     const [modalOverride, setModalOverride] = useState(null);
+    const [cidadeSelecionada, setCidadeSelecionada] = useState(null);
     const LIMIT = 15;
 
     const carregar = useCallback(async () => {
@@ -347,6 +507,15 @@ export default function Coverage() {
                     </div>
                 )}
 
+                {/* Mapa de Cobertura */}
+                {!carregando && dados.length > 0 && (
+                    <CoverageMap
+                        dados={dados}
+                        cidadeSelecionada={cidadeSelecionada}
+                        onCidadeClick={setCidadeSelecionada}
+                    />
+                )}
+
                 {/* Filtros */}
                 <div className="flex flex-wrap gap-3 mb-6 items-center bg-white dark:bg-[#1a130b] p-4 rounded-xl shadow-sm border border-[#f4eee6]">
                     <span className="text-[#a17745] dark:text-orange-300 text-sm font-semibold uppercase tracking-wider mr-2">FILTROS:</span>
@@ -427,7 +596,13 @@ export default function Coverage() {
                                         </td>
                                     </tr>
                                 ) : pagAtual.map((row, i) => (
-                                    <RowIXC key={`${row.cidade_ixc_id}::${row.bairro}::${i}`} row={row} onConfigurar={setModalOverride} />
+                                    <RowIXC
+                                        key={`${row.cidade_ixc_id}::${row.bairro}::${i}`}
+                                        row={row}
+                                        onConfigurar={setModalOverride}
+                                        selecionada={row.cidade_ixc_id === cidadeSelecionada}
+                                        onSelecionar={setCidadeSelecionada}
+                                    />
                                 ))}
                             </tbody>
                         </table>
