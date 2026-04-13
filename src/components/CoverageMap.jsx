@@ -104,7 +104,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                         <span style="color:#94a3b8;font-size:10px">★ Localização manual</span>
                     </div>
                 `);
-            marker.on('click', () => onCidadeClick(d.cidade_ixc_id));
+            marker.on('click', () => onCidadeClick(`${d.cidade_ixc_id}::${d.bairro}`));
             marker._cidadeId = d.cidade_ixc_id;
             marker._cor      = cor;
             marker._coords   = { lat: d.latitude, lng: d.longitude };
@@ -163,17 +163,24 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
 
         // Pins de cidade
         Object.entries(marcCidadeRef.current).forEach(([id, marker]) => {
-            const sel = id === cidadeSelecionada;
-            marker.setIcon(criarIconeCidade(L, marker._cor, sel));
-            if (sel) {
+            const selExato = id === String(cidadeSelecionada).split('::')[0] && !String(cidadeSelecionada).includes('::');
+            marker.setIcon(criarIconeCidade(L, marker._cor, selExato));
+            if (selExato) {
                 map.flyTo([marker._coords.lat, marker._coords.lng], 12, { duration: 1 });
                 marker.openPopup();
             }
         });
         // Pins de bairro — destaca todos do bairro da cidade selecionada
-        Object.entries(marcBairroRef.current).forEach(([, marker]) => {
-            const sel = marker._cidadeId === cidadeSelecionada;
+        Object.entries(marcBairroRef.current).forEach(([chave, marker]) => {
+            const clicouNoBairro = chave === cidadeSelecionada;
+            const clicouNaCidade = marker._cidadeId === cidadeSelecionada;
+            const sel = clicouNoBairro || clicouNaCidade;
             marker.setIcon(criarIconeBairro(L, marker._cor, sel));
+
+            if (clicouNoBairro) {
+                map.flyTo([marker._coords.lat, marker._coords.lng], 14, { duration: 1 });
+                marker.openPopup();
+            }
         });
     }, [cidadeSelecionada]);
 
@@ -186,7 +193,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                     <span className="text-[#1d150c] dark:text-white font-bold text-sm">Mapa de Cobertura</span>
                     {cidadeSelecionada && (
                         <span className="ml-2 text-xs text-[#a17745] dark:text-orange-300 bg-[#fcfaf8] dark:bg-[#2c2217] px-2 py-0.5 rounded-full">
-                            Zoom na cidade selecionada
+                            Zoom no local selecionado
                         </span>
                     )}
                 </div>

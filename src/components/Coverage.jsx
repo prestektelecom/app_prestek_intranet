@@ -316,7 +316,7 @@ function RowIXC({ row, onConfigurar, selecionada, onSelecionar }) {
 
     return (
         <tr
-            onClick={() => onSelecionar(row.cidade_ixc_id)}
+            onClick={() => onSelecionar(`${row.cidade_ixc_id}::${row.bairro}`)}
             className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2c2217] transition-colors ${
                 selecionada ? 'ring-2 ring-inset ring-primary/40 bg-primary/5 dark:bg-primary/10' : ''
             }`}
@@ -409,6 +409,7 @@ export default function Coverage() {
     const [dadosFiltrados, setDadosFiltrados] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [busca, setBusca] = useState('');
+    const [buscaInput, setBuscaInput] = useState('');
     const [filtroTec, setFiltroTec] = useState('');
     const [filtroStatus, setFiltroStatus] = useState('');
     const [page, setPage] = useState(1);
@@ -459,7 +460,7 @@ export default function Coverage() {
         carregar();
     };
 
-    const limparFiltros = () => { setBusca(''); setFiltroTec(''); setFiltroStatus(''); setPage(1); };
+    const limparFiltros = () => { setBusca(''); setBuscaInput(''); setFiltroTec(''); setFiltroStatus(''); setPage(1); };
 
     return (
         <main className="layout-container flex h-full grow flex-col px-4 md:px-10 lg:px-40 py-8 overflow-y-auto">
@@ -525,8 +526,9 @@ export default function Coverage() {
                         <input
                             className="bg-transparent text-sm text-[#1d150c] dark:text-white placeholder:text-[#a17745] focus:outline-none w-36"
                             placeholder="Cidade ou bairro"
-                            value={busca}
-                            onChange={e => setBusca(e.target.value)}
+                            value={buscaInput}
+                            onChange={e => setBuscaInput(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && setBusca(buscaInput)}
                         />
                     </div>
 
@@ -600,7 +602,7 @@ export default function Coverage() {
                                         key={`${row.cidade_ixc_id}::${row.bairro}::${i}`}
                                         row={row}
                                         onConfigurar={setModalOverride}
-                                        selecionada={row.cidade_ixc_id === cidadeSelecionada}
+                                        selecionada={`${row.cidade_ixc_id}::${row.bairro}` === cidadeSelecionada}
                                         onSelecionar={setCidadeSelecionada}
                                     />
                                 ))}
