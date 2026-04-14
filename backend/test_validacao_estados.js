@@ -164,6 +164,70 @@ async function testeIntegridade() {
 }
 
 // ────────────────────────────────────────────────
+// SUITE 4: GET /api/cobertura-ixc — paginação e metadados
+// ────────────────────────────────────────────────
+async function testePaginacaoIXC() {
+    console.log('\n📋 SUITE 4 — GET /api/cobertura-ixc (paginação e metadados)\n');
+
+    const res = await fetch(`${BASE_URL}/api/cobertura-ixc`);
+    resultado('API responde HTTP 200', res.status === 200, `HTTP ${res.status}`);
+
+    const json = await res.json();
+    resultado('Resposta tem sucesso=true', json.sucesso === true, JSON.stringify(json.erro));
+
+    // Verifica campo meta presente
+    resultado('Campo meta presente na resposta', !!json.meta, 'meta ausente');
+
+    if (json.meta) {
+        const { total_contratos_ixc, total_com_localizacao, total_sem_localizacao, paginas_consultadas } = json.meta;
+
+        // Total IXC deve bater com o reportado (21.515 ou próximo)
+        resultado(
+            'Total IXC reportado > 9.999 (paginação funcionando)',
+            parseInt(total_contratos_ixc) > 9999,
+            `total_contratos_ixc=${total_contratos_ixc}`
+        );
+
+        // Soma deve bater com o total
+        const soma = parseInt(total_com_localizacao) + parseInt(total_sem_localizacao);
+        resultado(
+            'total_com + total_sem = total_ixc',
+            soma === parseInt(total_contratos_ixc),
+            `${total_com_localizacao} + ${total_sem_localizacao} = ${soma} (esperado: ${total_contratos_ixc})`
+        );
+
+        // Páginas consultadas deve ser >= 2 (temos 21.515 / 9.999 = 3 páginas)
+        resultado(
+            'Pelo menos 2 páginas foram consultadas',
+            parseInt(paginas_consultadas) >= 2,
+            `paginas_consultadas=${paginas_consultadas}`
+        );
+
+        // Dados retornados devem ter ao menos as combos das 3 páginas
+        resultado(
+            'Dados retornados são consistentes com quantidade esperada',
+            Array.isArray(json.dados) && json.dados.length > 0,
+            `dados.length=${json.dados?.length}`
+        );
+
+        console.log(`  📊 Meta recebida:`);
+        console.log(`     total_contratos_ixc:   ${total_contratos_ixc}`);
+        console.log(`     total_com_localizacao: ${total_com_localizacao}`);
+        console.log(`     total_sem_localizacao: ${total_sem_localizacao}`);
+        console.log(`     paginas_consultadas:   ${paginas_consultadas}`);
+        console.log(`     combos no mapa:        ${json.dados?.length}`);
+
+        // Todos os dados devem ter estado AL ou SE
+        const estadosInvalidos = (json.dados || []).filter(d => !['AL', 'SE'].includes(d.estado));
+        resultado(
+            'Todos os combos têm estado AL ou SE',
+            estadosInvalidos.length === 0,
+            `Inválidos: ${estadosInvalidos.map(d => d.estado).join(', ')}`
+        );
+    }
+}
+
+// ────────────────────────────────────────────────
 // Main
 // ────────────────────────────────────────────────
 async function main() {
@@ -182,6 +246,10 @@ async function main() {
     try {
         await testeIntegridade();
     } catch(e) { console.error('Erro SUITE 3:', e.message); }
+
+    try {
+        await testePaginacaoIXC();
+    } catch(e) { console.error('Erro SUITE 4:', e.message); }
 
     console.log('\n' + '='.repeat(60));
     console.log(`📊 RESULTADO FINAL: ${passCount} PASSED | ${failCount} FAILED`);

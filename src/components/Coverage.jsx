@@ -415,6 +415,8 @@ export default function Coverage() {
     const [page, setPage] = useState(1);
     const [modalOverride, setModalOverride] = useState(null);
     const [cidadeSelecionada, setCidadeSelecionada] = useState(null);
+    // Metadados de auditoria vindos do backend (paginação + contratos sem localização)
+    const [metaAuditoria, setMetaAuditoria] = useState(null);
     const LIMIT = 15;
 
     const carregar = useCallback(async () => {
@@ -422,7 +424,11 @@ export default function Coverage() {
         try {
             const resp = await fetch('/api/cobertura-ixc');
             const json = await resp.json();
-            if (json.sucesso) setDados(json.dados || []);
+            if (json.sucesso) {
+                setDados(json.dados || []);
+                // Salvar metadados de auditoria (paginação, sem localização)
+                if (json.meta) setMetaAuditoria(json.meta);
+            }
         } catch (e) {
             console.error('Erro ao carregar cobertura IXC:', e);
         } finally {
@@ -505,6 +511,35 @@ export default function Coverage() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* Card de alerta — contratos sem localização cadastrada no IXC */}
+                {!carregando && metaAuditoria && metaAuditoria.total_sem_localizacao > 0 && (
+                    <div className="mb-6 flex items-start gap-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700/50 rounded-xl px-5 py-4 shadow-sm">
+                        <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex-shrink-0 mt-0.5">
+                            <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[22px]">location_off</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
+                                {metaAuditoria.total_sem_localizacao.toLocaleString('pt-BR')} contratos sem localização cadastrada
+                            </p>
+                            <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">
+                                Esses contratos estão ativos no IXC mas não possuem cidade vinculada (campo <code className="bg-amber-100 dark:bg-amber-900/60 px-1 rounded font-mono">cidade_id = 0</code>).
+                                Eles não aparecem no mapa pois não têm localização definida. Para corrigir, vincule a cidade no cadastro do cliente no IXC.
+                            </p>
+                            <div className="flex flex-wrap gap-4 mt-2">
+                                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                    <span className="font-bold">{metaAuditoria.total_contratos_ixc?.toLocaleString('pt-BR')}</span> contratos ativos totais
+                                </span>
+                                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                    <span className="font-bold text-green-600 dark:text-green-400">{metaAuditoria.total_com_localizacao?.toLocaleString('pt-BR')}</span> com localização (exibidos no mapa)
+                                </span>
+                                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                    {metaAuditoria.paginas_consultadas} {metaAuditoria.paginas_consultadas === 1 ? 'página consultada' : 'páginas consultadas'} na API IXC
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 )}
 

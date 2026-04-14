@@ -2167,57 +2167,96 @@ app.get('/api/cobertura-ixc', async (req, res) => {
     };
 
     try {
-        // 1. Buscar contratos do IXC — extrair cidade_id e bairro únicos
-        const bodyContratos = JSON.stringify({
-            qtype: 'cliente_contrato.status',
-            query: 'A',  // apenas contratos ativos
-            oper: '=',
-            page: '1',
-            rp: '9999',
-            sortname: 'cliente_contrato.id',
+        // ── 1. Buscar TODOS os contratos ativos do IXC (paginação completa) ──────
+        // A API IXC tem hard limit de 9.999 registros por página.
+        // Buscamos a página 1 para obter o total e, em seguida, as demais páginas em paralelo.
+        const IXC_RP = 9999; // máximo por página
+        const buildBodyContratos = (page) => JSON.stringify({
+            qtype:     'cliente_contrato.status',
+            query:     'A',  // apenas contratos ativos
+            oper:      '=',
+            page:      String(page),
+            rp:        String(IXC_RP),
+            sortname:  'cliente_contrato.id',
             sortorder: 'asc'
         });
 
-        const resContratos = await fetch(`https://${host}/webservice/v1/cliente_contrato`, {
-            method: 'POST', headers, body: bodyContratos
+        // Página 1 — usada para descobrir o total real de registros
+        const resPg1 = await fetch(`https://${host}/webservice/v1/cliente_contrato`, {
+            method: 'POST', headers, body: buildBodyContratos(1)
         });
+        if (!resPg1.ok) throw new Error(`Erro ao buscar contratos (pág. 1): ${resPg1.status}`);
+        const dadosPg1 = await resPg1.json();
+        const totalIXC = parseInt(dadosPg1.total || 0);
+        const totalPaginas = Math.ceil(totalIXC / IXC_RP);
 
-        if (!resContratos.ok) throw new Error(`Erro ao buscar contratos: ${resContratos.status}`);
-        const dadosContratos = await resContratos.json();
-        const contratos = dadosContratos.registros || [];
+        // Páginas 2..N em paralelo (se houver)
+        let todosContratos = [...(dadosPg1.registros || [])];
+        if (totalPaginas > 1) {
+            const paginasRestantes = Array.from({ length: totalPaginas - 1 }, (_, i) => i + 2);
+            const resPosteriores = await Promise.all(
+                paginasRestantes.map(pg =>
+                    fetch(`https://${host}/webservice/v1/cliente_contrato`, {
+                        method: 'POST', headers, body: buildBodyContratos(pg)
+                    }).then(r => r.ok ? r.json() : { registros: [] })
+                )
+            );
+            resPosteriores.forEach(d => { todosContratos = todosContratos.concat(d.registros || []); });
+        }
 
-        // 2. Agrupar por cidade_id + bairro (normalizado)
+        console.log(`-> /api/cobertura-ixc: ${todosContratos.length}/${totalIXC} contratos coletados (${totalPaginas} pág.)`);
+
+        // ── 2. Agrupar por cidade_id + bairro (normalizado) ───────────────────────
+        // Contratos com cidade=0 são contabilizados separadamente (sem localização)
         const mapaGrupos = {}; // chave: "cidade_id::bairro"
         const cidadeIdsSet = new Set();
+        let totalSemLocalizacao = 0; // contratos com cidade_id=0 ou vazio
 
-        contratos.forEach(c => {
+        // Mapa de status_internet → rótulos legíveis (usado no breakdown)
+        const STATUS_INT_LABEL = {
+            'A': 'Ativo', 'CA': 'Bloqueio automático', 'FA': 'Financeiro em atraso',
+            'CM': 'Bloqueio manual', 'AP': 'Aguardando pagamento', 'D': 'Desativado', 'N': 'Não iniciado',
+        };
+
+        todosContratos.forEach(c => {
             const cidId = String(c.cidade || '').trim();
             // Normalizar bairro: trim + uppercase para eliminar duplicatas por caixa
             const bairro = String(c.bairro || '').trim().toUpperCase();
-            if (!cidId || cidId === '0' || cidId === '') return;
+
+            // Sem cidade vinculada → contabilizar separadamente, não exibir no mapa
+            if (!cidId || cidId === '0' || cidId === '') {
+                totalSemLocalizacao++;
+                return;
+            }
+
             cidadeIdsSet.add(cidId);
             const chave = `${cidId}::${bairro}`;
             if (!mapaGrupos[chave]) {
-                mapaGrupos[chave] = { cidade_ixc_id: cidId, bairro, total_contratos: 0, contratos_ids: [] };
+                mapaGrupos[chave] = {
+                    cidade_ixc_id: cidId, bairro,
+                    total_contratos: 0, contratos_ids: [],
+                    status_breakdown: {},  // status_label -> contagem
+                };
             }
             mapaGrupos[chave].total_contratos += 1;
             if (c.id) mapaGrupos[chave].contratos_ids.push(String(c.id));
+            // Acumular breakdown de status para exibição sem chamada extra
+            const stInt  = String(c.status_internet || '').trim();
+            const stLabel = STATUS_INT_LABEL[stInt] || stInt || 'Desconhecido';
+            mapaGrupos[chave].status_breakdown[stLabel] =
+                (mapaGrupos[chave].status_breakdown[stLabel] || 0) + 1;
         });
 
         const cidadeIds = Array.from(cidadeIdsSet);
-        console.log(`-> /api/cobertura-ixc: ${contratos.length} contratos, ${cidadeIds.length} cidades únicas, ${Object.keys(mapaGrupos).length} combos cidade+bairro`);
+        console.log(`-> /api/cobertura-ixc: ${cidadeIds.length} cid. únicas, ${Object.keys(mapaGrupos).length} combos, ${totalSemLocalizacao} sem localização`);
 
-        // 3. Buscar nomes das cidades por lote (POST com oper 'in' não existe no IXC, então buscamos tudo)
+        // ── 3. Buscar nomes das cidades (todos de uma vez — IXC não suporta 'in') ─
         const mapaCidades = {}; // cidade_id -> { nome, uf }
         if (cidadeIds.length > 0) {
             const bodyCidades = JSON.stringify({
-                qtype: 'cidade.id',
-                query: '0',
-                oper: '>',
-                page: '1',
-                rp: '9999',
-                sortname: 'cidade.nome',
-                sortorder: 'asc'
+                qtype: 'cidade.id', query: '0', oper: '>',
+                page: '1', rp: '9999',
+                sortname: 'cidade.nome', sortorder: 'asc'
             });
             const resCidades = await fetch(`https://${host}/webservice/v1/cidade`, {
                 method: 'POST', headers, body: bodyCidades
@@ -2235,7 +2274,7 @@ app.get('/api/cobertura-ixc', async (req, res) => {
             }
         }
 
-        // 4. Buscar overrides manuais do banco local
+        // ── 4. Buscar overrides manuais do banco local ────────────────────────────
         const localResult = await pool.query(
             'SELECT * FROM cobertura_cidades WHERE cidade_ixc_id IS NOT NULL'
         );
@@ -2246,7 +2285,7 @@ app.get('/api/cobertura-ixc', async (req, res) => {
             mapaLocal[chave] = row;
         });
 
-        // 5. Montar resposta mesclada
+        // ── 5. Montar resposta mesclada ───────────────────────────────────────────
         const resultado = Object.values(mapaGrupos).map(grupo => {
             const chave = `${grupo.cidade_ixc_id}::${grupo.bairro}`;
             const cidInfo = mapaCidades[grupo.cidade_ixc_id] || { nome: `Cidade ${grupo.cidade_ixc_id}`, uf: 'AL' };
@@ -2254,16 +2293,16 @@ app.get('/api/cobertura-ixc', async (req, res) => {
             return {
                 // Identificação IXC (auto)
                 cidade_ixc_id: grupo.cidade_ixc_id,
-                cidade: cidInfo.nome,
-                estado: cidInfo.uf,
-                bairro: grupo.bairro || '(sem bairro)',
+                cidade:        cidInfo.nome,
+                estado:        cidInfo.uf,
+                bairro:        grupo.bairro || '(sem bairro)',
                 total_contratos: grupo.total_contratos,
-                contratos_ids: grupo.contratos_ids || [],
+                contratos_ids:   grupo.contratos_ids || [],
                 // Override manual (banco local) — null se não configurado
-                id_local: local.id || null,
-                tecnologia: local.tecnologia || null,
-                velocidade_maxima: local.velocidade_maxima || null,
-                status: local.status || null,
+                id_local:            local.id || null,
+                tecnologia:          local.tecnologia || null,
+                velocidade_maxima:   local.velocidade_maxima || null,
+                status:              local.status || null,
                 percentual_cobertura: local.percentual_cobertura !== undefined ? local.percentual_cobertura : null,
                 latitude:  local.latitude  != null ? parseFloat(local.latitude)  : null,
                 longitude: local.longitude != null ? parseFloat(local.longitude) : null,
@@ -2278,7 +2317,18 @@ app.get('/api/cobertura-ixc', async (req, res) => {
             return k1.localeCompare(k2);
         });
 
-        return res.json({ sucesso: true, dados: resultado, total: resultado.length });
+        return res.json({
+            sucesso: true,
+            dados: resultado,
+            total: resultado.length,
+            // Metadados de auditoria — usados pelo frontend para exibir o card de alerta
+            meta: {
+                total_contratos_ixc:     totalIXC,
+                total_com_localizacao:   todosContratos.length - totalSemLocalizacao,
+                total_sem_localizacao:   totalSemLocalizacao,
+                paginas_consultadas:     totalPaginas,
+            }
+        });
     } catch (e) {
         console.error('Erro em /api/cobertura-ixc:', e.message);
         return res.status(500).json({ sucesso: false, erro: e.message });
@@ -2329,6 +2379,106 @@ app.post('/api/cobertura-ixc/override', async (req, res) => {
     } catch (err) {
         console.error('Erro ao salvar override:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro ao salvar configuração.' });
+    }
+});
+
+// ─── ROTA: Detalhes de contratos de um bairro específico ─────────────────────
+// GET /api/cobertura-ixc/contratos-bairro?cidade_ixc_id=1683&bairro=CHINARE
+// Retorna a lista de contratos do bairro com breakdown por status IXC
+app.get('/api/cobertura-ixc/contratos-bairro', async (req, res) => {
+    const { cidade_ixc_id, bairro } = req.query;
+    if (!cidade_ixc_id || !bairro) {
+        return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
+    }
+
+    const host  = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    // Mapa de status_internet do IXC → rótulos legíveis
+    const STATUS_INTERNET_LABEL = {
+        'A':  'Ativo',
+        'CA': 'Bloqueio automático',
+        'FA': 'Financeiro em atraso',
+        'CM': 'Bloqueio manual',
+        'AP': 'Aguardando pagamento',
+        'D':  'Desativado',
+        'N':  'Não iniciado',
+    };
+
+    const IXC_RP = 9999;
+    const bairroNorm = String(bairro).trim().toUpperCase();
+
+    try {
+        // Buscar TODOS os contratos ativos (paginação completa) e filtrar por cidade+bairro
+        const buildBody = (page) => JSON.stringify({
+            qtype: 'cliente_contrato.status', query: 'A', oper: '=',
+            page: String(page), rp: String(IXC_RP),
+            sortname: 'cliente_contrato.id', sortorder: 'asc'
+        });
+
+        const pg1 = await fetch(`https://${host}/webservice/v1/cliente_contrato`, {
+            method: 'POST', headers, body: buildBody(1)
+        });
+        if (!pg1.ok) throw new Error(`IXC HTTP ${pg1.status}`);
+        const dadosPg1 = await pg1.json();
+        const totalIXC  = parseInt(dadosPg1.total || 0);
+        const totalPags = Math.ceil(totalIXC / IXC_RP);
+
+        let todosContratos = [...(dadosPg1.registros || [])];
+        if (totalPags > 1) {
+            const pags = Array.from({ length: totalPags - 1 }, (_, i) => i + 2);
+            const resPosteriores = await Promise.all(
+                pags.map(pg => fetch(`https://${host}/webservice/v1/cliente_contrato`, {
+                    method: 'POST', headers, body: buildBody(pg)
+                }).then(r => r.ok ? r.json() : { registros: [] }))
+            );
+            resPosteriores.forEach(d => { todosContratos = todosContratos.concat(d.registros || []); });
+        }
+
+        // Filtrar por cidade_id E bairro (normalizado)
+        const contratosBairro = todosContratos.filter(c =>
+            String(c.cidade || '') === String(cidade_ixc_id) &&
+            String(c.bairro || '').trim().toUpperCase() === bairroNorm
+        );
+
+        // Montar breakdown de status
+        const breakdown = {};
+        contratosBairro.forEach(c => {
+            const stInt = String(c.status_internet || '').trim();
+            const label = STATUS_INTERNET_LABEL[stInt] || stInt || 'Desconhecido';
+            if (!breakdown[label]) breakdown[label] = 0;
+            breakdown[label]++;
+        });
+
+        // Montar lista resumida de contratos (sem dados sensíveis)
+        const lista = contratosBairro.map(c => ({
+            id:              c.id,
+            contrato:        c.contrato || c.id,
+            status:          c.status,
+            status_internet: c.status_internet,
+            status_label:    STATUS_INTERNET_LABEL[String(c.status_internet || '').trim()] || c.status_internet,
+            data_ativacao:   c.data_ativacao || null,
+            bloqueio_automatico: c.bloqueio_automatico || null,
+        }));
+
+        console.log(`-> /api/cobertura-ixc/contratos-bairro: cidade=${cidade_ixc_id} bairro="${bairroNorm}" → ${lista.length} contratos`);
+
+        return res.json({
+            sucesso: true,
+            cidade_ixc_id,
+            bairro:   bairroNorm,
+            total:    lista.length,
+            breakdown,
+            contratos: lista,
+        });
+    } catch (e) {
+        console.error('Erro em /api/cobertura-ixc/contratos-bairro:', e.message);
+        return res.status(500).json({ sucesso: false, erro: e.message });
     }
 });
 
