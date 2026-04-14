@@ -2087,12 +2087,17 @@ app.get('/api/cobertura', async (req, res) => {
 app.post('/api/cobertura', async (req, res) => {
     const { estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura } = req.body;
     if (!cidade || !bairro) return res.status(400).json({ sucesso: false, erro: 'Cidade e bairro são obrigatórios.' });
+    // Validação: apenas estados AL e SE são permitidos
+    const estadoFinal = (estado || 'AL').trim().toUpperCase();
+    if (!['AL', 'SE'].includes(estadoFinal)) {
+        return res.status(400).json({ sucesso: false, erro: `Estado '${estadoFinal}' não permitido. Apenas Alagoas (AL) e Sergipe (SE) são atendidos.` });
+    }
     try {
         const result = await pool.query(`
             INSERT INTO cobertura_cidades (estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *
-        `, [estado || 'AL', cidade, bairro, tecnologia || 'FTTH', velocidade_maxima || '100 MEGA', status || 'Ativo', percentual_cobertura ?? 100]);
+        `, [estadoFinal, cidade, bairro, tecnologia || 'FTTH', velocidade_maxima || '100 MEGA', status || 'Ativo', percentual_cobertura ?? 100]);
         return res.json({ sucesso: true, dado: result.rows[0] });
     } catch (err) {
         console.error('Erro ao criar cobertura:', err.message);
@@ -2154,6 +2159,13 @@ app.get('/api/cobertura-ixc', async (req, res) => {
 
     const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos
 
+    // Mapa de IDs numéricos de estado do IXC → siglas UF brasileiras
+    // O IXC retorna campo 'uf' como ID numérico, não sigla
+    const IXC_UF_MAP = {
+        '7': 'AL',  // Alagoas
+        '28': 'SE'  // Sergipe
+    };
+
     try {
         // 1. Buscar contratos do IXC — extrair cidade_id e bairro únicos
         const bodyContratos = JSON.stringify({
@@ -2214,7 +2226,10 @@ app.get('/api/cobertura-ixc', async (req, res) => {
                 const dadosCidades = await resCidades.json();
                 (dadosCidades.registros || []).forEach(cid => {
                     if (cidadeIdsSet.has(String(cid.id))) {
-                        mapaCidades[String(cid.id)] = { nome: cid.nome || 'Cidade ' + cid.id, uf: cid.uf || 'AL' };
+                        // Converte UF numérica do IXC para sigla; fallback 'AL' se não mapeado
+                        const ufNumerica = String(cid.uf || '').trim();
+                        const ufSigla = IXC_UF_MAP[ufNumerica] || ufNumerica || 'AL';
+                        mapaCidades[String(cid.id)] = { nome: cid.nome || 'Cidade ' + cid.id, uf: ufSigla };
                     }
                 });
             }
@@ -2270,11 +2285,20 @@ app.get('/api/cobertura-ixc', async (req, res) => {
     }
 });
 
+// Mapa de IDs numéricos de estado do IXC → siglas UF (para uso nos overrides)
+const IXC_UF_MAP_GLOBAL = { '7': 'AL', '28': 'SE' };
+
 // POST /api/cobertura-ixc/override — salva ou atualiza os campos manuais de uma entrada IXC
 app.post('/api/cobertura-ixc/override', async (req, res) => {
     const { cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, latitude, longitude } = req.body;
     if (!cidade_ixc_id || !bairro) {
         return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
+    }
+    // Normaliza estado: converte ID numérico do IXC → sigla, depois valida
+    const estadoRaw = String(estado || 'AL').trim();
+    const estadoNorm = IXC_UF_MAP_GLOBAL[estadoRaw] || estadoRaw.toUpperCase();
+    if (!['AL', 'SE'].includes(estadoNorm)) {
+        return res.status(400).json({ sucesso: false, erro: `Estado '${estadoNorm}' não permitido. Apenas Alagoas (AL) e Sergipe (SE) são atendidos.` });
     }
     // Converte coordenadas — aceita null/undefined (não sobrescreve com null se omitido)
     const lat = latitude  != null && latitude  !== '' ? parseFloat(latitude)  : null;
@@ -2296,7 +2320,7 @@ app.post('/api/cobertura-ixc/override', async (req, res) => {
                 updated_at          = NOW()
             RETURNING *
         `, [
-            String(cidade_ixc_id), cidade || '', estado || 'AL', bairro,
+            String(cidade_ixc_id), cidade || '', estadoNorm, bairro,
             tecnologia || 'FTTH', velocidade_maxima || '100 MEGA',
             status || 'Ativo', percentual_cobertura ?? 100,
             lat, lng
