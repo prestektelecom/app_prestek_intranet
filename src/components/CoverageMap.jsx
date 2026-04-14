@@ -89,21 +89,33 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         dados.forEach(d => {
             if (d.latitude == null || d.longitude == null) return;
             const chave = `${d.cidade_ixc_id}::${d.bairro}`;
-            if (marcBairroRef.current[chave]) return;
 
             const cor    = COR_STATUS[d.status] || COR_PADRAO;
+            const popupContent = `
+                <div style="font-family:sans-serif;min-width:150px">
+                    <strong style="font-size:13px">${d.cidade}</strong><br/>
+                    <span style="color:#a17745;font-size:11px">📍 ${d.bairro}</span><br/>
+                    <span style="color:#a17745;font-size:11px">${d.total_contratos} contrato(s)</span><br/>
+                    ${d.contratos_ids && d.contratos_ids.length > 0 ? `
+                        <div style="margin-top:4px; padding:4px; background:#fcfaf8; border-radius:4px; border:1px solid #f4eee6; font-size:10px; color:#1d150c">
+                            <strong>Contratos:</strong><br/>
+                            ${d.contratos_ids.join(', ')}
+                        </div>
+                    ` : ''}
+                    <span style="color:${cor};font-size:11px;font-weight:600">${d.status || 'Não configurado'}</span><br/>
+                    <span style="color:#94a3b8;font-size:10px">★ Localização manual</span>
+                </div>
+            `;
+
+            if (marcBairroRef.current[chave]) {
+                marcBairroRef.current[chave].setPopupContent(popupContent);
+                return;
+            }
+
             const icone  = criarIconeBairro(L, cor, false);
             const marker = L.marker([d.latitude, d.longitude], { icon: icone })
                 .addTo(map)
-                .bindPopup(`
-                    <div style="font-family:sans-serif;min-width:150px">
-                        <strong style="font-size:13px">${d.cidade}</strong><br/>
-                        <span style="color:#a17745;font-size:11px">📍 ${d.bairro}</span><br/>
-                        <span style="color:#a17745;font-size:11px">${d.total_contratos} contrato(s)</span><br/>
-                        <span style="color:${cor};font-size:11px;font-weight:600">${d.status || 'Não configurado'}</span><br/>
-                        <span style="color:#94a3b8;font-size:10px">★ Localização manual</span>
-                    </div>
-                `);
+                .bindPopup(popupContent);
             marker.on('click', () => onCidadeClick(`${d.cidade_ixc_id}::${d.bairro}`));
             marker._cidadeId = d.cidade_ixc_id;
             marker._cor      = cor;

@@ -2186,9 +2186,10 @@ app.get('/api/cobertura-ixc', async (req, res) => {
             cidadeIdsSet.add(cidId);
             const chave = `${cidId}::${bairro}`;
             if (!mapaGrupos[chave]) {
-                mapaGrupos[chave] = { cidade_ixc_id: cidId, bairro, total_contratos: 0 };
+                mapaGrupos[chave] = { cidade_ixc_id: cidId, bairro, total_contratos: 0, contratos_ids: [] };
             }
             mapaGrupos[chave].total_contratos += 1;
+            if (c.id) mapaGrupos[chave].contratos_ids.push(String(c.id));
         });
 
         const cidadeIds = Array.from(cidadeIdsSet);
@@ -2242,6 +2243,7 @@ app.get('/api/cobertura-ixc', async (req, res) => {
                 estado: cidInfo.uf,
                 bairro: grupo.bairro || '(sem bairro)',
                 total_contratos: grupo.total_contratos,
+                contratos_ids: grupo.contratos_ids || [],
                 // Override manual (banco local) — null se não configurado
                 id_local: local.id || null,
                 tecnologia: local.tecnologia || null,
