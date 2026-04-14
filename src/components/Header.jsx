@@ -182,14 +182,18 @@ export default function Header({ currentView, setCurrentView, user }) {
                     </span>
                 </button>
 
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="size-8 flex items-center justify-center shrink-0 overflow-hidden">
+                <div 
+                    className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
+                    onClick={() => setCurrentView('dashboard')}
+                    title="Ir para o Dashboard"
+                >
+                    <div className="size-8 flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
                         <img src={logoP} alt="Logo" className="w-full h-full object-contain" />
                     </div>
-                    <h2 className="text-[#1d150c] dark:text-white text-lg md:text-xl font-bold leading-tight tracking-tight hidden sm:block">
+                    <h2 className="text-[#1d150c] dark:text-white text-lg md:text-xl font-bold leading-tight tracking-tight hidden sm:block group-hover:text-primary transition-colors">
                         Prestek Intranet
                     </h2>
-                    <h2 className="text-[#1d150c] dark:text-white text-lg font-bold leading-tight tracking-tight sm:hidden">
+                    <h2 className="text-[#1d150c] dark:text-white text-lg font-bold leading-tight tracking-tight sm:hidden group-hover:text-primary transition-colors">
                         Prestek
                     </h2>
                 </div>
