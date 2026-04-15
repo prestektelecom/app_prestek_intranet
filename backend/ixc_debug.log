@@ -125,3 +125,12 @@
 [2026-04-14T11:51:45.843Z] Atualizando OS 1743421 para o técnico 59655
 [2026-04-14T11:51:46.262Z] Técnico 59655 agendado com sucesso na OS 1743421. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1743421","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-14 08:51:46"}]}
 [2026-04-14T11:51:46.263Z] FIM. Retornando protocolo 20260443601
+[2026-04-15T13:58:03.308Z] == INICIANDO ABERTURA TICK: Tecnico 59655 ==
+[2026-04-15T13:58:06.171Z] == INICIANDO ABERTURA TICK: Tecnico 59655 ==
+[2026-04-15T13:58:06.943Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"747354","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"b470e1802d52523cb4b498e1221dd2afd51a0c5d"},{"tipo":"i","campo":"id_filial","valor":"8"},{"tipo":"i","campo":"interacao_pendente","valor":"N"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-15 10:58:07"}]}
+[2026-04-15T13:58:09.958Z] buscando ticket 747354...
+[2026-04-15T13:58:10.106Z] Buscando OS vinculada ao ticket 747354 [TENTATIVA 1]
+[2026-04-15T13:58:10.435Z] ENCONTROU OS! ID: 1745129. Protocolo OS: 20260446181
+[2026-04-15T13:58:10.443Z] Atualizando OS 1745129 para o técnico 59655
+[2026-04-15T13:58:10.613Z] Técnico 59655 agendado com sucesso na OS 1745129. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1745129","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-04-15 10:58:11"}]}
+[2026-04-15T13:58:10.614Z] FIM. Retornando protocolo 20260446181

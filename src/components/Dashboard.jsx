@@ -181,7 +181,7 @@ export default function Dashboard({ setCurrentView, user }) {
         },
         {
             icon: 'construction',
-            label: 'OS no meu Nome',
+            label: 'OS no meu nome',
             value: osLoading ? '...' : osCount,
             tooltip: osStatusCount && (
                 <div className="flex flex-col gap-1.5 text-[0.8rem] min-w-[140px]">
