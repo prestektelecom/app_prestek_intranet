@@ -310,7 +310,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
     );
 }
 // ─── Linha da tabela IXC ──────────────────────────────────────────
-function RowIXC({ row, onConfigurar, selecionada, onSelecionar }) {
+function RowIXC({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) {
     const tech = TECH_STYLES[row.tecnologia] || null;
     const stat = STATUS_BAR[row.status] || null;
 
@@ -385,26 +385,29 @@ function RowIXC({ row, onConfigurar, selecionada, onSelecionar }) {
             </td>
 
             {/* Ações */}
-            <td className="px-6 py-4 text-right">
-                <button
-                    onClick={() => onConfigurar(row)}
-                    title={row.tem_override ? 'Editar configuração' : 'Configurar dados de cobertura'}
-                    className={`transition-colors p-1 rounded-full flex items-center justify-center ml-auto ${row.tem_override
-                        ? 'text-[#a17745] dark:text-orange-300 hover:text-primary hover:bg-gray-100 dark:hover:bg-[#3a2c20]'
-                        : 'text-primary hover:bg-primary/10'
-                    }`}
-                >
-                    <span className="material-symbols-outlined text-[20px]">
-                        {row.tem_override ? 'edit' : 'tune'}
-                    </span>
-                </button>
-            </td>
+            {isAdmin && (
+                <td className="px-6 py-4 text-right">
+                    <button
+                        onClick={() => onConfigurar(row)}
+                        title={row.tem_override ? 'Editar configuração' : 'Configurar dados de cobertura'}
+                        className={`transition-colors p-1 rounded-full flex items-center justify-center ml-auto ${row.tem_override
+                            ? 'text-[#a17745] dark:text-orange-300 hover:text-primary hover:bg-gray-100 dark:hover:bg-[#3a2c20]'
+                            : 'text-primary hover:bg-primary/10'
+                        }`}
+                    >
+                        <span className="material-symbols-outlined text-[20px]">
+                            {row.tem_override ? 'edit' : 'tune'}
+                        </span>
+                    </button>
+                </td>
+            )}
         </tr>
     );
 }
 
 // ─── Componente Principal ─────────────────────────────────────────
-export default function Coverage() {
+export default function Coverage({ user }) {
+    const isAdmin = user?.is_admin;
     const [dados, setDados] = useState([]);
     const [dadosFiltrados, setDadosFiltrados] = useState([]);
     const [carregando, setCarregando] = useState(true);
@@ -493,7 +496,7 @@ export default function Coverage() {
                 </div>
 
                 {/* Cards de resumo */}
-                {!carregando && dados.length > 0 && (
+                {isAdmin && !carregando && dados.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         {[
                             { icon: 'location_city', label: 'Cidades Atendidas', valor: cidadesUnicas, cor: 'text-primary' },
@@ -515,7 +518,7 @@ export default function Coverage() {
                 )}
 
                 {/* Card de alerta — contratos sem localização cadastrada no IXC */}
-                {!carregando && metaAuditoria && metaAuditoria.total_sem_localizacao > 0 && (
+                {isAdmin && !carregando && metaAuditoria && metaAuditoria.total_sem_localizacao > 0 && (
                     <div className="mb-6 flex items-start gap-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700/50 rounded-xl px-5 py-4 shadow-sm">
                         <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex-shrink-0 mt-0.5">
                             <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[22px]">location_off</span>
@@ -596,7 +599,7 @@ export default function Coverage() {
                         <div>
                             <h2 className="text-[#1d150c] dark:text-white text-xl font-bold">Cidades com Cobertura</h2>
                             <p className="text-xs text-[#a17745] dark:text-orange-300 mt-0.5">
-                                Fonte: contratos ativos no IXC · Clique em <span className="font-bold">tune</span> para configurar os campos manuais
+                                Fonte: contratos ativos no IXC
                             </p>
                         </div>
                         {carregando && (
@@ -614,7 +617,7 @@ export default function Coverage() {
                                     <th className="px-6 py-4 whitespace-nowrap">VELOC. MÁXIMA</th>
                                     <th className="px-6 py-4 whitespace-nowrap">STATUS / COBERTURA</th>
                                     <th className="px-6 py-4 whitespace-nowrap text-center">CONTRATOS</th>
-                                    <th className="px-6 py-4 text-right whitespace-nowrap">AÇÕES</th>
+                                    {isAdmin && <th className="px-6 py-4 text-right whitespace-nowrap">AÇÕES</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#f4eee6] text-sm">
@@ -639,6 +642,7 @@ export default function Coverage() {
                                         onConfigurar={setModalOverride}
                                         selecionada={`${row.cidade_ixc_id}::${row.bairro}` === cidadeSelecionada}
                                         onSelecionar={setCidadeSelecionada}
+                                        isAdmin={isAdmin}
                                     />
                                 ))}
                             </tbody>
