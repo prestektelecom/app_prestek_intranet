@@ -1513,9 +1513,16 @@ app.get('/api/setores', async (req, res) => {
 
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
-            const membros = funcionarios.filter(f =>
-                String(f.id_departamento).trim() === String(setor.id).trim()
-            );
+            const membros = funcionarios.filter(f => {
+                const idDep = String(f.id_departamento).trim();
+                const idSetor = String(setor.id).trim();
+                // Agrupamento para "ATENDIMENTO" (inclui Suporte: 15 e Relacionamento: 68)
+                if (setor.setor && String(setor.setor).toUpperCase().includes('ATENDIMENTO')) {
+                    if (idDep === idSetor || ['15', '68'].includes(idDep)) return true;
+                }
+                
+                return idDep === idSetor;
+            });
             
             // Procura por supervisores no setor (funcionários cujo id_grupo está na lista configurada)
             let responsavel = null;
