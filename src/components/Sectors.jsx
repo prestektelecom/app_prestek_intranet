@@ -378,13 +378,6 @@ function SectorCard({ id, icon, ramal, title, description, managerName, managerI
                                 <span className="material-symbols-outlined text-[16px]">edit</span>
                             </button>
                         )}
-                        <button 
-                            onClick={() => setCurrentView('dashboard')}
-                            className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"
-                        >
-                            <span className="material-symbols-outlined text-[18px]">home</span>
-                            <span>Início</span>
-                        </button>
                     </div>
                 )}
             </div>
