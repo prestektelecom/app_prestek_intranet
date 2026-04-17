@@ -7,8 +7,33 @@ import cors from 'cors'
 import crypto from 'crypto'
 import pool from './db.js'
 import fs from 'fs'
+import { cacheGet, cacheSet, cacheInvalidate, TTL } from './cache.js'
 
-// Cache para OS abertas global
+// ─── Helper: fetch IXC com timeout (15s) e 1 retry automático ─────────────────
+// Evita que chamadas lentas ou travadas bloqueiem o servidor indefinidamente.
+async function fetchIXC(url, options = {}, timeoutMs = 15000) {
+    const tentar = async () => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const res = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timer);
+            return res;
+        } catch (err) {
+            clearTimeout(timer);
+            throw err;
+        }
+    };
+    try {
+        return await tentar();
+    } catch (err) {
+        // 1 retry automático em caso de falha/timeout
+        console.warn(`[fetchIXC] Retry após erro em ${url}: ${err.message}`);
+        return await tentar();
+    }
+}
+
+// Cache legado para OS abertas (mantido por compatibilidade — migração incremental)
 let cacheOS = {
     dados: null,
     timestamp: 0,
@@ -1449,6 +1474,13 @@ async function buscarIdsGruposSupervisores(host, headers) {
 
 // ─── Rota: Diretório de Setores (empresa_setor + funcionários com SUPERVISOR) ────────
 app.get('/api/setores', async (req, res) => {
+    // ── Cache: retorna imediatamente se ainda válido ────────────────────────────
+    const CACHE_KEY = 'setores:lista';
+    const cached = cacheGet(CACHE_KEY);
+    if (cached.hit) {
+        return res.json({ sucesso: true, setores: cached.data, cacheStatus: 'HIT' });
+    }
+
     const host = process.env.IXC_HOST;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const headers = {
@@ -1458,20 +1490,25 @@ app.get('/api/setores', async (req, res) => {
     };
 
     try {
-        // Busca setores, funcionários e usuários (com grupos) em paralelo
-        const [resSetor, resFunc, resUsuarios] = await Promise.all([
-            fetch(`https://${host}/webservice/v1/empresa_setor`, {
+        // Busca setores, funcionários, usuários E supervisores em paralelo (5 em vez de 3+1)
+        const [resSetor, resFunc, resUsuarios, idsGruposSupervisor, responsaveisManuaisRows, descricoesRows] = await Promise.all([
+            fetchIXC(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
             }),
-            fetch(`https://${host}/webservice/v1/funcionarios`, {
+            fetchIXC(`https://${host}/webservice/v1/funcionarios`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
             }),
-            fetch(`https://${host}/webservice/v1/usuarios`, {
+            fetchIXC(`https://${host}/webservice/v1/usuarios`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'usuarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios.id', sortorder: 'asc' })
-            })
+            }),
+            // Busca grupos SUPERVISOR em paralelo (antes era sequencial após os 3 acima)
+            buscarIdsGruposSupervisores(host, headers),
+            // Queries ao banco local também em paralelo
+            pool.query('SELECT * FROM responsaveis_manuais').catch(() => ({ rows: [] })),
+            pool.query('SELECT * FROM setores_descricoes').catch(() => ({ rows: [] })),
         ]);
 
         const dataSetor = await resSetor.json();
@@ -1490,26 +1527,16 @@ app.get('/api/setores', async (req, res) => {
             }
         });
 
-        // Busca IDs dos grupos SUPERVISOR(A): tenta IXC primeiro, fallback no banco local
-        const idsGruposSupervisor = await buscarIdsGruposSupervisores(host, headers);
+        // Monta mapas a partir dos resultados paralelos do banco
+        const responsaveisManuais = {};
+        responsaveisManuaisRows.rows.forEach(r => {
+            responsaveisManuais[String(r.id_setor)] = r;
+        });
 
-        // Busca responsáveis definidos manualmente para sobrescrever quando aplicável
-        let responsaveisManuais = {};
-        try {
-            const manResult = await pool.query('SELECT * FROM responsaveis_manuais');
-            manResult.rows.forEach(r => {
-                responsaveisManuais[String(r.id_setor)] = r;
-            });
-        } catch (e) {}
-
-        // Busca descrições customizadas de setores
-        let descricoesManuais = {};
-        try {
-            const descResult = await pool.query('SELECT * FROM setores_descricoes');
-            descResult.rows.forEach(r => {
-                descricoesManuais[String(r.id_setor)] = r.descricao;
-            });
-        } catch (e) {}
+        const descricoesManuais = {};
+        descricoesRows.rows.forEach(r => {
+            descricoesManuais[String(r.id_setor)] = r.descricao;
+        });
 
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
@@ -1530,13 +1557,11 @@ app.get('/api/setores', async (req, res) => {
             // Prioridade 1: Definição manual por setor
             if (responsaveisManuais[String(setor.id)]) {
                 const rManual = responsaveisManuais[String(setor.id)];
-                // Procurar os dados completos do funcionario na lista geral (ou apenas no setor)
                 const funcManual = funcionarios.find(f => String(f.id) === String(rManual.id_funcionario));
                 
                 if (funcManual) {
                     responsavel = funcManual;
                 } else {
-                    // Fallback se não encontrar os dados completos dele nos ativos momentaneamente
                     responsavel = {
                         id: rManual.id_funcionario,
                         funcionario: rManual.nome,
@@ -1555,11 +1580,6 @@ app.get('/api/setores', async (req, res) => {
                     }
                 }
             }
-            
-            // Se não achar supervisor, não exibe responsável
-            if (!responsavel) {
-                responsavel = null;
-            }
 
             return {
                 id: setor.id,
@@ -1576,8 +1596,11 @@ app.get('/api/setores', async (req, res) => {
             };
         });
 
+        // Armazena no cache por 5 minutos
+        cacheSet(CACHE_KEY, setores, TTL.SETORES);
+
         console.log(`-> /api/setores: ${setores.length} setores, ${usuarios.length} usuários, ${Object.keys(gruposPorFuncionario).length} com grupos`);
-        return res.json({ sucesso: true, setores });
+        return res.json({ sucesso: true, setores, cacheStatus: 'MISS' });
     } catch (e) {
         console.error('Erro rota /api/setores:', e);
         return res.status(500).json({ sucesso: false, erro: e.message });
@@ -1585,6 +1608,7 @@ app.get('/api/setores', async (req, res) => {
 });
 
 // ─── Rota: Listar Planos de Negociação (Diretório) ───────────────────────────
+
 app.get('/api/planos-negociacoes', async (req, res) => {
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const host = process.env.IXC_HOST;
@@ -1899,6 +1923,13 @@ app.delete('/api/pacotes-streaming/:id', async (req, res) => {
 
 // ─── Rota: Top 3 Colaboradoras (Vendedores) + Ticket Médio ────────────
 app.get('/api/top-vendedores', async (req, res) => {
+    // ── Cache: retorna imediatamente se ainda válido (10 min) ──────────────────
+    const CACHE_KEY_TV = 'top-vendedores:resultado';
+    const cachedTV = cacheGet(CACHE_KEY_TV);
+    if (cachedTV.hit) {
+        return res.json({ ...cachedTV.data, cacheStatus: 'HIT' });
+    }
+
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const host = process.env.IXC_HOST;
     const headers = {
@@ -1920,7 +1951,7 @@ app.get('/api/top-vendedores', async (req, res) => {
             page: '1',
             rp: '1000'
         });
-        const resPlanos = await fetch(urlPlanos, { method: 'POST', headers, body: bodyPlanos });
+        const resPlanos = await fetchIXC(urlPlanos, { method: 'POST', headers, body: bodyPlanos });
         let planPrices = {};
         if (resPlanos.ok) {
             const dadosPlanos = await resPlanos.json();
@@ -1945,7 +1976,7 @@ app.get('/api/top-vendedores', async (req, res) => {
             sortname: 'cliente_contrato.id',
             sortorder: 'desc'
         });
-        const resContratos = await fetch(urlContratos, { method: 'POST', headers, body: bodyContratos });
+        const resContratos = await fetchIXC(urlContratos, { method: 'POST', headers, body: bodyContratos });
         
         let vendedorStats = {};
         let totalVendasGlobais = 0;
@@ -1994,30 +2025,25 @@ app.get('/api/top-vendedores', async (req, res) => {
             
         const allRelevantIds = Array.from(new Set([...top3VendasIds, ...top3TicketIds]));
 
-        // 5. Fetch Vendedor Details
-        let repMap = {};
-        for (const id of allRelevantIds) {
-            const urlVendedor = `https://${host}/webservice/v1/vendedor`;
-            const bodyVendedor = JSON.stringify({
-                qtype: 'vendedor.id',
-                query: id,
-                oper: '=',
-                page: '1',
-                rp: '1'
-            });
-            const resVend = await fetch(urlVendedor, { method: 'POST', headers, body: bodyVendedor });
-            if (resVend.ok) {
-                const dadosVend = await resVend.json();
-                if (dadosVend.registros && dadosVend.registros.length > 0) {
-                    const vend = dadosVend.registros[0];
-                    repMap[id] = vend.nome || 'Vendedor ' + id;
+        // 5. Fetch Vendedor Details — em paralelo (antes era loop sequencial)
+        const repMap = {};
+        await Promise.all(allRelevantIds.map(async (id) => {
+            try {
+                const urlVendedor = `https://${host}/webservice/v1/vendedor`;
+                const bodyVendedor = JSON.stringify({
+                    qtype: 'vendedor.id', query: id, oper: '=', page: '1', rp: '1'
+                });
+                const resVend = await fetchIXC(urlVendedor, { method: 'POST', headers, body: bodyVendedor });
+                if (resVend.ok) {
+                    const dadosVend = await resVend.json();
+                    repMap[id] = (dadosVend.registros?.[0]?.nome) || 'Vendedor ' + id;
                 } else {
                     repMap[id] = 'Vendedor ' + id;
                 }
-            } else {
+            } catch {
                 repMap[id] = 'Vendedor ' + id;
             }
-        }
+        }));
         
         // Build final arrays
         const topVendors = top3VendasIds.map(id => ({
@@ -2032,7 +2058,10 @@ app.get('/api/top-vendedores', async (req, res) => {
             ticket_medio: vendedorStats[id].ticketMedio
         }));
         
-        return res.json({ sucesso: true, dados: topVendors, topTicket, total_vendas: totalVendasGlobais });
+        // Armazena resultado no cache por 10 minutos
+        const resultadoTV = { sucesso: true, dados: topVendors, topTicket, total_vendas: totalVendasGlobais };
+        cacheSet(CACHE_KEY_TV, resultadoTV, TTL.TOP_VENDEDORES);
+        return res.json({ ...resultadoTV, cacheStatus: 'MISS' });
     } catch (e) {
         console.error('Erro ao buscar top vendedores (com ticket medio):', e.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno' });
@@ -2156,6 +2185,13 @@ app.delete('/api/cobertura/:id', async (req, res) => {
 // cliente_contrato → resolve nomes via endpoint cidade do IXC
 // Mescla com dados manuais locais (tecnologia, velocidade, status, %)
 app.get('/api/cobertura-ixc', async (req, res) => {
+    // ── Cache: retorna imediatamente se válido (10 min) ──────────────────────
+    const CACHE_KEY_COB = 'cobertura-ixc:resultado';
+    const cachedCob = cacheGet(CACHE_KEY_COB);
+    if (cachedCob.hit) {
+        return res.json({ ...cachedCob.data, cacheStatus: 'HIT' });
+    }
+
     const host = process.env.IXC_HOST;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const headers = {
@@ -2163,8 +2199,6 @@ app.get('/api/cobertura-ixc', async (req, res) => {
         Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
         ixcsoft: 'listar'
     };
-
-    const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos
 
     // Mapa de IDs numéricos de estado do IXC → siglas UF brasileiras
     // O IXC retorna campo 'uf' como ID numérico, não sigla
@@ -2324,23 +2358,30 @@ app.get('/api/cobertura-ixc', async (req, res) => {
             return k1.localeCompare(k2);
         });
 
-        return res.json({
+        // Armazena resultado e contratos brutos no cache (10 min)
+        // Os contratos brutos são reutilizados por /api/cobertura-ixc/contratos-bairro
+        const responseBody = {
             sucesso: true,
             dados: resultado,
             total: resultado.length,
-            // Metadados de auditoria — usados pelo frontend para exibir o card de alerta
             meta: {
                 total_contratos_ixc:     totalIXC,
                 total_com_localizacao:   todosContratos.length - totalSemLocalizacao,
                 total_sem_localizacao:   totalSemLocalizacao,
                 paginas_consultadas:     totalPaginas,
             }
-        });
+        };
+        cacheSet(CACHE_KEY_COB, responseBody, TTL.COBERTURA_IXC);
+        // Salva contratos brutos separadamente para contratos-bairro reutilizar
+        cacheSet('cobertura-ixc:contratos-brutos', todosContratos, TTL.COBERTURA_IXC);
+
+        return res.json({ ...responseBody, cacheStatus: 'MISS' });
     } catch (e) {
         console.error('Erro em /api/cobertura-ixc:', e.message);
         return res.status(500).json({ sucesso: false, erro: e.message });
     }
 });
+
 
 // Mapa de IDs numéricos de estado do IXC → siglas UF (para uso nos overrides)
 const IXC_UF_MAP_GLOBAL = { '7': 'AL', '28': 'SE' };
@@ -2398,15 +2439,6 @@ app.get('/api/cobertura-ixc/contratos-bairro', async (req, res) => {
         return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
     }
 
-    const host  = process.env.IXC_HOST;
-    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
-    const headers = {
-        'Content-Type': 'application/json',
-        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
-        ixcsoft: 'listar'
-    };
-
-    // Mapa de status_internet do IXC → rótulos legíveis
     const STATUS_INTERNET_LABEL = {
         'A':  'Ativo',
         'CA': 'Bloqueio automático',
@@ -2417,34 +2449,53 @@ app.get('/api/cobertura-ixc/contratos-bairro', async (req, res) => {
         'N':  'Não iniciado',
     };
 
-    const IXC_RP = 9999;
     const bairroNorm = String(bairro).trim().toUpperCase();
 
     try {
-        // Buscar TODOS os contratos ativos (paginação completa) e filtrar por cidade+bairro
-        const buildBody = (page) => JSON.stringify({
-            qtype: 'cliente_contrato.status', query: 'A', oper: '=',
-            page: String(page), rp: String(IXC_RP),
-            sortname: 'cliente_contrato.id', sortorder: 'asc'
-        });
+        // ── Tenta usar cache de contratos brutos do /api/cobertura-ixc ──────────
+        // Se o usuário já acessou /api/cobertura-ixc recentemente, evita rebuscar tudo
+        let todosContratos;
+        const cachedBrutos = cacheGet('cobertura-ixc:contratos-brutos');
+        if (cachedBrutos.hit) {
+            todosContratos = cachedBrutos.data;
+            console.log(`-> /api/cobertura-ixc/contratos-bairro (CACHE HIT): usando ${todosContratos.length} contratos do cache`);
+        } else {
+            // Fallback: busca direta quando o cache não está quente
+            const host  = process.env.IXC_HOST;
+            const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+            const headers = {
+                'Content-Type': 'application/json',
+                Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+                ixcsoft: 'listar'
+            };
 
-        const pg1 = await fetch(`https://${host}/webservice/v1/cliente_contrato`, {
-            method: 'POST', headers, body: buildBody(1)
-        });
-        if (!pg1.ok) throw new Error(`IXC HTTP ${pg1.status}`);
-        const dadosPg1 = await pg1.json();
-        const totalIXC  = parseInt(dadosPg1.total || 0);
-        const totalPags = Math.ceil(totalIXC / IXC_RP);
+            const IXC_RP = 9999;
+            const buildBody = (page) => JSON.stringify({
+                qtype: 'cliente_contrato.status', query: 'A', oper: '=',
+                page: String(page), rp: String(IXC_RP),
+                sortname: 'cliente_contrato.id', sortorder: 'asc'
+            });
 
-        let todosContratos = [...(dadosPg1.registros || [])];
-        if (totalPags > 1) {
-            const pags = Array.from({ length: totalPags - 1 }, (_, i) => i + 2);
-            const resPosteriores = await Promise.all(
-                pags.map(pg => fetch(`https://${host}/webservice/v1/cliente_contrato`, {
-                    method: 'POST', headers, body: buildBody(pg)
-                }).then(r => r.ok ? r.json() : { registros: [] }))
-            );
-            resPosteriores.forEach(d => { todosContratos = todosContratos.concat(d.registros || []); });
+            const pg1 = await fetchIXC(`https://${host}/webservice/v1/cliente_contrato`, {
+                method: 'POST', headers, body: buildBody(1)
+            });
+            if (!pg1.ok) throw new Error(`IXC HTTP ${pg1.status}`);
+            const dadosPg1 = await pg1.json();
+            const totalIXC  = parseInt(dadosPg1.total || 0);
+            const totalPags = Math.ceil(totalIXC / IXC_RP);
+
+            todosContratos = [...(dadosPg1.registros || [])];
+            if (totalPags > 1) {
+                const pags = Array.from({ length: totalPags - 1 }, (_, i) => i + 2);
+                const resPosteriores = await Promise.all(
+                    pags.map(pg => fetchIXC(`https://${host}/webservice/v1/cliente_contrato`, {
+                        method: 'POST', headers, body: buildBody(pg)
+                    }).then(r => r.ok ? r.json() : { registros: [] }))
+                );
+                resPosteriores.forEach(d => { todosContratos = todosContratos.concat(d.registros || []); });
+            }
+            // Salva no cache para próximas chamadas
+            cacheSet('cobertura-ixc:contratos-brutos', todosContratos, TTL.COBERTURA_IXC);
         }
 
         // Filtrar por cidade_id E bairro (normalizado)
@@ -2482,12 +2533,14 @@ app.get('/api/cobertura-ixc/contratos-bairro', async (req, res) => {
             total:    lista.length,
             breakdown,
             contratos: lista,
+            cacheStatus: cachedBrutos.hit ? 'HIT' : 'MISS'
         });
     } catch (e) {
         console.error('Erro em /api/cobertura-ixc/contratos-bairro:', e.message);
         return res.status(500).json({ sucesso: false, erro: e.message });
     }
 });
+
 
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
