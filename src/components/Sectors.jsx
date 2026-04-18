@@ -66,10 +66,37 @@ function getIconForSetor(nome) {
     return 'corporate_fare';
 }
 
-export default function Sectors() {
+export default function Sectors({ user, setCurrentView }) {
     const [setores, setSetores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState(null);
+
+    const isAdmin = user?.is_admin;
+
+    const handleSaveDescription = async (id_setor, descricao) => {
+        try {
+            const res = await fetch('/api/admin/setores-descricoes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id_setor,
+                    descricao,
+                    atualizado_por: user?.funcionario || user?.email || 'Sistema'
+                })
+            });
+            const data = await res.json();
+            if (data.sucesso) {
+                setSetores(prev => prev.map(s => 
+                    s.id === id_setor ? { ...s, descricao_customizada: descricao } : s
+                ));
+            } else {
+                alert('Erro ao salvar descrição: ' + data.erro);
+            }
+        } catch (e) {
+            console.error('Erro salvar descricao:', e);
+            alert('Erro de conexão ao salvar.');
+        }
+    };
 
     useEffect(() => {
         const fetchSetores = async () => {
@@ -99,10 +126,16 @@ export default function Sectors() {
                 {/* Breadcrumbs e Header */}
                 <div className="flex flex-col md:flex-row justify-between gap-6 md:items-end mb-10">
                     <div className="space-y-2 max-w-2xl">
-                        <div className="flex flex-wrap gap-2 items-center text-sm mb-4">
-                            <span className="text-[#a17745] dark:text-orange-300 font-semibold">Início</span>
-                            <span className="text-[#a17745] dark:text-orange-300/50">/</span>
-                            <span className="text-[#1d150c] dark:text-white font-bold">Estrutura da Empresa</span>
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                            <button 
+                                onClick={() => setCurrentView('dashboard')}
+                                className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                            >
+                                <span className="material-symbols-outlined text-lg">home</span>
+                                Início
+                            </button>
+                            <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                            <span className="text-[#1d150c] dark:text-white text-sm font-bold">Estrutura da Empresa</span>
                         </div>
                         <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Setores e Departamentos</h1>
                         <p className="text-[#a17745] dark:text-orange-300 text-lg font-medium">Visão geral da hierarquia organizacional da Prestek, contatos principais e setores de serviços internos.</p>
@@ -213,13 +246,17 @@ export default function Sectors() {
                             {setores.map(setor => (
                                 <SectorCard
                                     key={setor.id}
+                                    id={setor.id}
                                     icon={getIconForSetor(setor.nome)}
                                     ramal={setor.responsavel?.ramal && setor.responsavel.ramal !== '0' ? setor.responsavel.ramal : null}
                                     title={setor.nome}
-                                    description={getDescricaoForSetor(setor.nome)}
+                                    description={setor.descricao_customizada || getDescricaoForSetor(setor.nome)}
                                     managerName={setor.responsavel?.nome || null}
                                     managerImg={setor.responsavel?.foto || null}
                                     teamCount={setor.totalMembros}
+                                    isAdmin={isAdmin}
+                                    onSaveDescription={handleSaveDescription}
+                                    setCurrentView={setCurrentView}
                                 />
                             ))}
                             {setores.length === 0 && (
@@ -262,11 +299,26 @@ function OrgNode({ icon, title, name }) {
 }
 
 // Subcomponente Card de Setor
-function SectorCard({ icon, ramal, title, description, managerName, managerImg, teamCount }) {
+function SectorCard({ id, icon, ramal, title, description, managerName, managerImg, teamCount, isAdmin, onSaveDescription, setCurrentView }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editDesc, setEditDesc] = useState(description || '');
+
+    const handleSave = () => {
+        if (onSaveDescription) {
+            onSaveDescription(id, editDesc);
+        }
+        setIsEditing(false);
+    };
+
+    const handleVerEquipe = () => {
+        sessionStorage.setItem('@Stitch:directoryFilter', id);
+        setCurrentView('directory');
+    };
+
     return (
-        <div className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 p-6 flex flex-col gap-5 hover:border-[#ff8c00]/50 hover:shadow-md transition-all group relative overflow-hidden">
+        <div className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 p-6 flex flex-col gap-5 hover:border-[#ff8c00]/50 hover:shadow-md transition-all group relative">
             {/* Linha colorida de destaque no hover */}
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity rounded-l-xl"></div>
 
             <div className="flex justify-between items-start">
                 <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -281,8 +333,52 @@ function SectorCard({ icon, ramal, title, description, managerName, managerImg, 
 
             <div>
                 <h3 className="text-xl font-bold text-[#1d150c] dark:text-white mb-2">{title}</h3>
-                {description && (
-                    <p className="text-sm text-[#a17745] dark:text-orange-300 leading-relaxed line-clamp-2">{description}</p>
+                {isEditing ? (
+                    <div className="flex flex-col gap-2 relative z-20">
+                        <textarea
+                            className="w-full text-sm p-3 border border-[#eaddcd] dark:border-gray-800 rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all resize-none"
+                            rows={3}
+                            value={editDesc}
+                            onChange={e => setEditDesc(e.target.value)}
+                            placeholder="Digite a descrição do setor..."
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="flex gap-2 justify-end">
+                            <button onClick={(e) => { e.stopPropagation(); setIsEditing(false); }} className="text-xs px-3 py-1.5 font-bold text-gray-500 hover:text-[#1d150c] dark:hover:text-white transition-colors">Cancelar</button>
+                            <button onClick={(e) => { e.stopPropagation(); handleSave(); }} className="text-xs px-4 py-1.5 font-bold bg-primary text-white rounded shadow-sm hover:shadow-md hover:bg-primary/90 transition-all">Salvar</button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="relative group/desc">
+                        {description && (
+                            <>
+                                <p className="text-sm text-[#a17745] dark:text-orange-300 leading-relaxed line-clamp-2 pr-8 relative z-10">{description}</p>
+                                
+                                {/* Tooltip Customizado Tailwind */}
+                                <div className="absolute left-0 bottom-full mb-2 w-[calc(100%+20px)] -ml-[10px] pointer-events-none opacity-0 group-hover/desc:opacity-100 transition-all duration-300 translate-y-2 group-hover/desc:translate-y-0 z-50">
+                                    <div className="bg-[#1d150c] dark:bg-[#f8f7f5] text-[#f8f7f5] dark:text-[#1d150c] text-[13px] font-medium leading-relaxed p-3.5 rounded-xl shadow-2xl relative">
+                                        {description}
+                                        {/* Setinha apontando para baixo */}
+                                        <div className="absolute -bottom-1.5 left-6 w-3 h-3 bg-[#1d150c] dark:bg-[#f8f7f5] rotate-45"></div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                        {isAdmin && (
+                            <button 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setEditDesc(description || '');
+                                    setIsEditing(true);
+                                }} 
+                                className="absolute -top-1 -right-1 p-1.5 bg-white dark:bg-[#1a130b] text-primary opacity-0 group-hover/desc:opacity-100 transition-opacity rounded-md shadow-sm border border-[#eaddcd] dark:border-gray-800 hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] z-20"
+                                title="Editar descrição"
+                            >
+                                <span className="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                        )}
+                    </div>
                 )}
             </div>
 
@@ -315,10 +411,10 @@ function SectorCard({ icon, ramal, title, description, managerName, managerImg, 
             </div>
 
             <div className="flex gap-3 mt-auto pt-1">
-                <button className="flex-1 py-2.5 px-3 rounded-lg border-2 border-[#eaddcd] dark:border-gray-800 text-[#1d150c] dark:text-white font-bold text-sm hover:border-primary hover:text-primary transition-colors focus:outline-none">
+                <button onClick={handleVerEquipe} className="flex-1 py-2.5 px-3 rounded-lg border-2 border-[#eaddcd] dark:border-gray-800 text-[#1d150c] dark:text-white font-bold text-sm hover:border-primary hover:text-primary transition-colors focus:outline-none cursor-pointer">
                     Ver Equipe
                 </button>
-                <button className="flex items-center justify-center size-11 rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border-2 border-transparent hover:border-primary/30 text-primary hover:bg-primary/5 transition-colors" title="Contatar Setor">
+                <button className="flex items-center justify-center size-11 rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border-2 border-transparent hover:border-primary/30 text-primary hover:bg-primary/5 transition-colors cursor-pointer" title="Contatar Setor">
                     <span className="material-symbols-outlined text-[22px]">mail</span>
                 </button>
             </div>

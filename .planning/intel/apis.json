@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "updated_at": "2026-04-08T21:12:00Z",
+    "version": 1
+  },
+  "entries": {
+    "GET /api/cobertura-ixc": {
+      "method": "GET",
+      "path": "/api/cobertura-ixc",
+      "file": "backend/server.js",
+      "description": "Lista cidades e bairros atendidos via IXC. Normaliza bairros para UPPERCASE para evitar duplicatas por caixa alta/baixa.",
+      "params": []
+    },
+    "POST /api/cobertura-ixc/override": {
+      "method": "POST",
+      "path": "/api/cobertura-ixc/override",
+      "file": "backend/server.js",
+      "description": "Salva configurações manuais (tecnologia, velocidade, status) para um bairro específico do IXC.",
+      "params": ["cidade_ixc_id", "bairro", "tecnologia", "velocidade_maxima", "status", "percentual_cobertura"]
+    },
+    "GET /api/top-vendedores": {
+      "method": "GET",
+      "path": "/api/top-vendedores",
+      "file": "backend/server.js",
+      "description": "Retorna o ranking de vendedores do mês e o ticket médio baseado em contratos ativos no IXC."
+    }
+  }
+}

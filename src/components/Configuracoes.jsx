@@ -18,7 +18,7 @@ const PREDEFINED_AVATARS = [
     avatar7, avatar8, avatar9, avatar10
 ];
 
-export default function Configuracoes({ user }) {
+export default function Configuracoes({ user, setCurrentView }) {
     const fileInputRef = useRef(null);
     const [showAvatarMenu, setShowAvatarMenu] = useState(false);
     const [showAvatarGrid, setShowAvatarGrid] = useState(false);
@@ -311,11 +311,17 @@ export default function Configuracoes({ user }) {
     return (
         <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-8 flex justify-center overflow-y-auto no-scrollbar">
             <div className="max-w-[1024px] w-full flex flex-col mt-4">
-                <nav aria-label="Breadcrumb" className="flex flex-wrap gap-2 px-4 mb-6">
-                    <a className="text-[#a17745] dark:text-orange-300 hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Início</a>
-                    <span className="text-[#a17745] dark:text-orange-300 text-sm font-medium leading-normal">/</span>
-                    <span className="text-[#1d150c] dark:text-white text-sm font-medium leading-normal">Configurações de Perfil</span>
-                </nav>
+                <div className="flex flex-wrap items-center gap-2 px-4 mb-8">
+                    <button 
+                        onClick={() => setCurrentView('dashboard')}
+                        className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-lg">home</span>
+                        Início
+                    </button>
+                    <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                    <span className="text-[#1d150c] dark:text-white text-sm font-bold">Configurações de Perfil</span>
+                </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 mb-10">
                     <div className="flex flex-col gap-2">
                         <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight">Perfil do Usuário e Configurações</h1>

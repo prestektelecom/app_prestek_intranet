@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import GruposSupervisores from './GruposSupervisores';
+import ResponsaveisManual from './ResponsaveisManual';
 
 export default function AdminDashboard({ setCurrentView }) {
     const [abaAtiva, setAbaAtiva] = useState('painel');
@@ -63,7 +63,7 @@ export default function AdminDashboard({ setCurrentView }) {
                             </button>
                             <button onClick={() => setAbaAtiva('grupos-supervisores')} className={`flex items-center gap-3 px-3 py-2.5 rounded transition-colors group w-full text-left ${abaAtiva === 'grupos-supervisores' ? 'bg-primary/10 text-primary' : 'hover:bg-[#eaddcd] text-[#1d150c] dark:text-white'}`}>
                                 <span className={`material-symbols-outlined text-xl transition-colors ${abaAtiva === 'grupos-supervisores' ? 'text-primary' : 'text-[#a17745] dark:text-orange-300 group-hover:text-primary'}`}>manage_accounts</span>
-                                <p className="text-sm font-medium leading-normal">Grupos Supervisor(a)</p>
+                                <p className="text-sm font-medium leading-normal">Responsáveis de Setor</p>
                             </button>
                             <button className="flex items-center gap-3 px-3 py-2.5 rounded hover:bg-[#eaddcd] text-[#1d150c] dark:text-white transition-colors group w-full text-left">
                                 <span className="material-symbols-outlined text-xl text-[#a17745] dark:text-orange-300 group-hover:text-primary transition-colors">pie_chart</span>
@@ -95,9 +95,11 @@ export default function AdminDashboard({ setCurrentView }) {
                 <main className="flex-1 overflow-y-auto bg-[#f8f7f5] dark:bg-[#0f0a05] p-6 lg:p-10 scrollbar-hide">
                     <div className="max-w-[1200px] mx-auto flex flex-col gap-8">
 
-                        {/* Seção: Grupos Supervisor(a) */}
+                        {/* Seção: Responsáveis de Setor */}
                         {abaAtiva === 'grupos-supervisores' && (
-                            <GruposSupervisores />
+                            <div className="flex flex-col gap-8">
+                                <ResponsaveisManual />
+                            </div>
                         )}
 
                         {/* Seção: Painel de Controle */}

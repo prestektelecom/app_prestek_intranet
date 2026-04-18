@@ -7,11 +7,37 @@ import cors from 'cors'
 import crypto from 'crypto'
 import pool from './db.js'
 import fs from 'fs'
+import { cacheGet, cacheSet, cacheInvalidate, TTL } from './cache.js'
 
-// Cache para OS abertas global
+// ─── Helper: fetch IXC com timeout (15s) e 1 retry automático ─────────────────
+// Evita que chamadas lentas ou travadas bloqueiem o servidor indefinidamente.
+async function fetchIXC(url, options = {}, timeoutMs = 15000) {
+    const tentar = async () => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const res = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timer);
+            return res;
+        } catch (err) {
+            clearTimeout(timer);
+            throw err;
+        }
+    };
+    try {
+        return await tentar();
+    } catch (err) {
+        // 1 retry automático em caso de falha/timeout
+        console.warn(`[fetchIXC] Retry após erro em ${url}: ${err.message}`);
+        return await tentar();
+    }
+}
+
+// Cache legado para OS abertas (mantido por compatibilidade — migração incremental)
 let cacheOS = {
     dados: null,
-    timestamp: 0
+    timestamp: 0,
+    promise: null
 };
 
 const app = express()
@@ -209,11 +235,11 @@ app.post('/api/login', async (req, res) => {
         })
 
     } catch (erro) {
-        console.error('Erro de requisição para API IXC:', erro.message)
+        console.error('Erro interno no servidor:', erro.message);
         return res.status(500).json({
             sucesso: false,
-            erro: 'Erro interno do servidor.'
-        })
+            erro: `Erro interno no servidor: ${erro.message}`
+        });
     }
 })
 
@@ -530,36 +556,49 @@ app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
         }
 
         // 2. Verificar Cache Global (1 minuto)
+        let cacheStatus = 'HIT';
         const agora = Date.now();
         if (!cacheOS.dados || (agora - cacheOS.timestamp > 60000)) {
-            console.log("-> Cache expirado ou vazio em /api/os-chamados. Buscando OS abertas no IXC...");
-            const statusAtivos = ['A', 'AG', 'AS', 'EN', 'AN', 'EX'];
-            const promises = statusAtivos.map(async (status) => {
-                const body = JSON.stringify({
-                    qtype: 'su_oss_chamado.status',
-                    query: status,
-                    oper: '=',
-                    page: '1',
-                    rp: '10000'
-                });
-                try {
-                    const resp = await fetch(url, { method: 'POST', headers, body });
-                    const json = await resp.json();
-                    return json.registros || [];
-                } catch (err) {
-                    return [];
-                }
-            });
-            const resultados = await Promise.all(promises);
-            cacheOS = {
-                dados: resultados.flat(),
-                timestamp: agora
-            };
-            console.log(`-> Cache atualizado. Total de OS abertas na empresa: ${cacheOS.dados.length}`);
+            cacheStatus = 'MISS';
+            if (!cacheOS.promise) {
+                console.log("-> Cache expirado ou vazio em /api/os-chamados. Buscando OS abertas no IXC...");
+                cacheOS.promise = (async () => {
+                    try {
+                        const statusAtivos = ['A', 'AG', 'AS', 'EN', 'AN', 'EX'];
+                        const promises = statusAtivos.map(async (status) => {
+                            const body = JSON.stringify({
+                                qtype: 'su_oss_chamado.status',
+                                query: status,
+                                oper: '=',
+                                page: '1',
+                                rp: '10000'
+                            });
+                            try {
+                                const resp = await fetch(url, { method: 'POST', headers, body });
+                                const json = await resp.json();
+                                return json.registros || [];
+                            } catch (err) {
+                                return [];
+                            }
+                        });
+                        const resultados = await Promise.all(promises);
+                        cacheOS.dados = resultados.flat();
+                        cacheOS.timestamp = Date.now();
+                        console.log(`-> Cache atualizado. Total de OS abertas na empresa: ${cacheOS.dados.length}`);
+                    } catch (error) {
+                        console.error('-> Erro ao atualizar cache de OS:', error.message);
+                    } finally {
+                        cacheOS.promise = null; // Libera independente de sucesso ou falha
+                    }
+                })();
+            }
+            // Aguarda a promessa que está em andamento (seja a recém-criada ou de uma req concorrente)
+            await cacheOS.promise;
         }
 
         // 3. Filtrar localmente e contar
-        const registrosDoTecnico = cacheOS.dados.filter(os => String(os.id_tecnico) === String(ixcTecnicoId));
+        const dadosAFiltrar = cacheOS.dados || [];
+        const registrosDoTecnico = dadosAFiltrar.filter(os => String(os.id_tecnico) === String(ixcTecnicoId));
         console.log(`-> Usuario ${funcionarioId} (Tecnico ${ixcTecnicoId}): ${registrosDoTecnico.length} OS encontrada.`);
 
         const statusCount = { A: 0, AG: 0, AS: 0, EN: 0, AN: 0, EX: 0, OUTROS: 0 };
@@ -573,7 +612,7 @@ app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
             sucesso: true, 
             quantidade: registrosDoTecnico.length, 
             statusCount,
-            cacheStatus: cacheOS.timestamp === agora ? 'MISS' : 'HIT'
+            cacheStatus
         });
 
     } catch (e) {
@@ -882,6 +921,45 @@ app.post('/api/configuracoes/:usuarioId', async (req, res) => {
 });
 
 // ─── Rotas: Plantões ────────────────────────────────────────────────────────
+
+app.get('/api/funcionarios', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT funcionario_id, funcionario_nome, foto_perfil, id_departamento 
+            FROM usuarios_perfil 
+            WHERE ativo = 'S' 
+            ORDER BY funcionario_nome ASC
+        `);
+        return res.json({ sucesso: true, funcionarios: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar funcionários:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar funcionários.' });
+    }
+});
+
+app.post('/api/plantoes', async (req, res) => {
+    const { data, n1_id, n2_id, gerente_id } = req.body;
+    if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
+    
+    try {
+        const query = `
+            INSERT INTO plantoes (data, n1_id, n2_id, gerente_id, atualizado_em)
+            VALUES ($1, $2, $3, $4, NOW())
+            ON CONFLICT (data) DO UPDATE 
+            SET n1_id = EXCLUDED.n1_id,
+                n2_id = EXCLUDED.n2_id,
+                gerente_id = EXCLUDED.gerente_id,
+                atualizado_em = NOW()
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [data, n1_id || null, n2_id || null, gerente_id || null]);
+        return res.json({ sucesso: true, plantao: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao salvar plantão:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao salvar plantão.' });
+    }
+});
+
 app.get('/api/plantoes', async (req, res) => {
     try {
         const query = `
@@ -1266,6 +1344,65 @@ app.post('/api/admin/grupos-supervisores', async (req, res) => {
     }
 });
 
+// ─── Rotas: Admin — Gerenciar Responsáveis Manuais ────────────────────────
+app.get('/api/admin/responsaveis-manuais', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM responsaveis_manuais');
+        return res.json({ sucesso: true, responsaveis: result.rows });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+app.post('/api/admin/responsaveis-manuais', async (req, res) => {
+    const { id_setor, id_funcionario, nome, acao } = req.body; // acao: 'definir' | 'limpar'
+    if (!id_setor || !acao) return res.status(400).json({ sucesso: false, erro: 'id_setor e acao são obrigatórios' });
+    
+    try {
+        if (acao === 'definir') {
+            const query = `
+                INSERT INTO responsaveis_manuais (id_setor, id_funcionario, nome, atualizado_em) 
+                VALUES ($1, $2, $3, NOW())
+                ON CONFLICT (id_setor) DO UPDATE 
+                SET id_funcionario = EXCLUDED.id_funcionario, nome = EXCLUDED.nome, atualizado_em = NOW();
+            `;
+            await pool.query(query, [String(id_setor), String(id_funcionario), nome]);
+        } else if (acao === 'limpar') {
+            await pool.query('DELETE FROM responsaveis_manuais WHERE id_setor = $1', [String(id_setor)]);
+        } else {
+            return res.status(400).json({ sucesso: false, erro: 'Ação inválida' });
+        }
+        
+        const result = await pool.query('SELECT * FROM responsaveis_manuais');
+        return res.json({ sucesso: true, responsaveis: result.rows });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// ─── Rotas: Admin — Gerenciar Descrições de Setores ────────────────────────
+app.post('/api/admin/setores-descricoes', async (req, res) => {
+    const { id_setor, descricao, atualizado_por } = req.body;
+    if (!id_setor) return res.status(400).json({ sucesso: false, erro: 'id_setor é obrigatório' });
+
+    try {
+        if (!descricao || descricao.trim() === '') {
+            await pool.query('DELETE FROM setores_descricoes WHERE id_setor = $1', [String(id_setor)]);
+        } else {
+            const query = `
+                INSERT INTO setores_descricoes (id_setor, descricao, atualizado_por, atualizado_em) 
+                VALUES ($1, $2, $3, NOW())
+                ON CONFLICT (id_setor) DO UPDATE 
+                SET descricao = EXCLUDED.descricao, atualizado_por = EXCLUDED.atualizado_por, atualizado_em = NOW();
+            `;
+            await pool.query(query, [String(id_setor), descricao, atualizado_por || 'Sistema']);
+        }
+        return res.json({ sucesso: true });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 // ─── Rota: Listar todos os id_grupo com seus membros (diagnóstico) ──────────
 app.get('/api/debug/grupos-membros', async (req, res) => {
     const host = process.env.IXC_HOST;
@@ -1376,6 +1513,13 @@ async function buscarIdsGruposSupervisores(host, headers) {
 
 // ─── Rota: Diretório de Setores (empresa_setor + funcionários com SUPERVISOR) ────────
 app.get('/api/setores', async (req, res) => {
+    // ── Cache: retorna imediatamente se ainda válido ────────────────────────────
+    const CACHE_KEY = 'setores:lista';
+    const cached = cacheGet(CACHE_KEY);
+    if (cached.hit) {
+        return res.json({ sucesso: true, setores: cached.data, cacheStatus: 'HIT' });
+    }
+
     const host = process.env.IXC_HOST;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const headers = {
@@ -1385,20 +1529,25 @@ app.get('/api/setores', async (req, res) => {
     };
 
     try {
-        // Busca setores, funcionários e usuários (com grupos) em paralelo
-        const [resSetor, resFunc, resUsuarios] = await Promise.all([
-            fetch(`https://${host}/webservice/v1/empresa_setor`, {
+        // Busca setores, funcionários, usuários E supervisores em paralelo (5 em vez de 3+1)
+        const [resSetor, resFunc, resUsuarios, idsGruposSupervisor, responsaveisManuaisRows, descricoesRows] = await Promise.all([
+            fetchIXC(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
             }),
-            fetch(`https://${host}/webservice/v1/funcionarios`, {
+            fetchIXC(`https://${host}/webservice/v1/funcionarios`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
             }),
-            fetch(`https://${host}/webservice/v1/usuarios`, {
+            fetchIXC(`https://${host}/webservice/v1/usuarios`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'usuarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios.id', sortorder: 'asc' })
-            })
+            }),
+            // Busca grupos SUPERVISOR em paralelo (antes era sequencial após os 3 acima)
+            buscarIdsGruposSupervisores(host, headers),
+            // Queries ao banco local também em paralelo
+            pool.query('SELECT * FROM responsaveis_manuais').catch(() => ({ rows: [] })),
+            pool.query('SELECT * FROM setores_descricoes').catch(() => ({ rows: [] })),
         ]);
 
         const dataSetor = await resSetor.json();
@@ -1417,18 +1566,51 @@ app.get('/api/setores', async (req, res) => {
             }
         });
 
-        // Busca IDs dos grupos SUPERVISOR(A): tenta IXC primeiro, fallback no banco local
-        const idsGruposSupervisor = await buscarIdsGruposSupervisores(host, headers);
+        // Monta mapas a partir dos resultados paralelos do banco
+        const responsaveisManuais = {};
+        responsaveisManuaisRows.rows.forEach(r => {
+            responsaveisManuais[String(r.id_setor)] = r;
+        });
+
+        const descricoesManuais = {};
+        descricoesRows.rows.forEach(r => {
+            descricoesManuais[String(r.id_setor)] = r.descricao;
+        });
 
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
-            const membros = funcionarios.filter(f =>
-                String(f.id_departamento).trim() === String(setor.id).trim()
-            );
+            const membros = funcionarios.filter(f => {
+                const idDep = String(f.id_departamento).trim();
+                const idSetor = String(setor.id).trim();
+                // Agrupamento para "ATENDIMENTO" (inclui Suporte: 15 e Relacionamento: 68)
+                if (setor.setor && String(setor.setor).toUpperCase().includes('ATENDIMENTO')) {
+                    if (idDep === idSetor || ['15', '68'].includes(idDep)) return true;
+                }
+                
+                return idDep === idSetor;
+            });
             
             // Procura por supervisores no setor (funcionários cujo id_grupo está na lista configurada)
             let responsavel = null;
-            if (idsGruposSupervisor.size > 0) {
+            
+            // Prioridade 1: Definição manual por setor
+            if (responsaveisManuais[String(setor.id)]) {
+                const rManual = responsaveisManuais[String(setor.id)];
+                const funcManual = funcionarios.find(f => String(f.id) === String(rManual.id_funcionario));
+                
+                if (funcManual) {
+                    responsavel = funcManual;
+                } else {
+                    responsavel = {
+                        id: rManual.id_funcionario,
+                        funcionario: rManual.nome,
+                        foto_perfil: null,
+                        ramal: null
+                    };
+                }
+            }
+            // Prioridade 2: Grupos Supervisor
+            else if (idsGruposSupervisor.size > 0) {
                 for (const membro of membros) {
                     const idGrupoDoFuncionario = gruposPorFuncionario[membro.id];
                     if (idGrupoDoFuncionario && idsGruposSupervisor.has(String(idGrupoDoFuncionario))) {
@@ -1437,16 +1619,12 @@ app.get('/api/setores', async (req, res) => {
                     }
                 }
             }
-            
-            // Se não achar supervisor, não exibe responsável
-            if (!responsavel) {
-                responsavel = null;
-            }
 
             return {
                 id: setor.id,
                 nome: setor.setor,
                 cor: setor.cor || null,
+                descricao_customizada: descricoesManuais[String(setor.id)] || null,
                 totalMembros: membros.length,
                 responsavel: responsavel ? {
                     id: responsavel.id,
@@ -1457,13 +1635,951 @@ app.get('/api/setores', async (req, res) => {
             };
         });
 
+        // Armazena no cache por 5 minutos
+        cacheSet(CACHE_KEY, setores, TTL.SETORES);
+
         console.log(`-> /api/setores: ${setores.length} setores, ${usuarios.length} usuários, ${Object.keys(gruposPorFuncionario).length} com grupos`);
-        return res.json({ sucesso: true, setores });
+        return res.json({ sucesso: true, setores, cacheStatus: 'MISS' });
     } catch (e) {
         console.error('Erro rota /api/setores:', e);
         return res.status(500).json({ sucesso: false, erro: e.message });
     }
 });
+
+// ─── Rota: Listar Planos de Negociação (Diretório) ───────────────────────────
+
+app.get('/api/planos-negociacoes', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const host = process.env.IXC_HOST;
+    const url = `https://${host}/webservice/v1/crm_planos_negociacoes`;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    const body = JSON.stringify({
+        qtype: 'crm_planos_negociacoes.ativo',
+        query: 'S',
+        oper: '=',
+        page: '1',
+        rp: '1000',
+        sortname: 'crm_planos_negociacoes.id',
+        sortorder: 'asc'
+    });
+
+    try {
+        const respostaVal = await fetch(url, { method: 'POST', headers, body });
+        if (!respostaVal.ok) throw new Error(`Erro API IXC: ${respostaVal.status}`);
+
+        const dadosIXC = await respostaVal.json();
+        const planosIXC = dadosIXC.registros || [];
+
+        // Busca o metadata do banco de dados PostgreSQL
+        const resultMeta = await pool.query('SELECT plano_id, prazo_instalacao, taxa_instalacao FROM planos_metadata');
+        const mapaMetadados = {};
+        resultMeta.rows.forEach(row => {
+            const key = (row.plano_id || '').toString().trim();
+            mapaMetadados[key] = {
+                prazo_instalacao: row.prazo_instalacao,
+                taxa_instalacao: row.taxa_instalacao
+            };
+        });
+
+        // Contagem de "Vendas no Mês" via tabela cliente_contrato
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        
+        let planCounts = {};
+        let statusCounts = {};
+        try {
+            const urlContratos = `https://${host}/webservice/v1/cliente_contrato`;
+            const bodyContratos = JSON.stringify({
+                qtype: 'cliente_contrato.data_cadastro_sistema',
+                query: firstDay,
+                oper: '>=',
+                page: '1',
+                rp: '5000',
+                sortname: 'cliente_contrato.id',
+                sortorder: 'desc'
+            });
+
+            const resContratos = await fetch(urlContratos, { method: 'POST', headers, body: bodyContratos });
+            if (resContratos.ok) {
+                const dadosContratos = await resContratos.json();
+                if (dadosContratos.registros) {
+                    dadosContratos.registros.forEach(reg => {
+                        const planId = reg.id_vd_contrato;
+                        if (planId && String(reg.id_motivo_inclusao) === '1') {
+                            planCounts[planId] = (planCounts[planId] || 0) + 1;
+                            const st = reg.status || '';
+                            const stInt = reg.status_internet || '';
+                            const comp = `${st}_${stInt}`;
+                            statusCounts[comp] = (statusCounts[comp] || 0) + 1;
+                        }
+                    });
+                }
+            }
+        } catch (errContrato) {
+            console.error('Erro ao buscar contratos do mês:', errContrato.message);
+        }
+
+        const planos = planosIXC.map(plano => {
+            const planoId = String(plano.id || '').trim();
+            const meta = mapaMetadados[planoId] || {};
+            // Inject vendas_mes into plan
+            return {
+                ...plano,
+                prazo_instalacao: (meta.prazo_instalacao && meta.prazo_instalacao.trim()) ? meta.prazo_instalacao : '3 Dias', 
+                taxa_instalacao: (meta.taxa_instalacao && meta.taxa_instalacao.trim()) ? meta.taxa_instalacao : 'Grátis',
+                vendas_mes: planCounts[planoId] || planCounts[String(plano.id_plano || '').trim()] || 0
+            };
+        });
+
+        return res.json({ sucesso: true, planos, status_counts: statusCounts });
+    } catch (err) {
+        console.error('Erro ao buscar planos de negociação no IXC:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar planos de negociação.' });
+    }
+});
+
+// ─── Rota: Atualizar Planos de Negociação ──────────────────────────────
+app.put('/api/planos-negociacoes/:id', async (req, res) => {
+    const { id } = req.params;
+    const formData = req.body; // Contém prazo_instalacao e outros dados
+    
+    // Atualiza ou insere o Prazo de Instalação Local
+    if (formData.prazo_instalacao !== undefined || formData.taxa_instalacao !== undefined) {
+        try {
+            await pool.query(`
+                INSERT INTO planos_metadata (plano_id, prazo_instalacao, taxa_instalacao, atualizado_em)
+                VALUES ($1, $2, $3, NOW())
+                ON CONFLICT (plano_id) DO UPDATE SET
+                    prazo_instalacao = COALESCE(EXCLUDED.prazo_instalacao, planos_metadata.prazo_instalacao),
+                    taxa_instalacao = COALESCE(EXCLUDED.taxa_instalacao, planos_metadata.taxa_instalacao),
+                    atualizado_em = NOW();
+            `, [String(id), formData.prazo_instalacao, formData.taxa_instalacao]);
+        } catch (e) {
+            console.error('Erro ao salvar metadados do plano localmente:', e);
+        }
+    }
+
+    // Remove campos que eram somente locais antes de mandar pro IXC
+    const updateData = { ...formData };
+    delete updateData.prazo_instalacao;
+    delete updateData.taxa_instalacao;
+
+    if (Object.keys(updateData).length > 0) {
+        const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+        const host = process.env.IXC_HOST;
+        
+        // Antes de atualizar tudo, precisamos do objeto completo do banco para o IXC aceitar as colunas obrigatorias (ou enviamos somente os disponiveis? No IXC as vezes PUT requer objeto quase igual, mas o snippet mostrou o corpo todo).
+        // Na verdade o snippet mostrou todas. Vamos buscar o objeto atual e mergear.
+        
+        try {
+            const getHeaders = {
+                'Content-Type': 'application/json',
+                Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+                ixcsoft: 'listar'
+            };
+            const rGet = await fetch(`https://${host}/webservice/v1/crm_planos_negociacoes`, {
+                method: 'POST',
+                headers: getHeaders,
+                body: JSON.stringify({
+                    qtype: 'crm_planos_negociacoes.id',
+                    query: id,
+                    oper: '=',
+                    page: '1',
+                    rp: '1'
+                })
+            });
+            
+            if (rGet.ok) {
+                const jGet = await rGet.json();
+                if (jGet.total > 0) {
+                    const objBase = jGet.registros[0];
+                    const objFinal = { ...objBase, ...updateData };
+                    
+                    const headersPut = {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Basic ' + Buffer.from(token).toString('base64')
+                    };
+                    const urlPut = `https://${host}/webservice/v1/crm_planos_negociacoes/${id}`;
+
+                    const resposta = await fetch(urlPut, { 
+                        method: 'PUT', 
+                        headers: headersPut, 
+                        body: JSON.stringify(objFinal) 
+                    });
+
+                    if (!resposta.ok) {
+                        const textoErro = await resposta.text();
+                        console.error('Erro ao gravar PUT IXC:', textoErro);
+                        return res.status(502).json({ sucesso: false, erro: 'Falha ao atualizar plano no IXC.' });
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Erro requisição PUT crm_planos_negociacoes:', err.message);
+            return res.status(500).json({ sucesso: false, erro: 'Erro interno ao atualizar plano.' });
+        }
+    }
+    
+    return res.json({ sucesso: true, mensagem: 'Plano atualizado.' });
+});
+
+// ─── ROTAS: Serviços Técnicos ─────────────────────────────────────
+// GET - Listar todos os serviços técnicos
+app.get('/api/servicos-tecnicos', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM servicos_tecnicos ORDER BY id');
+        return res.json({ sucesso: true, dados: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar serviços técnicos:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao buscar serviços técnicos.' });
+    }
+});
+
+// POST - Criar novo serviço técnico
+app.post('/api/servicos-tecnicos', async (req, res) => {
+    const { servico, valor, prazo, pagamento, icon, is_free, is_special } = req.body;
+    try {
+        const result = await pool.query(`
+            INSERT INTO servicos_tecnicos (servico, valor, prazo, pagamento, icon, is_free, is_special)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `, [servico, valor, prazo, pagamento, icon || 'build', is_free || false, is_special || false]);
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao criar serviço técnico:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao criar serviço técnico.' });
+    }
+});
+
+// PUT - Atualizar serviço técnico
+app.put('/api/servicos-tecnicos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { servico, valor, prazo, pagamento, icon, is_free, is_special } = req.body;
+    try {
+        const result = await pool.query(`
+            UPDATE servicos_tecnicos 
+            SET servico = COALESCE($1, servico), valor = COALESCE($2, valor), prazo = COALESCE($3, prazo),
+                pagamento = COALESCE($4, pagamento), icon = COALESCE($5, icon), 
+                is_free = COALESCE($6, is_free), is_special = COALESCE($7, is_special)
+            WHERE id = $8
+            RETURNING *
+        `, [servico, valor, prazo, pagamento, icon, is_free, is_special, id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Serviço técnico não encontrado.' });
+        }
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar serviço técnico:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao atualizar serviço técnico.' });
+    }
+});
+
+// DELETE - Excluir serviço técnico
+app.delete('/api/servicos-tecnicos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM servicos_tecnicos WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Serviço técnico não encontrado.' });
+        }
+        return res.json({ sucesso: true, mensagem: 'Serviço técnico excluído.' });
+    } catch (err) {
+        console.error('Erro ao excluir serviço técnico:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao excluir serviço técnico.' });
+    }
+});
+
+// ─── ROTAS: Pacotes de Streaming ─────────────────────────────────
+// GET - Listar todos os pacotes de streaming
+app.get('/api/pacotes-streaming', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM pacotes_streaming ORDER BY id');
+        return res.json({ sucesso: true, dados: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar pacotes de streaming:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao buscar pacotes de streaming.' });
+    }
+});
+
+// POST - Criar novo pacote de streaming
+app.post('/api/pacotes-streaming', async (req, res) => {
+    const { servico, valor, periodicidade, icon } = req.body;
+    try {
+        const result = await pool.query(`
+            INSERT INTO pacotes_streaming (servico, valor, periodicidade, icon)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `, [servico, valor, periodicidade || 'Mensal', icon || 'play_circle']);
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao criar pacote de streaming:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao criar pacote de streaming.' });
+    }
+});
+
+// PUT - Atualizar pacote de streaming
+app.put('/api/pacotes-streaming/:id', async (req, res) => {
+    const { id } = req.params;
+    const { servico, valor, periodicidade, icon } = req.body;
+    try {
+        const result = await pool.query(`
+            UPDATE pacotes_streaming 
+            SET servico = COALESCE($1, servico), valor = COALESCE($2, valor), 
+                periodicidade = COALESCE($3, periodicidade), icon = COALESCE($4, icon)
+            WHERE id = $5
+            RETURNING *
+        `, [servico, valor, periodicidade, icon, id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Pacote de streaming não encontrado.' });
+        }
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar pacote de streaming:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao atualizar pacote de streaming.' });
+    }
+});
+
+// DELETE - Excluir pacote de streaming
+app.delete('/api/pacotes-streaming/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM pacotes_streaming WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Pacote de streaming não encontrado.' });
+        }
+        return res.json({ sucesso: true, mensagem: 'Pacote de streaming excluído.' });
+    } catch (err) {
+        console.error('Erro ao excluir pacote de streaming:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao excluir pacote de streaming.' });
+    }
+});
+
+// ─── Rota: Top 3 Colaboradoras (Vendedores) + Ticket Médio ────────────
+app.get('/api/top-vendedores', async (req, res) => {
+    // ── Cache: retorna imediatamente se ainda válido (10 min) ──────────────────
+    const CACHE_KEY_TV = 'top-vendedores:resultado';
+    const cachedTV = cacheGet(CACHE_KEY_TV);
+    if (cachedTV.hit) {
+        return res.json({ ...cachedTV.data, cacheStatus: 'HIT' });
+    }
+
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const host = process.env.IXC_HOST;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    try {
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+
+        // 1. Fetch Planos para obter o valor de cada plano (valor_mensal)
+        const urlPlanos = `https://${host}/webservice/v1/crm_planos_negociacoes`;
+        const bodyPlanos = JSON.stringify({
+            qtype: 'crm_planos_negociacoes.ativo',
+            query: 'S',
+            oper: '=',
+            page: '1',
+            rp: '1000'
+        });
+        const resPlanos = await fetchIXC(urlPlanos, { method: 'POST', headers, body: bodyPlanos });
+        let planPrices = {};
+        if (resPlanos.ok) {
+            const dadosPlanos = await resPlanos.json();
+            if (dadosPlanos.registros) {
+                dadosPlanos.registros.forEach(plano => {
+                    planPrices[String(plano.id)] = parseFloat(plano.valor_mensal || 0);
+                    if (plano.id_plano) {
+                        planPrices[String(plano.id_plano)] = parseFloat(plano.valor_mensal || 0);
+                    }
+                });
+            }
+        }
+
+        // 2. Fetch Contratos do Mes
+        const urlContratos = `https://${host}/webservice/v1/cliente_contrato`;
+        const bodyContratos = JSON.stringify({
+            qtype: 'cliente_contrato.data_cadastro_sistema',
+            query: firstDay,
+            oper: '>=',
+            page: '1',
+            rp: '5000',
+            sortname: 'cliente_contrato.id',
+            sortorder: 'desc'
+        });
+        const resContratos = await fetchIXC(urlContratos, { method: 'POST', headers, body: bodyContratos });
+        
+        let vendedorStats = {};
+        let totalVendasGlobais = 0;
+        
+        if (resContratos.ok) {
+            const dadosContratos = await resContratos.json();
+            if (dadosContratos.registros) {
+                dadosContratos.registros.forEach(reg => {
+                    if (String(reg.id_motivo_inclusao) === '1') {
+                        totalVendasGlobais++;
+                        const vId = reg.id_vendedor;
+                        const planId = reg.id_vd_contrato || reg.id_tipo_contrato;
+                        let valorPlano = 0;
+                        if (planId && planPrices[String(planId)]) {
+                            valorPlano = planPrices[String(planId)];
+                        }
+
+                        if (vId && vId !== '' && vId !== '0') {
+                            if (!vendedorStats[vId]) {
+                                vendedorStats[vId] = { count: 0, revenue: 0 };
+                            }
+                            vendedorStats[vId].count += 1;
+                            vendedorStats[vId].revenue += valorPlano;
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Compute Ticket Medio
+        Object.keys(vendedorStats).forEach(vId => {
+            const stat = vendedorStats[vId];
+            stat.ticketMedio = stat.count > 0 ? (stat.revenue / stat.count) : 0;
+        });
+
+        // 3. Pick Top 3 Vendas
+        const top3VendasIds = Object.keys(vendedorStats)
+            .sort((a, b) => vendedorStats[b].count - vendedorStats[a].count)
+            .slice(0, 3);
+            
+        // 4. Pick Top 3 Ticket Medio (Excluir quem não tem vendas ou ticket zero)
+        const top3TicketIds = Object.keys(vendedorStats)
+            .filter(vId => vendedorStats[vId].ticketMedio > 0)
+            .sort((a, b) => vendedorStats[b].ticketMedio - vendedorStats[a].ticketMedio)
+            .slice(0, 3);
+            
+        const allRelevantIds = Array.from(new Set([...top3VendasIds, ...top3TicketIds]));
+
+        // 5. Fetch Vendedor Details — em paralelo (antes era loop sequencial)
+        const repMap = {};
+        await Promise.all(allRelevantIds.map(async (id) => {
+            try {
+                const urlVendedor = `https://${host}/webservice/v1/vendedor`;
+                const bodyVendedor = JSON.stringify({
+                    qtype: 'vendedor.id', query: id, oper: '=', page: '1', rp: '1'
+                });
+                const resVend = await fetchIXC(urlVendedor, { method: 'POST', headers, body: bodyVendedor });
+                if (resVend.ok) {
+                    const dadosVend = await resVend.json();
+                    repMap[id] = (dadosVend.registros?.[0]?.nome) || 'Vendedor ' + id;
+                } else {
+                    repMap[id] = 'Vendedor ' + id;
+                }
+            } catch {
+                repMap[id] = 'Vendedor ' + id;
+            }
+        }));
+        
+        // Build final arrays
+        const topVendors = top3VendasIds.map(id => ({
+            id,
+            nome: repMap[id],
+            vendas_mes: vendedorStats[id].count
+        }));
+        
+        const topTicket = top3TicketIds.map(id => ({
+            id,
+            nome: repMap[id],
+            ticket_medio: vendedorStats[id].ticketMedio
+        }));
+        
+        // Armazena resultado no cache por 10 minutos
+        const resultadoTV = { sucesso: true, dados: topVendors, topTicket, total_vendas: totalVendasGlobais };
+        cacheSet(CACHE_KEY_TV, resultadoTV, TTL.TOP_VENDEDORES);
+        return res.json({ ...resultadoTV, cacheStatus: 'MISS' });
+    } catch (e) {
+        console.error('Erro ao buscar top vendedores (com ticket medio):', e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno' });
+    }
+});
+
+// ─── ROTAS: Cobertura de Cidades ─────────────────────────────────
+// GET - Listar todas as cidades com cobertura (paginado)
+app.get('/api/cobertura', async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const busca = req.query.busca || '';
+    const tecnologia = req.query.tecnologia || '';
+    const status = req.query.status || '';
+
+    try {
+        const condicoes = [];
+        const params = [];
+        let idx = 1;
+
+        if (busca) {
+            condicoes.push(`(LOWER(cidade) LIKE $${idx} OR LOWER(bairro) LIKE $${idx})`);
+            params.push(`%${busca.toLowerCase()}%`);
+            idx++;
+        }
+        if (tecnologia) {
+            condicoes.push(`tecnologia = $${idx}`);
+            params.push(tecnologia);
+            idx++;
+        }
+        if (status) {
+            condicoes.push(`status = $${idx}`);
+            params.push(status);
+            idx++;
+        }
+
+        const where = condicoes.length > 0 ? `WHERE ${condicoes.join(' AND ')}` : '';
+
+        const countResult = await pool.query(
+            `SELECT COUNT(*) FROM cobertura_cidades ${where}`,
+            params
+        );
+        const total = parseInt(countResult.rows[0].count);
+
+        const result = await pool.query(
+            `SELECT * FROM cobertura_cidades ${where} ORDER BY estado, cidade, bairro LIMIT $${idx} OFFSET $${idx + 1}`,
+            [...params, limit, offset]
+        );
+
+        return res.json({ sucesso: true, dados: result.rows, total, page, limit });
+    } catch (err) {
+        console.error('Erro ao listar cobertura:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao listar cobertura.' });
+    }
+});
+
+// POST - Criar nova entrada de cobertura
+app.post('/api/cobertura', async (req, res) => {
+    const { estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura } = req.body;
+    if (!cidade || !bairro) return res.status(400).json({ sucesso: false, erro: 'Cidade e bairro são obrigatórios.' });
+    // Validação: apenas estados AL e SE são permitidos
+    const estadoFinal = (estado || 'AL').trim().toUpperCase();
+    if (!['AL', 'SE'].includes(estadoFinal)) {
+        return res.status(400).json({ sucesso: false, erro: `Estado '${estadoFinal}' não permitido. Apenas Alagoas (AL) e Sergipe (SE) são atendidos.` });
+    }
+    try {
+        const result = await pool.query(`
+            INSERT INTO cobertura_cidades (estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `, [estadoFinal, cidade, bairro, tecnologia || 'FTTH', velocidade_maxima || '100 MEGA', status || 'Ativo', percentual_cobertura ?? 100]);
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao criar cobertura:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao criar cobertura.' });
+    }
+});
+
+// PUT - Atualizar entrada de cobertura
+app.put('/api/cobertura/:id', async (req, res) => {
+    const { id } = req.params;
+    const { estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura } = req.body;
+    try {
+        const result = await pool.query(`
+            UPDATE cobertura_cidades
+            SET estado = COALESCE($1, estado),
+                cidade = COALESCE($2, cidade),
+                bairro = COALESCE($3, bairro),
+                tecnologia = COALESCE($4, tecnologia),
+                velocidade_maxima = COALESCE($5, velocidade_maxima),
+                status = COALESCE($6, status),
+                percentual_cobertura = COALESCE($7, percentual_cobertura),
+                updated_at = NOW()
+            WHERE id = $8
+            RETURNING *
+        `, [estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, id]);
+        if (result.rows.length === 0) return res.status(404).json({ sucesso: false, erro: 'Registro não encontrado.' });
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar cobertura:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao atualizar cobertura.' });
+    }
+});
+
+// DELETE - Remover entrada de cobertura
+app.delete('/api/cobertura/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM cobertura_cidades WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) return res.status(404).json({ sucesso: false, erro: 'Registro não encontrado.' });
+        return res.json({ sucesso: true, mensagem: 'Registro de cobertura excluído.' });
+    } catch (err) {
+        console.error('Erro ao excluir cobertura:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao excluir cobertura.' });
+    }
+});
+
+// ─── ROTA: Cobertura — Cidades Atendidas via IXC (híbrido) ──────────────────
+// Descobre automaticamente quais cidades/bairros a empresa atende consultando
+// cliente_contrato → resolve nomes via endpoint cidade do IXC
+// Mescla com dados manuais locais (tecnologia, velocidade, status, %)
+app.get('/api/cobertura-ixc', async (req, res) => {
+    // ── Cache: retorna imediatamente se válido (10 min) ──────────────────────
+    const CACHE_KEY_COB = 'cobertura-ixc:resultado';
+    const cachedCob = cacheGet(CACHE_KEY_COB);
+    if (cachedCob.hit) {
+        return res.json({ ...cachedCob.data, cacheStatus: 'HIT' });
+    }
+
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    // Mapa de IDs numéricos de estado do IXC → siglas UF brasileiras
+    // O IXC retorna campo 'uf' como ID numérico, não sigla
+    const IXC_UF_MAP = {
+        '7': 'AL',  // Alagoas
+        '28': 'SE'  // Sergipe
+    };
+
+    try {
+        // ── 1. Buscar TODOS os contratos ativos do IXC (paginação completa) ──────
+        // A API IXC tem hard limit de 9.999 registros por página.
+        // Buscamos a página 1 para obter o total e, em seguida, as demais páginas em paralelo.
+        const IXC_RP = 9999; // máximo por página
+        const buildBodyContratos = (page) => JSON.stringify({
+            qtype:     'cliente_contrato.status',
+            query:     'A',  // apenas contratos ativos
+            oper:      '=',
+            page:      String(page),
+            rp:        String(IXC_RP),
+            sortname:  'cliente_contrato.id',
+            sortorder: 'asc'
+        });
+
+        // Página 1 — usada para descobrir o total real de registros
+        const resPg1 = await fetch(`https://${host}/webservice/v1/cliente_contrato`, {
+            method: 'POST', headers, body: buildBodyContratos(1)
+        });
+        if (!resPg1.ok) throw new Error(`Erro ao buscar contratos (pág. 1): ${resPg1.status}`);
+        const dadosPg1 = await resPg1.json();
+        const totalIXC = parseInt(dadosPg1.total || 0);
+        const totalPaginas = Math.ceil(totalIXC / IXC_RP);
+
+        // Páginas 2..N em paralelo (se houver)
+        let todosContratos = [...(dadosPg1.registros || [])];
+        if (totalPaginas > 1) {
+            const paginasRestantes = Array.from({ length: totalPaginas - 1 }, (_, i) => i + 2);
+            const resPosteriores = await Promise.all(
+                paginasRestantes.map(pg =>
+                    fetch(`https://${host}/webservice/v1/cliente_contrato`, {
+                        method: 'POST', headers, body: buildBodyContratos(pg)
+                    }).then(r => r.ok ? r.json() : { registros: [] })
+                )
+            );
+            resPosteriores.forEach(d => { todosContratos = todosContratos.concat(d.registros || []); });
+        }
+
+        console.log(`-> /api/cobertura-ixc: ${todosContratos.length}/${totalIXC} contratos coletados (${totalPaginas} pág.)`);
+
+        // ── 2. Agrupar por cidade_id + bairro (normalizado) ───────────────────────
+        // Contratos com cidade=0 são contabilizados separadamente (sem localização)
+        const mapaGrupos = {}; // chave: "cidade_id::bairro"
+        const cidadeIdsSet = new Set();
+        let totalSemLocalizacao = 0; // contratos com cidade_id=0 ou vazio
+
+        // Mapa de status_internet → rótulos legíveis (usado no breakdown)
+        const STATUS_INT_LABEL = {
+            'A': 'Ativo', 'CA': 'Bloqueio automático', 'FA': 'Financeiro em atraso',
+            'CM': 'Bloqueio manual', 'AP': 'Aguardando pagamento', 'D': 'Desativado', 'N': 'Não iniciado',
+        };
+
+        todosContratos.forEach(c => {
+            const cidId = String(c.cidade || '').trim();
+            // Normalizar bairro: trim + uppercase para eliminar duplicatas por caixa
+            const bairro = String(c.bairro || '').trim().toUpperCase();
+
+            // Sem cidade vinculada → contabilizar separadamente, não exibir no mapa
+            if (!cidId || cidId === '0' || cidId === '') {
+                totalSemLocalizacao++;
+                return;
+            }
+
+            cidadeIdsSet.add(cidId);
+            const chave = `${cidId}::${bairro}`;
+            if (!mapaGrupos[chave]) {
+                mapaGrupos[chave] = {
+                    cidade_ixc_id: cidId, bairro,
+                    total_contratos: 0, contratos_ids: [],
+                    status_breakdown: {},  // status_label -> contagem
+                };
+            }
+            mapaGrupos[chave].total_contratos += 1;
+            if (c.id) mapaGrupos[chave].contratos_ids.push(String(c.id));
+            // Acumular breakdown de status para exibição sem chamada extra
+            const stInt  = String(c.status_internet || '').trim();
+            const stLabel = STATUS_INT_LABEL[stInt] || stInt || 'Desconhecido';
+            mapaGrupos[chave].status_breakdown[stLabel] =
+                (mapaGrupos[chave].status_breakdown[stLabel] || 0) + 1;
+        });
+
+        const cidadeIds = Array.from(cidadeIdsSet);
+        console.log(`-> /api/cobertura-ixc: ${cidadeIds.length} cid. únicas, ${Object.keys(mapaGrupos).length} combos, ${totalSemLocalizacao} sem localização`);
+
+        // ── 3. Buscar nomes das cidades (todos de uma vez — IXC não suporta 'in') ─
+        const mapaCidades = {}; // cidade_id -> { nome, uf }
+        if (cidadeIds.length > 0) {
+            const bodyCidades = JSON.stringify({
+                qtype: 'cidade.id', query: '0', oper: '>',
+                page: '1', rp: '9999',
+                sortname: 'cidade.nome', sortorder: 'asc'
+            });
+            const resCidades = await fetch(`https://${host}/webservice/v1/cidade`, {
+                method: 'POST', headers, body: bodyCidades
+            });
+            if (resCidades.ok) {
+                const dadosCidades = await resCidades.json();
+                (dadosCidades.registros || []).forEach(cid => {
+                    if (cidadeIdsSet.has(String(cid.id))) {
+                        // Converte UF numérica do IXC para sigla; fallback 'AL' se não mapeado
+                        const ufNumerica = String(cid.uf || '').trim();
+                        const ufSigla = IXC_UF_MAP[ufNumerica] || ufNumerica || 'AL';
+                        mapaCidades[String(cid.id)] = { nome: cid.nome || 'Cidade ' + cid.id, uf: ufSigla };
+                    }
+                });
+            }
+        }
+
+        // ── 4. Buscar overrides manuais do banco local ────────────────────────────
+        const localResult = await pool.query(
+            'SELECT * FROM cobertura_cidades WHERE cidade_ixc_id IS NOT NULL'
+        );
+        const mapaLocal = {}; // "cidade_ixc_id::bairro" -> row
+        localResult.rows.forEach(row => {
+            // Normalizar bairro para uppercase — consistente com o agrupamento do IXC
+            const chave = `${row.cidade_ixc_id}::${String(row.bairro || '').toUpperCase()}`;
+            mapaLocal[chave] = row;
+        });
+
+        // ── 5. Montar resposta mesclada ───────────────────────────────────────────
+        const resultado = Object.values(mapaGrupos).map(grupo => {
+            const chave = `${grupo.cidade_ixc_id}::${grupo.bairro}`;
+            const cidInfo = mapaCidades[grupo.cidade_ixc_id] || { nome: `Cidade ${grupo.cidade_ixc_id}`, uf: 'AL' };
+            const local = mapaLocal[chave] || {};
+            return {
+                // Identificação IXC (auto)
+                cidade_ixc_id: grupo.cidade_ixc_id,
+                cidade:        cidInfo.nome,
+                estado:        cidInfo.uf,
+                bairro:        grupo.bairro || '(sem bairro)',
+                total_contratos: grupo.total_contratos,
+                contratos_ids:   grupo.contratos_ids || [],
+                // Override manual (banco local) — null se não configurado
+                id_local:            local.id || null,
+                tecnologia:          local.tecnologia || null,
+                velocidade_maxima:   local.velocidade_maxima || null,
+                status:              local.status || null,
+                percentual_cobertura: local.percentual_cobertura !== undefined ? local.percentual_cobertura : null,
+                latitude:  local.latitude  != null ? parseFloat(local.latitude)  : null,
+                longitude: local.longitude != null ? parseFloat(local.longitude) : null,
+                tem_override: !!local.id
+            };
+        });
+
+        // Ordenar por estado, cidade, bairro
+        resultado.sort((a, b) => {
+            const k1 = `${a.estado}${a.cidade}${a.bairro}`;
+            const k2 = `${b.estado}${b.cidade}${b.bairro}`;
+            return k1.localeCompare(k2);
+        });
+
+        // Armazena resultado e contratos brutos no cache (10 min)
+        // Os contratos brutos são reutilizados por /api/cobertura-ixc/contratos-bairro
+        const responseBody = {
+            sucesso: true,
+            dados: resultado,
+            total: resultado.length,
+            meta: {
+                total_contratos_ixc:     totalIXC,
+                total_com_localizacao:   todosContratos.length - totalSemLocalizacao,
+                total_sem_localizacao:   totalSemLocalizacao,
+                paginas_consultadas:     totalPaginas,
+            }
+        };
+        cacheSet(CACHE_KEY_COB, responseBody, TTL.COBERTURA_IXC);
+        // Salva contratos brutos separadamente para contratos-bairro reutilizar
+        cacheSet('cobertura-ixc:contratos-brutos', todosContratos, TTL.COBERTURA_IXC);
+
+        return res.json({ ...responseBody, cacheStatus: 'MISS' });
+    } catch (e) {
+        console.error('Erro em /api/cobertura-ixc:', e.message);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+
+// Mapa de IDs numéricos de estado do IXC → siglas UF (para uso nos overrides)
+const IXC_UF_MAP_GLOBAL = { '7': 'AL', '28': 'SE' };
+
+// POST /api/cobertura-ixc/override — salva ou atualiza os campos manuais de uma entrada IXC
+app.post('/api/cobertura-ixc/override', async (req, res) => {
+    const { cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, latitude, longitude } = req.body;
+    if (!cidade_ixc_id || !bairro) {
+        return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
+    }
+    // Normaliza estado: converte ID numérico do IXC → sigla, depois valida
+    const estadoRaw = String(estado || 'AL').trim();
+    const estadoNorm = IXC_UF_MAP_GLOBAL[estadoRaw] || estadoRaw.toUpperCase();
+    if (!['AL', 'SE'].includes(estadoNorm)) {
+        return res.status(400).json({ sucesso: false, erro: `Estado '${estadoNorm}' não permitido. Apenas Alagoas (AL) e Sergipe (SE) são atendidos.` });
+    }
+    // Converte coordenadas — aceita null/undefined (não sobrescreve com null se omitido)
+    const lat = latitude  != null && latitude  !== '' ? parseFloat(latitude)  : null;
+    const lng = longitude != null && longitude !== '' ? parseFloat(longitude) : null;
+    try {
+        const result = await pool.query(`
+            INSERT INTO cobertura_cidades
+                (cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, latitude, longitude, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+            ON CONFLICT (cidade_ixc_id, bairro) WHERE cidade_ixc_id IS NOT NULL DO UPDATE SET
+                cidade              = EXCLUDED.cidade,
+                estado              = EXCLUDED.estado,
+                tecnologia          = EXCLUDED.tecnologia,
+                velocidade_maxima   = EXCLUDED.velocidade_maxima,
+                status              = EXCLUDED.status,
+                percentual_cobertura= EXCLUDED.percentual_cobertura,
+                latitude            = COALESCE(EXCLUDED.latitude,  cobertura_cidades.latitude),
+                longitude           = COALESCE(EXCLUDED.longitude, cobertura_cidades.longitude),
+                updated_at          = NOW()
+            RETURNING *
+        `, [
+            String(cidade_ixc_id), cidade || '', estadoNorm, bairro,
+            tecnologia || 'FTTH', velocidade_maxima || '100 MEGA',
+            status || 'Ativo', percentual_cobertura ?? 100,
+            lat, lng
+        ]);
+        return res.json({ sucesso: true, dado: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao salvar override:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao salvar configuração.' });
+    }
+});
+
+// ─── ROTA: Detalhes de contratos de um bairro específico ─────────────────────
+// GET /api/cobertura-ixc/contratos-bairro?cidade_ixc_id=1683&bairro=CHINARE
+// Retorna a lista de contratos do bairro com breakdown por status IXC
+app.get('/api/cobertura-ixc/contratos-bairro', async (req, res) => {
+    const { cidade_ixc_id, bairro } = req.query;
+    if (!cidade_ixc_id || !bairro) {
+        return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
+    }
+
+    const STATUS_INTERNET_LABEL = {
+        'A':  'Ativo',
+        'CA': 'Bloqueio automático',
+        'FA': 'Financeiro em atraso',
+        'CM': 'Bloqueio manual',
+        'AP': 'Aguardando pagamento',
+        'D':  'Desativado',
+        'N':  'Não iniciado',
+    };
+
+    const bairroNorm = String(bairro).trim().toUpperCase();
+
+    try {
+        // ── Tenta usar cache de contratos brutos do /api/cobertura-ixc ──────────
+        // Se o usuário já acessou /api/cobertura-ixc recentemente, evita rebuscar tudo
+        let todosContratos;
+        const cachedBrutos = cacheGet('cobertura-ixc:contratos-brutos');
+        if (cachedBrutos.hit) {
+            todosContratos = cachedBrutos.data;
+            console.log(`-> /api/cobertura-ixc/contratos-bairro (CACHE HIT): usando ${todosContratos.length} contratos do cache`);
+        } else {
+            // Fallback: busca direta quando o cache não está quente
+            const host  = process.env.IXC_HOST;
+            const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+            const headers = {
+                'Content-Type': 'application/json',
+                Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+                ixcsoft: 'listar'
+            };
+
+            const IXC_RP = 9999;
+            const buildBody = (page) => JSON.stringify({
+                qtype: 'cliente_contrato.status', query: 'A', oper: '=',
+                page: String(page), rp: String(IXC_RP),
+                sortname: 'cliente_contrato.id', sortorder: 'asc'
+            });
+
+            const pg1 = await fetchIXC(`https://${host}/webservice/v1/cliente_contrato`, {
+                method: 'POST', headers, body: buildBody(1)
+            });
+            if (!pg1.ok) throw new Error(`IXC HTTP ${pg1.status}`);
+            const dadosPg1 = await pg1.json();
+            const totalIXC  = parseInt(dadosPg1.total || 0);
+            const totalPags = Math.ceil(totalIXC / IXC_RP);
+
+            todosContratos = [...(dadosPg1.registros || [])];
+            if (totalPags > 1) {
+                const pags = Array.from({ length: totalPags - 1 }, (_, i) => i + 2);
+                const resPosteriores = await Promise.all(
+                    pags.map(pg => fetchIXC(`https://${host}/webservice/v1/cliente_contrato`, {
+                        method: 'POST', headers, body: buildBody(pg)
+                    }).then(r => r.ok ? r.json() : { registros: [] }))
+                );
+                resPosteriores.forEach(d => { todosContratos = todosContratos.concat(d.registros || []); });
+            }
+            // Salva no cache para próximas chamadas
+            cacheSet('cobertura-ixc:contratos-brutos', todosContratos, TTL.COBERTURA_IXC);
+        }
+
+        // Filtrar por cidade_id E bairro (normalizado)
+        const contratosBairro = todosContratos.filter(c =>
+            String(c.cidade || '') === String(cidade_ixc_id) &&
+            String(c.bairro || '').trim().toUpperCase() === bairroNorm
+        );
+
+        // Montar breakdown de status
+        const breakdown = {};
+        contratosBairro.forEach(c => {
+            const stInt = String(c.status_internet || '').trim();
+            const label = STATUS_INTERNET_LABEL[stInt] || stInt || 'Desconhecido';
+            if (!breakdown[label]) breakdown[label] = 0;
+            breakdown[label]++;
+        });
+
+        // Montar lista resumida de contratos (sem dados sensíveis)
+        const lista = contratosBairro.map(c => ({
+            id:              c.id,
+            contrato:        c.contrato || c.id,
+            status:          c.status,
+            status_internet: c.status_internet,
+            status_label:    STATUS_INTERNET_LABEL[String(c.status_internet || '').trim()] || c.status_internet,
+            data_ativacao:   c.data_ativacao || null,
+            bloqueio_automatico: c.bloqueio_automatico || null,
+        }));
+
+        console.log(`-> /api/cobertura-ixc/contratos-bairro: cidade=${cidade_ixc_id} bairro="${bairroNorm}" → ${lista.length} contratos`);
+
+        return res.json({
+            sucesso: true,
+            cidade_ixc_id,
+            bairro:   bairroNorm,
+            total:    lista.length,
+            breakdown,
+            contratos: lista,
+            cacheStatus: cachedBrutos.hit ? 'HIT' : 'MISS'
+        });
+    } catch (e) {
+        console.error('Erro em /api/cobertura-ixc/contratos-bairro:', e.message);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {

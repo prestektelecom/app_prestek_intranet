@@ -1,14 +1,20 @@
-export default function Processos() {
+export default function Processos({ setCurrentView }) {
     return (
         <main className="flex-1 flex flex-col px-4 md:px-10 py-6 max-w-[1400px] mx-auto w-full overflow-y-auto no-scrollbar">
             <div className="flex flex-wrap justify-between gap-6 mb-8 items-end">
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-[#a17745] dark:text-orange-300 text-sm font-medium">
-                        <span className="material-symbols-outlined text-[18px]">home</span>
-                        <span>/</span>
-                        <span>Recursos Internos</span>
-                        <span>/</span>
-                        <span className="text-[#1d150c] dark:text-white">Processos</span>
+                    <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
+                        <button 
+                            onClick={() => setCurrentView('dashboard')}
+                            className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-lg">home</span>
+                            Início
+                        </button>
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                        <span className="text-[#a17745] dark:text-orange-300 font-medium">Recursos Internos</span>
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">Processos</span>
                     </div>
                     <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Processos Operacionais</h1>
                     <p className="text-[#a17745] dark:text-orange-300 text-base font-normal leading-normal max-w-2xl">Gerencie e visualize procedimentos internos documentados, fluxos de trabalho e diagramas BPMN para todos os departamentos.</p>

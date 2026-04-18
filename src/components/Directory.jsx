@@ -12,7 +12,14 @@ export default function Directory({ user }) {
     const [deptosEmpresa, setDeptosEmpresa] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [busca, setBusca] = useState('');
-    const [deptoFiltro, setDeptoFiltro] = useState('');
+    const savedFilter = sessionStorage.getItem('@Stitch:directoryFilter');
+    const [deptoFiltro, setDeptoFiltro] = useState(savedFilter || '');
+
+    useEffect(() => {
+        if (savedFilter) {
+            sessionStorage.removeItem('@Stitch:directoryFilter');
+        }
+    }, [savedFilter]);
     const [pagina, setPagina] = useState(1);
 
     // Carrega colaboradores e departamentos em paralelo
@@ -83,7 +90,12 @@ export default function Directory({ user }) {
                 || (c.funcionario_nome || '').toLowerCase().includes(termo)
                 || (c.usuario_email || '').toLowerCase().includes(termo)
                 || (c.ramal || '').toLowerCase().includes(termo);
-            const matchDepto = !deptoFiltro || String(c.id_departamento) === deptoFiltro;
+            let idDep = String(c.id_departamento).trim();
+            let matchDepto = !deptoFiltro || idDep === deptoFiltro;
+            // Agrupamento para "ATENDIMENTO" (13): inclui SUPORTE (15) e RELACIONAMENTO (68)
+            if (deptoFiltro === '13' && (idDep === '15' || idDep === '68')) {
+                matchDepto = true;
+            }
             return matchBusca && matchDepto;
         });
     }, [colaboradores, busca, deptoFiltro]);

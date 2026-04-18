@@ -1,0 +1,11 @@
+{
+  "_meta": {
+    "updated_at": "2026-04-08T21:14:00Z",
+    "version": 1
+  },
+  "languages": ["JavaScript", "SQL", "HTML", "CSS"],
+  "frameworks": ["Express", "React", "Node.js"],
+  "tools": ["IXC Soft API", "PostgreSQL", "Vite", "TailwindCSS"],
+  "build_system": "npm scripts",
+  "package_manager": "npm"
+}

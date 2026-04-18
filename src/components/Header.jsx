@@ -164,7 +164,7 @@ export default function Header({ currentView, setCurrentView, user }) {
     }, [notificationsRef]);
 
     return (
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] px-4 md:px-6 py-3 shrink-0 h-16 z-40 shadow-sm sticky top-0 transition-colors duration-200">
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] px-4 md:px-6 py-3 shrink-0 h-16 z-[1000] shadow-sm sticky top-0 transition-colors duration-200">
             {/* Logo + Busca + Navegação Condicional */}
             <div className="flex items-center gap-4 xl:gap-8 flex-1">
                 {/* Botão Menu Hambúrguer (Mobile) - Touch Friendly (min-44px) */}
@@ -182,14 +182,18 @@ export default function Header({ currentView, setCurrentView, user }) {
                     </span>
                 </button>
 
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="size-8 flex items-center justify-center shrink-0 overflow-hidden">
+                <div 
+                    className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
+                    onClick={() => setCurrentView('dashboard')}
+                    title="Ir para o Dashboard"
+                >
+                    <div className="size-8 flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
                         <img src={logoP} alt="Logo" className="w-full h-full object-contain" />
                     </div>
-                    <h2 className="text-[#1d150c] dark:text-white text-lg md:text-xl font-bold leading-tight tracking-tight hidden sm:block">
+                    <h2 className="text-[#1d150c] dark:text-white text-lg md:text-xl font-bold leading-tight tracking-tight hidden sm:block group-hover:text-primary transition-colors">
                         Prestek Intranet
                     </h2>
-                    <h2 className="text-[#1d150c] dark:text-white text-lg font-bold leading-tight tracking-tight sm:hidden">
+                    <h2 className="text-[#1d150c] dark:text-white text-lg font-bold leading-tight tracking-tight sm:hidden group-hover:text-primary transition-colors">
                         Prestek
                     </h2>
                 </div>

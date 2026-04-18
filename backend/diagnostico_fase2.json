@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-04-14T20:41:47.347Z",
+  "total_ixc": 21515,
+  "coletados_3_paginas": 21515,
+  "sem_cidade": 19487,
+  "sem_bairro": 19489,
+  "com_cidade_e_bairro": 2026,
+  "combos_unicos": 181,
+  "cidades_unicas": 24,
+  "por_status": {
+    "A": 21515
+  },
+  "top10_cidades": {
+    "0": 19471,
+    "1672": 141,
+    "1683": 188,
+    "1721": 766,
+    "1722": 248,
+    "1729": 93,
+    "1742": 88,
+    "1775": 56,
+    "1782": 62,
+    "1792": 111
+  }
+}
