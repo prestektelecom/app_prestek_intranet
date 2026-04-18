@@ -1,7 +1,0 @@
-agenda -> SUCCESS: {"type":"error","message":"Recurso agenda n\u00e3o est\u00e1 dispon\u00edvel!"}
-agenda_compromisso -> SUCCESS: {"type":"error","message":"Recurso agenda_compromisso n\u00e3o est\u00e1 dispon\u00edvel!"}
-agenda_pessoal -> SUCCESS: {"type":"error","message":"Recurso agenda_pessoal n\u00e3o est\u00e1 dispon\u00edvel!"}
-wfl_tarefa -> SUCCESS: {"page":"1","total":"1258","registros":[{"id":"1976","ativo":"S","sequencia":"2","descricao":"COBRAN\u00c7A EXTERNA 60 DIAS","prazo_minutos":"0","id_p
-su_status -> SUCCESS: {"type":"error","message":"Recurso su_status n\u00e3o est\u00e1 dispon\u00edvel!"}
-su_oss_chamado_status -> SUCCESS: {"type":"error","message":"Recurso su_oss_chamado_status n\u00e3o est\u00e1 dispon\u00edvel!"}
-agendamento -> SUCCESS: {"type":"error","message":"Recurso agendamento n\u00e3o est\u00e1 dispon\u00edvel!"}

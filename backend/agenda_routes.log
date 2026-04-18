@@ -1,5 +1,0 @@
-su_oss_chamado_agenda -> SUCCESS: {"type":"error","message":"Recurso su_oss_chamado_agenda n\u00e3o est\u00e1 dispon\u00edvel!"}
-su_oss_chamado_agendamento -> SUCCESS: {"type":"error","message":"Recurso su_oss_chamado_agendamento n\u00e3o est\u00e1 dispon\u00edvel!"}
-su_oss_chamado_agendar -> SUCCESS: {"type":"error","message":"Recurso su_oss_chamado_agendar n\u00e3o est\u00e1 dispon\u00edvel!"}
-su_agenda -> SUCCESS: {"type":"error","message":"Recurso su_agenda n\u00e3o est\u00e1 dispon\u00edvel!"}
-su_oss_agenda -> SUCCESS: {"type":"error","message":"Recurso su_oss_agenda n\u00e3o est\u00e1 dispon\u00edvel!"}
