@@ -110,7 +110,7 @@ export default function App() {
                 {currentView === 'coverage' && <Coverage user={user} />}
                 {currentView === 'directory' && <Directory user={user} />}
                 {currentView === 'sectors' && <Sectors user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'schedule' && <Schedule setCurrentView={setCurrentView} />}
+                {currentView === 'schedule' && <Schedule user={user} setCurrentView={setCurrentView} />}
                 {currentView === 'processes' && <Processos setCurrentView={setCurrentView} />}
                 {currentView === 'announcements' && <Comunicados user={user} />}
                 {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}

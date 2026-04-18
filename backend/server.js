@@ -921,6 +921,45 @@ app.post('/api/configuracoes/:usuarioId', async (req, res) => {
 });
 
 // ─── Rotas: Plantões ────────────────────────────────────────────────────────
+
+app.get('/api/funcionarios', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT funcionario_id, funcionario_nome, foto_perfil, id_departamento 
+            FROM usuarios_perfil 
+            WHERE ativo = 'S' 
+            ORDER BY funcionario_nome ASC
+        `);
+        return res.json({ sucesso: true, funcionarios: result.rows });
+    } catch (err) {
+        console.error('Erro ao buscar funcionários:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar funcionários.' });
+    }
+});
+
+app.post('/api/plantoes', async (req, res) => {
+    const { data, n1_id, n2_id, gerente_id } = req.body;
+    if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
+    
+    try {
+        const query = `
+            INSERT INTO plantoes (data, n1_id, n2_id, gerente_id, atualizado_em)
+            VALUES ($1, $2, $3, $4, NOW())
+            ON CONFLICT (data) DO UPDATE 
+            SET n1_id = EXCLUDED.n1_id,
+                n2_id = EXCLUDED.n2_id,
+                gerente_id = EXCLUDED.gerente_id,
+                atualizado_em = NOW()
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [data, n1_id || null, n2_id || null, gerente_id || null]);
+        return res.json({ sucesso: true, plantao: result.rows[0] });
+    } catch (err) {
+        console.error('Erro ao salvar plantão:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao salvar plantão.' });
+    }
+});
+
 app.get('/api/plantoes', async (req, res) => {
     try {
         const query = `
