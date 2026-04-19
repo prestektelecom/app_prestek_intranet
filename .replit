@@ -70,3 +70,7 @@ DB_PORT = "5432"
 DB_NAME = "prestek_db_postgres"
 DB_USER = "prestek"
 PORT = "3001"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 180000
