@@ -15,7 +15,11 @@ export default function Schedule({ setCurrentView, user }) {
     // Admin Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
-    const [formData, setFormData] = useState({ n1_id: '', n2_id: '', gerente_id: '' });
+    const [formData, setFormData] = useState({ 
+        n1_ids: [], 
+        n2_ids: [], 
+        gerente_ids: [] 
+    });
 
     const [erroCarregamento, setErroCarregamento] = useState(null);
 
@@ -132,14 +136,20 @@ export default function Schedule({ setCurrentView, user }) {
         setSelectedDate(dateStr);
         const existingInfo = plantoes.find(p => toIsoDay(p?.data) === dateStr);
         
+        const parseIds = (val) => {
+            if (!val) return [];
+            if (Array.isArray(val)) return val;
+            return val.split(',').filter(Boolean);
+        };
+        
         if (existingInfo) {
             setFormData({
-                n1_id: existingInfo.n1_id || '',
-                n2_id: existingInfo.n2_id || '',
-                gerente_id: existingInfo.gerente_id || ''
+                n1_ids: parseIds(existingInfo.n1_id),
+                n2_ids: parseIds(existingInfo.n2_id),
+                gerente_ids: parseIds(existingInfo.gerente_id)
             });
         } else {
-            setFormData({ n1_id: '', n2_id: '', gerente_id: '' });
+            setFormData({ n1_ids: [], n2_ids: [], gerente_ids: [] });
         }
         setIsModalOpen(true);
     };
@@ -147,13 +157,16 @@ export default function Schedule({ setCurrentView, user }) {
     const salvarPlantao = async (e) => {
         e.preventDefault();
         try {
+            const payload = {
+                data: selectedDate,
+                n1_ids: formData.n1_ids,
+                n2_ids: formData.n2_ids,
+                gerente_ids: formData.gerente_ids
+            };
             const res = await fetch('/api/plantoes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    data: selectedDate,
-                    ...formData
-                })
+                body: JSON.stringify(payload)
             });
             if (!res.ok) {
                 throw new Error(`HTTP ${res.status}`);
@@ -182,8 +195,12 @@ export default function Schedule({ setCurrentView, user }) {
 
         if (filterSearch) {
             const term = filterSearch.toLowerCase();
-            const names = [p.n1_nome, p.n2_nome, p.mgr_nome].filter(Boolean).map(n => n.toLowerCase());
-            if (!names.some(n => n.includes(term))) return false;
+            const allNomes = [
+                ...(Array.isArray(p.n1_nome) ? p.n1_nome : [p.n1_nome]),
+                ...(Array.isArray(p.n2_nome) ? p.n2_nome : [p.n2_nome]),
+                ...(Array.isArray(p.mgr_nome) ? p.mgr_nome : [p.mgr_nome])
+            ].filter(Boolean).map(n => n.toLowerCase());
+            if (!allNomes.some(n => n.includes(term))) return false;
         }
         return true;
     });
@@ -356,20 +373,32 @@ export default function Schedule({ setCurrentView, user }) {
                                     ) : filteredPlantoes.length === 0 ? (
                                         <tr><td colSpan={5} className="p-12 text-center text-secondary font-bold">Nenhum plantão agendado para este filtro.</td></tr>
                                     ) : (
-                                        filteredPlantoes.map((p) => (
-                                            <ScheduleRow
-                                                key={p.id ?? toIsoDay(p.data)}
-                                                date={formatarData(p.data)}
-                                                day={getDiaSemana(p.data)}
-                                                isToday={isHoje(p.data)}
-                                                isWeekend={isFimDeSemana(p.data)}
-                                                n1={{ name: p.n1_nome || 'Não atribuído', initials: (p.n1_nome || '??').split(' ').map(n=>n[0]).join('').slice(0,2), img: p.n1_foto }}
-                                                n2={p.n2_id ? { name: p.n2_nome || 'Não atribuído', initials: (p.n2_nome || '??').split(' ').map(n=>n[0]).join('').slice(0,2), img: p.n2_foto } : null}
-                                                mgr={{ name: p.mgr_nome || 'Não atribuído', initials: (p.mgr_nome || '??').split(' ').map(n=>n[0]).join('').slice(0,2), img: p.mgr_foto }}
-                                                isAdmin={user?.is_admin}
-                                                onEdit={() => openManagement(toIsoDay(p.data))}
-                                            />
-                                        ))
+                                        filteredPlantoes.map((p) => {
+                                            const parsePessoas = (nomes, fotos) => {
+                                                if (!nomes) return [{ name: 'Não atribuído', initials: '??', img: null }];
+                                                const arr = nomes.split('|||');
+                                                const fotosArr = (fotos || '').split('|||');
+                                                return arr.filter(Boolean).map((nome, i) => ({
+                                                    name: nome,
+                                                    initials: (nome || '??').split(' ').map(n => n[0]).join('').slice(0, 2),
+                                                    img: fotosArr[i] || null
+                                                }));
+                                            };
+                                            return (
+                                                <ScheduleRow
+                                                    key={p.id ?? toIsoDay(p.data)}
+                                                    date={formatarData(p.data)}
+                                                    day={getDiaSemana(p.data)}
+                                                    isToday={isHoje(p.data)}
+                                                    isWeekend={isFimDeSemana(p.data)}
+                                                    n1={parsePessoas(p.n1_nome, p.n1_foto)}
+                                                    n2={p.n2_id ? parsePessoas(p.n2_nome, p.n2_foto) : [{ name: 'Não atribuído', initials: '??', img: null }]}
+                                                    mgr={parsePessoas(p.mgr_nome, p.mgr_foto)}
+                                                    isAdmin={user?.is_admin}
+                                                    onEdit={() => openManagement(toIsoDay(p.data))}
+                                                />
+                                            );
+                                        })
                                     )}
                                 </tbody>
                             </table>
@@ -381,7 +410,7 @@ export default function Schedule({ setCurrentView, user }) {
             {/* Modal de Gestão */}
             {isModalOpen && user?.is_admin && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/60 backdrop-blur-md p-4">
-                    <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-lg border border-surface-container-high overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-[90vw] sm:max-w-lg border border-surface-container-high overflow-hidden animate-in zoom-in-95 duration-200 scale-75 origin-top">
                         <div className="px-6 py-5 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low">
                             <h2 className="text-xl font-black text-on-surface flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">edit_calendar</span>
@@ -392,41 +421,41 @@ export default function Schedule({ setCurrentView, user }) {
                             </button>
                         </div>
 
-                        <form onSubmit={salvarPlantao} className="p-6 flex flex-col gap-6">
-                            <div className="flex gap-2 items-center bg-primary/10 text-primary px-4 py-3 rounded-lg font-black text-sm w-max border border-primary/20">
+                        <form onSubmit={salvarPlantao} className="p-4 sm:p-6 flex flex-col gap-4 sm:gap-6">
+                            <div className="flex gap-2 items-center bg-primary/10 text-primary px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-black text-xs sm:text-sm w-full max-w-full border border-primary/20">
                                 <span className="material-symbols-outlined text-lg">calendar_today</span>
-                                Data: {selectedDate.split('-').reverse().join('/')}
+                                <span className="flex-1">Data: {selectedDate.split('-').reverse().join('/')}</span>
                             </div>
 
                             <div className="space-y-5">
-                                <SelectEmployee 
+                                <MultiSelectEmployee 
                                     label="SUPORTE N1" 
-                                    value={formData.n1_id} 
-                                    onChange={(val) => setFormData({...formData, n1_id: val})} 
+                                    values={formData.n1_ids} 
+                                    onChange={(vals) => setFormData({...formData, n1_ids: vals})} 
                                     options={funcionarios} 
                                 />
-                                <SelectEmployee 
+                                <MultiSelectEmployee 
                                     label="SUPORTE N2" 
-                                    value={formData.n2_id} 
-                                    onChange={(val) => setFormData({...formData, n2_id: val})} 
+                                    values={formData.n2_ids} 
+                                    onChange={(vals) => setFormData({...formData, n2_ids: vals})} 
                                     options={funcionarios} 
                                     allowEmpty
                                 />
-                                <SelectEmployee 
-                                    label="GERENTE ON" 
-                                    value={formData.gerente_id} 
-                                    onChange={(val) => setFormData({...formData, gerente_id: val})} 
+                                <MultiSelectEmployee 
+                                    label="SUPERVISÃO" 
+                                    values={formData.gerente_ids} 
+                                    onChange={(vals) => setFormData({...formData, gerente_ids: vals})} 
                                     options={funcionarios} 
                                 />
                             </div>
 
-                            <div className="mt-4 flex gap-3 justify-end pt-5 border-t border-surface-container-high">
-                                <button type="button" onClick={closeManagement} className="px-6 py-3 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors">
+                            <div className="mt-4 flex flex-col gap-2 justify-end pt-4 border-t border-surface-container-high">
+                                <button type="button" onClick={closeManagement} className="w-full px-4 py-2 sm:px-6 sm:py-3 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm">
                                     Cancelar
                                 </button>
-                                <button type="submit" className="px-6 py-3 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-lg shadow-primary/30 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[20px]">save</span>
-                                    Salvar Alterações
+                                <button type="submit" className="w-full px-4 py-2 sm:px-6 sm:py-3 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-lg shadow-primary/30 flex items-center justify-center gap-2 text-sm">
+                                    <span className="material-symbols-outlined text-[18px] sm:text-[20px]">save</span>
+                                    <span>Salvar Alterações</span>
                                 </button>
                             </div>
                         </form>
@@ -448,17 +477,71 @@ export default function Schedule({ setCurrentView, user }) {
 
 // Subcomponentes Redesenhados
 
+function MultiSelectEmployee({ label, values, onChange, options, allowEmpty }) {
+    const toggleValue = (val) => {
+        if (values.includes(val)) {
+            onChange(values.filter(v => v !== val));
+        } else {
+            onChange([...values, val]);
+        }
+    };
+    
+    return (
+        <label className="flex flex-col gap-2">
+            <span className="text-xs sm:text-[10px] font-black uppercase text-secondary tracking-widest flex items-center gap-1.5 ml-1">
+                {label} <span className="text-[8px] sm:text-[8px] opacity-60 font-medium">(Selecione múltiplos)</span>
+            </span>
+            <div className="rounded-xl border border-surface-container-high bg-surface-container-low p-2 sm:p-3 max-h-40 sm:max-h-48 overflow-y-auto">
+                {allowEmpty && values.length > 0 && (
+                    <button
+                        type="button"
+                        onClick={() => onChange([])}
+                        className="text-xs text-red-500 font-bold mb-2 hover:underline"
+                    >
+                        Limpar todos
+                    </button>
+                )}
+                <div className="flex flex-col gap-1 sm:gap-2">
+                    {options.map(func => (
+                        <label key={func.funcionario_id} className="flex items-center gap-3 cursor-pointer hover:bg-surface-container-low p-1.5 sm:p-2 rounded-lg transition-colors">
+                            <input
+                                type="checkbox"
+                                checked={values.includes(String(func.funcionario_id))}
+                                onChange={() => toggleValue(String(func.funcionario_id))}
+                                className="w-5 h-5 rounded border-surface-container-high text-primary focus:ring-primary"
+                            />
+                            <span className="font-bold text-on-surface text-sm">{func.funcionario_nome}</span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+            {values.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                    {values.map(val => {
+                        const func = options.find(o => String(o.funcionario_id) === val);
+                        return func ? (
+                            <span key={val} className="text-xs sm:text-[10px] bg-primary/20 text-primary px-2 py-0.5 sm:py-1 rounded-full font-bold">
+                                {func.funcionario_nome}
+                            </span>
+                        ) : null;
+                    })}
+                </div>
+            )}
+        </label>
+    );
+}
+
 function SelectEmployee({ label, value, onChange, options, allowEmpty }) {
     return (
         <label className="flex flex-col gap-2">
-            <span className="text-[10px] font-black uppercase text-secondary tracking-widest flex items-center gap-1.5 ml-1">
+            <span className="text-xs sm:text-[10px] font-black uppercase text-secondary tracking-widest flex items-center gap-1.5 ml-1">
                 {label} {allowEmpty && <span className="text-[8px] opacity-60 font-medium">(Opcional)</span>}
             </span>
             <div className="relative group">
                 <select 
                     value={value || ''}
                     onChange={(e) => onChange(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-surface-container-high bg-surface-container-low px-4 py-3.5 pr-10 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer font-bold transition-all shadow-sm group-hover:bg-white dark:group-hover:bg-surface-container-lowest"
+                    className="w-full appearance-none rounded-xl border border-surface-container-high bg-surface-container-low px-3 py-3 sm:px-4 sm:py-3.5 pr-10 text-on-surface text-sm sm:text-base focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer font-bold transition-all shadow-sm group-hover:bg-white dark:group-hover:bg-surface-container-lowest"
                 >
                     <option value="">-- Não Atribuído --</option>
                     {options.map(func => (
@@ -501,6 +584,8 @@ function CalendarDay({ day, isToday, active, onClick, isAdmin }) {
 }
 
 function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr, isAdmin, onEdit }) {
+    const isArray = (val) => Array.isArray(val);
+    
     return (
         <tr 
             className={`border-b border-surface-container-low/30 hover:bg-primary/5 transition-all duration-300 group cursor-pointer ${isToday ? 'bg-primary/[0.03]' : ''}`}
@@ -511,14 +596,33 @@ function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr, isAdmin, onEd
                 {date}
             </td>
             <td className={`p-4 font-bold ${isWeekend ? 'text-secondary opacity-70' : 'text-on-surface-variant'}`}>{day}</td>
-            <td className="p-4"><UserAvatar user={n1} /></td>
-            <td className="p-4"><UserAvatar user={n2} allowEmpty /></td>
-            <td className="p-4 pr-8 text-right sm:text-left">
-                <div className="flex items-center gap-2 justify-end sm:justify-start">
-                    <div className="flex items-center gap-2 bg-secondary-container/30 rounded-full pl-1.5 pr-3 py-1 border border-secondary/10">
-                        <UserAvatar user={mgr} hideName className="!gap-0" />
-                        <span className="font-bold text-on-surface text-[11px] whitespace-nowrap">{mgr.name}</span>
+            <td className="p-4">
+                {isArray(n1) ? (
+                    <div className="flex flex-col gap-2">
+                        {n1.map((u, i) => <UserAvatar key={i} user={u} />)}
                     </div>
+                ) : <UserAvatar user={n1} />}
+            </td>
+            <td className="p-4">
+                {isArray(n2) ? (
+                    <div className="flex flex-col gap-2">
+                        {n2.map((u, i) => <UserAvatar key={i} user={u} allowEmpty />)}
+                    </div>
+                ) : <UserAvatar user={n2} allowEmpty />}
+            </td>
+            <td className="p-4 pr-8 text-right sm:text-left">
+                <div className="flex flex-col gap-2 items-end sm:items-start">
+                    {isArray(mgr) ? mgr.map((u, i) => (
+                        <div key={i} className="flex items-center gap-2 bg-secondary-container/30 rounded-full pl-1.5 pr-3 py-1 border border-secondary/10">
+                            <UserAvatar user={u} hideName className="!gap-0 !size-8" />
+                            <span className="font-bold text-on-surface text-[11px] whitespace-nowrap">{u.name}</span>
+                        </div>
+                    )) : (
+                        <div className="flex items-center gap-2 bg-secondary-container/30 rounded-full pl-1.5 pr-3 py-1 border border-secondary/10">
+                            <UserAvatar user={mgr} hideName className="!gap-0" />
+                            <span className="font-bold text-on-surface text-[11px] whitespace-nowrap">{mgr.name}</span>
+                        </div>
+                    )}
                 </div>
             </td>
         </tr>

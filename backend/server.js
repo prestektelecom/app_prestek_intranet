@@ -938,8 +938,12 @@ app.get('/api/funcionarios', async (req, res) => {
 });
 
 app.post('/api/plantoes', async (req, res) => {
-    const { data, n1_id, n2_id, gerente_id } = req.body;
+    const { data, n1_ids, n2_ids, gerente_ids } = req.body;
     if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
+    
+    const n1Str = n1_ids?.length ? n1_ids.join(',') : null;
+    const n2Str = n2_ids?.length ? n2_ids.join(',') : null;
+    const mgrStr = gerente_ids?.length ? gerente_ids.join(',') : null;
     
     try {
         const query = `
@@ -952,7 +956,7 @@ app.post('/api/plantoes', async (req, res) => {
                 atualizado_em = NOW()
             RETURNING *;
         `;
-        const result = await pool.query(query, [data, n1_id || null, n2_id || null, gerente_id || null]);
+        const result = await pool.query(query, [data, n1Str, n2Str, mgrStr]);
         return res.json({ sucesso: true, plantao: result.rows[0] });
     } catch (err) {
         console.error('Erro ao salvar plantão:', err.message);
@@ -963,18 +967,45 @@ app.post('/api/plantoes', async (req, res) => {
 app.get('/api/plantoes', async (req, res) => {
     try {
         const query = `
-            SELECT p.*, 
-                   n1.funcionario_nome as n1_nome, n1.foto_perfil as n1_foto,
-                   n2.funcionario_nome as n2_nome, n2.foto_perfil as n2_foto,
-                   mgr.funcionario_nome as mgr_nome, mgr.foto_perfil as mgr_foto
+            SELECT p.data, p.n1_id, p.n2_id, p.gerente_id, p.atualizado_em, p.id
             FROM plantoes p
-            LEFT JOIN usuarios_perfil n1 ON p.n1_id = n1.funcionario_id
-            LEFT JOIN usuarios_perfil n2 ON p.n2_id = n2.funcionario_id
-            LEFT JOIN usuarios_perfil mgr ON p.gerente_id = mgr.funcionario_id
             ORDER BY p.data ASC;
         `;
         const result = await pool.query(query);
-        return res.json({ sucesso: true, plantoes: result.rows });
+        
+        const plantoes = await Promise.all(result.rows.map(async (p) => {
+            const getPessoas = async (ids) => {
+                if (!ids) return { nomes: null, fotos: null };
+                const idList = (ids || '').split(',').filter(Boolean);
+                if (idList.length === 0) return { nomes: null, fotos: null };
+                
+                const placeholders = idList.map((_, i) => `$${i + 1}`).join(',');
+                const res = await pool.query(
+                    `SELECT funcionario_nome, foto_perfil FROM usuarios_perfil WHERE funcionario_id IN (${placeholders})`,
+                    idList
+                );
+                return {
+                    nomes: res.rows.map(r => r.funcionario_nome).join('|||'),
+                    fotos: res.rows.map(r => r.foto_perfil).join('|||')
+                };
+            };
+            
+            const n1 = await getPessoas(p.n1_id);
+            const n2 = await getPessoas(p.n2_id);
+            const mgr = await getPessoas(p.gerente_id);
+            
+            return {
+                ...p,
+                n1_nome: n1.nomes || null,
+                n1_foto: n1.fotos || null,
+                n2_nome: n2.nomes || null,
+                n2_foto: n2.fotos || null,
+                mgr_nome: mgr.nomes || null,
+                mgr_foto: mgr.fotos || null
+            };
+        }));
+        
+        return res.json({ sucesso: true, plantoes });
     } catch (err) {
         console.error('Erro ao buscar plantões:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar plantões.' });
@@ -984,18 +1015,16 @@ app.get('/api/plantoes', async (req, res) => {
 app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;
     try {
-        // Primeiro, pega o funcionario_id associado ao usuario_id
         const userRes = await pool.query('SELECT funcionario_id FROM usuarios_perfil WHERE usuario_id = $1', [usuarioId]);
         const funcionarioId = userRes.rows[0]?.funcionario_id;
 
-        const query = `
-            SELECT * FROM plantoes 
-            WHERE (n1_id = $1 OR n2_id = $1 OR gerente_id = $1)
+        const result = await pool.query(`
+            SELECT data, n1_id, n2_id, gerente_id FROM plantoes 
+            WHERE (n1_id::text LIKE '%' || $1 || '%' OR n2_id::text LIKE '%' || $1 || '%' OR gerente_id::text LIKE '%' || $1 || '%')
               AND data >= CURRENT_DATE
             ORDER BY data ASC
             LIMIT 1;
-        `;
-        const result = await pool.query(query, [funcionarioId || 'vazio']);
+        `, [funcionarioId || '']);
         
         if (result.rows.length === 0) {
             return res.json({ sucesso: true, proximo: null });
