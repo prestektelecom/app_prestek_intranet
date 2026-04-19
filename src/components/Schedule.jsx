@@ -334,79 +334,130 @@ export default function Schedule({ setCurrentView, user }) {
 
     const handleExportarICal = () => {
         if (!filteredPlantoes.length) {
-            alert('Não há plantões no período selecionado para exportar.');
+            showToast('Não há plantões no período selecionado para exportar.', 'error');
             return;
         }
 
+        // ── Helpers ──────────────────────────────────────────────
         const pad = (n) => String(n).padStart(2, '0');
-        const dtstamp = (() => {
-            const d = new Date();
-            return `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
-        })();
 
-        const escapeICS = (s) => String(s ?? '')
+        // DTSTAMP em UTC (obrigatório no RFC 5545)
+        const now = new Date();
+        const dtstamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+
+        // Escape de caracteres especiais conforme RFC 5545 §3.3.11
+        const esc = (s) => String(s ?? '')
             .replace(/\\/g, '\\\\')
             .replace(/\n/g, '\\n')
-            .replace(/,/g, '\\,')
-            .replace(/;/g, '\\;');
+            .replace(/;/g, '\\;')
+            .replace(/,/g, '\\,');
 
+        // Line folding: máximo 75 octetos, continuação com CRLF + SPACE
         const fold = (line) => {
-            if (line.length <= 75) return line;
+            const enc = new TextEncoder();
+            if (enc.encode(line).length <= 75) return line;
+            const chars = [...line];
             const out = [];
-            let i = 0;
-            while (i < line.length) {
-                out.push((i === 0 ? '' : ' ') + line.slice(i, i + 73));
-                i += 73;
+            let cur = '';
+            for (const ch of chars) {
+                if (enc.encode(cur + ch).length > (out.length === 0 ? 75 : 74)) {
+                    out.push(cur);
+                    cur = ' ' + ch;
+                } else {
+                    cur += ch;
+                }
             }
+            if (cur) out.push(cur);
             return out.join('\r\n');
         };
 
-        const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Prestek Intranet//Escala de Plantao//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+        // Converte "|||" separator → vírgulas legíveis
+        const nomes = (raw) => raw ? raw.split('|||').map(n => n.trim()).filter(Boolean).join(', ') : 'Não atribuído';
 
+        // Extrai HHmmss de "HH:MM" ou "HH:MM:SS", com fallback
+        const toTime = (raw, fallback) => {
+            const m = String(raw ?? '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+            return m ? `${m[1]}${m[2]}${m[3] ?? '00'}` : fallback;
+        };
+
+        const monthLabel = `${String(filterMonth).padStart(2,'0')}/${filterYear}`;
+
+        // ── VCALENDAR header ──────────────────────────────────────
+        const lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Prestek Telecom//Intranet//PT',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+            `X-WR-CALNAME:Escala de Plantão Prestek — ${monthLabel}`,
+            'X-WR-TIMEZONE:America/Sao_Paulo',
+            'X-WR-CALDESC:Gerado automaticamente pela Intranet Prestek',
+            // ── VTIMEZONE (America/Sao_Paulo — BRT/BRST) ──────────
+            'BEGIN:VTIMEZONE',
+            'TZID:America/Sao_Paulo',
+            'X-LIC-LOCATION:America/Sao_Paulo',
+            'BEGIN:STANDARD',
+            'TZOFFSETFROM:-0200',
+            'TZOFFSETTO:-0300',
+            'TZNAME:BRT',
+            'DTSTART:19701018T000000',
+            'RRULE:FREQ=YEARLY;BYDAY=3SU;BYMONTH=2',
+            'END:STANDARD',
+            'BEGIN:DAYLIGHT',
+            'TZOFFSETFROM:-0300',
+            'TZOFFSETTO:-0200',
+            'TZNAME:BRST',
+            'DTSTART:19701004T000000',
+            'RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=11',
+            'END:DAYLIGHT',
+            'END:VTIMEZONE',
+        ];
+
+        // ── VEVENTs ───────────────────────────────────────────────
         filteredPlantoes
             .slice()
-            .sort((a, b) => (toIsoDay(a.data) || '').localeCompare(toIsoDay(b.data) || ''))
+            .sort((a, b) => (toIsoDay(a.data) ?? '').localeCompare(toIsoDay(b.data) ?? ''))
             .forEach(p => {
                 const iso = toIsoDay(p.data);
                 if (!iso) return;
-                const [y, m, d] = iso.split('-');
-                const toIcsTime = (raw, fallback) => {
-                    const s = raw ? String(raw) : '';
-                    const match = s.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
-                    if (match) return `${match[1]}${match[2]}${match[3] || '00'}`;
-                    return fallback;
-                };
-                const startTime = toIcsTime(p.horario_inicio, '090000');
-                const endTime = toIcsTime(p.horario_fim, '170000');
-                const dtStart = `${y}${m}${d}T${startTime}`;
-                const dtEnd = `${y}${m}${d}T${endTime}`;
-                const uid = `plantao-${iso}-${p.id ?? 'na'}@prestek-intranet`;
+                const [y, mo, d] = iso.split('-');
+                const dateStr = `${y}${mo}${d}`;
+                const startTime = toTime(p.horario_inicio, '090000');
+                const endTime   = toTime(p.horario_fim,    '170000');
+                const uid = `plantao-${iso}-${p.id ?? crypto.randomUUID()}@prestek.intranet`;
 
-                const summaryParts = [];
-                if (p.n1_nome) summaryParts.push(`N1: ${p.n1_nome}`);
-                if (p.n2_nome) summaryParts.push(`N2: ${p.n2_nome}`);
-                if (p.mgr_nome) summaryParts.push(`Gerente: ${p.mgr_nome}`);
-                const summary = `Plantão — ${summaryParts.join(' · ') || 'Sem atribuições'}`;
+                const n1  = nomes(p.n1_nome);
+                const n2  = nomes(p.n2_nome);
+                const mgr = nomes(p.mgr_nome);
 
+                const summary = `Plantão — ${iso.split('-').reverse().join('/')}`;
                 const description = [
-                    `Suporte N1: ${p.n1_nome || 'Não atribuído'}`,
-                    `Suporte N2: ${p.n2_nome || 'Não atribuído'}`,
-                    `Gerente ON: ${p.mgr_nome || 'Não atribuído'}`
+                    `📋 Escala de Plantão Prestek`,
+                    ``,
+                    `👤 Suporte N1: ${n1}`,
+                    `👤 Suporte N2: ${n2}`,
+                    `👔 Supervisão: ${mgr}`,
+                    ``,
+                    `Gerado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`,
                 ].join('\n');
 
                 lines.push('BEGIN:VEVENT');
                 lines.push(fold(`UID:${uid}`));
                 lines.push(`DTSTAMP:${dtstamp}`);
-                lines.push(`DTSTART;TZID=America/Sao_Paulo:${dtStart}`);
-                lines.push(`DTEND;TZID=America/Sao_Paulo:${dtEnd}`);
-                lines.push(fold(`SUMMARY:${escapeICS(summary)}`));
-                lines.push(fold(`DESCRIPTION:${escapeICS(description)}`));
+                lines.push(`DTSTART;TZID=America/Sao_Paulo:${dateStr}T${startTime}`);
+                lines.push(`DTEND;TZID=America/Sao_Paulo:${dateStr}T${endTime}`);
+                lines.push(fold(`SUMMARY:${esc(summary)}`));
+                lines.push(fold(`DESCRIPTION:${esc(description)}`));
+                lines.push('CATEGORIES:Escala,Plantão,Prestek');
+                lines.push('STATUS:CONFIRMED');
+                lines.push('TRANSP:OPAQUE');
+                lines.push('SEQUENCE:0');
                 lines.push('END:VEVENT');
             });
 
         lines.push('END:VCALENDAR');
 
-        const ics = lines.join('\r\n');
+        const ics = lines.join('\r\n') + '\r\n';
         const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
