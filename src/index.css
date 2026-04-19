@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --surface-lowest: #ffffff;
+  --surface-low: #fcfaf8;
+  --surface-high: #eaddcd;
+  --on-surface: #1d150c;
+  --on-surface-variant: #a17745;
+  --secondary-container: #f4eee6;
+  --on-secondary-container: #a17745;
+  --tertiary-container: #fcfaf8;
+  --on-tertiary-container: #8d6e63;
+  --secondary-fixed: #eaddcd;
+  --on-secondary-fixed: #1d150c;
+}
+
+.dark {
+  --surface-lowest: #1a130b;
+  --surface-low: #2c2217;
+  --surface-high: #3d3228;
+  --on-surface: #ffffff;
+  --on-surface-variant: #ffb347;
+  --secondary-container: #3d3228;
+  --on-secondary-container: #ffb347;
+  --tertiary-container: #4a3a2a;
+  --on-tertiary-container: #d7ccc8;
+  --secondary-fixed: #3d3228;
+  --on-secondary-fixed: #ffb347;
+}
+
 /* Esconder scrollbar mantendo funcionalidade */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

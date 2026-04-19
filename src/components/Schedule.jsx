@@ -191,141 +191,106 @@ export default function Schedule({ setCurrentView, user }) {
     const daysInMonth = new Date(parseInt(filterYear), parseInt(filterMonth), 0).getDate();
 
     return (
-        <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto relative">
-            {/* Breadcrumbs */}
-            <div className="flex flex-wrap items-center gap-2 mb-8">
-                <button 
-                    onClick={() => setCurrentView('dashboard')}
-                    className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                    <span className="material-symbols-outlined text-lg">home</span>
-                    Início
-                </button>
-                <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
-                <a className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors" href="#">Processos Internos</a>
-                <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
-                <span className="text-[#1d150c] dark:text-white text-sm font-bold">Escala de Plantão</span>
-            </div>
-
-            {/* Header da Página */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-[#eaddcd] dark:border-gray-800 pb-8">
+        <div className="flex-1 flex flex-col w-full max-w-[1920px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <main className="flex-1 flex flex-col gap-8">
+                {/* Context & Breadcrumbs */}
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-[#1d150c] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Escala de Plantão</h1>
-                    <p className="text-[#a17745] dark:text-orange-300 text-lg font-medium max-w-2xl">Visualize e gerencie as atribuições de cobertura mensal para a equipe de suporte.</p>
-                </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-[#1d150c] dark:text-white font-bold shadow-sm hover:bg-[#fcfaf8] dark:bg-[#2c2217] hover:border-primary transition-colors">
-                        <span className="material-symbols-outlined text-[20px]">print</span>
-                        Imprimir
-                    </button>
-                    <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30">
-                        <span className="material-symbols-outlined text-[20px]">ios_share</span>
-                        Exportar para iCal
-                    </button>
+                    <div className="text-sm font-medium text-secondary tracking-wide flex items-center gap-2">
+                        <button onClick={() => setCurrentView('dashboard')} className="hover:text-primary transition-colors flex items-center gap-1">
+                            Início
+                        </button>
+                        <span className="material-symbols-outlined text-sm">chevron_right</span>
+                        <span className="text-on-surface lowercase">escala de plantão</span>
+                    </div>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tighter">Visão Geral da Escala</h1>
+                            <p className="text-secondary font-medium mt-1">Visualize e gerencie as atribuições de cobertura mensal.</p>
+                        </div>
+                    <div className="flex gap-3">
+                        <button className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors">
+                            <span className="material-symbols-outlined text-[20px]">print</span>
+                            Imprimir
+                        </button>
+                        <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-primary/20">
+                            <span className="material-symbols-outlined text-[20px]">ios_share</span>
+                            Exportar iCal
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {erroCarregamento && (
-                <div className="mb-6 p-4 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm font-medium flex items-center gap-2">
+                <div className="p-4 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm font-medium flex items-center gap-2">
                     <span className="material-symbols-outlined">error</span>
                     {erroCarregamento}
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-                {/* Coluna Esquerda: Calendário e Filtros */}
-                <div className="lg:col-span-4 flex flex-col gap-8">
-
-                    {/* Filtros Livres */}
-                    <div className="bg-white dark:bg-[#1a130b] p-6 rounded-xl shadow-sm border border-[#eaddcd] dark:border-gray-800">
-                        <h3 className="text-lg font-bold text-[#1d150c] dark:text-white mb-4 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary">filter_alt</span>
-                            Filtros de Período e Setor
-                        </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left Column: Filters & Context */}
+                <div className="lg:col-span-3 flex flex-col gap-6">
+                    {/* Filtros Card */}
+                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm flex flex-col gap-5 border border-surface-container-high/50 animate-in fade-in slide-in-from-left-4 duration-500">
+                        <div className="flex items-center gap-2 border-b border-surface-container-high/50 pb-4">
+                            <span className="material-symbols-outlined text-secondary">tune</span>
+                            <h2 className="text-lg font-bold text-on-surface">Filtros</h2>
+                        </div>
                         <div className="flex flex-col gap-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <label className="flex flex-col gap-1.5">
-                                    <span className="text-xs font-black uppercase text-[#a17745] dark:text-orange-300 tracking-wider">MÊS</span>
-                                    <div className="relative">
-                                        <select 
-                                            value={filterMonth}
-                                            onChange={(e) => setFilterMonth(e.target.value)}
-                                            className="w-full appearance-none rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] px-4 py-2.5 pr-8 text-[#1d150c] dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer font-bold transition-all"
-                                        >
-                                            <option value="1">Janeiro</option>
-                                            <option value="2">Fevereiro</option>
-                                            <option value="3">Março</option>
-                                            <option value="4">Abril</option>
-                                            <option value="5">Maio</option>
-                                            <option value="6">Junho</option>
-                                            <option value="7">Julho</option>
-                                            <option value="8">Agosto</option>
-                                            <option value="9">Setembro</option>
-                                            <option value="10">Outubro</option>
-                                            <option value="11">Novembro</option>
-                                            <option value="12">Dezembro</option>
-                                        </select>
-                                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#a17745] dark:text-orange-300">expand_more</span>
-                                    </div>
+                                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">Mês</span>
+                                    <select 
+                                        value={filterMonth}
+                                        onChange={(e) => setFilterMonth(e.target.value)}
+                                        className="w-full bg-surface-container-low border-none rounded-md py-2.5 px-3 text-on-surface focus:ring-2 focus:ring-primary focus:outline-none appearance-none cursor-pointer font-bold text-sm"
+                                    >
+                                        <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+                                        <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+                                        <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
+                                        <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                                    </select>
                                 </label>
                                 <label className="flex flex-col gap-1.5">
-                                    <span className="text-xs font-black uppercase text-[#a17745] dark:text-orange-300 tracking-wider">ANO</span>
-                                    <div className="relative">
-                                        <select 
-                                            value={filterYear}
-                                            onChange={(e) => setFilterYear(e.target.value)}
-                                            className="w-full appearance-none rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] px-4 py-2.5 pr-8 text-[#1d150c] dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer font-bold transition-all"
-                                        >
-                                            <option>2024</option>
-                                            <option>2025</option>
-                                            <option>2026</option>
-                                        </select>
-                                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#a17745] dark:text-orange-300">expand_more</span>
-                                    </div>
+                                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">Ano</span>
+                                    <select 
+                                        value={filterYear}
+                                        onChange={(e) => setFilterYear(e.target.value)}
+                                        className="w-full bg-surface-container-low border-none rounded-md py-2.5 px-3 text-on-surface focus:ring-2 focus:ring-primary focus:outline-none appearance-none cursor-pointer font-bold text-sm"
+                                    >
+                                        <option value="2024">2024</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2026">2026</option>
+                                    </select>
                                 </label>
                             </div>
-                            <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-black uppercase text-[#a17745] dark:text-orange-300 tracking-wider">BUSCA POR ATENDENTE</span>
-                                <input 
-                                    type="text" 
-                                    placeholder="Ex: Ana, Carlos..." 
-                                    value={filterSearch}
-                                    onChange={e => setFilterSearch(e.target.value)}
-                                    className="w-full rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] px-4 py-2.5 text-[#1d150c] dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none font-bold transition-all placeholder:text-[#a17745]/50"
-                                />
-                            </label>
+                            <div>
+                                <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block mb-2">Atendente</label>
+                                <div className="relative">
+                                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-lg">search</span>
+                                    <input 
+                                        type="text"
+                                        placeholder="Buscar nome..."
+                                        value={filterSearch}
+                                        onChange={e => setFilterSearch(e.target.value)}
+                                        className="w-full bg-surface-container-low border-none rounded-md py-2.5 pl-10 pr-4 text-on-surface focus:ring-2 focus:ring-primary focus:outline-none font-bold text-sm placeholder-secondary-variant/50"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Mini Calendário */}
-                    <div className="bg-white dark:bg-[#1a130b] p-6 rounded-xl shadow-sm border border-[#eaddcd] dark:border-gray-800">
-                        <div className="flex items-center justify-between mb-6">
-                            <button className="p-1 rounded-full hover:bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white transition-colors border border-transparent hover:border-[#eaddcd] dark:border-gray-800 text-sm font-bold opacity-0 cursor-default">
-                                <span className="material-symbols-outlined">chevron_left</span>
-                            </button>
-                            <p className="text-[#1d150c] dark:text-white text-base font-bold capitalize">
+                    {/* Mini Calendar */}
+                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm border border-surface-container-high/50 animate-in fade-in slide-in-from-left-4 duration-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-base font-bold text-on-surface capitalize">
                                 {new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                            </p>
-                            <button className="p-1 rounded-full hover:bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white transition-colors border border-transparent hover:border-[#eaddcd] dark:border-gray-800 opacity-0 cursor-default">
-                                <span className="material-symbols-outlined">chevron_right</span>
-                            </button>
+                            </h3>
                         </div>
-
-                        <div className="grid grid-cols-7 gap-y-4 gap-x-1 text-center mb-2">
-                            {[
-                                { id: 'sun', label: 'D' },
-                                { id: 'mon', label: 'S' },
-                                { id: 'tue', label: 'T' },
-                                { id: 'wed', label: 'Q' },
-                                { id: 'thu', label: 'Q' },
-                                { id: 'fri', label: 'S' },
-                                { id: 'sat', label: 'S' },
-                            ].map(({ id, label }) => (
-                                <div key={id} className="text-xs font-black text-[#a17745] dark:text-orange-300 uppercase tracking-widest">{label}</div>
-                            ))}
+                        <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-2 font-black text-secondary uppercase tracking-tighter">
+                            {['D','S','T','Q','Q','S','S'].map((d, i) => <div key={i}>{d}</div>)}
                         </div>
-
-                        <div className="grid grid-cols-7 gap-y-2 gap-x-1 text-center">
+                        <div className="grid grid-cols-7 gap-1 text-sm">
                             {Array.from({ length: daysInMonth }, (_, i) => {
                                 const day = i + 1;
                                 const dateStr = `${filterYear}-${String(filterMonth).padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
@@ -343,72 +308,53 @@ export default function Schedule({ setCurrentView, user }) {
                                 );
                             })}
                         </div>
-
-                        <div className="mt-6 flex items-center gap-5 text-xs font-bold justify-center border-t border-[#f4eee6] dark:border-gray-800 pt-4">
-                            <div className="flex items-center gap-2">
-                                <div className="size-3 rounded-full bg-primary shadow-sm shadow-primary/20"></div>
-                                <span className="text-[#1d150c] dark:text-white">Dia Atual</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="size-3 rounded-full bg-[#10b981] shadow-sm shadow-[#10b981]/20"></div>
-                                <span className="text-[#1d150c] dark:text-white">Plantão</span>
-                            </div>
+                        <div className="mt-4 flex gap-4 text-[10px] font-bold text-secondary">
+                            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 bg-primary rounded-sm shadow-sm shadow-primary/20"></div> Hoje</div>
+                            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-secondary rounded-full"></div> Plantão</div>
                         </div>
                     </div>
 
-                    {/* Estatísticas */}
-                    <div className="bg-[#fcfaf8] dark:bg-[#2c2217] p-6 rounded-xl border border-[#eaddcd] dark:border-gray-800">
-                        <div className="flex items-start gap-4">
-                            <div className="p-3 bg-white dark:bg-[#1a130b] rounded-lg shadow-sm text-primary border border-[#eaddcd] dark:border-gray-800">
-                                <span className="material-symbols-outlined text-[24px]">analytics</span>
-                            </div>
-                            <div>
-                                <p className="text-[#a17745] dark:text-orange-300 text-xs font-black uppercase tracking-wider mb-1">Plantões Filtrados</p>
-                                <p className="text-3xl font-black text-[#1d150c] dark:text-white">{filteredPlantoes.length}</p>
-                                <p className="text-sm font-medium text-[#a17745] dark:text-orange-300 mt-1">Atribuições neste período</p>
-                            </div>
+                    {/* Stats */}
+                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm border-l-4 border-primary animate-in fade-in slide-in-from-left-4 duration-1000">
+                        <div className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Status do Filtro</div>
+                        <div className="text-3xl font-black text-on-surface">
+                            {filteredPlantoes.length} <span className="text-sm font-bold text-secondary">Plantões Filtrados</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Coluna Direita: Tabela de Escala Detalhada */}
-                <div className="lg:col-span-8">
-                    <div className="bg-white dark:bg-[#1a130b] rounded-xl shadow-sm border border-[#eaddcd] dark:border-gray-800 overflow-hidden flex flex-col h-full">
-                        <div className="px-6 py-5 border-b border-[#eaddcd] dark:border-gray-800 flex flex-wrap items-center justify-between gap-4 bg-[#fcfaf8] dark:bg-[#2c2217]">
-                            <h3 className="text-lg font-bold text-[#1d150c] dark:text-white flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">table_chart</span>
-                                Escala Detalhada de Suporte {user?.is_admin && <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded font-black hidden sm:inline-block">MODO ADMIN</span>}
-                            </h3>
-                            <div className="flex gap-2 text-sm text-[#a17745] dark:text-orange-300">
-                                {user?.is_admin ? "Clique nos dias no calendário ou nas linhas para editar." : ""}
+                {/* Right Column: Data Table */}
+                <div className="lg:col-span-9 flex flex-col gap-6">
+                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-3xl shadow-sm overflow-hidden flex flex-col border border-surface-container-high/50 animate-in fade-in slide-in-from-right-4 duration-700">
+                        <div className="p-6 md:p-8 flex flex-wrap justify-between items-center bg-surface-container-lowest border-b border-surface-container-low gap-4">
+                            <div>
+                                <h2 className="text-2xl font-black text-on-surface tracking-tight">Escala Detalhada de Suporte</h2>
+                                <p className="text-sm font-medium text-secondary mt-1">Clique nas linhas {user?.is_admin ? "ou no calendário" : ""} para ver detalhes.</p>
                             </div>
+                            {user?.is_admin && (
+                                <div className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-primary/20 animate-pulse">
+                                    <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+                                    Gestão Ativa
+                                </div>
+                            )}
                         </div>
-
+                        
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm border-collapse">
-                                <thead className="bg-white dark:bg-[#1a130b] border-b-2 border-[#f4eee6] dark:border-gray-800 text-[#a17745] dark:text-orange-300">
-                                    <tr>
-                                        <th className="px-6 py-4 font-black uppercase tracking-wider text-xs w-28">Data</th>
-                                        <th className="px-6 py-4 font-black uppercase tracking-wider text-xs w-36">Dia da Semana</th>
-                                        <th className="px-6 py-4 font-black uppercase tracking-wider text-xs">Suporte N1</th>
-                                        <th className="px-6 py-4 font-black uppercase tracking-wider text-xs">Suporte N2</th>
-                                        <th className="px-6 py-4 font-black uppercase tracking-wider text-xs">Gerente ON</th>
-                                        {user?.is_admin && <th className="px-6 py-4 font-black uppercase tracking-wider text-xs w-10">Ações</th>}
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-surface-container-low/50 border-b border-surface-container-high/50">
+                                        <th className="p-4 pl-8 text-[11px] font-black text-secondary uppercase tracking-widest">DATA</th>
+                                        <th className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">DIA</th>
+                                        <th className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N1 - ATENDIMENTO</th>
+                                        <th className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N2 - SUPORTE/SERVIÇOS</th>
+                                        <th className="p-4 pr-8 text-[11px] font-black text-secondary uppercase tracking-widest text-right sm:text-left">SUPERVISÃO</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[#f4eee6] dark:divide-gray-800">
+                                <tbody className="text-sm">
                                     {loading ? (
-                                        <tr>
-                                            <td colSpan={user?.is_admin ? 6 : 5} className="px-6 py-10 text-center text-[#a17745] font-bold">
-                                                Carregando escala...
-                                            </td>
-                                        </tr>
+                                        <tr><td colSpan={5} className="p-12 text-center text-secondary font-bold">Carregando escala...</td></tr>
                                     ) : filteredPlantoes.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={user?.is_admin ? 6 : 5} className="px-6 py-10 text-center text-[#a17745] font-bold">
-                                                Nenhum plantão agendado para este período visualizado.
-                                            </td>
-                                        </tr>
+                                        <tr><td colSpan={5} className="p-12 text-center text-secondary font-bold">Nenhum plantão agendado para este filtro.</td></tr>
                                     ) : (
                                         filteredPlantoes.map((p) => (
                                             <ScheduleRow
@@ -417,9 +363,9 @@ export default function Schedule({ setCurrentView, user }) {
                                                 day={getDiaSemana(p.data)}
                                                 isToday={isHoje(p.data)}
                                                 isWeekend={isFimDeSemana(p.data)}
-                                                n1={{ name: p.n1_nome || 'Não atribuído', img: p.n1_foto }}
-                                                n2={p.n2_id ? { name: p.n2_nome || 'Não atribuído', img: p.n2_foto } : null}
-                                                mgr={{ name: p.mgr_nome || 'Não atribuído', img: p.mgr_foto }}
+                                                n1={{ name: p.n1_nome || 'Não atribuído', initials: (p.n1_nome || '??').split(' ').map(n=>n[0]).join('').slice(0,2), img: p.n1_foto }}
+                                                n2={p.n2_id ? { name: p.n2_nome || 'Não atribuído', initials: (p.n2_nome || '??').split(' ').map(n=>n[0]).join('').slice(0,2), img: p.n2_foto } : null}
+                                                mgr={{ name: p.mgr_nome || 'Não atribuído', initials: (p.mgr_nome || '??').split(' ').map(n=>n[0]).join('').slice(0,2), img: p.mgr_foto }}
                                                 isAdmin={user?.is_admin}
                                                 onEdit={() => openManagement(toIsoDay(p.data))}
                                             />
@@ -429,91 +375,90 @@ export default function Schedule({ setCurrentView, user }) {
                             </table>
                         </div>
                     </div>
-
-                    <div className="mt-6 flex flex-wrap items-center gap-2 p-4 bg-[#fcfaf8] dark:bg-[#2c2217] rounded-xl border border-[#eaddcd] dark:border-gray-800 text-sm text-[#a17745] dark:text-orange-300 font-medium">
-                        <span className="material-symbols-outlined text-primary">info</span>
-                        <p><strong>Nota:</strong> Os plantões estão sujeitos a alterações. Em caso de imprevistos, contatar o RH para realocações com 48h de antecedência.</p>
-                    </div>
                 </div>
             </div>
 
-            {/* Modal de Gestão (Visível Apenas para Admin) */}
+            {/* Modal de Gestão */}
             {isModalOpen && user?.is_admin && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#1a130b] rounded-2xl shadow-xl w-full max-w-lg border border-[#eaddcd] dark:border-gray-800 overflow-hidden flex flex-col">
-                        <div className="px-6 py-5 border-b border-[#eaddcd] dark:border-gray-800 flex justify-between items-center bg-[#fcfaf8] dark:bg-[#2c2217]">
-                            <h2 className="text-xl font-black text-[#1d150c] dark:text-white flex items-center gap-2">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/60 backdrop-blur-md p-4">
+                    <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-lg border border-surface-container-high overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="px-6 py-5 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low">
+                            <h2 className="text-xl font-black text-on-surface flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">edit_calendar</span>
                                 Gerenciar Plantão
                             </h2>
-                            <button onClick={closeManagement} className="text-[#a17745] dark:text-orange-300 hover:text-red-500 rounded-full p-1 transition-colors">
+                            <button onClick={closeManagement} className="text-secondary hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
 
                         <form onSubmit={salvarPlantao} className="p-6 flex flex-col gap-6">
-                            <div className="flex gap-2 items-center bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold w-max">
-                                <span className="material-symbols-outlined">calendar_today</span>
-                                Data Selecionada: {selectedDate.split('-').reverse().join('/')}
+                            <div className="flex gap-2 items-center bg-primary/10 text-primary px-4 py-3 rounded-lg font-black text-sm w-max border border-primary/20">
+                                <span className="material-symbols-outlined text-lg">calendar_today</span>
+                                Data: {selectedDate.split('-').reverse().join('/')}
                             </div>
 
-                            <SelectEmployee 
-                                label="SUPORTE N1" 
-                                value={formData.n1_id} 
-                                onChange={(val) => setFormData({...formData, n1_id: val})} 
-                                options={funcionarios} 
-                            />
-                            <SelectEmployee 
-                                label="SUPORTE N2" 
-                                value={formData.n2_id} 
-                                onChange={(val) => setFormData({...formData, n2_id: val})} 
-                                options={funcionarios} 
-                            />
-                            <SelectEmployee 
-                                label="GERENTE ON" 
-                                value={formData.gerente_id} 
-                                onChange={(val) => setFormData({...formData, gerente_id: val})} 
-                                options={funcionarios} 
-                            />
+                            <div className="space-y-5">
+                                <SelectEmployee 
+                                    label="SUPORTE N1" 
+                                    value={formData.n1_id} 
+                                    onChange={(val) => setFormData({...formData, n1_id: val})} 
+                                    options={funcionarios} 
+                                />
+                                <SelectEmployee 
+                                    label="SUPORTE N2" 
+                                    value={formData.n2_id} 
+                                    onChange={(val) => setFormData({...formData, n2_id: val})} 
+                                    options={funcionarios} 
+                                    allowEmpty
+                                />
+                                <SelectEmployee 
+                                    label="GERENTE ON" 
+                                    value={formData.gerente_id} 
+                                    onChange={(val) => setFormData({...formData, gerente_id: val})} 
+                                    options={funcionarios} 
+                                />
+                            </div>
 
-                            <div className="mt-4 flex gap-3 justify-end pt-4 border-t border-[#eaddcd] dark:border-gray-800">
-                                <button type="button" onClick={closeManagement} className="px-5 py-2.5 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-[#1d150c] dark:text-white font-bold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <div className="mt-4 flex gap-3 justify-end pt-5 border-t border-surface-container-high">
+                                <button type="button" onClick={closeManagement} className="px-6 py-3 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors">
                                     Cancelar
                                 </button>
-                                <button type="submit" className="px-5 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30 flex items-center gap-2">
+                                <button type="submit" className="px-6 py-3 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-lg shadow-primary/30 flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[20px]">save</span>
-                                    Salvar Plantão
+                                    Salvar Alterações
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-
-            <footer className="mt-8 pt-8 border-t border-[#eaddcd] dark:border-gray-800 pb-4 flex flex-col md:flex-row justify-between items-center text-sm text-[#a17745] dark:text-orange-300 gap-4">
-                <p className="font-semibold cursor-default">© 2025 Prestek Intranet. Portal Interno. Todos os direitos reservados.</p>
-                <div className="flex gap-6 font-bold">
-                    <a className="hover:text-primary transition-colors" href="#">Política de Plantões</a>
-                    <a className="hover:text-primary transition-colors" href="#">Regras de Descanso</a>
+            
+            <footer className="mt-8 pt-8 border-t border-surface-container-high pb-4 flex flex-col md:flex-row justify-between items-center text-xs text-secondary font-bold gap-4 uppercase tracking-widest">
+                <p>© 2026 Prestek Intranet • Portal Interno</p>
+                <div className="flex gap-6">
+                    <a className="hover:text-primary transition-colors" href="#">Políticas</a>
+                    <a className="hover:text-primary transition-colors" href="#">Suporte</a>
                 </div>
             </footer>
         </main>
+    </div>
     );
 }
 
-// Componentes estendidos/subcomponentes
+// Subcomponentes Redesenhados
 
-function SelectEmployee({ label, value, onChange, options }) {
+function SelectEmployee({ label, value, onChange, options, allowEmpty }) {
     return (
-        <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-black uppercase text-[#a17745] dark:text-orange-300 tracking-wider flex items-center gap-1">
-                {label}
+        <label className="flex flex-col gap-2">
+            <span className="text-[10px] font-black uppercase text-secondary tracking-widest flex items-center gap-1.5 ml-1">
+                {label} {allowEmpty && <span className="text-[8px] opacity-60 font-medium">(Opcional)</span>}
             </span>
-            <div className="relative">
+            <div className="relative group">
                 <select 
                     value={value || ''}
                     onChange={(e) => onChange(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-[#eaddcd] dark:border-gray-800 bg-white dark:bg-[#1a130b] px-4 py-3 pr-8 text-[#1d150c] dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer font-bold transition-all"
+                    className="w-full appearance-none rounded-xl border border-surface-container-high bg-surface-container-low px-4 py-3.5 pr-10 text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer font-bold transition-all shadow-sm group-hover:bg-white dark:group-hover:bg-surface-container-lowest"
                 >
                     <option value="">-- Não Atribuído --</option>
                     {options.map(func => (
@@ -522,105 +467,98 @@ function SelectEmployee({ label, value, onChange, options }) {
                         </option>
                     ))}
                 </select>
-                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#a17745] dark:text-orange-300">expand_more</span>
+                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary transition-transform group-hover:translate-y-[-40%] group-hover:text-primary">expand_more</span>
             </div>
         </label>
     );
 }
 
 function CalendarDay({ day, isToday, active, onClick, isAdmin }) {
-    let classes = "size-9 mx-auto flex items-center justify-center text-sm rounded-full font-bold transition-transform ";
+    let classes = "w-full aspect-square flex flex-col items-center justify-center text-xs rounded-lg font-bold transition-all relative group ";
     
     if (isAdmin) {
-        classes += "cursor-pointer ";
+        classes += "cursor-pointer hover:scale-105 active:scale-95 ";
     } else {
         classes += "cursor-default ";
     }
 
     if (isToday) {
-        classes += "bg-primary text-white shadow-md shadow-primary/30 ";
-        if (isAdmin) classes += "hover:scale-110 ";
+        classes += "bg-primary text-white shadow-lg shadow-primary/30 z-10 ";
     } else if (active) {
-        classes += "bg-[#10b981] text-white shadow-md shadow-[#10b981]/30 ";
-        if (isAdmin) classes += "hover:scale-110 hover:ring-2 ring-primary ring-offset-2 ring-offset-white ring-offset-dark-100 ";
+        classes += "text-on-surface hover:bg-surface-container-low border border-surface-container-high/30 ";
     } else {
-        classes += "text-[#1d150c] dark:text-white border border-transparent ";
-        if (isAdmin) classes += "hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] hover:text-primary hover:border-[#eaddcd] dark:hover:border-gray-800 hover:scale-110";
+        classes += "text-on-surface/40 hover:text-on-surface hover:bg-surface-container-low ";
     }
 
     return (
-        <button onClick={onClick} className={classes}>{day}</button>
+        <button onClick={onClick} className={classes}>
+            {day}
+            {active && !isToday && (
+                <div className="w-1.5 h-1.5 bg-secondary rounded-full absolute bottom-1.5 left-1/2 -translate-x-1/2 shadow-sm"></div>
+            )}
+        </button>
     );
 }
 
 function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr, isAdmin, onEdit }) {
-    let rowClasses = "transition-colors group ";
-
-    if (isToday) {
-        rowClasses += "bg-primary/5 border-l-4 border-l-primary ";
-    } else if (isWeekend) {
-        rowClasses += "bg-[#fcfaf8] dark:bg-[#2c2217]/50 ";
-    }
-
-    if (isAdmin) {
-        rowClasses += "hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] cursor-pointer";
-    }
-
     return (
-        <tr className={rowClasses} onClick={isAdmin ? onEdit : undefined}>
-            <td className={`px-6 py-4 font-black ${isToday ? 'text-primary' : 'text-[#1d150c] dark:text-white'}`}>{date}</td>
-            <td className={`px-6 py-4 font-semibold ${isWeekend ? 'text-[#a17745] dark:text-orange-300' : 'text-[#1d150c] dark:text-white'}`}>{day}</td>
-            <td className="px-6 py-4"><UserAvatar user={n1} /></td>
-            <td className="px-6 py-4"><UserAvatar user={n2} allowEmpty /></td>
-            <td className="px-6 py-4"><UserAvatar user={mgr} /></td>
-            {isAdmin && (
-                <td className="px-6 py-4">
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                        className="p-1.5 rounded-md text-[#a17745] dark:text-orange-300 opacity-0 group-hover:opacity-100 hover:bg-white dark:hover:bg-black hover:text-primary border border-[#eaddcd] dark:border-gray-800 transition-all font-bold text-xs"
-                    >
-                        EDITAR
-                    </button>
-                </td>
-            )}
+        <tr 
+            className={`border-b border-surface-container-low/30 hover:bg-primary/5 transition-all duration-300 group cursor-pointer ${isToday ? 'bg-primary/[0.03]' : ''}`}
+            onClick={isAdmin ? onEdit : undefined}
+        >
+            <td className={`p-4 pl-8 font-black relative ${isToday ? 'text-primary' : 'text-on-surface'}`}>
+                <div className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${isToday ? 'bg-primary' : 'group-hover:bg-primary/40 bg-transparent'}`}></div>
+                {date}
+            </td>
+            <td className={`p-4 font-bold ${isWeekend ? 'text-secondary opacity-70' : 'text-on-surface-variant'}`}>{day}</td>
+            <td className="p-4"><UserAvatar user={n1} /></td>
+            <td className="p-4"><UserAvatar user={n2} allowEmpty /></td>
+            <td className="p-4 pr-8 text-right sm:text-left">
+                <div className="flex items-center gap-2 justify-end sm:justify-start">
+                    <div className="flex items-center gap-2 bg-secondary-container/30 rounded-full pl-1.5 pr-3 py-1 border border-secondary/10">
+                        <UserAvatar user={mgr} hideName className="!gap-0" />
+                        <span className="font-bold text-on-surface text-[11px] whitespace-nowrap">{mgr.name}</span>
+                    </div>
+                </div>
+            </td>
         </tr>
     );
 }
 
-function UserAvatar({ user, allowEmpty }) {
+function UserAvatar({ user, allowEmpty, hideName, className }) {
     if (!user && allowEmpty) {
         return (
-            <span className="inline-flex items-center px-2.5 py-1 rounded bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider">
-                Não atribuído
-            </span>
+            <div className={`flex items-center gap-2 ${className}`}>
+                 <div className="size-8 rounded-full bg-surface-container-low border border-surface-container-high/50 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[16px] text-secondary">person_off</span>
+                 </div>
+                 {!hideName && <span className="text-[11px] font-bold text-secondary opacity-50 italic">Pendente</span>}
+            </div>
         );
     }
 
     if (!user) return null;
 
-    let avatarBgClasses = "size-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border border-[#eaddcd] dark:border-gray-800 ";
-
-    if (user.color === 'purple') {
-        avatarBgClasses += "bg-purple-100 text-purple-600 border-purple-200";
-    } else if (user.color === 'orange') {
-        avatarBgClasses += "bg-orange-100 text-orange-600 border-orange-200";
-    } else {
-        avatarBgClasses += "bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white";
-    }
-
     return (
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 group/avatar ${className}`}>
             {user.img ? (
-                <LottieAvatar 
-                    src={user.img}
-                    className="size-8 rounded-full border border-[#eaddcd] dark:border-gray-800 shrink-0"
-                />
+                <div className="relative">
+                    <LottieAvatar 
+                        src={user.img}
+                        className="size-9 rounded-full border-2 border-surface-container-high shadow-sm shrink-0 group-hover/avatar:border-primary/50 transition-colors"
+                    />
+                </div>
             ) : (
-                <div className={avatarBgClasses} title={user.name}>
+                <div className="size-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-black text-[11px] border-2 border-secondary/10 shadow-sm shrink-0 uppercase group-hover/avatar:border-primary/30 transition-colors">
                     {user.initials}
                 </div>
             )}
-            <div className="font-bold text-[#1d150c] dark:text-white whitespace-nowrap">{user.name}</div>
+            {!hideName && (
+                <div className="flex flex-col -gap-1">
+                    <span className="font-black text-on-surface whitespace-nowrap tracking-tight group-hover/avatar:text-primary transition-colors">{user.name}</span>
+                    <span className="text-[9px] text-secondary font-bold uppercase tracking-wider opacity-0 group-hover/avatar:opacity-100 transition-opacity">Visualizar Perfil</span>
+                </div>
+            )}
         </div>
     );
 }
