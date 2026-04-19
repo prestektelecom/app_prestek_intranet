@@ -210,7 +210,7 @@ export default function Schedule({ setCurrentView, user }) {
             {/* Header da Página */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-[#eaddcd] dark:border-gray-800 pb-8">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-[#1d150c] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Shift Scheduling</h1>
+                    <h1 className="text-[#1d150c] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Escala de Plantão</h1>
                     <p className="text-[#a17745] dark:text-orange-300 text-lg font-medium max-w-2xl">Visualize e gerencie as atribuições de cobertura mensal para a equipe de suporte.</p>
                 </div>
                 <div className="flex gap-3">
