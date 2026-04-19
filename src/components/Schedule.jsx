@@ -186,6 +186,183 @@ export default function Schedule({ setCurrentView, user }) {
 
     const closeManagement = () => setIsModalOpen(false);
 
+    const monthLabel = () => new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1)
+        .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+    const handleImprimir = () => {
+        if (!filteredPlantoes.length) {
+            alert('Não há plantões no período selecionado para imprimir.');
+            return;
+        }
+        const win = window.open('', '_blank');
+        if (!win) {
+            alert('Não foi possível abrir a janela de impressão. Verifique o bloqueador de pop-ups.');
+            return;
+        }
+
+        const doc = win.document;
+        doc.open();
+        doc.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"></head><body></body></html>');
+        doc.close();
+
+        const titulo = `Escala de Plantão — ${monthLabel()}`;
+        doc.title = titulo;
+
+        const style = doc.createElement('style');
+        style.textContent = `
+            * { box-sizing: border-box; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1d150c; padding: 32px; }
+            h1 { font-size: 22px; margin: 0 0 4px 0; }
+            .sub { color: #a17745; font-size: 13px; margin-bottom: 24px; }
+            table { width: 100%; border-collapse: collapse; font-size: 13px; }
+            th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eaddcd; }
+            th { background: #fcfaf8; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; color: #a17745; }
+            tr:nth-child(even) td { background: #fcfaf8; }
+            @media print { body { padding: 0; } @page { margin: 16mm; } }
+        `;
+        doc.head.appendChild(style);
+
+        const h1 = doc.createElement('h1');
+        h1.textContent = titulo;
+        doc.body.appendChild(h1);
+
+        const sub = doc.createElement('div');
+        sub.className = 'sub';
+        sub.textContent = `Total de plantões: ${filteredPlantoes.length}` +
+            (filterSearch ? ` · Filtro: "${filterSearch}"` : '');
+        doc.body.appendChild(sub);
+
+        const table = doc.createElement('table');
+        const thead = doc.createElement('thead');
+        const headRow = doc.createElement('tr');
+        ['Data', 'Dia da Semana', 'Horário', 'Suporte N1', 'Suporte N2', 'Gerente ON'].forEach(h => {
+            const th = doc.createElement('th');
+            th.textContent = h;
+            headRow.appendChild(th);
+        });
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        const tbody = doc.createElement('tbody');
+        filteredPlantoes
+            .slice()
+            .sort((a, b) => (toIsoDay(a.data) || '').localeCompare(toIsoDay(b.data) || ''))
+            .forEach(p => {
+                const tr = doc.createElement('tr');
+                const fmtHora = (h) => {
+                    const m = h ? String(h).match(/^(\d{2}):(\d{2})/) : null;
+                    return m ? `${m[1]}:${m[2]}` : '—';
+                };
+                const horario = (p.horario_inicio || p.horario_fim)
+                    ? `${fmtHora(p.horario_inicio)} – ${fmtHora(p.horario_fim)}`
+                    : '—';
+                [
+                    formatarData(p.data),
+                    getDiaSemana(p.data),
+                    horario,
+                    p.n1_nome || '—',
+                    p.n2_nome || '—',
+                    p.mgr_nome || '—'
+                ].forEach(val => {
+                    const td = doc.createElement('td');
+                    td.textContent = val;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        table.appendChild(tbody);
+        doc.body.appendChild(table);
+
+        win.focus();
+        setTimeout(() => { try { win.print(); } catch (_) { /* ignore */ } }, 100);
+    };
+
+    const handleExportarICal = () => {
+        if (!filteredPlantoes.length) {
+            alert('Não há plantões no período selecionado para exportar.');
+            return;
+        }
+
+        const pad = (n) => String(n).padStart(2, '0');
+        const dtstamp = (() => {
+            const d = new Date();
+            return `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+        })();
+
+        const escapeICS = (s) => String(s ?? '')
+            .replace(/\\/g, '\\\\')
+            .replace(/\n/g, '\\n')
+            .replace(/,/g, '\\,')
+            .replace(/;/g, '\\;');
+
+        const fold = (line) => {
+            if (line.length <= 75) return line;
+            const out = [];
+            let i = 0;
+            while (i < line.length) {
+                out.push((i === 0 ? '' : ' ') + line.slice(i, i + 73));
+                i += 73;
+            }
+            return out.join('\r\n');
+        };
+
+        const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Prestek Intranet//Escala de Plantao//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+
+        filteredPlantoes
+            .slice()
+            .sort((a, b) => (toIsoDay(a.data) || '').localeCompare(toIsoDay(b.data) || ''))
+            .forEach(p => {
+                const iso = toIsoDay(p.data);
+                if (!iso) return;
+                const [y, m, d] = iso.split('-');
+                const toIcsTime = (raw, fallback) => {
+                    const s = raw ? String(raw) : '';
+                    const match = s.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+                    if (match) return `${match[1]}${match[2]}${match[3] || '00'}`;
+                    return fallback;
+                };
+                const startTime = toIcsTime(p.horario_inicio, '090000');
+                const endTime = toIcsTime(p.horario_fim, '170000');
+                const dtStart = `${y}${m}${d}T${startTime}`;
+                const dtEnd = `${y}${m}${d}T${endTime}`;
+                const uid = `plantao-${iso}-${p.id ?? 'na'}@prestek-intranet`;
+
+                const summaryParts = [];
+                if (p.n1_nome) summaryParts.push(`N1: ${p.n1_nome}`);
+                if (p.n2_nome) summaryParts.push(`N2: ${p.n2_nome}`);
+                if (p.mgr_nome) summaryParts.push(`Gerente: ${p.mgr_nome}`);
+                const summary = `Plantão — ${summaryParts.join(' · ') || 'Sem atribuições'}`;
+
+                const description = [
+                    `Suporte N1: ${p.n1_nome || 'Não atribuído'}`,
+                    `Suporte N2: ${p.n2_nome || 'Não atribuído'}`,
+                    `Gerente ON: ${p.mgr_nome || 'Não atribuído'}`
+                ].join('\n');
+
+                lines.push('BEGIN:VEVENT');
+                lines.push(fold(`UID:${uid}`));
+                lines.push(`DTSTAMP:${dtstamp}`);
+                lines.push(`DTSTART;TZID=America/Sao_Paulo:${dtStart}`);
+                lines.push(`DTEND;TZID=America/Sao_Paulo:${dtEnd}`);
+                lines.push(fold(`SUMMARY:${escapeICS(summary)}`));
+                lines.push(fold(`DESCRIPTION:${escapeICS(description)}`));
+                lines.push('END:VEVENT');
+            });
+
+        lines.push('END:VCALENDAR');
+
+        const ics = lines.join('\r\n');
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `escala-plantao-${filterYear}-${String(filterMonth).padStart(2, '0')}.ics`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
     // Filter Logic
     const filteredPlantoes = plantoes.filter(p => {
         const pStr = toIsoDay(p?.data);
@@ -224,18 +401,18 @@ export default function Schedule({ setCurrentView, user }) {
                             <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tighter">Visão Geral da Escala</h1>
                             <p className="text-secondary font-medium mt-1">Visualize e gerencie as atribuições de cobertura mensal.</p>
                         </div>
-                    <div className="flex gap-3">
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors">
-                            <span className="material-symbols-outlined text-[20px]">print</span>
-                            Imprimir
-                        </button>
-                        <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-primary/20">
-                            <span className="material-symbols-outlined text-[20px]">ios_share</span>
-                            Exportar iCal
-                        </button>
+                        <div className="flex gap-3">
+                            <button onClick={handleImprimir} className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors">
+                                <span className="material-symbols-outlined text-[20px]">print</span>
+                                Imprimir
+                            </button>
+                            <button onClick={handleExportarICal} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-primary/20">
+                                <span className="material-symbols-outlined text-[20px]">ios_share</span>
+                                Exportar iCal
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             {erroCarregamento && (
                 <div className="p-4 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm font-medium flex items-center gap-2">
