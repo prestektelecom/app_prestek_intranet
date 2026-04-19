@@ -409,53 +409,58 @@ export default function Schedule({ setCurrentView, user }) {
 
             {/* Modal de Gestão */}
             {isModalOpen && user?.is_admin && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/60 backdrop-blur-md p-4">
-                    <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-[90vw] sm:max-w-lg border border-surface-container-high overflow-hidden animate-in zoom-in-95 duration-200 scale-75 origin-top">
-                        <div className="px-6 py-5 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low">
-                            <h2 className="text-xl font-black text-on-surface flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">edit_calendar</span>
-                                Gerenciar Plantão
-                            </h2>
-                            <button onClick={closeManagement} className="text-secondary hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20">
-                                <span className="material-symbols-outlined">close</span>
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background-dark/60 backdrop-blur-sm p-0 sm:p-4">
+                    <div className="bg-surface-container-lowest rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm border border-surface-container-high flex flex-col max-h-[92vh] sm:max-h-[85vh]">
+                        {/* Header */}
+                        <div className="px-4 py-3 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low shrink-0 rounded-t-2xl sm:rounded-t-2xl">
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary text-[20px]">edit_calendar</span>
+                                <h2 className="text-base font-black text-on-surface">Gerenciar Plantão</h2>
+                            </div>
+                            <button onClick={closeManagement} className="text-secondary hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
 
-                        <form onSubmit={salvarPlantao} className="p-4 sm:p-6 flex flex-col gap-4 sm:gap-6">
-                            <div className="flex gap-2 items-center bg-primary/10 text-primary px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-black text-xs sm:text-sm w-full max-w-full border border-primary/20">
-                                <span className="material-symbols-outlined text-lg">calendar_today</span>
-                                <span className="flex-1">Data: {selectedDate.split('-').reverse().join('/')}</span>
+                        {/* Scrollable body */}
+                        <form onSubmit={salvarPlantao} className="flex flex-col overflow-y-auto flex-1 min-h-0">
+                            <div className="p-3 flex flex-col gap-3">
+                                <div className="flex gap-2 items-center bg-primary/10 text-primary px-3 py-2 rounded-lg font-black text-xs border border-primary/20">
+                                    <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+                                    <span>Data: {selectedDate.split('-').reverse().join('/')}</span>
+                                </div>
+
+                                <div className="flex flex-col gap-3">
+                                    <MultiSelectEmployee 
+                                        label="SUPORTE N1" 
+                                        values={formData.n1_ids} 
+                                        onChange={(vals) => setFormData({...formData, n1_ids: vals})} 
+                                        options={funcionarios} 
+                                    />
+                                    <MultiSelectEmployee 
+                                        label="SUPORTE N2" 
+                                        values={formData.n2_ids} 
+                                        onChange={(vals) => setFormData({...formData, n2_ids: vals})} 
+                                        options={funcionarios} 
+                                        allowEmpty
+                                    />
+                                    <MultiSelectEmployee 
+                                        label="SUPERVISÃO" 
+                                        values={formData.gerente_ids} 
+                                        onChange={(vals) => setFormData({...formData, gerente_ids: vals})} 
+                                        options={funcionarios} 
+                                    />
+                                </div>
                             </div>
 
-                            <div className="space-y-5">
-                                <MultiSelectEmployee 
-                                    label="SUPORTE N1" 
-                                    values={formData.n1_ids} 
-                                    onChange={(vals) => setFormData({...formData, n1_ids: vals})} 
-                                    options={funcionarios} 
-                                />
-                                <MultiSelectEmployee 
-                                    label="SUPORTE N2" 
-                                    values={formData.n2_ids} 
-                                    onChange={(vals) => setFormData({...formData, n2_ids: vals})} 
-                                    options={funcionarios} 
-                                    allowEmpty
-                                />
-                                <MultiSelectEmployee 
-                                    label="SUPERVISÃO" 
-                                    values={formData.gerente_ids} 
-                                    onChange={(vals) => setFormData({...formData, gerente_ids: vals})} 
-                                    options={funcionarios} 
-                                />
-                            </div>
-
-                            <div className="mt-4 flex flex-col gap-2 justify-end pt-4 border-t border-surface-container-high">
-                                <button type="button" onClick={closeManagement} className="w-full px-4 py-2 sm:px-6 sm:py-3 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm">
+                            {/* Footer fixo */}
+                            <div className="shrink-0 flex gap-2 p-3 pt-2 border-t border-surface-container-high bg-surface-container-lowest">
+                                <button type="button" onClick={closeManagement} className="flex-1 px-3 py-2 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm">
                                     Cancelar
                                 </button>
-                                <button type="submit" className="w-full px-4 py-2 sm:px-6 sm:py-3 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-lg shadow-primary/30 flex items-center justify-center gap-2 text-sm">
-                                    <span className="material-symbols-outlined text-[18px] sm:text-[20px]">save</span>
-                                    <span>Salvar Alterações</span>
+                                <button type="submit" className="flex-1 px-3 py-2 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-primary/30 flex items-center justify-center gap-1.5 text-sm">
+                                    <span className="material-symbols-outlined text-[18px]">save</span>
+                                    <span>Salvar</span>
                                 </button>
                             </div>
                         </form>
@@ -487,47 +492,49 @@ function MultiSelectEmployee({ label, values, onChange, options, allowEmpty }) {
     };
     
     return (
-        <label className="flex flex-col gap-2">
-            <span className="text-xs sm:text-[10px] font-black uppercase text-secondary tracking-widest flex items-center gap-1.5 ml-1">
-                {label} <span className="text-[8px] sm:text-[8px] opacity-60 font-medium">(Selecione múltiplos)</span>
-            </span>
-            <div className="rounded-xl border border-surface-container-high bg-surface-container-low p-2 sm:p-3 max-h-40 sm:max-h-48 overflow-y-auto">
+        <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between ml-0.5">
+                <span className="text-[10px] font-black uppercase text-secondary tracking-widest">
+                    {label}
+                </span>
                 {allowEmpty && values.length > 0 && (
                     <button
                         type="button"
                         onClick={() => onChange([])}
-                        className="text-xs text-red-500 font-bold mb-2 hover:underline"
+                        className="text-[10px] text-red-500 font-bold hover:underline"
                     >
-                        Limpar todos
+                        Limpar
                     </button>
                 )}
-                <div className="flex flex-col gap-1 sm:gap-2">
+            </div>
+            <div className="rounded-lg border border-surface-container-high bg-surface-container-low p-1.5 max-h-28 overflow-y-auto">
+                <div className="flex flex-col gap-0.5">
                     {options.map(func => (
-                        <label key={func.funcionario_id} className="flex items-center gap-3 cursor-pointer hover:bg-surface-container-low p-1.5 sm:p-2 rounded-lg transition-colors">
+                        <label key={func.funcionario_id} className="flex items-center gap-2 cursor-pointer hover:bg-primary/5 px-1.5 py-1 rounded-md transition-colors">
                             <input
                                 type="checkbox"
                                 checked={values.includes(String(func.funcionario_id))}
                                 onChange={() => toggleValue(String(func.funcionario_id))}
-                                className="w-5 h-5 rounded border-surface-container-high text-primary focus:ring-primary"
+                                className="w-4 h-4 rounded border-surface-container-high text-primary focus:ring-primary shrink-0"
                             />
-                            <span className="font-bold text-on-surface text-sm">{func.funcionario_nome}</span>
+                            <span className="font-medium text-on-surface text-xs leading-tight">{func.funcionario_nome}</span>
                         </label>
                     ))}
                 </div>
             </div>
             {values.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
+                <div className="flex flex-wrap gap-1 mt-0.5">
                     {values.map(val => {
                         const func = options.find(o => String(o.funcionario_id) === val);
                         return func ? (
-                            <span key={val} className="text-xs sm:text-[10px] bg-primary/20 text-primary px-2 py-0.5 sm:py-1 rounded-full font-bold">
-                                {func.funcionario_nome}
+                            <span key={val} className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded-full font-bold">
+                                {func.funcionario_nome.split(' ')[0]}
                             </span>
                         ) : null;
                     })}
                 </div>
             )}
-        </label>
+        </div>
     );
 }
 
