@@ -938,29 +938,115 @@ app.get('/api/funcionarios', async (req, res) => {
 });
 
 app.post('/api/plantoes', async (req, res) => {
-    const { data, n1_ids, n2_ids, gerente_ids } = req.body;
+    const { data, n1_ids, n2_ids, gerente_ids, admin_usuario_id } = req.body;
     if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
     
     const n1Str = n1_ids?.length ? n1_ids.join(',') : null;
     const n2Str = n2_ids?.length ? n2_ids.join(',') : null;
     const mgrStr = gerente_ids?.length ? gerente_ids.join(',') : null;
-    
+
+    const client = await pool.connect();
     try {
-        const query = `
-            INSERT INTO plantoes (data, n1_id, n2_id, gerente_id, atualizado_em)
-            VALUES ($1, $2, $3, $4, NOW())
-            ON CONFLICT (data) DO UPDATE 
-            SET n1_id = EXCLUDED.n1_id,
-                n2_id = EXCLUDED.n2_id,
-                gerente_id = EXCLUDED.gerente_id,
-                atualizado_em = NOW()
-            RETURNING *;
-        `;
-        const result = await pool.query(query, [data, n1Str, n2Str, mgrStr]);
+        await client.query('BEGIN');
+
+        // Resolve o nome do admin server-side a partir do banco (ignora valor enviado pelo cliente)
+        let adminNome = null;
+        if (admin_usuario_id) {
+            const adminRes = await client.query(
+                'SELECT funcionario_nome, usuario_nome FROM usuarios_perfil WHERE usuario_id = $1',
+                [String(admin_usuario_id)]
+            );
+            if (adminRes.rows.length > 0) {
+                const row = adminRes.rows[0];
+                adminNome = row.funcionario_nome || row.usuario_nome || null;
+            }
+        }
+
+        // Busca o plantão atual para registrar no histórico
+        const anterior = await client.query('SELECT n1_id, n2_id, gerente_id FROM plantoes WHERE data = $1', [data]);
+        const ant = anterior.rows[0] || null;
+
+        const result = await client.query(
+            `INSERT INTO plantoes (data, n1_id, n2_id, gerente_id, atualizado_em)
+             VALUES ($1, $2, $3, $4, NOW())
+             ON CONFLICT (data) DO UPDATE 
+             SET n1_id = EXCLUDED.n1_id,
+                 n2_id = EXCLUDED.n2_id,
+                 gerente_id = EXCLUDED.gerente_id,
+                 atualizado_em = NOW()
+             RETURNING *`,
+            [data, n1Str, n2Str, mgrStr]
+        );
+
+        // Registra no histórico dentro da mesma transação
+        await client.query(
+            `INSERT INTO plantoes_historico (plantao_data, n1_anterior, n2_anterior, gerente_anterior, n1_novo, n2_novo, gerente_novo, admin_usuario_id, admin_nome)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [
+                data,
+                ant?.n1_id || null,
+                ant?.n2_id || null,
+                ant?.gerente_id || null,
+                n1Str,
+                n2Str,
+                mgrStr,
+                admin_usuario_id ? String(admin_usuario_id) : null,
+                adminNome
+            ]
+        );
+
+        await client.query('COMMIT');
         return res.json({ sucesso: true, plantao: result.rows[0] });
     } catch (err) {
+        await client.query('ROLLBACK').catch(() => {});
         console.error('Erro ao salvar plantão:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao salvar plantão.' });
+    } finally {
+        client.release();
+    }
+});
+
+app.get('/api/plantoes/historico/:data', async (req, res) => {
+    const { data } = req.params;
+    try {
+        const result = await pool.query(
+            `SELECT id, plantao_data, n1_anterior, n2_anterior, gerente_anterior, n1_novo, n2_novo, gerente_novo, admin_nome, alterado_em
+             FROM plantoes_historico
+             WHERE plantao_data = $1
+             ORDER BY alterado_em DESC
+             LIMIT 10`,
+            [data]
+        );
+
+        const resolverNomes = async (ids) => {
+            if (!ids) return null;
+            const idList = ids.split(',').filter(Boolean);
+            if (!idList.length) return null;
+            const placeholders = idList.map((_, i) => `$${i + 1}`).join(',');
+            const r = await pool.query(
+                `SELECT funcionario_nome FROM usuarios_perfil WHERE funcionario_id IN (${placeholders})`,
+                idList
+            );
+            return r.rows.map(x => x.funcionario_nome).join(', ') || null;
+        };
+
+        const historico = await Promise.all(result.rows.map(async (h) => ({
+            id: h.id,
+            plantao_data: h.plantao_data,
+            n1_anterior: await resolverNomes(h.n1_anterior),
+            n2_anterior: await resolverNomes(h.n2_anterior),
+            gerente_anterior: await resolverNomes(h.gerente_anterior),
+            n1_novo: await resolverNomes(h.n1_novo),
+            n2_novo: await resolverNomes(h.n2_novo),
+            gerente_novo: await resolverNomes(h.gerente_novo),
+            admin_nome: h.admin_nome,
+            alterado_em: h.alterado_em
+        })));
+
+        return res.json({ sucesso: true, historico });
+    } catch (err) {
+        console.error('Erro ao buscar histórico de plantão:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar histórico.' });
     }
 });
 

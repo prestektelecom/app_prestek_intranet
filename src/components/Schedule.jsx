@@ -24,6 +24,8 @@ export default function Schedule({ setCurrentView, user }) {
     const [confirmOverwriteOpen, setConfirmOverwriteOpen] = useState(false);
     const [salvando, setSalvando] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [historico, setHistorico] = useState([]);
+    const [loadingHistorico, setLoadingHistorico] = useState(false);
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
@@ -139,10 +141,30 @@ export default function Schedule({ setCurrentView, user }) {
         return iso === `${y}-${m}-${d}`;
     };
 
+    const fetchHistorico = async (dateStr) => {
+        setLoadingHistorico(true);
+        try {
+            const res = await fetch(`/api/plantoes/historico/${dateStr}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await safeJson(res);
+            if (data.sucesso) {
+                setHistorico(data.historico || []);
+            } else {
+                setHistorico([]);
+            }
+        } catch (err) {
+            console.error('Erro ao buscar histórico:', err);
+            setHistorico([]);
+        } finally {
+            setLoadingHistorico(false);
+        }
+    };
+
     const openManagement = (dateStr) => {
         if (!user?.is_admin) return;
         
         setSelectedDate(dateStr);
+        setHistorico([]);
         const existingInfo = plantoes.find(p => toIsoDay(p?.data) === dateStr);
         
         const parseIds = (val) => {
@@ -163,6 +185,7 @@ export default function Schedule({ setCurrentView, user }) {
             setExistingPlantao(null);
         }
         setIsModalOpen(true);
+        fetchHistorico(dateStr);
     };
 
     const executarSalvamento = async () => {
@@ -172,7 +195,8 @@ export default function Schedule({ setCurrentView, user }) {
                 data: selectedDate,
                 n1_ids: formData.n1_ids,
                 n2_ids: formData.n2_ids,
-                gerente_ids: formData.gerente_ids
+                gerente_ids: formData.gerente_ids,
+                admin_usuario_id: user?.id || null
             };
             const res = await fetch('/api/plantoes', {
                 method: 'POST',
@@ -212,6 +236,7 @@ export default function Schedule({ setCurrentView, user }) {
         setIsModalOpen(false);
         setConfirmOverwriteOpen(false);
         setExistingPlantao(null);
+        setHistorico([]);
     };
 
     const splitNomes = (raw) => (raw ? String(raw).split('|||').filter(Boolean) : []);
@@ -672,6 +697,48 @@ export default function Schedule({ setCurrentView, user }) {
                                         onChange={(vals) => setFormData({...formData, gerente_ids: vals})} 
                                         options={funcionarios} 
                                     />
+                                </div>
+
+                                {/* Histórico de alterações */}
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-1.5 ml-0.5">
+                                        <span className="material-symbols-outlined text-[14px] text-secondary">history</span>
+                                        <span className="text-[10px] font-black uppercase text-secondary tracking-widest">Histórico de Alterações</span>
+                                    </div>
+                                    {loadingHistorico ? (
+                                        <div className="text-xs text-secondary text-center py-3 animate-pulse">Carregando histórico...</div>
+                                    ) : historico.length === 0 ? (
+                                        <div className="text-xs text-secondary italic text-center py-3 bg-surface-container-low rounded-lg border border-surface-container-high/50">
+                                            Nenhuma alteração registrada para esta data.
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-0.5">
+                                            {historico.map((h) => {
+                                                const dt = new Date(h.alterado_em);
+                                                const fmt = dt.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+                                                return (
+                                                    <div key={h.id} className="bg-surface-container-low rounded-lg border border-surface-container-high/60 p-2 flex flex-col gap-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="material-symbols-outlined text-[12px] text-primary">manage_accounts</span>
+                                                                <span className="text-[10px] font-black text-on-surface">{h.admin_nome || 'Desconhecido'}</span>
+                                                            </div>
+                                                            <span className="text-[9px] text-secondary font-medium">{fmt}</span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px] text-secondary mt-0.5">
+                                                            <div className="col-span-2 font-black text-[9px] uppercase tracking-wider text-secondary/70 mb-0.5">Antes → Depois</div>
+                                                            <div><span className="font-black text-on-surface/60">N1:</span> {h.n1_anterior || '—'}</div>
+                                                            <div><span className="font-black text-primary">N1:</span> {h.n1_novo || '—'}</div>
+                                                            <div><span className="font-black text-on-surface/60">N2:</span> {h.n2_anterior || '—'}</div>
+                                                            <div><span className="font-black text-primary">N2:</span> {h.n2_novo || '—'}</div>
+                                                            <div><span className="font-black text-on-surface/60">Sup:</span> {h.gerente_anterior || '—'}</div>
+                                                            <div><span className="font-black text-primary">Sup:</span> {h.gerente_novo || '—'}</div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
