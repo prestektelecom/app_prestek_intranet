@@ -20,6 +20,15 @@ export default function Schedule({ setCurrentView, user }) {
         n2_ids: [], 
         gerente_ids: [] 
     });
+    const [existingPlantao, setExistingPlantao] = useState(null);
+    const [confirmOverwriteOpen, setConfirmOverwriteOpen] = useState(false);
+    const [salvando, setSalvando] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3500);
+    };
 
     const [erroCarregamento, setErroCarregamento] = useState(null);
 
@@ -148,14 +157,16 @@ export default function Schedule({ setCurrentView, user }) {
                 n2_ids: parseIds(existingInfo.n2_id),
                 gerente_ids: parseIds(existingInfo.gerente_id)
             });
+            setExistingPlantao(existingInfo);
         } else {
             setFormData({ n1_ids: [], n2_ids: [], gerente_ids: [] });
+            setExistingPlantao(null);
         }
         setIsModalOpen(true);
     };
 
-    const salvarPlantao = async (e) => {
-        e.preventDefault();
+    const executarSalvamento = async () => {
+        setSalvando(true);
         try {
             const payload = {
                 data: selectedDate,
@@ -174,17 +185,36 @@ export default function Schedule({ setCurrentView, user }) {
             const data = await safeJson(res);
             if (data.sucesso) {
                 await fetchPlantoes();
+                setConfirmOverwriteOpen(false);
                 setIsModalOpen(false);
+                showToast(existingPlantao ? 'Plantão substituído com sucesso!' : 'Plantão cadastrado com sucesso!', 'success');
             } else {
-                alert('Erro ao salvar plantão: ' + (data.erro || 'desconhecido'));
+                showToast('Erro ao salvar plantão: ' + (data.erro || 'desconhecido'), 'error');
             }
         } catch(err) {
             console.error('Erro ao salvar plantão:', err);
-            alert('Erro de conexão ao salvar plantão');
+            showToast('Erro de conexão ao salvar plantão.', 'error');
+        } finally {
+            setSalvando(false);
         }
     };
 
-    const closeManagement = () => setIsModalOpen(false);
+    const salvarPlantao = (e) => {
+        e.preventDefault();
+        if (existingPlantao) {
+            setConfirmOverwriteOpen(true);
+        } else {
+            executarSalvamento();
+        }
+    };
+
+    const closeManagement = () => {
+        setIsModalOpen(false);
+        setConfirmOverwriteOpen(false);
+        setExistingPlantao(null);
+    };
+
+    const splitNomes = (raw) => (raw ? String(raw).split('|||').filter(Boolean) : []);
 
     const monthLabel = () => new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1)
         .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
@@ -607,6 +637,21 @@ export default function Schedule({ setCurrentView, user }) {
                                     <span>Data: {selectedDate.split('-').reverse().join('/')}</span>
                                 </div>
 
+                                {existingPlantao && (
+                                    <div className="flex flex-col gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300/60 dark:border-amber-700/40 text-amber-900 dark:text-amber-200 px-3 py-2.5 rounded-lg text-xs">
+                                        <div className="flex items-center gap-1.5 font-black uppercase tracking-wider text-[10px]">
+                                            <span className="material-symbols-outlined text-[16px]">warning</span>
+                                            Já existe um plantão cadastrado nesta data
+                                        </div>
+                                        <div className="flex flex-col gap-1 font-medium">
+                                            <div><span className="font-black">N1:</span> {splitNomes(existingPlantao.n1_nome).join(', ') || '—'}</div>
+                                            <div><span className="font-black">N2:</span> {splitNomes(existingPlantao.n2_nome).join(', ') || '—'}</div>
+                                            <div><span className="font-black">Supervisão:</span> {splitNomes(existingPlantao.mgr_nome).join(', ') || '—'}</div>
+                                        </div>
+                                        <div className="text-[10px] opacity-80 italic">Salvar irá substituir esta escala.</div>
+                                    </div>
+                                )}
+
                                 <div className="flex flex-col gap-3">
                                     <MultiSelectEmployee 
                                         label="SUPORTE N1" 
@@ -635,16 +680,73 @@ export default function Schedule({ setCurrentView, user }) {
                                 <button type="button" onClick={closeManagement} className="flex-1 px-3 py-2 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm">
                                     Cancelar
                                 </button>
-                                <button type="submit" className="flex-1 px-3 py-2 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-primary/30 flex items-center justify-center gap-1.5 text-sm">
+                                <button type="submit" disabled={salvando} className="flex-1 px-3 py-2 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-primary/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed">
                                     <span className="material-symbols-outlined text-[18px]">save</span>
-                                    <span>Salvar</span>
+                                    <span>{salvando ? 'Salvando...' : 'Salvar'}</span>
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-            
+
+            {/* Confirmação de sobrescrita */}
+            {confirmOverwriteOpen && existingPlantao && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background-dark/70 backdrop-blur-sm p-4">
+                    <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-sm border border-surface-container-high flex flex-col">
+                        <div className="px-5 py-4 border-b border-surface-container-high flex items-center gap-2">
+                            <span className="material-symbols-outlined text-amber-500">warning</span>
+                            <h3 className="text-base font-black text-on-surface">Substituir plantão?</h3>
+                        </div>
+                        <div className="px-5 py-4 flex flex-col gap-3 text-sm text-on-surface">
+                            <p className="font-medium">
+                                Esta data já tem um plantão cadastrado. Tem certeza que deseja substituir a escala atual?
+                            </p>
+                            <div className="bg-surface-container-low rounded-lg p-3 text-xs flex flex-col gap-1">
+                                <div className="font-black uppercase tracking-wider text-[10px] text-secondary mb-1">Escala atual</div>
+                                <div><span className="font-black">N1:</span> {splitNomes(existingPlantao.n1_nome).join(', ') || '—'}</div>
+                                <div><span className="font-black">N2:</span> {splitNomes(existingPlantao.n2_nome).join(', ') || '—'}</div>
+                                <div><span className="font-black">Supervisão:</span> {splitNomes(existingPlantao.mgr_nome).join(', ') || '—'}</div>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 px-5 py-4 border-t border-surface-container-high">
+                            <button
+                                type="button"
+                                onClick={() => setConfirmOverwriteOpen(false)}
+                                disabled={salvando}
+                                className="flex-1 px-3 py-2 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm disabled:opacity-60"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={executarSalvamento}
+                                disabled={salvando}
+                                className="flex-1 px-3 py-2 bg-red-500 text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-red-500/30 text-sm disabled:opacity-60"
+                            >
+                                {salvando ? 'Substituindo...' : 'Sim, substituir'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast */}
+            {toast.show && (
+                <div className="fixed top-8 right-8 z-[110] animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className={`flex items-center gap-3 rounded-2xl px-6 py-4 shadow-2xl backdrop-blur-md border ${
+                        toast.type === 'success'
+                        ? 'bg-emerald-500/90 border-emerald-400 text-white'
+                        : 'bg-red-500/90 border-red-400 text-white'
+                    }`}>
+                        <span className="material-symbols-outlined text-2xl font-bold">
+                            {toast.type === 'success' ? 'check_circle' : 'error'}
+                        </span>
+                        <p className="font-bold tracking-wide">{toast.message}</p>
+                    </div>
+                </div>
+            )}
+
             <footer className="mt-8 pt-8 border-t border-surface-container-high pb-4 flex flex-col md:flex-row justify-between items-center text-xs text-secondary font-bold gap-4 uppercase tracking-widest">
                 <p>© 2026 Prestek Intranet • Portal Interno</p>
                 <div className="flex gap-6">
