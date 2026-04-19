@@ -17,27 +17,51 @@ export default function Schedule({ setCurrentView, user }) {
     const [selectedDate, setSelectedDate] = useState(null);
     const [formData, setFormData] = useState({ n1_id: '', n2_id: '', gerente_id: '' });
 
+    const [erroCarregamento, setErroCarregamento] = useState(null);
+
+    const safeJson = async (res) => {
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            const text = await res.text().catch(() => '');
+            throw new Error(`Resposta não-JSON (${res.status}): ${text.slice(0, 120)}`);
+        }
+        return res.json();
+    };
+
     const fetchPlantoes = async () => {
         try {
             const res = await fetch('/api/plantoes');
-            const data = await res.json();
-            if (data.sucesso) {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await safeJson(res);
+            if (data.sucesso && Array.isArray(data.plantoes)) {
                 setPlantoes(data.plantoes);
+                setErroCarregamento(null);
+            } else {
+                setPlantoes([]);
+                throw new Error(data?.erro || 'Resposta inesperada da API de plantões.');
             }
         } catch (err) {
             console.error("Erro ao buscar plantões:", err);
+            setPlantoes([]);
+            setErroCarregamento('Não foi possível carregar a escala de plantão. Tente novamente em instantes.');
         }
     };
 
     const fetchFuncionarios = async () => {
         try {
             const res = await fetch('/api/funcionarios');
-            const data = await res.json();
-            if (data.sucesso) {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await safeJson(res);
+            if (data.sucesso && Array.isArray(data.funcionarios)) {
                 setFuncionarios(data.funcionarios);
+            } else {
+                setFuncionarios([]);
+                throw new Error(data?.erro || 'Resposta inesperada da API de funcionários.');
             }
         } catch (err) {
             console.error("Erro ao buscar funcionários:", err);
+            setFuncionarios([]);
+            setErroCarregamento('Não foi possível carregar a lista de funcionários para gestão dos plantões.');
         }
     };
 
@@ -53,9 +77,23 @@ export default function Schedule({ setCurrentView, user }) {
         init();
     }, [user]);
 
+    // Helper interno: garante 'YYYY-MM-DD' a partir de string ou Date
+    const toIsoDay = (raw) => {
+        if (!raw) return null;
+        if (raw instanceof Date) {
+            const y = raw.getUTCFullYear();
+            const m = String(raw.getUTCMonth() + 1).padStart(2, '0');
+            const d = String(raw.getUTCDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        return String(raw).split('T')[0];
+    };
+
     // Função para formatar data do banco para exibição (ex: "Fev 05")
     const formatarData = (dataStr) => {
-        const data = new Date(dataStr);
+        const iso = toIsoDay(dataStr);
+        if (!iso) return '';
+        const data = new Date(`${iso}T00:00:00Z`);
         return data.toLocaleDateString('pt-BR', { month: 'short', day: '2-digit', timeZone: 'UTC' })
             .replace('.', '')
             .replace(/^\w/, (c) => c.toUpperCase());
@@ -63,31 +101,36 @@ export default function Schedule({ setCurrentView, user }) {
 
     // Função para pegar o dia da semana
     const getDiaSemana = (dataStr) => {
+        const iso = toIsoDay(dataStr);
+        if (!iso) return '';
         const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-        return dias[new Date(dataStr + 'T00:00:00').getDay()];
+        return dias[new Date(`${iso}T00:00:00`).getDay()];
     };
 
     // Função para verificar se é final de semana
     const isFimDeSemana = (dataStr) => {
-        const dia = new Date(dataStr + 'T00:00:00').getDay();
+        const iso = toIsoDay(dataStr);
+        if (!iso) return false;
+        const dia = new Date(`${iso}T00:00:00`).getDay();
         return dia === 0 || dia === 6;
     };
 
     // Função para verificar se é hoje
     const isHoje = (dataStr) => {
+        const iso = toIsoDay(dataStr);
+        if (!iso) return false;
         const hojeObj = new Date();
         const y = hojeObj.getFullYear();
         const m = String(hojeObj.getMonth() + 1).padStart(2, '0');
         const d = String(hojeObj.getDate()).padStart(2, '0');
-        const hojeStr = `${y}-${m}-${d}`;
-        return dataStr.split('T')[0] === hojeStr;
+        return iso === `${y}-${m}-${d}`;
     };
 
     const openManagement = (dateStr) => {
         if (!user?.is_admin) return;
         
         setSelectedDate(dateStr);
-        const existingInfo = plantoes.find(p => p.data.split('T')[0] === dateStr);
+        const existingInfo = plantoes.find(p => toIsoDay(p?.data) === dateStr);
         
         if (existingInfo) {
             setFormData({
@@ -112,15 +155,18 @@ export default function Schedule({ setCurrentView, user }) {
                     ...formData
                 })
             });
-            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+            const data = await safeJson(res);
             if (data.sucesso) {
                 await fetchPlantoes();
                 setIsModalOpen(false);
             } else {
-                alert('Erro ao salvar plantão: ' + data.erro);
+                alert('Erro ao salvar plantão: ' + (data.erro || 'desconhecido'));
             }
         } catch(err) {
-            console.error(err);
+            console.error('Erro ao salvar plantão:', err);
             alert('Erro de conexão ao salvar plantão');
         }
     };
@@ -129,8 +175,9 @@ export default function Schedule({ setCurrentView, user }) {
 
     // Filter Logic
     const filteredPlantoes = plantoes.filter(p => {
-        const pStr = p.data.split('T')[0];
-        const [y, m, day] = pStr.split('-');
+        const pStr = toIsoDay(p?.data);
+        if (!pStr) return false;
+        const [y, m] = pStr.split('-');
         if (parseInt(y) !== parseInt(filterYear) || parseInt(m) !== parseInt(filterMonth)) return false;
 
         if (filterSearch) {
@@ -177,6 +224,13 @@ export default function Schedule({ setCurrentView, user }) {
                     </button>
                 </div>
             </div>
+
+            {erroCarregamento && (
+                <div className="mb-6 p-4 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm font-medium flex items-center gap-2">
+                    <span className="material-symbols-outlined">error</span>
+                    {erroCarregamento}
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
                 {/* Coluna Esquerda: Calendário e Filtros */}
@@ -258,16 +312,24 @@ export default function Schedule({ setCurrentView, user }) {
                         </div>
 
                         <div className="grid grid-cols-7 gap-y-4 gap-x-1 text-center mb-2">
-                            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, idx) => (
-                                <div key={idx} className="text-xs font-black text-[#a17745] dark:text-orange-300 uppercase tracking-widest">{day}</div>
+                            {[
+                                { id: 'sun', label: 'D' },
+                                { id: 'mon', label: 'S' },
+                                { id: 'tue', label: 'T' },
+                                { id: 'wed', label: 'Q' },
+                                { id: 'thu', label: 'Q' },
+                                { id: 'fri', label: 'S' },
+                                { id: 'sat', label: 'S' },
+                            ].map(({ id, label }) => (
+                                <div key={id} className="text-xs font-black text-[#a17745] dark:text-orange-300 uppercase tracking-widest">{label}</div>
                             ))}
                         </div>
 
                         <div className="grid grid-cols-7 gap-y-2 gap-x-1 text-center">
                             {Array.from({ length: daysInMonth }, (_, i) => {
                                 const day = i + 1;
-                                const dateStr = `${filterYear}-${filterMonth.padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                                const temPlantao = plantoes.some(p => p.data.split('T')[0] === dateStr);
+                                const dateStr = `${filterYear}-${String(filterMonth).padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                                const temPlantao = plantoes.some(p => toIsoDay(p?.data) === dateStr);
                                 const ehHoje = isHoje(`${dateStr}T00:00:00Z`);
                                 return (
                                     <CalendarDay 
@@ -350,7 +412,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     ) : (
                                         filteredPlantoes.map((p) => (
                                             <ScheduleRow
-                                                key={p.id}
+                                                key={p.id ?? toIsoDay(p.data)}
                                                 date={formatarData(p.data)}
                                                 day={getDiaSemana(p.data)}
                                                 isToday={isHoje(p.data)}
@@ -359,7 +421,7 @@ export default function Schedule({ setCurrentView, user }) {
                                                 n2={p.n2_id ? { name: p.n2_nome || 'Não atribuído', img: p.n2_foto } : null}
                                                 mgr={{ name: p.mgr_nome || 'Não atribuído', img: p.mgr_foto }}
                                                 isAdmin={user?.is_admin}
-                                                onEdit={() => openManagement(p.data.split('T')[0])}
+                                                onEdit={() => openManagement(toIsoDay(p.data))}
                                             />
                                         ))
                                     )}

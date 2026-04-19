@@ -176,7 +176,7 @@ export default function Dashboard({ setCurrentView, user }) {
             icon: 'event_available',
             label: 'Próximo Plantão',
             value: plantaoLoading ? '...' : (proximoPlantao ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR') : 'Nenhum Agendado'),
-            badge: proximoPlantao ? `${proximoPlantao.horario_inicio.slice(0, 5)} - ${proximoPlantao.horario_fim.slice(0, 5)}` : (plantaoLoading ? '' : 'Sem cobertura'),
+            badge: proximoPlantao ? `${(proximoPlantao.horario_inicio || '09:00').slice(0, 5)} - ${(proximoPlantao.horario_fim || '17:00').slice(0, 5)}` : (plantaoLoading ? '' : 'Sem cobertura'),
             badgeClassName: 'text-[#635c55] dark:text-gray-300',
         },
         {
