@@ -328,7 +328,7 @@ export default function Schedule({ setCurrentView, user }) {
         const table = doc.createElement('table');
         const thead = doc.createElement('thead');
         const headRow = doc.createElement('tr');
-        ['Data', 'Dia da Semana', 'Horário', 'Suporte N1', 'Suporte N2', 'Gerente ON'].forEach(h => {
+        ['Data', 'Dia da Semana', 'Horário', 'N1 - ATENDIMENTO/NOC', 'Suporte N2', 'Gerente ON'].forEach(h => {
             const th = doc.createElement('th');
             th.textContent = h;
             headRow.appendChild(th);
@@ -773,8 +773,8 @@ export default function Schedule({ setCurrentView, user }) {
 
             {/* Modal de Gestão */}
             {isModalOpen && user?.is_admin && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background-dark/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface-container-lowest rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md border border-surface-container-high flex flex-col max-h-[92vh] sm:max-h-[85vh] animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background-dark/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300" onClick={closeManagement}>
+                    <div className="bg-surface-container-lowest rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md border border-surface-container-high flex flex-col max-h-[92vh] sm:max-h-[85vh] animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
                         {/* Header */}
                         <div className="px-5 py-4 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low shrink-0 rounded-t-3xl sm:rounded-t-3xl">
                             <div className="flex items-center gap-2">
@@ -811,13 +811,13 @@ export default function Schedule({ setCurrentView, user }) {
 
                                 <div className="flex flex-col gap-3">
                                     <MultiSelectEmployee 
-                                        label="SUPORTE N1" 
+                                        label="N1 - ATENDIMENTO/NOC" 
                                         values={formData.n1_ids} 
                                         onChange={(vals) => setFormData({...formData, n1_ids: vals})} 
                                         options={funcionarios} 
                                     />
                                     <MultiSelectEmployee 
-                                        label="SUPORTE N2" 
+                                        label="N2 - SUPORTE/SERVIÇOS" 
                                         values={formData.n2_ids} 
                                         onChange={(vals) => setFormData({...formData, n2_ids: vals})} 
                                         options={funcionarios} 
