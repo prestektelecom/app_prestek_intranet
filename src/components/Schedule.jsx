@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import LottieAvatar from './common/LottieAvatar';
-
+import CalendarDay from './schedule/CalendarDay';
+import MultiSelectEmployee from './schedule/MultiSelectEmployee';
+import ScheduleRow from './schedule/ScheduleRow';
+import SelectEmployee from './schedule/SelectEmployee';
+import UserAvatar from './schedule/UserAvatar';
 export default function Schedule({ setCurrentView, user }) {
     const [plantoes, setPlantoes] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
@@ -531,66 +534,96 @@ export default function Schedule({ setCurrentView, user }) {
                 {/* Left Column: Filters & Context */}
                 <div className="lg:col-span-3 flex flex-col gap-6">
                     {/* Filtros Card */}
-                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm flex flex-col gap-5 border border-surface-container-high/50 animate-in fade-in slide-in-from-left-4 duration-500">
-                        <div className="flex items-center gap-2 border-b border-surface-container-high/50 pb-4">
-                            <span className="material-symbols-outlined text-secondary">tune</span>
-                            <h2 className="text-lg font-bold text-on-surface">Filtros</h2>
+                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm flex flex-col gap-5 border border-surface-container-high/50 animate-in fade-in slide-in-from-left-4 duration-500 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between border-b border-surface-container-high/50 pb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">tune</span>
+                                <h2 className="text-lg font-black text-on-surface tracking-tight">Filtros</h2>
+                            </div>
+                            {(filterSearch !== '' || filterMonth !== (d.getMonth() + 1).toString() || filterYear !== d.getFullYear().toString()) && (
+                                <button 
+                                    onClick={() => { setFilterSearch(''); setFilterMonth((d.getMonth() + 1).toString()); setFilterYear(d.getFullYear().toString()); }}
+                                    className="text-[10px] uppercase font-bold tracking-widest text-secondary hover:text-primary transition-colors flex items-center gap-1 bg-surface-container-low px-2 py-1 rounded-md"
+                                    aria-label="Limpar filtros"
+                                >
+                                    <span className="material-symbols-outlined text-[14px]">close_small</span> Limpar
+                                </button>
+                            )}
                         </div>
                         <div className="flex flex-col gap-4">
                             <div className="grid grid-cols-2 gap-3">
-                                <label className="flex flex-col gap-1.5">
-                                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">Mês</span>
-                                    <select 
-                                        value={filterMonth}
-                                        onChange={(e) => setFilterMonth(e.target.value)}
-                                        className="w-full bg-surface-container-low border-none rounded-md py-2.5 px-3 text-on-surface focus:ring-2 focus:ring-primary focus:outline-none appearance-none cursor-pointer font-bold text-sm"
-                                    >
-                                        <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
-                                        <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
-                                        <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
-                                        <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
-                                    </select>
+                                <label className="flex flex-col gap-1.5 cursor-pointer group">
+                                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest group-focus-within:text-primary transition-colors">Mês</span>
+                                    <div className="relative">
+                                        <select 
+                                            value={filterMonth}
+                                            onChange={(e) => setFilterMonth(e.target.value)}
+                                            className="w-full bg-surface-container-low border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-surface-container-low/80"
+                                            aria-label="Selecionar Mês"
+                                        >
+                                            <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+                                            <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+                                            <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
+                                            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                                        </select>
+                                        <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-secondary group-focus-within:text-primary text-[18px] transition-colors">expand_more</span>
+                                    </div>
                                 </label>
-                                <label className="flex flex-col gap-1.5">
-                                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">Ano</span>
-                                    <select 
-                                        value={filterYear}
-                                        onChange={(e) => setFilterYear(e.target.value)}
-                                        className="w-full bg-surface-container-low border-none rounded-md py-2.5 px-3 text-on-surface focus:ring-2 focus:ring-primary focus:outline-none appearance-none cursor-pointer font-bold text-sm"
-                                    >
-                                        <option value="2024">2024</option>
-                                        <option value="2025">2025</option>
-                                        <option value="2026">2026</option>
-                                    </select>
+                                <label className="flex flex-col gap-1.5 cursor-pointer group">
+                                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest group-focus-within:text-primary transition-colors">Ano</span>
+                                    <div className="relative">
+                                        <select 
+                                            value={filterYear}
+                                            onChange={(e) => setFilterYear(e.target.value)}
+                                            className="w-full bg-surface-container-low border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-surface-container-low/80"
+                                            aria-label="Selecionar Ano"
+                                        >
+                                            <option value="2024">2024</option>
+                                            <option value="2025">2025</option>
+                                            <option value="2026">2026</option>
+                                        </select>
+                                        <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-secondary group-focus-within:text-primary text-[18px] transition-colors">expand_more</span>
+                                    </div>
                                 </label>
                             </div>
-                            <div>
-                                <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block mb-2">Atendente</label>
+                            <label className="flex flex-col gap-1.5 group cursor-pointer">
+                                <span className="text-[10px] font-bold text-secondary uppercase tracking-widest group-focus-within:text-primary transition-colors block mb-0.5">Atendente</span>
                                 <div className="relative">
-                                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-lg">search</span>
+                                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-lg group-focus-within:text-primary transition-colors">search</span>
                                     <input 
                                         type="text"
                                         placeholder="Buscar nome..."
                                         value={filterSearch}
                                         onChange={e => setFilterSearch(e.target.value)}
-                                        className="w-full bg-surface-container-low border-none rounded-md py-2.5 pl-10 pr-4 text-on-surface focus:ring-2 focus:ring-primary focus:outline-none font-bold text-sm placeholder-secondary-variant/50"
+                                        className="w-full bg-surface-container-low border border-transparent rounded-lg py-2.5 pl-10 pr-10 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none font-bold text-sm placeholder-secondary-variant/50 transition-all hover:bg-surface-container-low/80"
+                                        aria-label="Buscar Atendente"
                                     />
+                                    {filterSearch && (
+                                        <button 
+                                            onClick={(e) => { e.preventDefault(); setFilterSearch(''); }}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-surface-container-high text-secondary hover:text-on-surface transition-colors"
+                                            aria-label="Limpar busca"
+                                        >
+                                            <span className="material-symbols-outlined text-[16px]">close</span>
+                                        </button>
+                                    )}
                                 </div>
-                            </div>
+                            </label>
                         </div>
                     </div>
 
                     {/* Mini Calendar */}
-                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm border border-surface-container-high/50 animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-base font-bold text-on-surface capitalize">
+                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm border border-surface-container-high/50 animate-in fade-in slide-in-from-left-4 duration-700 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-5">
+                            <h3 className="text-base font-black text-on-surface capitalize tracking-tight flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
                                 {new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                             </h3>
                         </div>
-                        <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-2 font-black text-secondary uppercase tracking-tighter">
+                        <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-3 font-black text-secondary uppercase tracking-widest opacity-80">
                             {['D','S','T','Q','Q','S','S'].map((d, i) => <div key={i}>{d}</div>)}
                         </div>
-                        <div className="grid grid-cols-7 gap-1 text-sm">
+                        <div className="grid grid-cols-7 gap-1 text-sm bg-surface-container-low/20 rounded-xl p-1">
                             {Array.from({ length: daysInMonth }, (_, i) => {
                                 const day = i + 1;
                                 const dateStr = `${filterYear}-${String(filterMonth).padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
@@ -608,17 +641,25 @@ export default function Schedule({ setCurrentView, user }) {
                                 );
                             })}
                         </div>
-                        <div className="mt-4 flex gap-4 text-[10px] font-bold text-secondary">
-                            <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 bg-primary rounded-sm shadow-sm shadow-primary/20"></div> Hoje</div>
-                            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-secondary rounded-full"></div> Plantão</div>
+                        <div className="mt-5 flex gap-4 text-[10px] font-black text-secondary uppercase tracking-widest">
+                            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-primary rounded-full shadow-sm shadow-primary/20"></div> Hoje</div>
+                            <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-primary rounded-full"></div> Plantão</div>
                         </div>
                     </div>
 
                     {/* Stats */}
-                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm border-l-4 border-primary animate-in fade-in slide-in-from-left-4 duration-1000">
-                        <div className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Status do Filtro</div>
-                        <div className="text-3xl font-black text-on-surface">
-                            {filteredPlantoes.length} <span className="text-sm font-bold text-secondary">Plantões Filtrados</span>
+                    <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm border-l-4 border-primary animate-in fade-in slide-in-from-left-4 duration-1000 flex items-center justify-between hover:shadow-md transition-shadow">
+                        <div>
+                            <div className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-[14px]">insights</span>
+                                Status do Filtro
+                            </div>
+                            <div className="text-3xl font-black text-on-surface">
+                                {filteredPlantoes.length} <span className="text-sm font-bold text-secondary uppercase tracking-widest ml-1">Plantões Filtrados</span>
+                            </div>
+                        </div>
+                        <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-transform hover:scale-110 duration-300">
+                            <span className="material-symbols-outlined">event_available</span>
                         </div>
                     </div>
                 </div>
@@ -643,11 +684,12 @@ export default function Schedule({ setCurrentView, user }) {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-surface-container-low/50 border-b border-surface-container-high/50">
-                                        <th className="p-4 pl-8 text-[11px] font-black text-secondary uppercase tracking-widest">DATA</th>
-                                        <th className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">DIA</th>
-                                        <th className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N1 - ATENDIMENTO</th>
-                                        <th className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N2 - SUPORTE/SERVIÇOS</th>
-                                        <th className="p-4 pr-8 text-[11px] font-black text-secondary uppercase tracking-widest text-right sm:text-left">SUPERVISÃO</th>
+                                        <th scope="col" className="p-4 pl-8 text-[11px] font-black text-secondary uppercase tracking-widest">DATA</th>
+                                        <th scope="col" className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">DIA</th>
+                                        <th scope="col" className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N1 - ATENDIMENTO</th>
+                                        <th scope="col" className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N2 - SUPORTE/SERVIÇOS</th>
+                                        <th scope="col" className="p-4 pr-8 text-[11px] font-black text-secondary uppercase tracking-widest text-right sm:text-left">SUPERVISÃO</th>
+                                        {user?.is_admin && <th scope="col" className="p-4 pr-6 w-12"></th>}
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm">
@@ -692,10 +734,10 @@ export default function Schedule({ setCurrentView, user }) {
 
             {/* Modal de Gestão */}
             {isModalOpen && user?.is_admin && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background-dark/60 backdrop-blur-sm p-0 sm:p-4">
-                    <div className="bg-surface-container-lowest rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm border border-surface-container-high flex flex-col max-h-[92vh] sm:max-h-[85vh]">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background-dark/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface-container-lowest rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md border border-surface-container-high flex flex-col max-h-[92vh] sm:max-h-[85vh] animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300">
                         {/* Header */}
-                        <div className="px-4 py-3 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low shrink-0 rounded-t-2xl sm:rounded-t-2xl">
+                        <div className="px-5 py-4 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low shrink-0 rounded-t-3xl sm:rounded-t-3xl">
                             <div className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary text-[20px]">edit_calendar</span>
                                 <h2 className="text-base font-black text-on-surface">Gerenciar Plantão</h2>
@@ -877,196 +919,3 @@ export default function Schedule({ setCurrentView, user }) {
     );
 }
 
-// Subcomponentes Redesenhados
-
-function MultiSelectEmployee({ label, values, onChange, options, allowEmpty }) {
-    const toggleValue = (val) => {
-        if (values.includes(val)) {
-            onChange(values.filter(v => v !== val));
-        } else {
-            onChange([...values, val]);
-        }
-    };
-    
-    return (
-        <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between ml-0.5">
-                <span className="text-[10px] font-black uppercase text-secondary tracking-widest">
-                    {label}
-                </span>
-                {allowEmpty && values.length > 0 && (
-                    <button
-                        type="button"
-                        onClick={() => onChange([])}
-                        className="text-[10px] text-red-500 font-bold hover:underline"
-                    >
-                        Limpar
-                    </button>
-                )}
-            </div>
-            <div className="rounded-lg border border-surface-container-high bg-surface-container-low p-1.5 max-h-28 overflow-y-auto">
-                <div className="flex flex-col gap-0.5">
-                    {options.map(func => (
-                        <label key={func.funcionario_id} className="flex items-center gap-2 cursor-pointer hover:bg-primary/5 px-1.5 py-1 rounded-md transition-colors">
-                            <input
-                                type="checkbox"
-                                checked={values.includes(String(func.funcionario_id))}
-                                onChange={() => toggleValue(String(func.funcionario_id))}
-                                className="w-4 h-4 rounded border-surface-container-high text-primary focus:ring-primary shrink-0"
-                            />
-                            <span className="font-medium text-on-surface text-xs leading-tight">{func.funcionario_nome}</span>
-                        </label>
-                    ))}
-                </div>
-            </div>
-            {values.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-0.5">
-                    {values.map(val => {
-                        const func = options.find(o => String(o.funcionario_id) === val);
-                        return func ? (
-                            <span key={val} className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded-full font-bold">
-                                {func.funcionario_nome.split(' ')[0]}
-                            </span>
-                        ) : null;
-                    })}
-                </div>
-            )}
-        </div>
-    );
-}
-
-function SelectEmployee({ label, value, onChange, options, allowEmpty }) {
-    return (
-        <label className="flex flex-col gap-2">
-            <span className="text-xs sm:text-[10px] font-black uppercase text-secondary tracking-widest flex items-center gap-1.5 ml-1">
-                {label} {allowEmpty && <span className="text-[8px] opacity-60 font-medium">(Opcional)</span>}
-            </span>
-            <div className="relative group">
-                <select 
-                    value={value || ''}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-surface-container-high bg-surface-container-low px-3 py-3 sm:px-4 sm:py-3.5 pr-10 text-on-surface text-sm sm:text-base focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer font-bold transition-all shadow-sm group-hover:bg-white dark:group-hover:bg-surface-container-lowest"
-                >
-                    <option value="">-- Não Atribuído --</option>
-                    {options.map(func => (
-                        <option key={func.funcionario_id} value={func.funcionario_id}>
-                            {func.funcionario_nome}
-                        </option>
-                    ))}
-                </select>
-                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary transition-transform group-hover:translate-y-[-40%] group-hover:text-primary">expand_more</span>
-            </div>
-        </label>
-    );
-}
-
-function CalendarDay({ day, isToday, active, onClick, isAdmin }) {
-    let classes = "w-full aspect-square flex flex-col items-center justify-center text-xs rounded-lg font-bold transition-all relative group ";
-    
-    if (isAdmin) {
-        classes += "cursor-pointer hover:scale-105 active:scale-95 ";
-    } else {
-        classes += "cursor-default ";
-    }
-
-    if (isToday) {
-        classes += "bg-primary text-white shadow-lg shadow-primary/30 z-10 ";
-    } else if (active) {
-        classes += "text-on-surface hover:bg-surface-container-low border border-surface-container-high/30 ";
-    } else {
-        classes += "text-on-surface/40 hover:text-on-surface hover:bg-surface-container-low ";
-    }
-
-    return (
-        <button onClick={onClick} className={classes}>
-            {day}
-            {active && !isToday && (
-                <div className="w-1.5 h-1.5 bg-secondary rounded-full absolute bottom-1.5 left-1/2 -translate-x-1/2 shadow-sm"></div>
-            )}
-        </button>
-    );
-}
-
-function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr, isAdmin, onEdit }) {
-    const isArray = (val) => Array.isArray(val);
-    
-    return (
-        <tr 
-            className={`border-b border-surface-container-low/30 hover:bg-primary/5 transition-all duration-300 group cursor-pointer ${isToday ? 'bg-primary/[0.03]' : ''}`}
-            onClick={isAdmin ? onEdit : undefined}
-        >
-            <td className={`p-4 pl-8 font-black relative ${isToday ? 'text-primary' : 'text-on-surface'}`}>
-                <div className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${isToday ? 'bg-primary' : 'group-hover:bg-primary/40 bg-transparent'}`}></div>
-                {date}
-            </td>
-            <td className={`p-4 font-bold ${isWeekend ? 'text-secondary opacity-70' : 'text-on-surface-variant'}`}>{day}</td>
-            <td className="p-4">
-                {isArray(n1) ? (
-                    <div className="flex flex-col gap-2">
-                        {n1.map((u, i) => <UserAvatar key={i} user={u} />)}
-                    </div>
-                ) : <UserAvatar user={n1} />}
-            </td>
-            <td className="p-4">
-                {isArray(n2) ? (
-                    <div className="flex flex-col gap-2">
-                        {n2.map((u, i) => <UserAvatar key={i} user={u} allowEmpty />)}
-                    </div>
-                ) : <UserAvatar user={n2} allowEmpty />}
-            </td>
-            <td className="p-4 pr-8 text-right sm:text-left">
-                <div className="flex flex-col gap-2 items-end sm:items-start">
-                    {isArray(mgr) ? mgr.map((u, i) => (
-                        <div key={i} className="flex items-center gap-2 bg-secondary-container/30 rounded-full pl-1.5 pr-3 py-1 border border-secondary/10">
-                            <UserAvatar user={u} hideName className="!gap-0 !size-8" />
-                            <span className="font-bold text-on-surface text-[11px] whitespace-nowrap">{u.name}</span>
-                        </div>
-                    )) : (
-                        <div className="flex items-center gap-2 bg-secondary-container/30 rounded-full pl-1.5 pr-3 py-1 border border-secondary/10">
-                            <UserAvatar user={mgr} hideName className="!gap-0" />
-                            <span className="font-bold text-on-surface text-[11px] whitespace-nowrap">{mgr.name}</span>
-                        </div>
-                    )}
-                </div>
-            </td>
-        </tr>
-    );
-}
-
-function UserAvatar({ user, allowEmpty, hideName, className }) {
-    if (!user && allowEmpty) {
-        return (
-            <div className={`flex items-center gap-2 ${className}`}>
-                 <div className="size-8 rounded-full bg-surface-container-low border border-surface-container-high/50 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[16px] text-secondary">person_off</span>
-                 </div>
-                 {!hideName && <span className="text-[11px] font-bold text-secondary opacity-50 italic">Pendente</span>}
-            </div>
-        );
-    }
-
-    if (!user) return null;
-
-    return (
-        <div className={`flex items-center gap-3 group/avatar ${className}`}>
-            {user.img ? (
-                <div className="relative">
-                    <LottieAvatar 
-                        src={user.img}
-                        className="size-9 rounded-full border-2 border-surface-container-high shadow-sm shrink-0 group-hover/avatar:border-primary/50 transition-colors"
-                    />
-                </div>
-            ) : (
-                <div className="size-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-black text-[11px] border-2 border-secondary/10 shadow-sm shrink-0 uppercase group-hover/avatar:border-primary/30 transition-colors">
-                    {user.initials}
-                </div>
-            )}
-            {!hideName && (
-                <div className="flex flex-col -gap-1">
-                    <span className="font-black text-on-surface whitespace-nowrap tracking-tight group-hover/avatar:text-primary transition-colors">{user.name}</span>
-                    <span className="text-[9px] text-secondary font-bold uppercase tracking-wider opacity-0 group-hover/avatar:opacity-100 transition-opacity">Visualizar Perfil</span>
-                </div>
-            )}
-        </div>
-    );
-}
