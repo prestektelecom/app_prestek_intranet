@@ -936,6 +936,62 @@ app.get('/api/funcionarios', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar funcionários.' });
     }
 });
+app.delete('/api/plantoes', async (req, res) => {
+    const { data, admin_usuario_id } = req.body;
+    if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        let adminNome = null;
+        if (admin_usuario_id) {
+            const adminRes = await client.query(
+                'SELECT funcionario_nome, usuario_nome FROM usuarios_perfil WHERE usuario_id = $1',
+                [String(admin_usuario_id)]
+            );
+            if (adminRes.rows.length > 0) {
+                const row = adminRes.rows[0];
+                adminNome = row.funcionario_nome || row.usuario_nome || null;
+            }
+        }
+
+        const anterior = await client.query('SELECT n1_id, n2_id, gerente_id FROM plantoes WHERE data = $1', [data]);
+        const ant = anterior.rows[0] || null;
+
+        if (!ant) {
+             await client.query('ROLLBACK');
+             return res.status(404).json({ sucesso: false, erro: 'Plantão não encontrado' });
+        }
+
+        await client.query('DELETE FROM plantoes WHERE data = $1', [data]);
+
+        await client.query(
+            `INSERT INTO plantoes_historico (plantao_data, n1_anterior, n2_anterior, gerente_anterior, n1_novo, n2_novo, gerente_novo, admin_usuario_id, admin_nome)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [
+                data,
+                ant.n1_id,
+                ant.n2_id,
+                ant.gerente_id,
+                null,
+                null,
+                null,
+                admin_usuario_id ? String(admin_usuario_id) : null,
+                adminNome
+            ]
+        );
+
+        await client.query('COMMIT');
+        return res.json({ sucesso: true });
+    } catch (err) {
+        await client.query('ROLLBACK').catch(() => {});
+        console.error('Erro ao deletar plantão:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao deletar plantão.' });
+    } finally {
+        client.release();
+    }
+});
 
 app.post('/api/plantoes', async (req, res) => {
     const { data, n1_ids, n2_ids, gerente_ids, admin_usuario_id } = req.body;

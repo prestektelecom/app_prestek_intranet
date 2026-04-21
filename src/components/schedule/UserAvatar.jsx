@@ -32,7 +32,6 @@ export default function UserAvatar({ user, allowEmpty, hideName, className }) {
             {!hideName && (
                 <div className="flex flex-col -gap-1">
                     <span className="font-black text-on-surface whitespace-nowrap tracking-tight group-hover/avatar:text-primary transition-colors">{user.name}</span>
-                    <span className="text-[9px] text-secondary font-bold uppercase tracking-wider opacity-0 group-hover/avatar:opacity-100 transition-opacity">Visualizar Perfil</span>
                 </div>
             )}
         </div>

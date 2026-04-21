@@ -25,7 +25,9 @@ export default function Schedule({ setCurrentView, user }) {
     });
     const [existingPlantao, setExistingPlantao] = useState(null);
     const [confirmOverwriteOpen, setConfirmOverwriteOpen] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [salvando, setSalvando] = useState(false);
+    const [deletando, setDeletando] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [historico, setHistorico] = useState([]);
     const [loadingHistorico, setLoadingHistorico] = useState(false);
@@ -226,6 +228,38 @@ export default function Schedule({ setCurrentView, user }) {
         }
     };
 
+    const executarDelecao = async () => {
+        setDeletando(true);
+        try {
+            const payload = {
+                data: selectedDate,
+                admin_usuario_id: user?.id || null
+            };
+            const res = await fetch('/api/plantoes', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+            const data = await safeJson(res);
+            if (data.sucesso) {
+                await fetchPlantoes();
+                setConfirmDeleteOpen(false);
+                setIsModalOpen(false);
+                showToast('Plantão excluído com sucesso!', 'success');
+            } else {
+                showToast('Erro ao excluir plantão: ' + (data.erro || 'desconhecido'), 'error');
+            }
+        } catch(err) {
+            console.error('Erro ao excluir plantão:', err);
+            showToast('Erro de conexão ao excluir plantão.', 'error');
+        } finally {
+            setDeletando(false);
+        }
+    };
+
     const salvarPlantao = (e) => {
         e.preventDefault();
         if (existingPlantao) {
@@ -238,6 +272,7 @@ export default function Schedule({ setCurrentView, user }) {
     const closeManagement = () => {
         setIsModalOpen(false);
         setConfirmOverwriteOpen(false);
+        setConfirmDeleteOpen(false);
         setExistingPlantao(null);
         setHistorico([]);
     };
@@ -492,6 +527,7 @@ export default function Schedule({ setCurrentView, user }) {
     });
 
     const daysInMonth = new Date(parseInt(filterYear), parseInt(filterMonth), 0).getDate();
+    const firstDayOfMonth = new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1).getDay();
 
     return (
         <div className="flex-1 flex flex-col w-full max-w-[1920px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -624,6 +660,9 @@ export default function Schedule({ setCurrentView, user }) {
                             {['D','S','T','Q','Q','S','S'].map((d, i) => <div key={i}>{d}</div>)}
                         </div>
                         <div className="grid grid-cols-7 gap-1 text-sm bg-surface-container-low/20 rounded-xl p-1">
+                            {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                                <div key={`empty-${i}`} />
+                            ))}
                             {Array.from({ length: daysInMonth }, (_, i) => {
                                 const day = i + 1;
                                 const dateStr = `${filterYear}-${String(filterMonth).padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
@@ -686,7 +725,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     <tr className="bg-surface-container-low/50 border-b border-surface-container-high/50">
                                         <th scope="col" className="p-4 pl-8 text-[11px] font-black text-secondary uppercase tracking-widest">DATA</th>
                                         <th scope="col" className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">DIA</th>
-                                        <th scope="col" className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N1 - ATENDIMENTO</th>
+                                        <th scope="col" className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N1 - ATENDIMENTO/NOC</th>
                                         <th scope="col" className="p-4 text-[11px] font-black text-secondary uppercase tracking-widest">N2 - SUPORTE/SERVIÇOS</th>
                                         <th scope="col" className="p-4 pr-8 text-[11px] font-black text-secondary uppercase tracking-widest text-right sm:text-left">SUPERVISÃO</th>
                                         {user?.is_admin && <th scope="col" className="p-4 pr-6 w-12"></th>}
@@ -837,15 +876,67 @@ export default function Schedule({ setCurrentView, user }) {
 
                             {/* Footer fixo */}
                             <div className="shrink-0 flex gap-2 p-3 pt-2 border-t border-surface-container-high bg-surface-container-lowest">
-                                <button type="button" onClick={closeManagement} className="flex-1 px-3 py-2 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm">
+                                {existingPlantao && (
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setConfirmDeleteOpen(true)}
+                                        disabled={salvando || deletando}
+                                        className="px-3 py-2 bg-red-500/10 text-red-500 font-bold rounded-xl hover:bg-red-500/20 transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                                        title="Excluir Plantão"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                )}
+                                <button type="button" onClick={closeManagement} className="flex-1 px-3 py-2 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed">
                                     Cancelar
                                 </button>
-                                <button type="submit" disabled={salvando} className="flex-1 px-3 py-2 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-primary/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed">
+                                <button type="submit" disabled={salvando || deletando} className="flex-1 px-3 py-2 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-primary/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed">
                                     <span className="material-symbols-outlined text-[18px]">save</span>
                                     <span>{salvando ? 'Salvando...' : 'Salvar'}</span>
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Confirmação de exclusão */}
+            {confirmDeleteOpen && existingPlantao && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background-dark/70 backdrop-blur-sm p-4">
+                    <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-sm border border-surface-container-high flex flex-col">
+                        <div className="px-5 py-4 border-b border-surface-container-high flex items-center gap-2">
+                            <span className="material-symbols-outlined text-red-500">delete_forever</span>
+                            <h3 className="text-base font-black text-on-surface">Excluir plantão?</h3>
+                        </div>
+                        <div className="px-5 py-4 flex flex-col gap-3 text-sm text-on-surface">
+                            <p className="font-medium">
+                                Tem certeza que deseja excluir permanentemente o plantão do dia <strong className="whitespace-nowrap">{new Date(selectedDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</strong>?
+                            </p>
+                            <div className="bg-surface-container-low rounded-lg p-3 text-xs flex flex-col gap-1 opacity-70">
+                                <div><span className="font-black">N1:</span> {splitNomes(existingPlantao.n1_nome).join(', ') || '—'}</div>
+                                <div><span className="font-black">N2:</span> {splitNomes(existingPlantao.n2_nome).join(', ') || '—'}</div>
+                                <div><span className="font-black">Supervisão:</span> {splitNomes(existingPlantao.mgr_nome).join(', ') || '—'}</div>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 px-5 py-4 border-t border-surface-container-high">
+                            <button
+                                type="button"
+                                onClick={() => setConfirmDeleteOpen(false)}
+                                disabled={deletando}
+                                className="flex-1 px-3 py-2 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm disabled:opacity-60"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={executarDelecao}
+                                disabled={deletando}
+                                className="flex-1 px-3 py-2 bg-red-500 text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-red-500/30 text-sm flex items-center justify-center gap-1.5 disabled:opacity-60"
+                            >
+                                {deletando && <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>}
+                                {deletando ? 'Excluindo...' : 'Sim, excluir'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
