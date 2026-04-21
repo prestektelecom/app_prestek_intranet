@@ -2,7 +2,6 @@
 name: stitch
 description: A brief description of what this skill does
 ---
-
 # stitch
 
 Instructions for the agent to follow when this skill is activated.
