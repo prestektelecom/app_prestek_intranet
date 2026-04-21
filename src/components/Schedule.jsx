@@ -7,6 +7,10 @@ import UserAvatar from './schedule/UserAvatar';
 export default function Schedule({ setCurrentView, user }) {
     const [plantoes, setPlantoes] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
+    // Colaboradores do IXC filtrados para N1 - ATENDIMENTO/NOC (deps 13 e 49)
+    const [colaboradoresNoc, setColaboradoresNoc] = useState([]);
+    // Colaboradores do IXC filtrados para N2 - SUPORTE/SERVIÇOS (deps 15 e 21)
+    const [colaboradoresSuporteN2, setColaboradoresSuporteN2] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Filters
@@ -69,6 +73,7 @@ export default function Schedule({ setCurrentView, user }) {
 
     const fetchFuncionarios = async () => {
         try {
+            // Busca funcionarios do DB (usuarios_perfil) para N2 e Supervisão
             const res = await fetch('/api/funcionarios');
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await safeJson(res);
@@ -77,6 +82,29 @@ export default function Schedule({ setCurrentView, user }) {
             } else {
                 setFuncionarios([]);
                 throw new Error(data?.erro || 'Resposta inesperada da API de funcionários.');
+            }
+
+            // Busca colaboradores do IXC para preencher N1 com ATENDIMENTO/NOC completo
+            const resColab = await fetch('/api/colaboradores?all=true');
+            if (resColab.ok) {
+                const dataColab = await safeJson(resColab);
+                if (dataColab.sucesso && Array.isArray(dataColab.colaboradores)) {
+                    const filtrarAtivos = (depto) => dataColab.colaboradores.filter(c => {
+                        const nome = (c.funcionario_nome || '').trim();
+                        const d = String(c.id_departamento || '');
+                        const ativo = !nome.startsWith('(INATIVO') && !nome.startsWith('(FERIAS');
+                        return ativo && depto.includes(d);
+                    }).map(c => ({
+                        funcionario_id: c.funcionario_id || c.id,
+                        funcionario_nome: c.funcionario_nome,
+                        foto_perfil: c.foto_perfil || null,
+                        id_departamento: c.id_departamento,
+                    }));
+                    // IDs de setor: 13 = ATENDIMENTO, 49 = NOC
+                    setColaboradoresNoc(filtrarAtivos(['13', '49']));
+                    // IDs de setor: 15 = SUPORTE, 21 = SERVICO
+                    setColaboradoresSuporteN2(filtrarAtivos(['15', '21']));
+                }
             }
         } catch (err) {
             console.error("Erro ao buscar funcionários:", err);
@@ -814,13 +842,13 @@ export default function Schedule({ setCurrentView, user }) {
                                         label="N1 - ATENDIMENTO/NOC" 
                                         values={formData.n1_ids} 
                                         onChange={(vals) => setFormData({...formData, n1_ids: vals})} 
-                                        options={funcionarios} 
+                                        options={colaboradoresNoc} 
                                     />
                                     <MultiSelectEmployee 
                                         label="N2 - SUPORTE/SERVIÇOS" 
                                         values={formData.n2_ids} 
                                         onChange={(vals) => setFormData({...formData, n2_ids: vals})} 
-                                        options={funcionarios} 
+                                        options={colaboradoresSuporteN2} 
                                         allowEmpty
                                     />
                                     <MultiSelectEmployee 
