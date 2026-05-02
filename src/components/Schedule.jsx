@@ -1,47 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import CalendarDay from './schedule/CalendarDay';
 import MultiSelectEmployee from './schedule/MultiSelectEmployee';
 import ScheduleRow from './schedule/ScheduleRow';
-import SelectEmployee from './schedule/SelectEmployee';
-import UserAvatar from './schedule/UserAvatar';
-export default function Schedule({ setCurrentView, user }) {
-    const [plantoes, setPlantoes] = useState([]);
-    const [funcionarios, setFuncionarios] = useState([]);
-    // Colaboradores do IXC filtrados para N1 - ATENDIMENTO/NOC (deps 13 e 49)
-    const [colaboradoresNoc, setColaboradoresNoc] = useState([]);
-    // Colaboradores do IXC filtrados para N2 - SUPORTE/SERVIÇOS (deps 15 e 21)
-    const [colaboradoresSuporteN2, setColaboradoresSuporteN2] = useState([]);
-    const [loading, setLoading] = useState(true);
+import { useScheduleData } from '../hooks/useScheduleData';
+import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
+import { handleImprimir, handleExportarICal } from '../services/exportService';
 
-    // Filters
+// Skeleton row for loading state
+function SkeletonRow() {
+    return (
+        <tr className="animate-pulse">
+            {[...Array(5)].map((_, i) => (
+                <td key={i} className="p-4 pl-8">
+                    <div className="h-4 bg-surface-container-high rounded-md w-3/4" />
+                </td>
+            ))}
+        </tr>
+    );
+}
+
+export default function Schedule({ setCurrentView, user }) {
     const d = new Date();
     const [filterMonth, setFilterMonth] = useState((d.getMonth() + 1).toString());
     const [filterYear, setFilterYear] = useState(d.getFullYear().toString());
     const [filterSearch, setFilterSearch] = useState('');
+    const [filterMeusPlantoes, setFilterMeusPlantoes] = useState(false);
 
-    // Admin Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
-    const [formData, setFormData] = useState({
-        n1_ids: [],
-        n2_ids: [],
-        gerente_ids: []
-    });
+    const [formData, setFormData] = useState({ n1_ids: [], n2_ids: [], gerente_ids: [] });
     const [existingPlantao, setExistingPlantao] = useState(null);
     const [confirmOverwriteOpen, setConfirmOverwriteOpen] = useState(false);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [salvando, setSalvando] = useState(false);
     const [deletando, setDeletando] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-    const [historico, setHistorico] = useState([]);
-    const [loadingHistorico, setLoadingHistorico] = useState(false);
+
+    const {
+        plantoes,
+        funcionarios,
+        colaboradoresNoc,
+        colaboradoresSuporteN2,
+        todosColaboradores,
+        loading,
+        erroCarregamento,
+        historico,
+        loadingHistorico,
+        fetchPlantoes,
+        fetchHistorico,
+        setHistorico,
+    } = useScheduleData(user);
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3500);
     };
-
-    const [erroCarregamento, setErroCarregamento] = useState(null);
 
     const safeJson = async (res) => {
         const ct = res.headers.get('content-type') || '';
@@ -52,160 +65,105 @@ export default function Schedule({ setCurrentView, user }) {
         return res.json();
     };
 
-    const fetchPlantoes = async () => {
-        try {
-            const res = await fetch('/api/plantoes');
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await safeJson(res);
-            if (data.sucesso && Array.isArray(data.plantoes)) {
-                setPlantoes(data.plantoes);
-                setErroCarregamento(null);
-            } else {
-                setPlantoes([]);
-                throw new Error(data?.erro || 'Resposta inesperada da API de plantões.');
-            }
-        } catch (err) {
-            console.error("Erro ao buscar plantões:", err);
-            setPlantoes([]);
-            setErroCarregamento('Não foi possível carregar a escala de plantão. Tente novamente em instantes.');
-        }
-    };
+    const mapIdsToPessoas = useMemo(() => (idsStr) => {
+        if (!idsStr) return [{ name: 'Não atribuído', initials: '??', img: null }];
+        const ids = String(idsStr).split(',').filter(Boolean);
+        if (ids.length === 0) return [{ name: 'Não atribuído', initials: '??', img: null }];
 
-    const fetchFuncionarios = async () => {
-        try {
-            // Busca funcionarios do DB (usuarios_perfil) para N2 e Supervisão
-            const res = await fetch('/api/funcionarios');
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await safeJson(res);
-            if (data.sucesso && Array.isArray(data.funcionarios)) {
-                setFuncionarios(data.funcionarios);
-            } else {
-                setFuncionarios([]);
-                throw new Error(data?.erro || 'Resposta inesperada da API de funcionários.');
-            }
-
-            // Busca colaboradores do IXC para preencher N1 com ATENDIMENTO/NOC completo
-            const resColab = await fetch('/api/colaboradores?all=true');
-            if (resColab.ok) {
-                const dataColab = await safeJson(resColab);
-                if (dataColab.sucesso && Array.isArray(dataColab.colaboradores)) {
-                    const filtrarAtivos = (depto) => dataColab.colaboradores.filter(c => {
-                        const nome = (c.funcionario_nome || '').trim();
-                        const d = String(c.id_departamento || '');
-                        const ativo = !nome.startsWith('(INATIVO') && !nome.startsWith('(FERIAS');
-                        return ativo && depto.includes(d);
-                    }).map(c => ({
-                        funcionario_id: c.funcionario_id || c.id,
-                        funcionario_nome: c.funcionario_nome,
-                        foto_perfil: c.foto_perfil || null,
-                        id_departamento: c.id_departamento,
-                    }));
-                    // IDs de setor: 13 = ATENDIMENTO, 49 = NOC
-                    setColaboradoresNoc(filtrarAtivos(['13', '49']));
-                    // IDs de setor: 15 = SUPORTE, 21 = SERVICO
-                    setColaboradoresSuporteN2(filtrarAtivos(['15', '21']));
-                }
-            }
-        } catch (err) {
-            console.error("Erro ao buscar funcionários:", err);
-            setFuncionarios([]);
-            setErroCarregamento('Não foi possível carregar a lista de funcionários para gestão dos plantões.');
-        }
-    };
-
-    useEffect(() => {
-        const init = async () => {
-            setLoading(true);
-            await fetchPlantoes();
-            if (user?.is_admin) {
-                await fetchFuncionarios();
-            }
-            setLoading(false);
+        const toName = (obj) => obj?.funcionario_nome || obj?.nome || obj?.funcionario;
+        const makePessoa = (obj, img = null) => {
+            const nome = toName(obj);
+            return {
+                name: nome,
+                initials: (nome || '??').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(),
+                img
+            };
         };
-        init();
-    }, [user]);
+        const matchId = (obj, id) =>
+            String(obj.funcionario_id) === String(id) || String(obj.id) === String(id);
 
-    // Helper interno: garante 'YYYY-MM-DD' a partir de string ou Date
-    const toIsoDay = (raw) => {
-        if (!raw) return null;
-        if (raw instanceof Date) {
-            const y = raw.getUTCFullYear();
-            const m = String(raw.getUTCMonth() + 1).padStart(2, '0');
-            const d = String(raw.getUTCDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        }
-        return String(raw).split('T')[0];
-    };
+        return ids.map(id => {
+            // 1. usuarios_perfil — tem foto
+            const func = funcionarios?.find(f => matchId(f, id));
+            if (func) return makePessoa(func, func.foto_perfil || null);
 
-    // Função para formatar data do banco para exibição (ex: "Fev 05")
-    const formatarData = (dataStr) => {
-        const iso = toIsoDay(dataStr);
-        if (!iso) return '';
-        const data = new Date(`${iso}T00:00:00Z`);
-        return data.toLocaleDateString('pt-BR', { month: 'short', day: '2-digit', timeZone: 'UTC' })
-            .replace('.', '')
-            .replace(/^\w/, (c) => c.toUpperCase());
-    };
+            // 2. colaboradores NOC (N1)
+            const noc = colaboradoresNoc?.find(c => matchId(c, id));
+            if (noc) return makePessoa(noc);
 
-    // Função para pegar o dia da semana
-    const getDiaSemana = (dataStr) => {
-        const iso = toIsoDay(dataStr);
-        if (!iso) return '';
-        const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-        return dias[new Date(`${iso}T00:00:00`).getDay()];
-    };
+            // 3. colaboradores Suporte N2
+            const n2 = colaboradoresSuporteN2?.find(c => matchId(c, id));
+            if (n2) return makePessoa(n2);
 
-    // Função para verificar se é final de semana
-    const isFimDeSemana = (dataStr) => {
-        const iso = toIsoDay(dataStr);
-        if (!iso) return false;
-        const dia = new Date(`${iso}T00:00:00`).getDay();
-        return dia === 0 || dia === 6;
-    };
+            // 4. todos colaboradores IXC — fallback geral
+            const colab = todosColaboradores?.find(c => matchId(c, id));
+            if (colab) return makePessoa(colab);
 
-    // Função para verificar se é hoje
-    const isHoje = (dataStr) => {
-        const iso = toIsoDay(dataStr);
-        if (!iso) return false;
-        const hojeObj = new Date();
-        const y = hojeObj.getFullYear();
-        const m = String(hojeObj.getMonth() + 1).padStart(2, '0');
-        const d = String(hojeObj.getDate()).padStart(2, '0');
-        return iso === `${y}-${m}-${d}`;
-    };
+            return { name: `ID: ${id}`, initials: '??', img: null };
+        });
+    }, [funcionarios, colaboradoresNoc, colaboradoresSuporteN2, todosColaboradores]);
 
-    const fetchHistorico = async (dateStr) => {
-        setLoadingHistorico(true);
-        try {
-            const res = await fetch(`/api/plantoes/historico/${dateStr}`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await safeJson(res);
-            if (data.sucesso) {
-                setHistorico(data.historico || []);
-            } else {
-                setHistorico([]);
+    const getNamesFromIds = (idsStr) => mapIdsToPessoas(idsStr).map(p => p.name).filter(n => n !== 'Não atribuído');
+
+    const filteredPlantoes = useMemo(() => {
+        return plantoes.filter(p => {
+            const pStr = toIsoDay(p?.data);
+            if (!pStr) return false;
+            const [y, m] = pStr.split('-');
+            if (parseInt(y) !== parseInt(filterYear) || parseInt(m) !== parseInt(filterMonth)) return false;
+
+            if (filterSearch) {
+                const term = filterSearch.toLowerCase();
+                const allNomes = [
+                    ...getNamesFromIds(p.n1_id),
+                    ...getNamesFromIds(p.n2_id),
+                    ...getNamesFromIds(p.gerente_id)
+                ].filter(Boolean).map(n => n.toLowerCase());
+                if (!allNomes.some(n => n.includes(term))) return false;
             }
-        } catch (err) {
-            console.error('Erro ao buscar histórico:', err);
-            setHistorico([]);
-        } finally {
-            setLoadingHistorico(false);
-        }
+
+            if (filterMeusPlantoes && user) {
+                const userName = (user.nome || user.name || '').toLowerCase();
+                const userId = String(user.id || '');
+                const allNomes = [
+                    ...getNamesFromIds(p.n1_id),
+                    ...getNamesFromIds(p.n2_id),
+                    ...getNamesFromIds(p.gerente_id)
+                ].filter(Boolean).map(n => n.toLowerCase());
+                const allIds = [
+                    ...(p.n1_id ? String(p.n1_id).split(',') : []),
+                    ...(p.n2_id ? String(p.n2_id).split(',') : []),
+                    ...(p.gerente_id ? String(p.gerente_id).split(',') : []),
+                ].map(id => id.trim());
+                const matchNome = userName && allNomes.some(n => n.includes(userName));
+                const matchId = userId && allIds.includes(userId);
+                if (!matchNome && !matchId) return false;
+            }
+
+            return true;
+        });
+    }, [plantoes, filterYear, filterMonth, filterSearch, filterMeusPlantoes, user, mapIdsToPessoas]);
+
+    const limparFiltros = () => {
+        setFilterSearch('');
+        setFilterMonth((d.getMonth() + 1).toString());
+        setFilterYear(d.getFullYear().toString());
+        setFilterMeusPlantoes(false);
     };
+
+    const monthLabel = () => new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1)
+        .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
     const openManagement = (dateStr) => {
         if (!user?.is_admin) return;
-
         setSelectedDate(dateStr);
         setHistorico([]);
         const existingInfo = plantoes.find(p => toIsoDay(p?.data) === dateStr);
-
         const parseIds = (val) => {
             if (!val) return [];
             if (Array.isArray(val)) return val;
             return val.split(',').filter(Boolean);
         };
-
         if (existingInfo) {
             setFormData({
                 n1_ids: parseIds(existingInfo.n1_id),
@@ -236,9 +194,7 @@ export default function Schedule({ setCurrentView, user }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}`);
-            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await safeJson(res);
             if (data.sucesso) {
                 await fetchPlantoes();
@@ -259,18 +215,13 @@ export default function Schedule({ setCurrentView, user }) {
     const executarDelecao = async () => {
         setDeletando(true);
         try {
-            const payload = {
-                data: selectedDate,
-                admin_usuario_id: user?.id || null
-            };
+            const payload = { data: selectedDate, admin_usuario_id: user?.id || null };
             const res = await fetch('/api/plantoes', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}`);
-            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await safeJson(res);
             if (data.sucesso) {
                 await fetchPlantoes();
@@ -305,262 +256,15 @@ export default function Schedule({ setCurrentView, user }) {
         setHistorico([]);
     };
 
-    const splitNomes = (raw) => (raw ? String(raw).split('|||').filter(Boolean) : []);
-
-    const monthLabel = () => new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1)
-        .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-
-    const handleImprimir = () => {
-        if (!filteredPlantoes.length) {
-            alert('Não há plantões no período selecionado para imprimir.');
-            return;
-        }
-        const win = window.open('', '_blank');
-        if (!win) {
-            alert('Não foi possível abrir a janela de impressão. Verifique o bloqueador de pop-ups.');
-            return;
-        }
-
-        const doc = win.document;
-        doc.open();
-        doc.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"></head><body></body></html>');
-        doc.close();
-
-        const titulo = `Escala de Plantão — ${monthLabel()}`;
-        doc.title = titulo;
-
-        const style = doc.createElement('style');
-        style.textContent = `
-            * { box-sizing: border-box; }
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1d150c; padding: 32px; }
-            h1 { font-size: 22px; margin: 0 0 4px 0; }
-            .sub { color: #a17745; font-size: 13px; margin-bottom: 24px; }
-            table { width: 100%; border-collapse: collapse; font-size: 13px; }
-            th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eaddcd; }
-            th { background: #fcfaf8; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; color: #a17745; }
-            tr:nth-child(even) td { background: #fcfaf8; }
-            @media print { body { padding: 0; } @page { margin: 16mm; } }
-        `;
-        doc.head.appendChild(style);
-
-        const h1 = doc.createElement('h1');
-        h1.textContent = titulo;
-        doc.body.appendChild(h1);
-
-        const sub = doc.createElement('div');
-        sub.className = 'sub';
-        sub.textContent = `Total de plantões: ${filteredPlantoes.length}` +
-            (filterSearch ? ` · Filtro: "${filterSearch}"` : '');
-        doc.body.appendChild(sub);
-
-        const table = doc.createElement('table');
-        const thead = doc.createElement('thead');
-        const headRow = doc.createElement('tr');
-        ['Data', 'Dia da Semana', 'Horário', 'N1 - ATENDIMENTO/NOC', 'Suporte N2', 'Gerente ON'].forEach(h => {
-            const th = doc.createElement('th');
-            th.textContent = h;
-            headRow.appendChild(th);
-        });
-        thead.appendChild(headRow);
-        table.appendChild(thead);
-
-        const tbody = doc.createElement('tbody');
-        filteredPlantoes
-            .slice()
-            .sort((a, b) => (toIsoDay(a.data) || '').localeCompare(toIsoDay(b.data) || ''))
-            .forEach(p => {
-                const tr = doc.createElement('tr');
-                const fmtHora = (h) => {
-                    const m = h ? String(h).match(/^(\d{2}):(\d{2})/) : null;
-                    return m ? `${m[1]}:${m[2]}` : '—';
-                };
-                const horario = (p.horario_inicio || p.horario_fim)
-                    ? `${fmtHora(p.horario_inicio)} – ${fmtHora(p.horario_fim)}`
-                    : '—';
-                [
-                    formatarData(p.data),
-                    getDiaSemana(p.data),
-                    horario,
-                    p.n1_nome || '—',
-                    p.n2_nome || '—',
-                    p.mgr_nome || '—'
-                ].forEach(val => {
-                    const td = doc.createElement('td');
-                    td.textContent = val;
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
-        table.appendChild(tbody);
-        doc.body.appendChild(table);
-
-        win.focus();
-        setTimeout(() => { try { win.print(); } catch (_) { /* ignore */ } }, 100);
-    };
-
-    const handleExportarICal = () => {
-        if (!filteredPlantoes.length) {
-            showToast('Não há plantões no período selecionado para exportar.', 'error');
-            return;
-        }
-
-        // ── Helpers ──────────────────────────────────────────────
-        const pad = (n) => String(n).padStart(2, '0');
-
-        // DTSTAMP em UTC (obrigatório no RFC 5545)
-        const now = new Date();
-        const dtstamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
-
-        // Escape de caracteres especiais conforme RFC 5545 §3.3.11
-        const esc = (s) => String(s ?? '')
-            .replace(/\\/g, '\\\\')
-            .replace(/\n/g, '\\n')
-            .replace(/;/g, '\\;')
-            .replace(/,/g, '\\,');
-
-        // Line folding: máximo 75 octetos, continuação com CRLF + SPACE
-        const fold = (line) => {
-            const enc = new TextEncoder();
-            if (enc.encode(line).length <= 75) return line;
-            const chars = [...line];
-            const out = [];
-            let cur = '';
-            for (const ch of chars) {
-                if (enc.encode(cur + ch).length > (out.length === 0 ? 75 : 74)) {
-                    out.push(cur);
-                    cur = ' ' + ch;
-                } else {
-                    cur += ch;
-                }
-            }
-            if (cur) out.push(cur);
-            return out.join('\r\n');
-        };
-
-        // Converte "|||" separator → vírgulas legíveis
-        const nomes = (raw) => raw ? raw.split('|||').map(n => n.trim()).filter(Boolean).join(', ') : 'Não atribuído';
-
-        // Extrai HHmmss de "HH:MM" ou "HH:MM:SS", com fallback
-        const toTime = (raw, fallback) => {
-            const m = String(raw ?? '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
-            return m ? `${m[1]}${m[2]}${m[3] ?? '00'}` : fallback;
-        };
-
-        const monthLabel = `${String(filterMonth).padStart(2, '0')}/${filterYear}`;
-
-        // ── VCALENDAR header ──────────────────────────────────────
-        const lines = [
-            'BEGIN:VCALENDAR',
-            'VERSION:2.0',
-            'PRODID:-//Prestek Telecom//Intranet//PT',
-            'CALSCALE:GREGORIAN',
-            'METHOD:PUBLISH',
-            `X-WR-CALNAME:Escala de Plantão Prestek — ${monthLabel}`,
-            'X-WR-TIMEZONE:America/Sao_Paulo',
-            'X-WR-CALDESC:Gerado automaticamente pela Intranet Prestek',
-            // ── VTIMEZONE (America/Sao_Paulo — BRT/BRST) ──────────
-            'BEGIN:VTIMEZONE',
-            'TZID:America/Sao_Paulo',
-            'X-LIC-LOCATION:America/Sao_Paulo',
-            'BEGIN:STANDARD',
-            'TZOFFSETFROM:-0200',
-            'TZOFFSETTO:-0300',
-            'TZNAME:BRT',
-            'DTSTART:19701018T000000',
-            'RRULE:FREQ=YEARLY;BYDAY=3SU;BYMONTH=2',
-            'END:STANDARD',
-            'BEGIN:DAYLIGHT',
-            'TZOFFSETFROM:-0300',
-            'TZOFFSETTO:-0200',
-            'TZNAME:BRST',
-            'DTSTART:19701004T000000',
-            'RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=11',
-            'END:DAYLIGHT',
-            'END:VTIMEZONE',
-        ];
-
-        // ── VEVENTs ───────────────────────────────────────────────
-        filteredPlantoes
-            .slice()
-            .sort((a, b) => (toIsoDay(a.data) ?? '').localeCompare(toIsoDay(b.data) ?? ''))
-            .forEach(p => {
-                const iso = toIsoDay(p.data);
-                if (!iso) return;
-                const [y, mo, d] = iso.split('-');
-                const dateStr = `${y}${mo}${d}`;
-                const startTime = toTime(p.horario_inicio, '090000');
-                const endTime = toTime(p.horario_fim, '170000');
-                const uid = `plantao-${iso}-${p.id ?? crypto.randomUUID()}@prestek.intranet`;
-
-                const n1 = nomes(p.n1_nome);
-                const n2 = nomes(p.n2_nome);
-                const mgr = nomes(p.mgr_nome);
-
-                const summary = `Plantão — ${iso.split('-').reverse().join('/')}`;
-                const description = [
-                    `📋 Escala de Plantão Prestek`,
-                    ``,
-                    `👤 Suporte N1: ${n1}`,
-                    `👤 Suporte N2: ${n2}`,
-                    `👔 Supervisão: ${mgr}`,
-                    ``,
-                    `Gerado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`,
-                ].join('\n');
-
-                lines.push('BEGIN:VEVENT');
-                lines.push(fold(`UID:${uid}`));
-                lines.push(`DTSTAMP:${dtstamp}`);
-                lines.push(`DTSTART;TZID=America/Sao_Paulo:${dateStr}T${startTime}`);
-                lines.push(`DTEND;TZID=America/Sao_Paulo:${dateStr}T${endTime}`);
-                lines.push(fold(`SUMMARY:${esc(summary)}`));
-                lines.push(fold(`DESCRIPTION:${esc(description)}`));
-                lines.push('CATEGORIES:Escala,Plantão,Prestek');
-                lines.push('STATUS:CONFIRMED');
-                lines.push('TRANSP:OPAQUE');
-                lines.push('SEQUENCE:0');
-                lines.push('END:VEVENT');
-            });
-
-        lines.push('END:VCALENDAR');
-
-        const ics = lines.join('\r\n') + '\r\n';
-        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `escala-plantao-${filterYear}-${String(filterMonth).padStart(2, '0')}.ics`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-    };
-
-    // Filter Logic
-    const filteredPlantoes = plantoes.filter(p => {
-        const pStr = toIsoDay(p?.data);
-        if (!pStr) return false;
-        const [y, m] = pStr.split('-');
-        if (parseInt(y) !== parseInt(filterYear) || parseInt(m) !== parseInt(filterMonth)) return false;
-
-        if (filterSearch) {
-            const term = filterSearch.toLowerCase();
-            const allNomes = [
-                ...(Array.isArray(p.n1_nome) ? p.n1_nome : [p.n1_nome]),
-                ...(Array.isArray(p.n2_nome) ? p.n2_nome : [p.n2_nome]),
-                ...(Array.isArray(p.mgr_nome) ? p.mgr_nome : [p.mgr_nome])
-            ].filter(Boolean).map(n => n.toLowerCase());
-            if (!allNomes.some(n => n.includes(term))) return false;
-        }
-        return true;
-    });
-
     const daysInMonth = new Date(parseInt(filterYear), parseInt(filterMonth), 0).getDate();
     const firstDayOfMonth = new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1).getDay();
+
+    const filtrosAtivos = filterSearch !== '' || filterMonth !== (d.getMonth() + 1).toString() || filterYear !== d.getFullYear().toString() || filterMeusPlantoes;
 
     return (
         <div className="flex-1 flex flex-col w-full max-w-[1920px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <main className="flex-1 flex flex-col gap-8">
-                {/* Context & Breadcrumbs */}
+                {/* Breadcrumbs */}
                 <div className="flex flex-col gap-2">
                     <div className="text-sm font-medium text-secondary tracking-wide flex items-center gap-2">
                         <button onClick={() => setCurrentView('dashboard')} className="hover:text-primary transition-colors flex items-center gap-1">
@@ -575,11 +279,17 @@ export default function Schedule({ setCurrentView, user }) {
                             <p className="text-secondary font-medium mt-1">Visualize e gerencie as atribuições de cobertura mensal.</p>
                         </div>
                         <div className="flex gap-3">
-                            <button onClick={handleImprimir} className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors">
+                            <button
+                                onClick={() => handleImprimir(filteredPlantoes, filterMonth, filterYear, filterSearch, formatarData, getDiaSemana)}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors"
+                            >
                                 <span className="material-symbols-outlined text-[20px]">print</span>
                                 Imprimir
                             </button>
-                            <button onClick={handleExportarICal} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-primary/20">
+                            <button
+                                onClick={() => handleExportarICal(filteredPlantoes, filterMonth, filterYear, showToast)}
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-primary/20"
+                            >
                                 <span className="material-symbols-outlined text-[20px]">ios_share</span>
                                 Exportar iCal
                             </button>
@@ -604,9 +314,9 @@ export default function Schedule({ setCurrentView, user }) {
                                     <span className="material-symbols-outlined text-primary">tune</span>
                                     <h2 className="text-lg font-black text-on-surface tracking-tight">Filtros</h2>
                                 </div>
-                                {(filterSearch !== '' || filterMonth !== (d.getMonth() + 1).toString() || filterYear !== d.getFullYear().toString()) && (
+                                {filtrosAtivos && (
                                     <button
-                                        onClick={() => { setFilterSearch(''); setFilterMonth((d.getMonth() + 1).toString()); setFilterYear(d.getFullYear().toString()); }}
+                                        onClick={limparFiltros}
                                         className="text-[10px] uppercase font-bold tracking-widest text-secondary hover:text-primary transition-colors flex items-center gap-1 bg-surface-container-low px-2 py-1 rounded-md"
                                         aria-label="Limpar filtros"
                                     >
@@ -673,6 +383,22 @@ export default function Schedule({ setCurrentView, user }) {
                                         )}
                                     </div>
                                 </label>
+
+                                {/* Meus Plantões toggle */}
+                                <button
+                                    type="button"
+                                    onClick={() => setFilterMeusPlantoes(v => !v)}
+                                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-bold transition-all border ${filterMeusPlantoes
+                                        ? 'bg-primary/10 text-primary border-primary/30'
+                                        : 'bg-surface-container-low text-secondary border-transparent hover:border-surface-container-high'
+                                    }`}
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">person</span>
+                                    Meus Plantões
+                                    {filterMeusPlantoes && (
+                                        <span className="ml-auto w-2 h-2 rounded-full bg-primary" />
+                                    )}
+                                </button>
                             </div>
                         </div>
 
@@ -761,36 +487,43 @@ export default function Schedule({ setCurrentView, user }) {
                                     </thead>
                                     <tbody className="text-sm">
                                         {loading ? (
-                                            <tr><td colSpan={5} className="p-12 text-center text-secondary font-bold">Carregando escala...</td></tr>
+                                            [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
                                         ) : filteredPlantoes.length === 0 ? (
-                                            <tr><td colSpan={5} className="p-12 text-center text-secondary font-bold">Nenhum plantão agendado para este filtro.</td></tr>
+                                            <tr>
+                                                <td colSpan={user?.is_admin ? 6 : 5} className="p-16 text-center">
+                                                    <div className="flex flex-col items-center gap-4">
+                                                        <span className="material-symbols-outlined text-5xl text-secondary/40">event_busy</span>
+                                                        <div>
+                                                            <p className="font-black text-on-surface text-base">Nenhum plantão encontrado</p>
+                                                            <p className="text-secondary text-sm mt-1">Não há plantões agendados para os filtros selecionados.</p>
+                                                        </div>
+                                                        {filtrosAtivos && (
+                                                            <button
+                                                                onClick={limparFiltros}
+                                                                className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg font-bold text-sm hover:bg-primary/20 transition-colors"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
+                                                                Limpar filtros
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         ) : (
-                                            filteredPlantoes.map((p) => {
-                                                const parsePessoas = (nomes, fotos) => {
-                                                    if (!nomes) return [{ name: 'Não atribuído', initials: '??', img: null }];
-                                                    const arr = nomes.split('|||');
-                                                    const fotosArr = (fotos || '').split('|||');
-                                                    return arr.filter(Boolean).map((nome, i) => ({
-                                                        name: nome,
-                                                        initials: (nome || '??').split(' ').map(n => n[0]).join('').slice(0, 2),
-                                                        img: fotosArr[i] || null
-                                                    }));
-                                                };
-                                                return (
-                                                    <ScheduleRow
-                                                        key={p.id ?? toIsoDay(p.data)}
-                                                        date={formatarData(p.data)}
-                                                        day={getDiaSemana(p.data)}
-                                                        isToday={isHoje(p.data)}
-                                                        isWeekend={isFimDeSemana(p.data)}
-                                                        n1={parsePessoas(p.n1_nome, p.n1_foto)}
-                                                        n2={p.n2_id ? parsePessoas(p.n2_nome, p.n2_foto) : [{ name: 'Não atribuído', initials: '??', img: null }]}
-                                                        mgr={parsePessoas(p.mgr_nome, p.mgr_foto)}
-                                                        isAdmin={user?.is_admin}
-                                                        onEdit={() => openManagement(toIsoDay(p.data))}
-                                                    />
-                                                );
-                                            })
+                                            filteredPlantoes.map((p) => (
+                                                <ScheduleRow
+                                                    key={p.id ?? toIsoDay(p.data)}
+                                                    date={formatarData(p.data)}
+                                                    day={getDiaSemana(p.data)}
+                                                    isToday={isHoje(p.data)}
+                                                    isWeekend={isFimDeSemana(p.data)}
+                                                    n1={mapIdsToPessoas(p.n1_id)}
+                                                    n2={p.n2_id ? mapIdsToPessoas(p.n2_id) : [{ name: 'Não atribuído', initials: '??', img: null }]}
+                                                    mgr={mapIdsToPessoas(p.gerente_id)}
+                                                    isAdmin={user?.is_admin}
+                                                    onEdit={() => openManagement(toIsoDay(p.data))}
+                                                />
+                                            ))
                                         )}
                                     </tbody>
                                 </table>
@@ -803,7 +536,6 @@ export default function Schedule({ setCurrentView, user }) {
                 {isModalOpen && user?.is_admin && (
                     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background-dark/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300" onClick={closeManagement}>
                         <div className="bg-surface-container-lowest rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md border border-surface-container-high flex flex-col max-h-[92vh] sm:max-h-[85vh] animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
-                            {/* Header */}
                             <div className="px-5 py-4 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low shrink-0 rounded-t-3xl sm:rounded-t-3xl">
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary text-[20px]">edit_calendar</span>
@@ -814,7 +546,6 @@ export default function Schedule({ setCurrentView, user }) {
                                 </button>
                             </div>
 
-                            {/* Scrollable body */}
                             <form onSubmit={salvarPlantao} className="flex flex-col overflow-y-auto flex-1 min-h-0">
                                 <div className="p-3 flex flex-col gap-3">
                                     <div className="flex gap-2 items-center bg-primary/10 text-primary px-3 py-2 rounded-lg font-black text-xs border border-primary/20">
@@ -829,9 +560,9 @@ export default function Schedule({ setCurrentView, user }) {
                                                 Já existe um plantão cadastrado nesta data
                                             </div>
                                             <div className="flex flex-col gap-1 font-medium">
-                                                <div><span className="font-black">N1:</span> {splitNomes(existingPlantao.n1_nome).join(', ') || '—'}</div>
-                                                <div><span className="font-black">N2:</span> {splitNomes(existingPlantao.n2_nome).join(', ') || '—'}</div>
-                                                <div><span className="font-black">Supervisão:</span> {splitNomes(existingPlantao.mgr_nome).join(', ') || '—'}</div>
+                                                <div><span className="font-black">N1:</span> {getNamesFromIds(existingPlantao.n1_id).join(', ') || '—'}</div>
+                                                <div><span className="font-black">N2:</span> {getNamesFromIds(existingPlantao.n2_id).join(', ') || '—'}</div>
+                                                <div><span className="font-black">Supervisão:</span> {getNamesFromIds(existingPlantao.gerente_id).join(', ') || '—'}</div>
                                             </div>
                                             <div className="text-[10px] opacity-80 italic">Salvar irá substituir esta escala.</div>
                                         </div>
@@ -902,7 +633,6 @@ export default function Schedule({ setCurrentView, user }) {
                                     </div>
                                 </div>
 
-                                {/* Footer fixo */}
                                 <div className="shrink-0 flex gap-2 p-3 pt-2 border-t border-surface-container-high bg-surface-container-lowest">
                                     {existingPlantao && (
                                         <button
@@ -941,9 +671,9 @@ export default function Schedule({ setCurrentView, user }) {
                                     Tem certeza que deseja excluir permanentemente o plantão do dia <strong className="whitespace-nowrap">{new Date(selectedDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</strong>?
                                 </p>
                                 <div className="bg-surface-container-low rounded-lg p-3 text-xs flex flex-col gap-1 opacity-70">
-                                    <div><span className="font-black">N1:</span> {splitNomes(existingPlantao.n1_nome).join(', ') || '—'}</div>
-                                    <div><span className="font-black">N2:</span> {splitNomes(existingPlantao.n2_nome).join(', ') || '—'}</div>
-                                    <div><span className="font-black">Supervisão:</span> {splitNomes(existingPlantao.mgr_nome).join(', ') || '—'}</div>
+                                    <div><span className="font-black">N1:</span> {getNamesFromIds(existingPlantao.n1_id).join(', ') || '—'}</div>
+                                    <div><span className="font-black">N2:</span> {getNamesFromIds(existingPlantao.n2_id).join(', ') || '—'}</div>
+                                    <div><span className="font-black">Supervisão:</span> {getNamesFromIds(existingPlantao.gerente_id).join(', ') || '—'}</div>
                                 </div>
                             </div>
                             <div className="flex gap-2 px-5 py-4 border-t border-surface-container-high">
@@ -983,9 +713,9 @@ export default function Schedule({ setCurrentView, user }) {
                                 </p>
                                 <div className="bg-surface-container-low rounded-lg p-3 text-xs flex flex-col gap-1">
                                     <div className="font-black uppercase tracking-wider text-[10px] text-secondary mb-1">Escala atual</div>
-                                    <div><span className="font-black">N1:</span> {splitNomes(existingPlantao.n1_nome).join(', ') || '—'}</div>
-                                    <div><span className="font-black">N2:</span> {splitNomes(existingPlantao.n2_nome).join(', ') || '—'}</div>
-                                    <div><span className="font-black">Supervisão:</span> {splitNomes(existingPlantao.mgr_nome).join(', ') || '—'}</div>
+                                    <div><span className="font-black">N1:</span> {getNamesFromIds(existingPlantao.n1_id).join(', ') || '—'}</div>
+                                    <div><span className="font-black">N2:</span> {getNamesFromIds(existingPlantao.n2_id).join(', ') || '—'}</div>
+                                    <div><span className="font-black">Supervisão:</span> {getNamesFromIds(existingPlantao.gerente_id).join(', ') || '—'}</div>
                                 </div>
                             </div>
                             <div className="flex gap-2 px-5 py-4 border-t border-surface-container-high">
@@ -1014,9 +744,9 @@ export default function Schedule({ setCurrentView, user }) {
                 {toast.show && (
                     <div className="fixed top-8 right-8 z-[110] animate-in fade-in slide-in-from-top-4 duration-300">
                         <div className={`flex items-center gap-3 rounded-2xl px-6 py-4 shadow-2xl backdrop-blur-md border ${toast.type === 'success'
-                                ? 'bg-emerald-500/90 border-emerald-400 text-white'
-                                : 'bg-red-500/90 border-red-400 text-white'
-                            }`}>
+                            ? 'bg-emerald-500/90 border-emerald-400 text-white'
+                            : 'bg-red-500/90 border-red-400 text-white'
+                        }`}>
                             <span className="material-symbols-outlined text-2xl font-bold">
                                 {toast.type === 'success' ? 'check_circle' : 'error'}
                             </span>
@@ -1036,4 +766,3 @@ export default function Schedule({ setCurrentView, user }) {
         </div>
     );
 }
-

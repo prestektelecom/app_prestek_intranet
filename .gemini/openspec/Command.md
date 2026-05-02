@@ -10,11 +10,11 @@ For workflow patterns and when to use each command, see [Workflows](workflows.md
 
 | Command | Purpose |
 |---------|---------|
-| `/opsx:propose` | Create a change and generate planning artifacts in one step |
-| `/opsx:explore` | Think through ideas before committing to a change |
-| `/opsx:apply` | Implement tasks from the change |
-| `/opsx:sync` | Merge delta specs into main specs |
-| `/opsx:archive` | Archive a completed change |
+| `/opsx:propose` | Create a change and generate planning artifacts in one step | // Cria uma change e gera artefatos de planejamento em uma única etapa |
+| `/opsx:explore` | Think through ideas before committing to a change | // Pensa sobre ideias antes de se comprometer com uma alteração |
+| `/opsx:apply` | Implement tasks from the change | // Implementa as tarefas criadas no arquivo tasks.md | 
+| `/opsx:sync` | Merge delta specs into main specs | // Sincroniza as especificações de delta com as especificações principais |
+| `/opsx:archive` | Archive a completed change | // Adiciona novos comandos expandidos | 
 
 ### Expanded Workflow Commands (custom workflow selection)
 
