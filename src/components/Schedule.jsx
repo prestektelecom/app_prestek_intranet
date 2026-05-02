@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import CalendarDay from './schedule/CalendarDay';
-import MultiSelectEmployee from './schedule/MultiSelectEmployee';
 import ScheduleRow from './schedule/ScheduleRow';
+import ManagePlantaoModal from './schedule/ManagePlantaoModal';
 import { useScheduleData } from '../hooks/useScheduleData';
 import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
 import { handleImprimir, handleExportarICal } from '../services/exportService';
@@ -30,7 +30,6 @@ export default function Schedule({ setCurrentView, user }) {
     const [selectedDate, setSelectedDate] = useState(null);
     const [formData, setFormData] = useState({ n1_ids: [], n2_ids: [], gerente_ids: [] });
     const [existingPlantao, setExistingPlantao] = useState(null);
-    const [confirmOverwriteOpen, setConfirmOverwriteOpen] = useState(false);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [salvando, setSalvando] = useState(false);
     const [deletando, setDeletando] = useState(false);
@@ -198,7 +197,6 @@ export default function Schedule({ setCurrentView, user }) {
             const data = await safeJson(res);
             if (data.sucesso) {
                 await fetchPlantoes();
-                setConfirmOverwriteOpen(false);
                 setIsModalOpen(false);
                 showToast(existingPlantao ? 'Plantão substituído com sucesso!' : 'Plantão cadastrado com sucesso!', 'success');
             } else {
@@ -239,18 +237,12 @@ export default function Schedule({ setCurrentView, user }) {
         }
     };
 
-    const salvarPlantao = (e) => {
-        e.preventDefault();
-        if (existingPlantao) {
-            setConfirmOverwriteOpen(true);
-        } else {
-            executarSalvamento();
-        }
+    const salvarPlantao = () => {
+        executarSalvamento();
     };
 
     const closeManagement = () => {
         setIsModalOpen(false);
-        setConfirmOverwriteOpen(false);
         setConfirmDeleteOpen(false);
         setExistingPlantao(null);
         setHistorico([]);
@@ -533,131 +525,26 @@ export default function Schedule({ setCurrentView, user }) {
                 </div>
 
                 {/* Modal de Gestão */}
-                {isModalOpen && user?.is_admin && (
-                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background-dark/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300" onClick={closeManagement}>
-                        <div className="bg-surface-container-lowest rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md border border-surface-container-high flex flex-col max-h-[92vh] sm:max-h-[85vh] animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
-                            <div className="px-5 py-4 border-b border-surface-container-high flex justify-between items-center bg-surface-container-low shrink-0 rounded-t-3xl sm:rounded-t-3xl">
-                                <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-primary text-[20px]">edit_calendar</span>
-                                    <h2 className="text-base font-black text-on-surface">Gerenciar Plantão</h2>
-                                </div>
-                                <button onClick={closeManagement} className="text-secondary hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20">
-                                    <span className="material-symbols-outlined text-[20px]">close</span>
-                                </button>
-                            </div>
-
-                            <form onSubmit={salvarPlantao} className="flex flex-col overflow-y-auto flex-1 min-h-0">
-                                <div className="p-3 flex flex-col gap-3">
-                                    <div className="flex gap-2 items-center bg-primary/10 text-primary px-3 py-2 rounded-lg font-black text-xs border border-primary/20">
-                                        <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-                                        <span>Data: {selectedDate.split('-').reverse().join('/')}</span>
-                                    </div>
-
-                                    {existingPlantao && (
-                                        <div className="flex flex-col gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300/60 dark:border-amber-700/40 text-amber-900 dark:text-amber-200 px-3 py-2.5 rounded-lg text-xs">
-                                            <div className="flex items-center gap-1.5 font-black uppercase tracking-wider text-[10px]">
-                                                <span className="material-symbols-outlined text-[16px]">warning</span>
-                                                Já existe um plantão cadastrado nesta data
-                                            </div>
-                                            <div className="flex flex-col gap-1 font-medium">
-                                                <div><span className="font-black">N1:</span> {getNamesFromIds(existingPlantao.n1_id).join(', ') || '—'}</div>
-                                                <div><span className="font-black">N2:</span> {getNamesFromIds(existingPlantao.n2_id).join(', ') || '—'}</div>
-                                                <div><span className="font-black">Supervisão:</span> {getNamesFromIds(existingPlantao.gerente_id).join(', ') || '—'}</div>
-                                            </div>
-                                            <div className="text-[10px] opacity-80 italic">Salvar irá substituir esta escala.</div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex flex-col gap-3">
-                                        <MultiSelectEmployee
-                                            label="N1 - ATENDIMENTO/NOC"
-                                            values={formData.n1_ids}
-                                            onChange={(vals) => setFormData({ ...formData, n1_ids: vals })}
-                                            options={colaboradoresNoc}
-                                        />
-                                        <MultiSelectEmployee
-                                            label="N2 - SUPORTE/SERVIÇOS"
-                                            values={formData.n2_ids}
-                                            onChange={(vals) => setFormData({ ...formData, n2_ids: vals })}
-                                            options={colaboradoresSuporteN2}
-                                            allowEmpty
-                                        />
-                                        <MultiSelectEmployee
-                                            label="SUPERVISÃO"
-                                            values={formData.gerente_ids}
-                                            onChange={(vals) => setFormData({ ...formData, gerente_ids: vals })}
-                                            options={funcionarios}
-                                        />
-                                    </div>
-
-                                    {/* Histórico de alterações */}
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-1.5 ml-0.5">
-                                            <span className="material-symbols-outlined text-[14px] text-secondary">history</span>
-                                            <span className="text-[10px] font-black uppercase text-secondary tracking-widest">Histórico de Alterações</span>
-                                        </div>
-                                        {loadingHistorico ? (
-                                            <div className="text-xs text-secondary text-center py-3 animate-pulse">Carregando histórico...</div>
-                                        ) : historico.length === 0 ? (
-                                            <div className="text-xs text-secondary italic text-center py-3 bg-surface-container-low rounded-lg border border-surface-container-high/50">
-                                                Nenhuma alteração registrada para esta data.
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-0.5">
-                                                {historico.map((h) => {
-                                                    const dt = new Date(h.alterado_em);
-                                                    const fmt = dt.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
-                                                    return (
-                                                        <div key={h.id} className="bg-surface-container-low rounded-lg border border-surface-container-high/60 p-2 flex flex-col gap-1">
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-1">
-                                                                    <span className="material-symbols-outlined text-[12px] text-primary">manage_accounts</span>
-                                                                    <span className="text-[10px] font-black text-on-surface">{h.admin_nome || 'Desconhecido'}</span>
-                                                                </div>
-                                                                <span className="text-[9px] text-secondary font-medium">{fmt}</span>
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px] text-secondary mt-0.5">
-                                                                <div className="col-span-2 font-black text-[9px] uppercase tracking-wider text-secondary/70 mb-0.5">Antes → Depois</div>
-                                                                <div><span className="font-black text-on-surface/60">N1:</span> {h.n1_anterior || '—'}</div>
-                                                                <div><span className="font-black text-primary">N1:</span> {h.n1_novo || '—'}</div>
-                                                                <div><span className="font-black text-on-surface/60">N2:</span> {h.n2_anterior || '—'}</div>
-                                                                <div><span className="font-black text-primary">N2:</span> {h.n2_novo || '—'}</div>
-                                                                <div><span className="font-black text-on-surface/60">Sup:</span> {h.gerente_anterior || '—'}</div>
-                                                                <div><span className="font-black text-primary">Sup:</span> {h.gerente_novo || '—'}</div>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="shrink-0 flex gap-2 p-3 pt-2 border-t border-surface-container-high bg-surface-container-lowest">
-                                    {existingPlantao && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setConfirmDeleteOpen(true)}
-                                            disabled={salvando || deletando}
-                                            className="px-3 py-2 bg-red-500/10 text-red-500 font-bold rounded-xl hover:bg-red-500/20 transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-                                            title="Excluir Plantão"
-                                        >
-                                            <span className="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
-                                    )}
-                                    <button type="button" onClick={closeManagement} className="flex-1 px-3 py-2 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed">
-                                        Cancelar
-                                    </button>
-                                    <button type="submit" disabled={salvando || deletando} className="flex-1 px-3 py-2 bg-primary text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-primary/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed">
-                                        <span className="material-symbols-outlined text-[18px]">save</span>
-                                        <span>{salvando ? 'Salvando...' : 'Salvar'}</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                {user?.is_admin && (
+                    <ManagePlantaoModal
+                        isOpen={isModalOpen}
+                        selectedDate={selectedDate}
+                        existingPlantao={existingPlantao}
+                        formData={formData}
+                        setFormData={setFormData}
+                        onSave={salvarPlantao}
+                        onDelete={() => setConfirmDeleteOpen(true)}
+                        onClose={closeManagement}
+                        historico={historico}
+                        loadingHistorico={loadingHistorico}
+                        salvando={salvando}
+                        deletando={deletando}
+                        colaboradoresNoc={colaboradoresNoc}
+                        colaboradoresSuporteN2={colaboradoresSuporteN2}
+                        funcionarios={funcionarios}
+                        getNamesFromIds={getNamesFromIds}
+                    />
                 )}
-
                 {/* Confirmação de exclusão */}
                 {confirmDeleteOpen && existingPlantao && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background-dark/70 backdrop-blur-sm p-4">
@@ -693,47 +580,6 @@ export default function Schedule({ setCurrentView, user }) {
                                 >
                                     {deletando && <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>}
                                     {deletando ? 'Excluindo...' : 'Sim, excluir'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Confirmação de sobrescrita */}
-                {confirmOverwriteOpen && existingPlantao && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background-dark/70 backdrop-blur-sm p-4">
-                        <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-sm border border-surface-container-high flex flex-col">
-                            <div className="px-5 py-4 border-b border-surface-container-high flex items-center gap-2">
-                                <span className="material-symbols-outlined text-amber-500">warning</span>
-                                <h3 className="text-base font-black text-on-surface">Substituir plantão?</h3>
-                            </div>
-                            <div className="px-5 py-4 flex flex-col gap-3 text-sm text-on-surface">
-                                <p className="font-medium">
-                                    Esta data já tem um plantão cadastrado. Tem certeza que deseja substituir a escala atual?
-                                </p>
-                                <div className="bg-surface-container-low rounded-lg p-3 text-xs flex flex-col gap-1">
-                                    <div className="font-black uppercase tracking-wider text-[10px] text-secondary mb-1">Escala atual</div>
-                                    <div><span className="font-black">N1:</span> {getNamesFromIds(existingPlantao.n1_id).join(', ') || '—'}</div>
-                                    <div><span className="font-black">N2:</span> {getNamesFromIds(existingPlantao.n2_id).join(', ') || '—'}</div>
-                                    <div><span className="font-black">Supervisão:</span> {getNamesFromIds(existingPlantao.gerente_id).join(', ') || '—'}</div>
-                                </div>
-                            </div>
-                            <div className="flex gap-2 px-5 py-4 border-t border-surface-container-high">
-                                <button
-                                    type="button"
-                                    onClick={() => setConfirmOverwriteOpen(false)}
-                                    disabled={salvando}
-                                    className="flex-1 px-3 py-2 bg-surface-container-low text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors text-sm disabled:opacity-60"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={executarSalvamento}
-                                    disabled={salvando}
-                                    className="flex-1 px-3 py-2 bg-red-500 text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-red-500/30 text-sm disabled:opacity-60"
-                                >
-                                    {salvando ? 'Substituindo...' : 'Sim, substituir'}
                                 </button>
                             </div>
                         </div>

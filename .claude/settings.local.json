@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($lines = \\(Get-Content \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\components\\\\Schedule.jsx\"\\).Count; Write-Host \"Linhas: $lines\")"
+    ]
+  }
+}
