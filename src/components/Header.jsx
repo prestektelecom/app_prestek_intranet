@@ -100,7 +100,7 @@ export default function Header({ currentView, setCurrentView, user }) {
                     const foundDeptEmp = deptosEmpresa.find(d => String(d.id).trim() === String(safeDepto).trim());
                     const foundDept = departamentos.find(d => String(d.id).trim() === String(safeDepto).trim());
                     const foundCargo = cargos.find(c => String(c.id).trim() === String(safeDepto).trim());
-                    
+
                     deptoName = foundDeptEmp?.departamento || foundDept?.setor || foundCargo?.setor || safeDepto;
                 }
 
@@ -128,7 +128,7 @@ export default function Header({ currentView, setCurrentView, user }) {
 
     useEffect(() => {
         if (!safeId || safeId === '0000') return;
-        
+
         const syncAvatar = () => {
             const currentSaved = localStorage.getItem(`stitch_profile_${safeId}`);
             if (currentSaved) {
@@ -182,7 +182,7 @@ export default function Header({ currentView, setCurrentView, user }) {
                     </span>
                 </button>
 
-                <div 
+                <div
                     className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
                     onClick={() => setCurrentView('dashboard')}
                     title="Ir para o Dashboard"
@@ -268,7 +268,7 @@ export default function Header({ currentView, setCurrentView, user }) {
 
                 {/* Notificações */}
                 <div className="relative" ref={notificationsRef}>
-                    <button 
+                    <button
                         onClick={() => {
                             setIsNotificationsOpen(!isNotificationsOpen);
                             if (!isNotificationsOpen) {
@@ -282,7 +282,7 @@ export default function Header({ currentView, setCurrentView, user }) {
                             <span className="absolute top-2 right-2 size-2 bg-primary rounded-full border border-white dark:border-[#1a130b]"></span>
                         )}
                     </button>
-                    
+
                     {/* Dropdown de Notificações */}
                     {isNotificationsOpen && (
                         <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -294,7 +294,7 @@ export default function Header({ currentView, setCurrentView, user }) {
                                     </span>
                                 )}
                             </div>
-                            
+
                             <div className="max-h-[350px] overflow-y-auto no-scrollbar">
                                 {!hasUrgent ? (
                                     <div className="px-4 py-8 text-center flex flex-col items-center gap-2">
@@ -313,8 +313,8 @@ export default function Header({ currentView, setCurrentView, user }) {
                                                 dateFormatted = new Intl.DateTimeFormat('pt-BR', {
                                                     day: '2-digit', month: 'short'
                                                 }).format(dt);
-                                            } catch(e) {}
-                                            
+                                            } catch (e) { }
+
                                             return (
                                                 <div key={announcement.id} className="px-4 py-3 hover:bg-[#fcfaf8] dark:hover:bg-gray-800/50 transition-colors cursor-pointer group">
                                                     <div className="flex gap-3">
@@ -349,7 +349,7 @@ export default function Header({ currentView, setCurrentView, user }) {
                                 )}
                             </div>
                             <div className="p-2 bg-[#fcfaf8] dark:bg-gray-800 border-t border-[#eaddcd] dark:border-gray-700">
-                                <button 
+                                <button
                                     onClick={() => {
                                         setIsNotificationsOpen(false);
                                         setCurrentView('dashboard'); // Assuming dashboard contains the 'Comunicados' view, or user can navigate there
@@ -391,7 +391,7 @@ export default function Header({ currentView, setCurrentView, user }) {
 
                 {/* Avatar + Nome */}
                 <div onClick={() => setCurrentView('settings')} className="flex items-center gap-3 cursor-pointer group">
-                    <LottieAvatar 
+                    <LottieAvatar
                         src={avatarUrl || defaultAvatar}
                         className="rounded-full size-10 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-gradient-to-br from-primary/20 to-orange-100"
                     />
