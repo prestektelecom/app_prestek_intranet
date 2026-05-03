@@ -22,6 +22,8 @@ function criarIcone(L, cor, selecionado, isMatriz) {
 
 function popupHTML(office) {
     const badgeColor = office.tipo === 'Matriz' ? '#F97316' : (office.estado === 'AL' ? '#3B82F6' : '#10B981');
+    const streetViewUrl = `https://www.google.com/maps?q=&layer=c&cbll=${office.lat},${office.lng}`;
+    const mapsUrl = `https://www.google.com/maps?q=${office.lat},${office.lng}`;
     return `
         <div style="font-family:sans-serif;min-width:180px;max-width:220px">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
@@ -35,9 +37,20 @@ function popupHTML(office) {
                 ${office.cep ? `<div style="color:#a17745">CEP: ${office.cep}</div>` : ''}
                 <div style="margin-top:2px;color:#9ca3af">${office.cidade} — ${office.estado}</div>
             </div>
+            <div style="display:flex;gap:6px;margin-top:10px">
+                <a href="${streetViewUrl}" target="_blank" rel="noopener noreferrer"
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#1a73e8;color:white;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
+                    🔭 Street View
+                </a>
+                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#f4eee6;color:#a17745;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
+                    🗺️ Ver no Maps
+                </a>
+            </div>
         </div>
     `;
 }
+
 
 export default function Offices() {
     const containerRef = useRef(null);
