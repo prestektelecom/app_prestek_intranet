@@ -13,6 +13,7 @@ import Configuracoes from './components/Configuracoes'
 import Login from './components/Login'
 import AdminDashboard from './components/AdminDashboard'
 import TicketsList from './components/TicketsList'
+import Offices from './components/Offices'
 import NotFound from './components/NotFound'
 import { useTheme } from './hooks/useTheme'
 import { usePresence } from './hooks/usePresence'
@@ -115,8 +116,9 @@ export default function App() {
                 {currentView === 'announcements' && <Comunicados user={user} />}
                 {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}
                 {currentView === 'tickets' && <TicketsList user={user} setCurrentView={setCurrentView} />}
+                {currentView === 'offices' && <Offices user={user} />}
                 {/* Fallback para outros menus n implementados ou páginas inexistentes */}
-                {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings', 'tickets'].includes(currentView) && (
+                {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings', 'tickets', 'offices'].includes(currentView) && (
                     <NotFound setCurrentView={setCurrentView} />
                 )}
             </div>
