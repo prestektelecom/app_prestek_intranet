@@ -3,7 +3,8 @@
     "allow": [
       "PowerShell($lines = \\(Get-Content \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\components\\\\Schedule.jsx\"\\).Count; Write-Host \"Linhas: $lines\")",
       "Bash(Get-ChildItem -Path \"f:\\\\Projetos em Dev\\\\prestek_intranet\" -Force)",
-      "WebFetch(domain:maps.app.goo.gl)"
+      "WebFetch(domain:maps.app.goo.gl)",
+      "Bash(npx vite *)"
     ]
   }
 }
