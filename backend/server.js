@@ -922,6 +922,60 @@ app.post('/api/configuracoes/:usuarioId', async (req, res) => {
 
 // ─── Rotas: Plantões ────────────────────────────────────────────────────────
 
+app.get('/api/plantoes/supervisores', async (req, res) => {
+    try {
+        // 1. Busca ids de grupos configurados como supervisor
+        const gruposRes = await pool.query('SELECT id_grupo FROM grupos_supervisores');
+        const grupoIds = gruposRes.rows.map(r => r.id_grupo);
+        if (!grupoIds.length) return res.json({ sucesso: true, supervisores: [] });
+
+        // 2. Busca usuários IXC por grupo
+        const host = process.env.IXC_HOST;
+        const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+            ixcsoft: 'listar'
+        };
+
+        const promises = grupoIds.map(gid =>
+            fetch(`https://${host}/webservice/v1/usuarios`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    qtype: 'id_grupo', query: gid, oper: '=',
+                    page: '1', rp: '200',
+                    sortname: 'nome', sortorder: 'asc'
+                })
+            }).then(r => r.json()).then(d => d.registros || []).catch(() => [])
+        );
+
+        const resultados = await Promise.all(promises);
+        const todos = resultados.flat();
+
+        // 3. Deduplica e normaliza
+        const mapa = new Map();
+        todos.forEach(u => {
+            if (u.status === 'A' && u.funcionario && u.funcionario !== '0') {
+                mapa.set(String(u.id), {
+                    id: String(u.funcionario),   // funcionario_id do IXC
+                    funcionario_nome: u.nome ? u.nome.trim().toUpperCase() : '',
+                    usuario_ixc_id: String(u.id)
+                });
+            }
+        });
+
+        // 4. Retorna a lista normalizada
+        const supervisores = Array.from(mapa.values())
+            .sort((a, b) => a.funcionario_nome.localeCompare(b.funcionario_nome));
+
+        return res.json({ sucesso: true, supervisores });
+    } catch (e) {
+        console.error('Erro ao buscar supervisores do plantão:', e.message);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 app.get('/api/funcionarios', async (req, res) => {
     try {
         const result = await pool.query(`

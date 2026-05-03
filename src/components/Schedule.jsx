@@ -38,6 +38,7 @@ export default function Schedule({ setCurrentView, user }) {
     const {
         plantoes,
         funcionarios,
+        supervisoresPlantao,
         colaboradoresNoc,
         colaboradoresSuporteN2,
         todosColaboradores,
@@ -541,7 +542,7 @@ export default function Schedule({ setCurrentView, user }) {
                         deletando={deletando}
                         colaboradoresNoc={colaboradoresNoc}
                         colaboradoresSuporteN2={colaboradoresSuporteN2}
-                        funcionarios={funcionarios}
+                        funcionarios={supervisoresPlantao}
                         getNamesFromIds={getNamesFromIds}
                     />
                 )}

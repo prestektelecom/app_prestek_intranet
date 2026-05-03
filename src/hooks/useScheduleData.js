@@ -12,6 +12,7 @@ const safeJson = async (res) => {
 export function useScheduleData(user) {
     const [plantoes, setPlantoes] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
+    const [supervisoresPlantao, setSupervisoresPlantao] = useState([]);
     const [colaboradoresNoc, setColaboradoresNoc] = useState([]);
     const [colaboradoresSuporteN2, setColaboradoresSuporteN2] = useState([]);
     const [todosColaboradores, setTodosColaboradores] = useState([]);
@@ -96,12 +97,24 @@ export function useScheduleData(user) {
             setLoadingHistorico(false);
         }
     };
+    const fetchSupervisores = async () => {
+        try {
+            const res = await fetch('/api/plantoes/supervisores');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await safeJson(res);
+            if (data.sucesso) setSupervisoresPlantao(data.supervisores || []);
+        } catch (err) {
+            console.error('Erro ao buscar supervisores:', err);
+            setSupervisoresPlantao([]);
+        }
+    };
 
     useEffect(() => {
         const init = async () => {
             setLoading(true);
             await fetchPlantoes();
             await fetchFuncionarios();
+            await fetchSupervisores();
             setLoading(false);
         };
         init();
@@ -110,6 +123,7 @@ export function useScheduleData(user) {
     return {
         plantoes,
         funcionarios,
+        supervisoresPlantao,
         colaboradoresNoc,
         colaboradoresSuporteN2,
         todosColaboradores,
