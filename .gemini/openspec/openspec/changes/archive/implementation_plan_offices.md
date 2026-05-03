@@ -140,3 +140,63 @@ Arquivo com array de objetos contendo:
 
 > [!NOTE]
 > **Unidade 18 duplicada?** A lista do usuário tem dois registros com endereço em Coruripe (CORURIPE/AL e PINDORAMA/AL, ambos com endereços diferentes). Foram mantidos como unidades distintas.
+
+---
+
+# Correção: Zoom e Centro Iniciais do Mapa
+
+> Data: 2026-05-03
+
+## Diagnóstico
+
+O `fitBounds` já estava implementado corretamente no código:
+
+```js
+const bounds = L.latLngBounds(offices.map(o => [o.lat, o.lng]));
+map.fitBounds(bounds, { padding: [40, 40] });
+```
+
+Porém o mapa exibia zoom/centro incorreto na carga inicial. A causa raiz é de **timing**: o `fitBounds` era chamado antes do container `<div ref={containerRef}>` ter dimensões reais no DOM (o container usa `height: 100%` dentro de um layout flex, que pode ainda não ter sido computado pelo browser no momento do `import('leaflet').then(...)`).
+
+| Causa | Detalhe |
+|-------|---------|
+| Container sem altura no init | `height: 100%` depende do pai estar renderizado |
+| `fitBounds` prematuro | Chamado antes do Leaflet medir o canvas |
+| Ausência de `invalidateSize()` | Leaflet não relê dimensões automaticamente |
+
+## Etapas de Correção
+
+### Etapa 1 — Adicionar `preferCanvas: true` na criação do mapa
+Melhora performance com muitos markers.
+
+### Etapa 2 — Envolver `fitBounds` em `requestAnimationFrame` + `invalidateSize()`
+
+```diff
+- map.fitBounds(bounds, { padding: [40, 40] });
+
++ // Aguarda o browser finalizar o layout do container antes de ajustar os bounds
++ requestAnimationFrame(() => {
++     map.invalidateSize();
++     map.fitBounds(bounds, { padding: [40, 40] });
++ });
+```
+
+**Por que funciona:**
+- `requestAnimationFrame` → executa após o browser terminar o paint/layout
+- `map.invalidateSize()` → força o Leaflet a reler `offsetWidth`/`offsetHeight` do container
+- `fitBounds` → agora tem dimensões reais, calcula zoom e centro corretamente
+
+### Etapa 3 — Verificação
+
+- [ ] Abrir aba Escritórios → todos os 18 pins visíveis na viewport inicial sem scroll/zoom manual
+- [ ] Testar em janelas de diferentes tamanhos (largo, estreito)
+- [ ] Confirmar que filtros AL/SE não quebram o comportamento do mapa
+
+## Arquivos Afetados
+
+| Arquivo | Tipo | Linhas alteradas |
+|---------|------|-----------------|
+| `src/components/Offices.jsx` | MODIFY | ~3 linhas no `useEffect` de init (linhas 65–69) |
+
+## Risco
+**Baixo** — mudança cirúrgica, sem novas dependências, sem alteração de lógica de negócio.

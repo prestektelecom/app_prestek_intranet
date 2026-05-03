@@ -61,18 +61,23 @@ export default function Offices() {
     useEffect(() => {
         if (!containerRef.current || mapRef.current) return;
         import('leaflet').then(({ default: L }) => {
+            const bounds = L.latLngBounds(offices.map(o => [o.lat, o.lng]));
             const map = L.map(containerRef.current, {
-                center: [-10.2, -36.8],
-                zoom: 8,
                 zoomControl: true,
                 scrollWheelZoom: true,
+                preferCanvas: true,
             });
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                 maxZoom: 18,
             }).addTo(map);
             mapRef.current = { map, L };
-            setMapPronto(true);
+            // Aguarda o browser finalizar o layout do container antes de ajustar os bounds
+            requestAnimationFrame(() => {
+                map.invalidateSize();
+                map.fitBounds(bounds, { padding: [40, 40] });
+                setMapPronto(true);
+            });
         });
         return () => {
             if (mapRef.current) { mapRef.current.map.remove(); mapRef.current = null; }
@@ -90,7 +95,7 @@ export default function Offices() {
             const icone = criarIcone(L, office.cor, false, isMatriz);
             const marker = L.marker([office.lat, office.lng], { icon: icone })
                 .addTo(map)
-                .bindPopup(popupHTML(office));
+                .bindPopup(popupHTML(office), { autoPan: false }); // flyTo já centraliza, autoPan deslocaria o pin
             marker.on('click', () => setSelecionado(office.id));
             marker._office = office;
             markersRef.current[office.id] = marker;
@@ -113,6 +118,7 @@ export default function Offices() {
         if (!mapRef.current) return;
         const { map } = mapRef.current;
         const marker = markersRef.current[office.id];
+        // flyTo centraliza o pin — autoPan:false no popup garante que ele não desloque o mapa
         map.flyTo([office.lat, office.lng], 14, { duration: 0.8 });
         map.once('moveend', () => { if (marker) marker.openPopup(); });
     }
@@ -132,14 +138,14 @@ export default function Offices() {
                                 Escritórios Prestek
                             </h1>
                             <span className="text-xs text-[#a17745] dark:text-orange-300">
-                                18 unidades em 2 estados
+                                {offices.length} unidades em 2 estados
                             </span>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                         {/* Filtros */}
                         {[
-                            { label: 'Todos', count: 18 },
+                            { label: 'Todos', count: offices.length },
                             { label: 'AL', count: contAL },
                             { label: 'SE', count: contSE },
                         ].map(({ label, count }) => (
