@@ -322,8 +322,8 @@ export default function Processos({ setCurrentView }) {
 
             {/* Barra de busca e filtros */}
             <div className="bg-white dark:bg-[#1a130b] p-4 rounded-xl border border-[#eaddcd] dark:border-gray-800 shadow-sm mb-8">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1 relative">
+                <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
+                    <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#a17745] dark:text-orange-300">
                             <span className="material-symbols-outlined">search</span>
                         </div>
@@ -335,23 +335,25 @@ export default function Processos({ setCurrentView }) {
                             onChange={handleBusca}
                         />
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-                        {CATEGORIAS.map(cat => (
-                            <button
-                                key={cat.id}
-                                onClick={() => handleCategoria(cat.id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded text-sm font-medium whitespace-nowrap transition-colors ${
-                                    categoriaAtiva === cat.id
-                                        ? 'bg-primary text-white shadow-sm'
-                                        : 'bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 text-[#1d150c] dark:text-white hover:bg-gray-100 dark:hover:bg-[#3a2d22]'
-                                }`}
-                            >
-                                <span className={`material-symbols-outlined text-[18px] ${categoriaAtiva === cat.id ? 'text-white' : 'text-[#a17745] dark:text-orange-300'}`}>
-                                    {cat.icon}
-                                </span>
-                                {cat.label}
-                            </button>
-                        ))}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex gap-2 overflow-x-auto lg:overflow-visible lg:flex-wrap pb-2 lg:pb-0 no-scrollbar snap-x">
+                            {CATEGORIAS.map(cat => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => handleCategoria(cat.id)}
+                                    className={`snap-start shrink-0 lg:shrink flex items-center gap-2 px-4 py-2 rounded text-sm font-medium whitespace-nowrap lg:whitespace-normal transition-colors ${
+                                        categoriaAtiva === cat.id
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 text-[#1d150c] dark:text-white hover:bg-gray-100 dark:hover:bg-[#3a2d22]'
+                                    }`}
+                                >
+                                    <span className={`material-symbols-outlined text-[18px] ${categoriaAtiva === cat.id ? 'text-white' : 'text-[#a17745] dark:text-orange-300'}`}>
+                                        {cat.icon}
+                                    </span>
+                                    {cat.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -387,7 +389,7 @@ export default function Processos({ setCurrentView }) {
                                             <div className="text-xs text-[#a17745] dark:text-orange-400 mt-0.5">{p.responsavel.setor}</div>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-[#a17745] dark:text-orange-300 max-w-xs">
-                                            <span className="line-clamp-2">{p.descricao}</span>
+                                            <span className="line-clamp-2" title={p.descricao}>{p.descricao}</span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-[#1d150c] dark:text-white font-medium">
                                             v{p.versao}
