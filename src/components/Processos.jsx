@@ -358,8 +358,68 @@ export default function Processos({ setCurrentView }) {
                 </div>
             </div>
 
-            {/* Tabela */}
-            <div className="bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-xl overflow-hidden shadow-sm flex-1 flex flex-col mb-8">
+            {/* Lista Mobile (Cards) — oculta em md+ */}
+            <div className="block md:hidden bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-xl overflow-hidden shadow-sm mb-8">
+                {processosPagina.length === 0 ? (
+                    <p className="px-6 py-12 text-center text-[#a17745] dark:text-orange-300 text-sm">
+                        Nenhum processo encontrado para os filtros aplicados.
+                    </p>
+                ) : processosPagina.map(p => {
+                    const podeAbrirDoc = p.status !== 'rascunho' && p.docUrl;
+                    return (
+                        <div
+                            key={p.id}
+                            onClick={() => abrirEditar(p)}
+                            className="p-4 border-b border-[#eaddcd] dark:border-gray-800 last:border-b-0 cursor-pointer hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] transition-colors"
+                        >
+                            <div className="flex justify-between items-start mb-1">
+                                <span className="font-mono font-bold text-primary text-sm">{p.id}</span>
+                                <StatusBadge status={p.status} />
+                            </div>
+                            <h3 className="font-bold text-[#1d150c] dark:text-white text-base leading-snug">{p.nome}</h3>
+                            <p className="text-xs text-[#a17745] dark:text-orange-400 mb-1">{p.responsavel.setor} · v{p.versao}</p>
+                            <p className="text-sm text-[#a17745] dark:text-orange-300 line-clamp-2 mb-3">{p.descricao}</p>
+                            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                <button
+                                    onClick={() => abrirEditar(p)}
+                                    title="Editar processo"
+                                    className="p-1.5 rounded-md text-[#a17745] hover:text-primary hover:bg-primary/10 dark:text-orange-400 dark:hover:text-primary transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                </button>
+                                {podeAbrirDoc ? (
+                                    <a
+                                        href={p.docUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="Abrir POP no Google Docs"
+                                        className="p-1.5 rounded-md text-primary hover:text-[#e67e00] hover:bg-primary/10 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">open_in_new</span>
+                                    </a>
+                                ) : (
+                                    <span className="p-1.5 text-gray-400 cursor-default" title="Rascunho — sem POP publicado">
+                                        <span className="material-symbols-outlined text-[20px]">edit_note</span>
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+                {/* Paginação mobile */}
+                <div className="px-4 py-3 border-t border-[#eaddcd] dark:border-gray-800 flex items-center justify-between bg-[#fcfaf8] dark:bg-[#2c2217]">
+                    <span className="text-xs text-[#a17745] dark:text-orange-300">
+                        {processosFiltrados.length === 0 ? 0 : inicio + 1}–{Math.min(inicio + ROWS_PER_PAGE, processosFiltrados.length)} de {processosFiltrados.length}
+                    </span>
+                    <div className="flex gap-2">
+                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-1 border border-[#eaddcd] dark:border-gray-800 rounded text-sm text-[#a17745] dark:text-orange-300 hover:bg-gray-100 dark:hover:bg-[#3a2d22] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Anterior</button>
+                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-1 border border-[#eaddcd] dark:border-gray-800 rounded text-sm text-[#1d150c] dark:text-white hover:bg-gray-100 dark:hover:bg-[#3a2d22] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Próximo</button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tabela Desktop — oculta em mobile */}
+            <div className="hidden md:flex bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-xl overflow-hidden shadow-sm flex-1 flex-col mb-8">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -369,7 +429,7 @@ export default function Processos({ setCurrentView }) {
                                 <th className="px-6 py-4 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider">DESCRIÇÃO</th>
                                 <th className="px-6 py-4 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider w-24 text-center">VERSÃO</th>
                                 <th className="px-6 py-4 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider w-36 text-center">STATUS</th>
-                                <th className="px-6 py-4 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider w-44 text-right">AÇÕES</th>
+                                <th className="px-6 py-4 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider w-28 text-right">AÇÕES</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#eaddcd] dark:divide-gray-800 bg-white dark:bg-[#1a130b]">
@@ -382,7 +442,11 @@ export default function Processos({ setCurrentView }) {
                             ) : processosPagina.map(p => {
                                 const podeAbrirDoc = p.status !== 'rascunho' && p.docUrl;
                                 return (
-                                    <tr key={p.id} className="hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] transition-colors group">
+                                    <tr
+                                        key={p.id}
+                                        onClick={() => abrirEditar(p)}
+                                        className="hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] transition-colors cursor-pointer"
+                                    >
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-primary">{p.id}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-semibold text-[#1d150c] dark:text-white">{p.nome}</div>
@@ -397,12 +461,12 @@ export default function Processos({ setCurrentView }) {
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                             <StatusBadge status={p.status} />
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                                            <div className="flex items-center justify-end gap-3">
+                                        <td className="px-6 py-4 whitespace-nowrap text-right" onClick={e => e.stopPropagation()}>
+                                            <div className="flex items-center justify-end gap-1">
                                                 <button
                                                     onClick={() => abrirEditar(p)}
                                                     title="Editar processo"
-                                                    className="text-[#a17745] hover:text-primary dark:text-orange-400 dark:hover:text-primary transition-colors"
+                                                    className="p-1.5 rounded-md text-[#a17745] hover:text-primary hover:bg-primary/10 dark:text-orange-400 dark:hover:text-primary transition-colors"
                                                 >
                                                     <span className="material-symbols-outlined text-[20px]">edit</span>
                                                 </button>
@@ -412,15 +476,13 @@ export default function Processos({ setCurrentView }) {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         title="Abrir POP no Google Docs"
-                                                        className="text-primary hover:text-[#e67e00] font-bold inline-flex items-center gap-1 text-sm group-hover:underline"
+                                                        className="p-1.5 rounded-md text-primary hover:text-[#e67e00] hover:bg-primary/10 transition-colors"
                                                     >
-                                                        <span>Ver POP</span>
-                                                        <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                                                        <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                                     </a>
                                                 ) : (
-                                                    <span className="text-gray-400 inline-flex items-center gap-1 text-sm cursor-default">
-                                                        <span>Rascunho</span>
-                                                        <span className="material-symbols-outlined text-[16px]">edit_note</span>
+                                                    <span className="p-1.5 text-gray-400 cursor-default" title="Rascunho — sem POP publicado">
+                                                        <span className="material-symbols-outlined text-[20px]">edit_note</span>
                                                     </span>
                                                 )}
                                             </div>
