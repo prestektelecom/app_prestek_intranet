@@ -109,18 +109,7 @@ export const offices = [
         lng: -37.1243748,
         cor: '#3B82F6',
     },
-    {
-        id: 11,
-        nome: 'PINDORAMA/AL',
-        tipo: 'Filial',
-        cidade: 'Coruripe',
-        estado: 'AL',
-        endereco: 'Av. Camaçari, 32 B',
-        cep: '57230-000',
-        lat: -9.0530421,
-        lng: -35.4215053,
-        cor: '#3B82F6',
-    },
+
     {
         id: 12,
         nome: 'MAJOR ISIDORO/AL',
@@ -195,14 +184,14 @@ export const offices = [
     },
     {
         id: 18,
-        nome: 'PINDORAMA/AL (2)',
+        nome: 'PORTO CALVO/AL',
         tipo: 'Filial',
-        cidade: 'Coruripe',
+        cidade: 'Porto Calvo',
         estado: 'AL',
         endereco: 'Av. Camaçari, 32 B',
         cep: '57230-000',
-        lat: -10.1210,
-        lng: -36.1790,
+        lat: -9.0530421,
+        lng: -35.4215053,
         cor: '#3B82F6',
     },
 ];

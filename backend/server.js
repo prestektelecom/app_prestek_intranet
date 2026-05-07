@@ -2806,6 +2806,105 @@ app.get('/api/cobertura-ixc/contratos-bairro', async (req, res) => {
 });
 
 
+// ─── Resolver URL do Google Maps (extrai lat/lng de links encurtados) ────────
+app.post('/api/resolve-maps-url', async (req, res) => {
+    const { url } = req.body;
+    if (!url || typeof url !== 'string') return res.status(400).json({ erro: 'URL inválida.' });
+
+    try {
+        // Segue redirecionamentos manualmente para capturar a URL final
+        let current = url.trim();
+        const MAX_HOPS = 8;
+        for (let i = 0; i < MAX_HOPS; i++) {
+            const r = await fetch(current, { method: 'HEAD', redirect: 'manual' });
+            const location = r.headers.get('location');
+            if (!location) break;
+            current = location.startsWith('http') ? location : new URL(location, current).href;
+        }
+
+        // Padrões possíveis na URL final do Google Maps:
+        // 1. @-10.2892274,-36.5635948,  (marcador ou modo mapa)
+        // 2. ll=-10.289,-36.563          (query param)
+        // 3. !3d-10.2892!4d-36.5635      (modo place)
+        let lat = null, lng = null;
+
+        const atMatch = current.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (atMatch) { lat = atMatch[1]; lng = atMatch[2]; }
+
+        if (!lat) {
+            const llMatch = current.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (llMatch) { lat = llMatch[1]; lng = llMatch[2]; }
+        }
+
+        if (!lat) {
+            const dMatch = current.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+            if (dMatch) { lat = dMatch[1]; lng = dMatch[2]; }
+        }
+
+        if (!lat) return res.status(422).json({ erro: 'Não foi possível extrair coordenadas desta URL.' });
+
+        res.json({ lat, lng, url_final: current });
+    } catch (e) {
+        console.error('resolve-maps-url:', e.message);
+        res.status(500).json({ erro: 'Erro ao resolver o link.' });
+    }
+});
+
+// ─── Escritórios (CRUD) ──────────────────────────────────────────
+app.get('/api/escritorios', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM escritorios ORDER BY id');
+        res.json(rows);
+    } catch (e) {
+        console.error('GET /api/escritorios:', e.message);
+        res.status(500).json({ erro: e.message });
+    }
+});
+
+app.post('/api/escritorios', async (req, res) => {
+    const { nome, tipo, cidade, estado, endereco, cep, lat, lng, cor } = req.body;
+    try {
+        const { rows } = await pool.query(
+            `INSERT INTO escritorios (nome, tipo, cidade, estado, endereco, cep, lat, lng, cor)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+            [nome, tipo, cidade, estado, endereco || '', cep || '', lat, lng, cor || '#3B82F6']
+        );
+        res.status(201).json(rows[0]);
+    } catch (e) {
+        console.error('POST /api/escritorios:', e.message);
+        res.status(500).json({ erro: e.message });
+    }
+});
+
+app.put('/api/escritorios/:id', async (req, res) => {
+    const { id } = req.params;
+    const { nome, tipo, cidade, estado, endereco, cep, lat, lng, cor } = req.body;
+    try {
+        const { rows } = await pool.query(
+            `UPDATE escritorios SET nome=$1, tipo=$2, cidade=$3, estado=$4,
+             endereco=$5, cep=$6, lat=$7, lng=$8, cor=$9 WHERE id=$10 RETURNING *`,
+            [nome, tipo, cidade, estado, endereco || '', cep || '', lat, lng, cor || '#3B82F6', id]
+        );
+        if (!rows.length) return res.status(404).json({ erro: 'Escritório não encontrado.' });
+        res.json(rows[0]);
+    } catch (e) {
+        console.error('PUT /api/escritorios/:id:', e.message);
+        res.status(500).json({ erro: e.message });
+    }
+});
+
+app.delete('/api/escritorios/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rowCount } = await pool.query('DELETE FROM escritorios WHERE id=$1', [id]);
+        if (!rowCount) return res.status(404).json({ erro: 'Escritório não encontrado.' });
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('DELETE /api/escritorios/:id:', e.message);
+        res.status(500).json({ erro: e.message });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
