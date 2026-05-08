@@ -99,7 +99,7 @@ export default function App() {
     }
 
     return (
-        <div className="bg-background-light dark:bg-background-dark text-[#1d150c] dark:text-[#f8f7f5] font-display min-h-screen flex flex-col transition-colors duration-200">
+        <div className="bg-background-light dark:bg-background-dark text-[#1d150c] dark:text-[#f8f7f5] font-display h-screen flex flex-col transition-colors duration-200">
             <Header currentView={currentView} setCurrentView={setCurrentView} user={user} />
             <div className="flex flex-1 overflow-hidden">
                 {currentView === 'dashboard' && (

@@ -266,20 +266,59 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
 
 // ─── Componente principal ────────────────────────────────────────────────────
 
+const LIST_MIN_PX = 200;
+const LIST_MAX_PCT = 65;
+
 export default function Offices({ user }) {
     const containerRef = useRef(null);
     const mapRef = useRef(null);
     const markersRef = useRef({});
+    const corpoRef = useRef(null);
+    const isDragging = useRef(false);
     const [mapPronto, setMapPronto] = useState(false);
     const [selecionado, setSelecionado] = useState(null);
     const [filtro, setFiltro] = useState('Todos');
     const [busca, setBusca] = useState('');
     const [offices, setOffices] = useState([]);
     const [carregando, setCarregando] = useState(true);
-    const [modal, setModal] = useState(null); // null | { modo: 'novo' } | { modo: 'editar', escritorio }
-    const [confirmandoExclusao, setConfirmandoExclusao] = useState(null); // id | null
+    const [modal, setModal] = useState(null);
+    const [confirmandoExclusao, setConfirmandoExclusao] = useState(null);
+    const [listWidth, setListWidth] = useState(25); // percentual
 
     const isAdmin = user?.is_admin;
+
+    function startResize(e) {
+        e.preventDefault();
+        isDragging.current = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+
+        function onMove(ev) {
+            if (!isDragging.current || !corpoRef.current) return;
+            const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+            const rect = corpoRef.current.getBoundingClientRect();
+            const pct = ((clientX - rect.left) / rect.width) * 100;
+            const clamped = Math.min(LIST_MAX_PCT, Math.max((LIST_MIN_PX / rect.width) * 100, pct));
+            setListWidth(clamped);
+        }
+
+        function onUp() {
+            isDragging.current = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+            window.removeEventListener('touchmove', onMove);
+            window.removeEventListener('touchend', onUp);
+            // Força o mapa a se readaptar ao novo tamanho
+            setTimeout(() => mapRef.current?.map?.invalidateSize(), 50);
+        }
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onUp);
+    }
 
     // Busca os escritórios da API
     async function carregarEscritorios() {
@@ -443,7 +482,7 @@ export default function Offices({ user }) {
             )}
 
             {/* Header */}
-            <div className="px-6 py-4 border-b border-[#f4eee6] dark:border-[#2c2217] bg-white dark:bg-[#1a130b]">
+            <div className="px-6 py-4 border-b border-[#f4eee6] dark:border-[#2c2217] bg-white dark:bg-[#1a130b] flex-shrink-0">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-[#a17745] text-[24px]">apartment</span>
@@ -501,10 +540,10 @@ export default function Offices({ user }) {
             </div>
 
             {/* Corpo: lista + mapa */}
-            <div className="flex flex-1 overflow-hidden">
-                {/* Lista lateral */}
-                <div className="w-[35%] min-w-[240px] flex flex-col overflow-hidden border-r border-[#f4eee6] dark:border-[#2c2217]">
-                    <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
+            <div ref={corpoRef} className="flex flex-1 min-h-0">
+                {/* Lista lateral — largura controlada por drag */}
+                <div style={{ width: `${listWidth}%`, minWidth: `${LIST_MIN_PX}px` }} className="flex flex-col min-h-0 border-r border-[#f4eee6] dark:border-[#2c2217]">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 min-h-0">
                         {carregando && (
                             <div className="text-center text-sm text-[#a17745] py-8">Carregando escritórios…</div>
                         )}
@@ -579,6 +618,16 @@ export default function Offices({ user }) {
                             <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] inline-block" /> Sergipe
                         </span>
                     </div>
+                </div>
+
+                {/* Divisor arrastável */}
+                <div
+                    onMouseDown={startResize}
+                    onTouchStart={startResize}
+                    title="Arrastar para redimensionar"
+                    className="w-1.5 shrink-0 cursor-col-resize group relative flex items-center justify-center bg-[#f4eee6] dark:bg-[#2c2217] hover:bg-primary/30 dark:hover:bg-primary/30 transition-colors duration-150"
+                >
+                    <div className="w-0.5 h-8 rounded-full bg-[#c4a882] dark:bg-[#4a3a2a] group-hover:bg-primary group-hover:h-12 transition-all duration-150" />
                 </div>
 
                 {/* Mapa */}
