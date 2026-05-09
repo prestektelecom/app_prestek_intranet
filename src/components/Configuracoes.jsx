@@ -311,13 +311,13 @@ export default function Configuracoes({ user, setCurrentView }) {
     return (
         <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-8 flex justify-center overflow-y-auto no-scrollbar">
             <div className="max-w-[1024px] w-full flex flex-col mt-4">
-                <div className="flex flex-wrap items-center gap-2 px-4 mb-8">
-                    <button 
-                        onClick={() => setCurrentView('dashboard')}
-                        className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                        <span className="material-symbols-outlined text-lg">home</span>
-                        Início
+                <div className="flex flex-wrap items-center gap-2 px-4 mb-8 text-sm">
+                    <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer">
+                        <span className="material-symbols-outlined text-lg">home</span>Início
+                    </button>
+                    <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                    <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer">
+                        Dashboard
                     </button>
                     <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
                     <span className="text-[#1d150c] dark:text-white text-sm font-bold">Configurações de Perfil</span>

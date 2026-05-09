@@ -4,7 +4,7 @@ import LottieAvatar from './common/LottieAvatar';
 // Quantidade de colaboradores por página
 const POR_PAGINA = 8;
 
-export default function Directory({ user }) {
+export default function Directory({ user, setCurrentView }) {
     const isAdmin = user?.is_admin;
     const [colaboradores, setColaboradores] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
@@ -119,6 +119,15 @@ export default function Directory({ user }) {
     return (
         <main className="layout-container flex h-full grow flex-col px-4 md:px-10 lg:px-40 py-8 overflow-y-auto">
             <div className="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
+                {/* Breadcrumbs */}
+                <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
+                    <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"><span className="material-symbols-outlined text-lg">home</span>Início</button>
+                    <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                    <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer">Dashboard</button>
+                    <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                    <span className="text-[#1d150c] dark:text-white text-sm font-bold">Colaboradores</span>
+                </div>
+
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-[#1d150c] dark:text-white text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">

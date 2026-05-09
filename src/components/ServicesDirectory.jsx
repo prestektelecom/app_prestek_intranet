@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 
 export default function ServicesDirectory({ setCurrentView, user }) {
     const isAdmin = user?.is_admin;
@@ -17,19 +17,19 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
     // Technical Services State
     const [techServices, setTechServices] = useState([
-        { id: 1, service: "Instalação de roteador", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "router", isFree: false },
-        { id: 2, service: "Mudar roteador de local", value: "R$ 30,00 + custo material", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "swap_horiz", isFree: false },
-        { id: 3, service: "Configurar roteador", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "settings", isFree: false },
-        { id: 4, service: "Manutenção interna", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "build", isFree: false },
-        { id: 5, service: "Mudar de titularidade", value: "R$ 0,00", deadline: "Até 24 horas", payment: "", icon: "people", isFree: true },
-        { id: 6, service: "Mudar tecnologia", value: "ℹ️ Consulte o NOC", deadline: "", payment: "", icon: "info", isSpecial: true },
-        { id: 7, service: "Mudar senha no local", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "password", isFree: false },
-        { id: 8, service: "Extensão de rede", value: "Custo de material", deadline: "Até 5 dias", payment: "À vista ou 1x Boleto", icon: "lan", isFree: false },
-        { id: 9, service: "IP fixo", value: "R$ 99,90 À vista (ANUAL)", deadline: "24h", payment: "À vista (ANUAL) ou 12x R$9,90 junto mensalidade", icon: "dns", isFree: false },
-        { id: 10, service: "Roteador 360º WI-FI", value: "R$ 50,00", deadline: "Até 5 dias", payment: "Adicional mensal fatura: R$ 20,00", icon: "wifi_tethering", isFree: false },
-        { id: 11, service: "Alteração de senha WI-FI", value: "", deadline: "Até 5 dias", payment: "", icon: "wifi_lock", isFree: true },
-        { id: 12, service: "Trocar Comodato", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "swap_vertical_circle", isFree: false },
-        { id: 13, service: "Solicitação de Comodato", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "add_task", isFree: false }
+        { id: 1, service: "InstalaÃ§Ã£o de roteador", value: "R$ 50,00", deadline: "AtÃ© 5 dias Ãºteis", payment: "Ã€ vista ou 2x Boleto", icon: "router", isFree: false },
+        { id: 2, service: "Mudar roteador de local", value: "R$ 30,00 + custo material", deadline: "AtÃ© 5 dias Ãºteis", payment: "Ã€ vista ou 2x Boleto", icon: "swap_horiz", isFree: false },
+        { id: 3, service: "Configurar roteador", value: "R$ 50,00", deadline: "AtÃ© 5 dias Ãºteis", payment: "Ã€ vista ou 2x Boleto", icon: "settings", isFree: false },
+        { id: 4, service: "ManutenÃ§Ã£o interna", value: "R$ 50,00", deadline: "AtÃ© 5 dias Ãºteis", payment: "Ã€ vista ou 2x Boleto", icon: "build", isFree: false },
+        { id: 5, service: "Mudar de titularidade", value: "R$ 0,00", deadline: "AtÃ© 24 horas", payment: "", icon: "people", isFree: true },
+        { id: 6, service: "Mudar tecnologia", value: "â„¹ï¸ Consulte o NOC", deadline: "", payment: "", icon: "info", isSpecial: true },
+        { id: 7, service: "Mudar senha no local", value: "R$ 50,00", deadline: "AtÃ© 5 dias", payment: "Ã€ vista ou 2x Boleto", icon: "password", isFree: false },
+        { id: 8, service: "ExtensÃ£o de rede", value: "Custo de material", deadline: "AtÃ© 5 dias", payment: "Ã€ vista ou 1x Boleto", icon: "lan", isFree: false },
+        { id: 9, service: "IP fixo", value: "R$ 99,90 Ã€ vista (ANUAL)", deadline: "24h", payment: "Ã€ vista (ANUAL) ou 12x R$9,90 junto mensalidade", icon: "dns", isFree: false },
+        { id: 10, service: "Roteador 360Âº WI-FI", value: "R$ 50,00", deadline: "AtÃ© 5 dias", payment: "Adicional mensal fatura: R$ 20,00", icon: "wifi_tethering", isFree: false },
+        { id: 11, service: "AlteraÃ§Ã£o de senha WI-FI", value: "", deadline: "AtÃ© 5 dias", payment: "", icon: "wifi_lock", isFree: true },
+        { id: 12, service: "Trocar Comodato", value: "R$ 50,00", deadline: "AtÃ© 5 dias", payment: "Ã€ vista ou 2x Boleto", icon: "swap_vertical_circle", isFree: false },
+        { id: 13, service: "SolicitaÃ§Ã£o de Comodato", value: "R$ 50,00", deadline: "AtÃ© 5 dias", payment: "Ã€ vista ou 2x Boleto", icon: "add_task", isFree: false }
     ]);
     const [editingTechService, setEditingTechService] = useState(null);
     const [editTechForm, setEditTechForm] = useState({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
@@ -196,12 +196,12 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
         const handleDeleteTechClick = (id) => {
         const item = techServices.find(s => s.id === id);
-        setDeleteModal({ isOpen: true, id, title: item?.service || 'este serviço', type: 'tech' });
+        setDeleteModal({ isOpen: true, id, title: item?.service || 'este serviÃ§o', type: 'tech' });
     };
 
     const handleSaveTechEdit = async () => {
         const payload = {
-            servico: editTechForm.service || 'Novo Serviço',
+            servico: editTechForm.service || 'Novo ServiÃ§o',
             valor: editTechForm.value || '',
             prazo: editTechForm.deadline || '',
             pagamento: editTechForm.payment || '',
@@ -262,13 +262,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
             if (response.ok) {
                 if (type === 'tech') setTechServices(prev => prev.filter(s => s.id !== id));
                 else setStreamingServices(prev => prev.filter(s => s.id !== id));
-                showToast('Excluído com sucesso!', 'success');
+                showToast('ExcluÃ­do com sucesso!', 'success');
             } else {
                 const data = await response.json().catch(() => ({}));
                 showToast(data.erro || 'Erro ao excluir', 'error');
             }
         } catch (error) {
-            showToast('Erro de conexão', 'error');
+            showToast('Erro de conexÃ£o', 'error');
         } finally {
             setDeleteModal({ isOpen: false, id: null, title: '', type: '' });
         }
@@ -398,7 +398,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
                         >
                             <span className="material-symbols-outlined text-lg">home</span>
-                            Início
+                            InÃ­cio
                         </button>
                         <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
                         <button 
@@ -408,17 +408,17 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             Dashboard
                         </button>
                         <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
-                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">Serviços Internos</span>
+                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">ServiÃ§os Internos</span>
                     </div>
 
                     <div className="flex flex-wrap justify-between items-end gap-4">
                         <div className="flex flex-col gap-1">
-                            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Diretório de Serviços Internos</h1>
-                            <p className="text-base text-slate-500 dark:text-slate-400">Gerencie planos de internet, detalhes de serviços e prazos de instalação.</p>
+                            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">DiretÃ³rio de ServiÃ§os Internos</h1>
+                            <p className="text-base text-slate-500 dark:text-slate-400">Gerencie planos de internet, detalhes de serviÃ§os e prazos de instalaÃ§Ã£o.</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
                             {/* Ativo */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <div className="flex items-center gap-3 bg-white dark:bg-[#1a130b] px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm">
                                 <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">check_circle</span>
                                 </div>
@@ -429,8 +429,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             </div>
                             
                             {/* Inativo */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                                <div className="p-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md flex items-center justify-center">
+                            <div className="flex items-center gap-3 bg-white dark:bg-[#1a130b] px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm">
+                                <div className="p-1.5 bg-slate-100 dark:bg-[#1a130b] text-slate-600 dark:text-slate-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">power_off</span>
                                 </div>
                                 <div className="flex flex-col justify-center">
@@ -439,19 +439,19 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 </div>
                             </div>
 
-                            {/* Pré-contratos */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                            {/* PrÃ©-contratos */}
+                            <div className="flex items-center gap-3 bg-white dark:bg-[#1a130b] px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm">
                                 <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">schedule</span>
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pré-contratos</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">PrÃ©-contratos</p>
                                     <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{countPre}</p>
                                 </div>
                             </div>
                             
                             {/* Negativados */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <div className="flex items-center gap-3 bg-white dark:bg-[#1a130b] px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm">
                                 <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">gpp_maybe</span>
                                 </div>
@@ -462,7 +462,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             </div>
                             
                             {/* Desistiu */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <div className="flex items-center gap-3 bg-white dark:bg-[#1a130b] px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm">
                                 <div className="p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">cancel</span>
                                 </div>
@@ -472,13 +472,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 </div>
                             </div>
                             
-                            {/* Total no Mês */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                            {/* Total no MÃªs */}
+                            <div className="flex items-center gap-3 bg-white dark:bg-[#1a130b] px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm">
                                 <div className="p-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">trending_up</span>
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total no Mês</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total no MÃªs</p>
                                     <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{totalVendasMes}</p>
                                 </div>
                             </div>
@@ -495,29 +495,29 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-colors ${
                                 filter === f 
                                 ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                                : 'bg-white dark:bg-[#1a130b] border border-slate-200 text-slate-600 hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary'
+                                : 'bg-white dark:bg-[#1a130b] border border-slate-200 text-slate-600 hover:border-primary hover:text-primary dark:border-gray-800 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary'
                             }`}
                         >
-                            {f === 'All' && 'Todos os Serviços'}
+                            {f === 'All' && 'Todos os ServiÃ§os'}
                             {f === 'PF' && <><span className="material-symbols-outlined text-lg">person</span>Internet PF</>}
                             {f === 'PJ' && <><span className="material-symbols-outlined text-lg">business</span>Internet PJ</>}
                             {f === 'Link' && <><span className="material-symbols-outlined text-lg">router</span>Link Dedicado</>}
-                            {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>Serviços Técnicos</>}
+                            {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>ServiÃ§os TÃ©cnicos</>}
                             {f === 'Streaming' && <><span className="material-symbols-outlined text-lg">play_circle</span>Streaming's</>}
                         </button>
                     ))}
                 </div>
 
-                {/* Services Table - Não mostrar quando filter é Technical ou Streaming */}
+                {/* Services Table - NÃ£o mostrar quando filter Ã© Technical ou Streaming */}
                 {filter !== 'Technical' && filter !== 'Streaming' && (
-                <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800 relative min-h-[300px]">
+                <div className="rounded-xl border border-[#eaddcd] bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-gray-800 relative min-h-[300px]">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                            <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-700/50 dark:text-slate-400">
+                            <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-[#1a130b]/50 dark:text-slate-400">
                                 <tr>
                                     <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col" onClick={() => handleSort('descricao')}>
                                         <div className="flex items-center gap-1">
-                                            NOME DO SERVIÇO
+                                            NOME DO SERVIÃ‡O
                                             {sortConfig.key === 'descricao' && (
                                                 <span className="material-symbols-outlined text-[1rem]">
                                                     {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
@@ -537,7 +537,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     </th>
                                     <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col" onClick={() => handleSort('vendas_mes')}>
                                         <div className="flex items-center gap-1">
-                                            VENDAS NO MÊS
+                                            VENDAS NO MÃŠS
                                             {sortConfig.key === 'vendas_mes' && (
                                                 <span className="material-symbols-outlined text-[1rem]">
                                                     {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
@@ -545,10 +545,10 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                             )}
                                         </div>
                                     </th>
-                                    <th className="px-6 py-4 font-semibold text-right" scope="col">AÇÕES</th>
+                                    <th className="px-6 py-4 font-semibold text-right" scope="col">AÃ‡Ã•ES</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-slate-700">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-gray-800">
                                 {isLoading ? (
                                     <tr>
                                         <td colSpan="4" className="px-6 py-12 text-center text-slate-500">
@@ -572,7 +572,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                         const barColor = vendasRatio >= 60 ? 'bg-green-500' : vendasRatio >= 25 ? 'bg-primary' : 'bg-orange-400';
                                         
                                         return (
-                                            <tr key={plan.id} className="group hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                            <tr key={plan.id} className="group hover:bg-slate-50 dark:hover:bg-gray-800/30 transition-colors">
                                                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                                     <div className="flex items-center gap-3">
                                                         <div className="rounded bg-primary/10 p-2 text-primary dark:bg-primary/20">
@@ -620,15 +620,15 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                 </div>
                 )}
 
-                {/* Technical Services Section - Mostrar apenas quando filter é Technical */}
+                {/* Technical Services Section - Mostrar apenas quando filter Ã© Technical */}
                 {filter === 'Technical' && (
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-1">
                         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-2xl text-[#a17745] dark:text-orange-300">build</span>
-                            Serviços Técnicos e Complementares
+                            ServiÃ§os TÃ©cnicos e Complementares
                         </h2>
-                        <p className="text-base text-slate-500 dark:text-slate-400">Serviços técnicos especializados para infraestrutura de rede e suporte de TI.</p>
+                        <p className="text-base text-slate-500 dark:text-slate-400">ServiÃ§os tÃ©cnicos especializados para infraestrutura de rede e suporte de TI.</p>
                     </div>
 
                     {isAdmin && (
@@ -640,17 +640,17 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             className="self-start flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-orange-600 transition-colors cursor-pointer font-medium text-sm"
                         >
                             <span className="material-symbols-outlined">add</span>
-                            Novo Serviço
+                            Novo ServiÃ§o
                         </button>
                     )}
 
-                    <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800 relative">
+                    <div className="rounded-xl border border-[#eaddcd] bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-gray-800 relative">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                                <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-700/50 dark:text-slate-400">
+                                <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-[#1a130b]/50 dark:text-slate-400">
                                     <tr>
                                         <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col">
-                                            SERVIÇOS
+                                            SERVIÃ‡OS
                                         </th>
                                         <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col">
                                             VALOR
@@ -662,13 +662,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                             PAGAMENTO
                                         </th>
                                         <th className="px-6 py-4 font-semibold text-right" scope="col">
-                                            AÇÕES
+                                            AÃ‡Ã•ES
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-slate-700">
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-gray-800">
                                     {techServices.map((item) => (
-                                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-gray-800/30 transition-colors">
                                             <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                                 <div className="flex items-center gap-3">
                                                     <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
@@ -681,7 +681,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 {item.isFree ? (
                                                     <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-0.5 text-sm font-bold text-green-700 dark:text-green-400">
                                                         <span className="material-symbols-outlined text-sm">check_circle</span>
-                                                        GRÁTIS
+                                                        GRÃTIS
                                                     </span>
                                                 ) : item.isSpecial ? (
                                                     <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
@@ -694,7 +694,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
-                                                {item.deadline || <span className="text-slate-400 font-normal italic">Não definido</span>}
+                                                {item.deadline || <span className="text-slate-400 font-normal italic">NÃ£o definido</span>}
                                             </td>
                                             <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
                                                 {item.payment || <span className="text-slate-400 font-normal italic">-</span>}
@@ -760,20 +760,20 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </button>
                     )}
 
-                    <div className="rounded-xl border border-slate-200 bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-slate-700 dark:bg-slate-800 relative">
+                    <div className="rounded-xl border border-[#eaddcd] bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-gray-800 relative">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                                <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-700/50 dark:text-slate-400">
+                                <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-[#1a130b]/50 dark:text-slate-400">
                                     <tr>
                                         <th className="px-6 py-4 font-semibold" scope="col">PACOTE</th>
                                         <th className="px-6 py-4 font-semibold" scope="col">VALOR MENSAL</th>
-                                        <th className="px-6 py-4 font-semibold" scope="col">PERÍODO</th>
-                                        <th className="px-6 py-4 font-semibold text-right" scope="col">AÇÕES</th>
+                                        <th className="px-6 py-4 font-semibold" scope="col">PERÃODO</th>
+                                        <th className="px-6 py-4 font-semibold text-right" scope="col">AÃ‡Ã•ES</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-slate-700">
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-gray-800">
                                     {streamingServices.map((item) => (
-                                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-gray-800/30 transition-colors">
                                             <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                                 <div className="flex items-center gap-3">
                                                     <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
@@ -843,7 +843,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
                                     <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
                                 </span>
-                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-[#1a130b] px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
                                     <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Prata
                                 </span>
                                 <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400">
@@ -879,12 +879,12 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
                                         const rc = {
                                             1: { border: 'border-2 border-amber-400 dark:border-amber-500', label: 'OURO', glow: 'shadow-xl shadow-amber-500/20', titleColor: 'text-amber-600 dark:text-amber-400', numBg: 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white', badgeColor: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white', btn: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white hover:from-amber-600 hover:to-yellow-600' },
-                                            2: { border: 'border-2 border-slate-300 dark:border-slate-600', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white', btn: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white hover:from-slate-500 hover:to-slate-600' },
+                                            2: { border: 'border-2 border-slate-300 dark:border-gray-800', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white', btn: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white hover:from-slate-500 hover:to-slate-600' },
                                             3: { border: 'border-2 border-orange-300 dark:border-orange-600', label: 'BRONZE', glow: 'shadow-md shadow-orange-500/10', titleColor: 'text-orange-600 dark:text-orange-400', numBg: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white', badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white', btn: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-600 hover:to-amber-700' },
                                         }[rank];
 
                                         return (
-                                            <div key={'plan-'+plan.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-slate-800 transition-all hover:-translate-y-1 ${rc.border} ${rc.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
+                                            <div key={'plan-'+plan.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-[#1a130b] transition-all hover:-translate-y-1 ${rc.border} ${rc.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
                                                 <div className="flex items-center justify-between mb-3">
                                                     <div className={`flex items-center justify-center rounded-full font-extrabold ${rc.numBg} ${isGold ? 'w-8 h-8 text-sm sm:w-9 sm:h-9 sm:text-base' : 'w-6 h-6 text-[10px] sm:w-7 sm:h-7 sm:text-xs'}`}>{rank}</div>
                                                     <span className={`inline-flex items-center gap-0.5 rounded-full font-extrabold uppercase tracking-wider ${rc.badgeColor} ${isGold ? 'px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px]' : 'px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[8px] sm:text-[9px]'}`}>
@@ -902,10 +902,10 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 
                                                 <div className={`flex items-baseline gap-1 ${isGold ? 'mt-3 sm:mt-4' : 'mt-2 sm:mt-3'}`}>
                                                     <span className={`font-extrabold ${rc.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>{formatCurrency(plan.valor_mensal)}</span>
-                                                    <span className="text-[10px] sm:text-xs font-medium text-slate-400">/mês</span>
+                                                    <span className="text-[10px] sm:text-xs font-medium text-slate-400">/mÃªs</span>
                                                 </div>
 
-                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-slate-700 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
+                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-gray-800 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
                                                     <div className="flex justify-between text-[10px] sm:text-xs items-center">
                                                         <span className="text-slate-400 dark:text-slate-500">Vendas</span>
                                                         <div className="flex items-center gap-1.5">
@@ -933,7 +933,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
                                     <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
                                 </span>
-                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-[#1a130b] px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
                                     <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Prata
                                 </span>
                                 <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400">
@@ -976,12 +976,12 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
                                         const rc = {
                                             1: { border: 'border-2 border-amber-400 dark:border-amber-500', label: 'OURO', glow: 'shadow-xl shadow-amber-500/20', titleColor: 'text-amber-600 dark:text-amber-400', numBg: 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white', badgeColor: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white' },
-                                            2: { border: 'border-2 border-slate-300 dark:border-slate-600', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white' },
+                                            2: { border: 'border-2 border-slate-300 dark:border-gray-800', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white' },
                                             3: { border: 'border-2 border-orange-300 dark:border-orange-600', label: 'BRONZE', glow: 'shadow-md shadow-orange-500/10', titleColor: 'text-orange-600 dark:text-orange-400', numBg: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white', badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white' },
                                         }[rank];
 
                                         return (
-                                            <div key={'colab-'+vendor.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-slate-800 transition-all hover:-translate-y-1 ${rc?.border} ${rc?.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
+                                            <div key={'colab-'+vendor.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-[#1a130b] transition-all hover:-translate-y-1 ${rc?.border} ${rc?.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
                                                 <div className="flex items-center justify-between mb-3">
                                                     <div className={`flex items-center justify-center rounded-full font-extrabold ${rc?.numBg} ${isGold ? 'w-8 h-8 text-sm sm:w-9 sm:h-9 sm:text-base' : 'w-6 h-6 text-[10px] sm:w-7 sm:h-7 sm:text-xs'}`}>{rank}</div>
                                                     <span className={`inline-flex items-center gap-0.5 rounded-full font-extrabold uppercase tracking-wider ${rc?.badgeColor} ${isGold ? 'px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px]' : 'px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[8px] sm:text-[9px]'}`}>
@@ -997,7 +997,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 )}
 
                                                 <div className="flex items-center gap-2 sm:gap-3">
-                                                    <div className={`flex shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
+                                                    <div className={`flex shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-[#1a130b] text-slate-500 dark:text-slate-400 ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
                                                         <span className="material-symbols-outlined" style={{ fontSize: isGold ? 20 : 16 }}>person</span>
                                                     </div>
                                                     <div className="overflow-hidden">
@@ -1006,7 +1006,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                     </div>
                                                 </div>
 
-                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-slate-700 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
+                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-gray-800 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
                                                     <div className="flex justify-between text-[10px] sm:text-xs items-center">
                                                         <span className="text-slate-400 dark:text-slate-500">Vendas</span>
                                                         <span className={`font-extrabold ${rc?.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>{vendas}</span>
@@ -1026,15 +1026,15 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                     </div>
 
 
-                    {/* TOP 3 COLABORADORAS (TICKET MÉDIO) */}
+                    {/* TOP 3 COLABORADORAS (TICKET MÃ‰DIO) */}
                     <div className="w-full shrink-0 flex flex-col gap-5 px-1 py-2">
                         <div className="flex items-center justify-center gap-3">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Ticket Médio</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Ticket MÃ©dio</h3>
                             <div className="hidden sm:flex items-center gap-1.5">
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
                                     <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
                                 </span>
-                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-[#1a130b] px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
                                     <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Prata
                                 </span>
                                 <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-400">
@@ -1051,7 +1051,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             ) : topTicket.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-10 w-full">
                                     <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-5xl mb-2">request_quote</span>
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Nenhum ticket médio registrado.</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Nenhum ticket mÃ©dio registrado.</p>
                                 </div>
                             ) : (
                                 (() => {
@@ -1077,12 +1077,12 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
                                         const rc = {
                                             1: { border: 'border-2 border-emerald-400 dark:border-emerald-500', label: 'OURO', glow: 'shadow-xl shadow-emerald-500/20', titleColor: 'text-emerald-700 dark:text-emerald-400', numBg: 'bg-gradient-to-br from-emerald-400 to-green-500 text-white', badgeColor: 'bg-gradient-to-r from-emerald-400 to-green-500 text-white' },
-                                            2: { border: 'border-2 border-slate-300 dark:border-slate-600', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white' },
+                                            2: { border: 'border-2 border-slate-300 dark:border-gray-800', label: 'PRATA', glow: 'shadow-md shadow-slate-400/10', titleColor: 'text-slate-600 dark:text-slate-300', numBg: 'bg-gradient-to-br from-slate-400 to-slate-500 text-white', badgeColor: 'bg-gradient-to-r from-slate-400 to-slate-500 text-white' },
                                             3: { border: 'border-2 border-orange-300 dark:border-orange-600', label: 'BRONZE', glow: 'shadow-md shadow-orange-500/10', titleColor: 'text-orange-600 dark:text-orange-400', numBg: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white', badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white' },
                                         }[rank];
 
                                         return (
-                                            <div key={'tmedio-'+vendor.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-slate-800 transition-all hover:-translate-y-1 ${rc?.border} ${rc?.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
+                                            <div key={'tmedio-'+vendor.id} className={`relative flex flex-col rounded-xl bg-white dark:bg-[#1a130b] transition-all hover:-translate-y-1 ${rc?.border} ${rc?.glow} ${isGold ? 'w-[180px] sm:w-[220px] p-4 sm:p-5 self-stretch' : 'w-[140px] sm:w-[180px] p-3 sm:p-4 mt-6'}`}>
                                                 <div className="flex items-center justify-between mb-3">
                                                     <div className={`flex items-center justify-center rounded-full font-extrabold ${rc?.numBg} ${isGold ? 'w-8 h-8 text-sm sm:w-9 sm:h-9 sm:text-base' : 'w-6 h-6 text-[10px] sm:w-7 sm:h-7 sm:text-xs'}`}>{rank}</div>
                                                     <span className={`inline-flex items-center gap-0.5 rounded-full font-extrabold uppercase tracking-wider ${rc?.badgeColor} ${isGold ? 'px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px]' : 'px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[8px] sm:text-[9px]'}`}>
@@ -1098,7 +1098,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 )}
 
                                                 <div className="flex items-center gap-2 sm:gap-3">
-                                                    <div className={`flex shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
+                                                    <div className={`flex shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-[#1a130b] text-slate-500 dark:text-slate-400 ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
                                                         <span className="material-symbols-outlined" style={{ fontSize: isGold ? 20 : 16 }}>person</span>
                                                     </div>
                                                     <div className="overflow-hidden">
@@ -1107,9 +1107,9 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                     </div>
                                                 </div>
 
-                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-slate-700 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
+                                                <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-gray-800 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
                                                     <div className="flex justify-between text-[10px] sm:text-xs items-center">
-                                                        <span className="text-slate-400 dark:text-slate-500">Valor Médio</span>
+                                                        <span className="text-slate-400 dark:text-slate-500">Valor MÃ©dio</span>
                                                         <span className={`font-extrabold ${rc?.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>{formatCurrency(ticket)}</span>
                                                     </div>
                                                     <div className="w-full">
@@ -1133,8 +1133,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                 {/* Edit Modal */}
             {editingPlan && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                    <div className="bg-white dark:bg-[#1a130b] rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-slate-100 dark:border-gray-800">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Plano</h3>
                                 <button 
@@ -1147,44 +1147,44 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </div>
                         <div className="p-6 flex flex-col gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do Serviço</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do ServiÃ§o</label>
                                 <input 
                                     type="text" 
                                     value={editingPlan.descricao || ''} 
                                     disabled 
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"
                                 />
-                                <p className="text-xs text-slate-500 mt-1">O nome é puxado automaticamente do IXC.</p>
+                                <p className="text-xs text-slate-500 mt-1">O nome Ã© puxado automaticamente do IXC.</p>
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prazo de Instalação</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prazo de InstalaÃ§Ã£o</label>
                                 <input 
                                     type="text" 
                                     value={editForm.prazo_instalacao} 
                                     onChange={(e) => setEditForm({...editForm, prazo_instalacao: e.target.value})}
-                                    placeholder="Ex: 3 Dias, Imediato, 5 Dias Úteis..."
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Ex: 3 Dias, Imediato, 5 Dias Ãšteis..."
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
-                                <p className="text-xs text-slate-500 mt-1">Este dado será salvo nativamente no banco de dados local.</p>
+                                <p className="text-xs text-slate-500 mt-1">Este dado serÃ¡ salvo nativamente no banco de dados local.</p>
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taxa de Instalação</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taxa de InstalaÃ§Ã£o</label>
                                 <input 
                                     type="text" 
                                     value={editForm.taxa_instalacao} 
                                     onChange={(e) => setEditForm({...editForm, taxa_instalacao: e.target.value})}
                                     placeholder="Ex: 50.00"
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
-                                <p className="text-xs text-slate-500 mt-1">Insira o valor apenas com números e ponto (ex: 50.00).</p>
+                                <p className="text-xs text-slate-500 mt-1">Insira o valor apenas com nÃºmeros e ponto (ex: 50.00).</p>
                             </div>
                         </div>
-                        <div className="p-6 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+                        <div className="p-6 border-t border-slate-100 dark:border-gray-800 flex justify-end gap-3 bg-slate-50 dark:bg-[#1a130b]/50">
                             <button 
                                 onClick={() => setEditingPlan(null)}
-                                className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                                className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-[#1a130b] border border-slate-300 dark:border-gray-800 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -1196,7 +1196,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 {isSaving ? (
                                     <><span className="material-symbols-outlined animate-spin text-sm">autorenew</span> Salvando...</>
                                 ) : (
-                                    'Salvar Alterações'
+                                    'Salvar AlteraÃ§Ãµes'
                                 )}
                             </button>
                         </div>
@@ -1207,11 +1207,11 @@ export default function ServicesDirectory({ setCurrentView, user }) {
             {/* Edit Tech Service Modal */}
             {editingTechService && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                    <div className="bg-white dark:bg-[#1a130b] rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-slate-100 dark:border-gray-800">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                                    {editingTechService?.id ? 'Editar Serviço Técnico' : 'Novo Serviço Técnico'}
+                                    {editingTechService?.id ? 'Editar ServiÃ§o TÃ©cnico' : 'Novo ServiÃ§o TÃ©cnico'}
                                 </h3>
                                 <button 
                                     onClick={() => setEditingTechService(null)}
@@ -1223,12 +1223,12 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </div>
                         <div className="p-6 flex flex-col gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serviço</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ServiÃ§o</label>
                                 <input 
                                     type="text" 
                                     value={editTechForm.service} 
                                     onChange={(e) => setEditTechForm({...editTechForm, service: e.target.value})}
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1239,7 +1239,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     value={editTechForm.value} 
                                     onChange={(e) => setEditTechForm({...editTechForm, value: e.target.value})}
                                     placeholder="Ex: R$ 50,00"
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1249,8 +1249,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     type="text" 
                                     value={editTechForm.deadline} 
                                     onChange={(e) => setEditTechForm({...editTechForm, deadline: e.target.value})}
-                                    placeholder="Ex: Até 5 dias úteis"
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Ex: AtÃ© 5 dias Ãºteis"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1260,13 +1260,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     type="text" 
                                     value={editTechForm.payment} 
                                     onChange={(e) => setEditTechForm({...editTechForm, payment: e.target.value})}
-                                    placeholder="Ex: À vista ou 2x Boleto"
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Ex: Ã€ vista ou 2x Boleto"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ícone</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ãcone</label>
                                 <div className="flex items-center gap-3">
                                     <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
                                         <span className="material-symbols-outlined text-lg">{editTechForm.icon || 'build'}</span>
@@ -1274,7 +1274,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     <select 
                                         value={editTechForm.icon} 
                                         onChange={(e) => setEditTechForm({...editTechForm, icon: e.target.value})}
-                                        className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     >
                                         <option value="router">Router</option>
                                         <option value="swap_horiz">Swap Horizontal</option>
@@ -1293,10 +1293,10 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="p-6 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+                        <div className="p-6 border-t border-slate-100 dark:border-gray-800 flex justify-end gap-3 bg-slate-50 dark:bg-[#1a130b]/50">
                             <button 
                                 onClick={() => setEditingTechService(null)}
-                                className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                                className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-[#1a130b] border border-slate-300 dark:border-gray-800 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -1304,7 +1304,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 onClick={handleSaveTechEdit}
                                 className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2"
                             >
-                                Salvar Alterações
+                                Salvar AlteraÃ§Ãµes
                             </button>
                         </div>
                     </div>
@@ -1314,8 +1314,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
             {/* Edit Streaming Service Modal */}
             {editingStreamingService && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+                    <div className="bg-white dark:bg-[#1a130b] rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-slate-100 dark:border-gray-800">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                                     {editingStreamingService?.id ? 'Editar Pacote de Streaming' : 'Novo Pacote de Streaming'}
@@ -1336,7 +1336,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     value={editStreamingForm.service} 
                                     onChange={(e) => setEditStreamingForm({...editStreamingForm, service: e.target.value})}
                                     placeholder="Ex: LEVEDUCA+WATCH+PARAMOUNT"
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1347,23 +1347,23 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     value={editStreamingForm.value} 
                                     onChange={(e) => setEditStreamingForm({...editStreamingForm, value: e.target.value})}
                                     placeholder="Ex: R$ 19,90"
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Período</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">PerÃ­odo</label>
                                 <input 
                                     type="text" 
                                     value={editStreamingForm.deadline} 
                                     onChange={(e) => setEditStreamingForm({...editStreamingForm, deadline: e.target.value})}
                                     placeholder="Ex: Mensal"
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ícone</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ãcone</label>
                                 <div className="flex items-center gap-3">
                                     <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
                                         <span className="material-symbols-outlined text-lg">{editStreamingForm.icon || 'play_circle'}</span>
@@ -1371,7 +1371,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     <select 
                                         value={editStreamingForm.icon} 
                                         onChange={(e) => setEditStreamingForm({...editStreamingForm, icon: e.target.value})}
-                                        className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     >
                                         <option value="play_circle">Play Circle</option>
                                         <option value="smart_display">Smart Display</option>
@@ -1384,10 +1384,10 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="p-6 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+                        <div className="p-6 border-t border-slate-100 dark:border-gray-800 flex justify-end gap-3 bg-slate-50 dark:bg-[#1a130b]/50">
                             <button 
                                 onClick={() => setEditingStreamingService(null)}
-                                className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                                className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-[#1a130b] border border-slate-300 dark:border-gray-800 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -1395,7 +1395,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 onClick={handleSaveStreamingEdit}
                                 className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2"
                             >
-                                Salvar Alterações
+                                Salvar AlteraÃ§Ãµes
                             </button>
                         </div>
                     </div>
@@ -1404,25 +1404,25 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         </div>
 
         
-            {/* Modal de Confirmação de Exclusão Premium */}
+            {/* Modal de ConfirmaÃ§Ã£o de ExclusÃ£o Premium */}
             {deleteModal.isOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}></div>
-                    <div className="relative w-full max-w-sm transform overflow-hidden rounded-2xl bg-white dark:bg-slate-800 p-6 text-left align-middle shadow-2xl transition-all border border-slate-200 dark:border-slate-700">
+                    <div className="relative w-full max-w-sm transform overflow-hidden rounded-2xl bg-white dark:bg-[#1a130b] p-6 text-left align-middle shadow-2xl transition-all border border-slate-200 dark:border-gray-800">
                         <div className="flex flex-col items-center text-center">
                             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                                 <span className="material-symbols-outlined text-3xl">delete_forever</span>
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Confirmar Exclusão</h3>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Confirmar ExclusÃ£o</h3>
                             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                                Tem certeza que deseja excluir <span className="font-bold text-slate-700 dark:text-slate-200">"{deleteModal.title}"</span>? Esta ação não poderá ser desfeita.
+                                Tem certeza que deseja excluir <span className="font-bold text-slate-700 dark:text-slate-200">"{deleteModal.title}"</span>? Esta aÃ§Ã£o nÃ£o poderÃ¡ ser desfeita.
                             </p>
                         </div>
 
                         <div className="mt-8 flex gap-3">
                             <button
                                 onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}
-                                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                className="flex-1 rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-[#1a130b] px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -1456,3 +1456,4 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         </main>
     )
 }
+

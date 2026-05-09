@@ -259,12 +259,14 @@ export default function Schedule({ setCurrentView, user }) {
             <main className="flex-1 flex flex-col gap-8">
                 {/* Breadcrumbs */}
                 <div className="flex flex-col gap-2">
-                    <div className="text-sm font-medium text-secondary tracking-wide flex items-center gap-2">
-                        <button onClick={() => setCurrentView('dashboard')} className="hover:text-primary transition-colors flex items-center gap-1">
-                            Início
+                    <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
+                        <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer">
+                            <span className="material-symbols-outlined text-lg">home</span>Início
                         </button>
-                        <span className="material-symbols-outlined text-sm">chevron_right</span>
-                        <span className="text-on-surface">Escala de Plantão</span>
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                        <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer">Dashboard</button>
+                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">Escala de Plantão</span>
                     </div>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>

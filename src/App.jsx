@@ -108,15 +108,15 @@ export default function App() {
                 {/* Renderização baseada em currentView */}
                 {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
                 {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} user={user} />}
-                {currentView === 'coverage' && <Coverage user={user} />}
-                {currentView === 'directory' && <Directory user={user} />}
+                {currentView === 'coverage' && <Coverage user={user} setCurrentView={setCurrentView} />}
+                {currentView === 'directory' && <Directory user={user} setCurrentView={setCurrentView} />}
                 {currentView === 'sectors' && <Sectors user={user} setCurrentView={setCurrentView} />}
                 {currentView === 'schedule' && <Schedule user={user} setCurrentView={setCurrentView} />}
                 {currentView === 'processes' && <Processos setCurrentView={setCurrentView} />}
-                {currentView === 'announcements' && <Comunicados user={user} />}
+                {currentView === 'announcements' && <Comunicados user={user} setCurrentView={setCurrentView} />}
                 {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}
                 {currentView === 'tickets' && <TicketsList user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'offices' && <Offices user={user} />}
+                {currentView === 'offices' && <Offices user={user} setCurrentView={setCurrentView} />}
                 {/* Fallback para outros menus n implementados ou páginas inexistentes */}
                 {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings', 'tickets', 'offices'].includes(currentView) && (
                     <NotFound setCurrentView={setCurrentView} />

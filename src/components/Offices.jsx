@@ -269,7 +269,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
 const LIST_MIN_PX = 200;
 const LIST_MAX_PCT = 65;
 
-export default function Offices({ user }) {
+export default function Offices({ user, setCurrentView }) {
     const containerRef = useRef(null);
     const mapRef = useRef(null);
     const markersRef = useRef({});
@@ -483,6 +483,19 @@ export default function Offices({ user }) {
 
             {/* Header */}
             <div className="px-6 py-4 border-b border-[#f4eee6] dark:border-[#2c2217] bg-white dark:bg-[#1a130b] flex-shrink-0">
+                {/* Breadcrumbs */}
+                <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
+                    <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer">
+                        <span className="material-symbols-outlined text-lg">home</span>Início
+                    </button>
+                    <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                    <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer">
+                        Dashboard
+                    </button>
+                    <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+                    <span className="text-[#1d150c] dark:text-white text-sm font-bold">Escritórios Prestek</span>
+                </div>
+
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-[#a17745] text-[24px]">apartment</span>
