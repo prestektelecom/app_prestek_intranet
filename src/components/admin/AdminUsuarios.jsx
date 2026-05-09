@@ -7,7 +7,7 @@ export default function AdminUsuarios({ adminEmail }) {
     const [busca, setBusca] = useState('');
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
-    const [salvando, setSalvando] = useState(null); // usuario_id em progresso
+    const [salvando, setSalvando] = useState(null);
 
     const carregar = useCallback(async (q = '') => {
         setCarregando(true);
@@ -47,17 +47,14 @@ export default function AdminUsuarios({ adminEmail }) {
         }
     };
 
-    const handleBusca = (e) => {
-        e.preventDefault();
-        carregar(busca);
-    };
+    const handleBusca = (e) => { e.preventDefault(); carregar(busca); };
 
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-wrap justify-between items-end gap-4">
                 <div>
-                    <h1 className="text-[#1d150c] dark:text-white text-3xl font-extrabold tracking-tight">Gerenciar Usuários</h1>
-                    <p className="text-[#a17745] dark:text-orange-300 text-sm mt-1">Gerencie permissões e visualize todos os colaboradores sincronizados.</p>
+                    <h1 className="text-foreground text-3xl font-extrabold tracking-tight">Gerenciar Usuários</h1>
+                    <p className="text-muted text-sm mt-1">Gerencie permissões e visualize todos os colaboradores sincronizados.</p>
                 </div>
                 <form onSubmit={handleBusca} className="flex gap-2">
                     <input
@@ -65,13 +62,13 @@ export default function AdminUsuarios({ adminEmail }) {
                         placeholder="Buscar por nome ou e-mail..."
                         value={busca}
                         onChange={e => setBusca(e.target.value)}
-                        className="border border-[#eaddcd] dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 w-64"
+                        className="border border-border rounded-lg px-3 py-2 text-sm bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-64"
                     />
-                    <button type="submit" className="px-4 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-orange-600 transition-colors">
+                    <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
                         Buscar
                     </button>
                     {busca && (
-                        <button type="button" onClick={() => { setBusca(''); carregar(''); }} className="px-3 py-2 border border-[#eaddcd] dark:border-gray-700 rounded text-sm hover:bg-[#eaddcd] dark:hover:bg-gray-800 transition-colors">
+                        <button type="button" onClick={() => { setBusca(''); carregar(''); }} className="px-3 py-2 border border-border rounded-lg text-sm hover:bg-surface-raised transition-colors">
                             Limpar
                         </button>
                     )}
@@ -84,42 +81,41 @@ export default function AdminUsuarios({ adminEmail }) {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden card-elevated">
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="border-b border-[#eaddcd] dark:border-gray-800 bg-[#f8f7f5] dark:bg-[#0f0a05]">
-                            <th className="text-left px-5 py-3 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider">Colaborador</th>
-                            <th className="text-left px-5 py-3 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider hidden md:table-cell">E-mail</th>
-                            <th className="text-left px-5 py-3 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider hidden lg:table-cell">Última Atividade</th>
-                            <th className="text-center px-5 py-3 text-xs font-bold text-[#a17745] dark:text-orange-300 uppercase tracking-wider">Admin</th>
+                        <tr className="border-b border-border bg-surface">
+                            <th className="text-left px-5 py-3 text-xs font-bold text-faint uppercase tracking-wider">Colaborador</th>
+                            <th className="text-left px-5 py-3 text-xs font-bold text-faint uppercase tracking-wider hidden md:table-cell">E-mail</th>
+                            <th className="text-left px-5 py-3 text-xs font-bold text-faint uppercase tracking-wider hidden lg:table-cell">Última Atividade</th>
+                            <th className="text-center px-5 py-3 text-xs font-bold text-faint uppercase tracking-wider">Perfil</th>
                         </tr>
                     </thead>
                     <tbody>
                         {carregando ? (
-                            <tr><td colSpan={4} className="text-center py-12 text-[#a17745] dark:text-orange-300">Carregando...</td></tr>
+                            <tr><td colSpan={4} className="text-center py-12 text-muted">Carregando...</td></tr>
                         ) : usuarios.length === 0 ? (
-                            <tr><td colSpan={4} className="text-center py-12 text-[#a17745] dark:text-orange-300">Nenhum usuário encontrado.</td></tr>
+                            <tr><td colSpan={4} className="text-center py-12 text-muted">Nenhum usuário encontrado.</td></tr>
                         ) : usuarios.map(u => (
-                            <tr key={u.usuario_id} className="border-b border-[#eaddcd]/60 dark:border-gray-800/60 hover:bg-[#f8f7f5] dark:hover:bg-[#0f0a05] transition-colors">
+                            <tr key={u.usuario_id} className="border-b border-border/60 hover:bg-surface transition-colors">
                                 <td className="px-5 py-3">
-                                    <div className="font-medium text-[#1d150c] dark:text-white">{u.funcionario_nome || u.usuario_nome}</div>
-                                    <div className="text-xs text-[#a17745] dark:text-orange-300 md:hidden">{u.usuario_email}</div>
+                                    <div className="font-medium text-foreground">{u.funcionario_nome || u.usuario_nome}</div>
+                                    <div className="text-xs text-muted md:hidden">{u.usuario_email}</div>
                                 </td>
-                                <td className="px-5 py-3 text-[#1d150c] dark:text-white hidden md:table-cell">{u.usuario_email}</td>
-                                <td className="px-5 py-3 text-[#a17745] dark:text-orange-300 hidden lg:table-cell">
-                                    {u.ultima_atividade
-                                        ? new Date(u.ultima_atividade).toLocaleString('pt-BR')
-                                        : '—'}
+                                <td className="px-5 py-3 text-foreground hidden md:table-cell">{u.usuario_email}</td>
+                                <td className="px-5 py-3 text-muted hidden lg:table-cell">
+                                    {u.ultima_atividade ? new Date(u.ultima_atividade).toLocaleString('pt-BR') : '—'}
                                 </td>
                                 <td className="px-5 py-3 text-center">
                                     <button
                                         onClick={() => toggleAdmin(u)}
                                         disabled={salvando === u.usuario_id}
                                         title={u.is_admin ? 'Revogar acesso admin' : 'Conceder acesso admin'}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-colors ${u.is_admin
-                                            ? 'bg-primary/10 text-primary hover:bg-red-100 hover:text-red-600'
-                                            : 'bg-gray-100 dark:bg-gray-800 text-[#a17745] dark:text-orange-300 hover:bg-primary/10 hover:text-primary'
-                                        } disabled:opacity-50`}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-colors disabled:opacity-50 ${
+                                            u.is_admin
+                                                ? 'bg-primary/10 text-primary hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400'
+                                                : 'bg-surface-raised text-muted hover:bg-primary/10 hover:text-primary'
+                                        }`}
                                     >
                                         <span className="material-symbols-outlined text-base">
                                             {salvando === u.usuario_id ? 'sync' : u.is_admin ? 'verified_user' : 'person'}
@@ -132,7 +128,7 @@ export default function AdminUsuarios({ adminEmail }) {
                     </tbody>
                 </table>
                 {!carregando && usuarios.length > 0 && (
-                    <div className="px-5 py-3 text-xs text-[#a17745] dark:text-orange-300 border-t border-[#eaddcd] dark:border-gray-800">
+                    <div className="px-5 py-3 text-xs text-muted border-t border-border">
                         {usuarios.length} colaborador(es) listado(s)
                     </div>
                 )}
