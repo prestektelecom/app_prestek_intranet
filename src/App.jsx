@@ -95,7 +95,7 @@ export default function App() {
     }
 
     if (currentView === 'admin') {
-        return <AdminDashboard setCurrentView={setCurrentView} />
+        return <AdminDashboard setCurrentView={setCurrentView} user={user} />
     }
 
     return (

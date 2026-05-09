@@ -2905,6 +2905,168 @@ app.delete('/api/escritorios/:id', async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// ─── Middleware de autenticação administrativa ───────────────────
+// Verifica se o solicitante é um admin consultando o banco pelo email.
+// Todas as rotas /api/admin/* (exceto as já existentes antes deste bloco)
+// devem passar por este middleware.
+// ═══════════════════════════════════════════════════════════════════
+async function adminAuth(req, res, next) {
+    const adminEmail = req.headers['x-admin-email'];
+    if (!adminEmail) {
+        return res.status(401).json({ sucesso: false, erro: 'Acesso não autorizado.' });
+    }
+    try {
+        const { rows } = await pool.query(
+            'SELECT is_admin FROM usuarios_perfil WHERE usuario_email = $1',
+            [adminEmail]
+        );
+        if (!rows.length || !rows[0].is_admin) {
+            return res.status(403).json({ sucesso: false, erro: 'Permissão negada.' });
+        }
+        next();
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+}
+
+// ─── Helper: registrar auditoria ────────────────────────────────────
+async function registrarAuditoria(adminEmail, acao, entidade, entidadeId, descricao) {
+    try {
+        const { rows } = await pool.query(
+            'SELECT usuario_id, usuario_nome FROM usuarios_perfil WHERE usuario_email = $1',
+            [adminEmail]
+        );
+        const admin = rows[0] || {};
+        await pool.query(
+            `INSERT INTO auditoria_logs (admin_id, admin_nome, admin_email, acao, entidade, entidade_id, descricao)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [admin.usuario_id || '', admin.usuario_nome || '', adminEmail, acao, entidade, String(entidadeId || ''), descricao]
+        );
+    } catch (e) {
+        console.warn('[auditoria] Falha ao registrar log:', e.message);
+    }
+}
+
+// ─── Rotas: Admin — Dashboard Stats ─────────────────────────────────
+app.get('/api/admin/dashboard-stats', adminAuth, async (_req, res) => {
+    try {
+        const [usuarios, comunicados, logs] = await Promise.all([
+            pool.query('SELECT COUNT(*) FROM usuarios_perfil WHERE ativo = $1', ['S']),
+            pool.query('SELECT COUNT(*) FROM comunicados'),
+            pool.query('SELECT COUNT(*) FROM auditoria_logs WHERE criado_em >= NOW() - INTERVAL \'30 days\''),
+        ]);
+        return res.json({
+            sucesso: true,
+            stats: {
+                total_usuarios: parseInt(usuarios.rows[0].count),
+                total_comunicados: parseInt(comunicados.rows[0].count),
+                acoes_recentes: parseInt(logs.rows[0].count),
+            }
+        });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// ─── Rotas: Admin — Gerenciar Usuários ──────────────────────────────
+app.get('/api/admin/usuarios', adminAuth, async (req, res) => {
+    const { busca } = req.query;
+    try {
+        let query = `SELECT usuario_id, usuario_nome, usuario_email, funcionario_nome,
+                            id_departamento, filial_id, ativo, is_admin, ultima_atividade
+                     FROM usuarios_perfil`;
+        const params = [];
+        if (busca) {
+            query += ` WHERE usuario_nome ILIKE $1 OR usuario_email ILIKE $1`;
+            params.push(`%${busca}%`);
+        }
+        query += ' ORDER BY usuario_nome ASC';
+        const { rows } = await pool.query(query, params);
+        return res.json({ sucesso: true, usuarios: rows });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+app.put('/api/admin/usuarios/:id/privilegios', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    const { is_admin } = req.body;
+    const adminEmail = req.headers['x-admin-email'];
+
+    if (typeof is_admin !== 'boolean') {
+        return res.status(400).json({ sucesso: false, erro: 'Campo is_admin deve ser boolean.' });
+    }
+    try {
+        const { rows } = await pool.query(
+            'UPDATE usuarios_perfil SET is_admin = $1 WHERE usuario_id = $2 RETURNING usuario_nome, usuario_email',
+            [is_admin, id]
+        );
+        if (!rows.length) return res.status(404).json({ sucesso: false, erro: 'Usuário não encontrado.' });
+
+        const acao = is_admin ? 'grant_admin' : 'revoke_admin';
+        const descricao = `${is_admin ? 'Concedeu' : 'Revogou'} acesso admin para ${rows[0].usuario_nome} (${rows[0].usuario_email})`;
+        await registrarAuditoria(adminEmail, acao, 'usuario', id, descricao);
+
+        return res.json({ sucesso: true, usuario: rows[0] });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// ─── Rotas: Admin — Logs de Auditoria ───────────────────────────────
+app.get('/api/admin/auditoria', adminAuth, async (req, res) => {
+    const { pagina = 1, limite = 50, acao: filtroAcao, admin_email } = req.query;
+    const offset = (parseInt(pagina) - 1) * parseInt(limite);
+    try {
+        const conditions = [];
+        const params = [];
+        if (filtroAcao) { params.push(filtroAcao); conditions.push(`acao = $${params.length}`); }
+        if (admin_email) { params.push(`%${admin_email}%`); conditions.push(`admin_email ILIKE $${params.length}`); }
+
+        const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+        params.push(parseInt(limite), offset);
+
+        const { rows } = await pool.query(
+            `SELECT * FROM auditoria_logs ${where} ORDER BY criado_em DESC LIMIT $${params.length - 1} OFFSET $${params.length}`,
+            params
+        );
+        const countRes = await pool.query(`SELECT COUNT(*) FROM auditoria_logs ${where}`, params.slice(0, -2));
+        return res.json({ sucesso: true, logs: rows, total: parseInt(countRes.rows[0].count) });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// ─── Rotas: Admin — Configurações Globais ───────────────────────────
+app.get('/api/admin/configuracoes', adminAuth, async (_req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM configuracoes_globais ORDER BY chave');
+        return res.json({ sucesso: true, configuracoes: rows });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+app.put('/api/admin/configuracoes/:chave', adminAuth, async (req, res) => {
+    const { chave } = req.params;
+    const { valor } = req.body;
+    const adminEmail = req.headers['x-admin-email'];
+    if (valor === undefined) return res.status(400).json({ sucesso: false, erro: 'Campo valor obrigatório.' });
+    try {
+        const { rows } = await pool.query(
+            `UPDATE configuracoes_globais SET valor = $1, atualizado_em = NOW(), atualizado_por = $2
+             WHERE chave = $3 RETURNING *`,
+            [String(valor), adminEmail, chave]
+        );
+        if (!rows.length) return res.status(404).json({ sucesso: false, erro: 'Configuração não encontrada.' });
+        await registrarAuditoria(adminEmail, 'update_config', 'configuracao', chave, `Alterou "${chave}" para "${valor}"`);
+        return res.json({ sucesso: true, configuracao: rows[0] });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)

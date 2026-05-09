@@ -1,66 +1,78 @@
-# Plano de Implementação - Gerenciamento de Escritórios
+# Ativação e Expansão da Aba "Prestek Admin"
 
-O objetivo deste plano é transformar a lista estática de escritórios (atualmente lida de `officesData.js`) em um sistema dinâmico, permitindo que administradores possam criar, editar e excluir unidades diretamente pela interface.
+Este documento detalha o planejamento para ativar a área administrativa ("Prestek Admin") da intranet. Atualmente, a interface visual existe em `AdminDashboard.jsx`, mas muitas abas estão com dados estáticos e não há um fluxo de navegação claro para que os administradores acessem essa área.
 
-## User Review Required
+## Objetivos
+1. Conectar as telas administrativas existentes aos dados reais do backend (IXC + PostgreSQL local).
+2. Adicionar funcionalidades recomendadas essenciais para uma intranet corporativa.
+3. Garantir o acesso seguro apenas para usuários com perfil de administrador.
+
 > [!IMPORTANT]
-> A transição para um banco de dados requer a criação de uma nova tabela e a migração dos dados atuais. Verifique se os campos propostos atendem a todas as necessidades atuais e futuras.
+> **Acesso de Administrador:** Precisamos garantir que apenas usuários com `is_admin = true` na tabela `usuarios_perfil` tenham acesso às rotas do backend e vejam o botão para entrar no painel.
 
-## Open Questions
-> [!NOTE]
-> 1. A cor padrão (`cor`) associada a cada escritório tem sido definida manualmente (ex: Matriz = Laranja, AL = Azul, SE = Verde). Ao criar um novo escritório, o sistema deve deduzir a cor baseado no tipo/estado, ou o administrador deve escolher a cor manualmente num *color picker*?
-> 2. O usuário comum do sistema verá alguma mudança além de ver os dados atualizados em tempo real? (Atualmente, assumo que apenas usuários com `isAdmin` verdadeiro verão os botões de edição).
+## Funcionalidades Planejadas
 
-## Proposed Changes
+### 1. Painel de Controle (Visão Geral)
+- **Status Atual:** Interface montada com dados mockados (estáticos).
+- **Proposta:**
+  - Criar um endpoint `GET /api/admin/dashboard-stats` para buscar KPIs reais: Total de Usuários Ativos, Quantidade de Comunicados e Alterações Recentes (Logs).
+  - Substituir os gráficos estáticos por um histórico real de atividades.
 
-### Backend (Banco de Dados e API)
-O armazenamento dos escritórios precisa ser movido para o banco de dados PostgreSQL.
+### 2. Gerenciar Usuários (Recomendado)
+- **Status Atual:** Apenas o botão no menu lateral.
+- **Proposta:**
+  - Interface para listar todos os usuários sincronizados.
+  - Funcionalidade para buscar usuários por nome ou email.
+  - **Ação Crítica:** Permitir que administradores concedam ou revoguem o acesso `is_admin` de outros colaboradores.
 
-#### [NEW] Script de Migração (ex: `backend/migrations/create_escritorios_table.js`)
-- Criar a tabela `escritorios`:
-  - `id` (SERIAL PRIMARY KEY)
-  - `nome` (VARCHAR)
-  - `tipo` (VARCHAR) - Ex: 'Matriz', 'Filial'
-  - `cidade` (VARCHAR)
-  - `estado` (VARCHAR 2)
-  - `endereco` (TEXT)
-  - `cep` (VARCHAR)
-  - `lat` (NUMERIC)
-  - `lng` (NUMERIC)
-  - `cor` (VARCHAR)
-- Migrar os dados existentes do arquivo estático para a nova tabela.
+### 3. Responsáveis de Setor (Grupos Supervisores)
+- **Status Atual:** Funcionalidade já implementada através do componente `ResponsaveisManual.jsx`.
+- **Proposta:** Manter como está, mas fazer uma revisão visual para integrar perfeitamente com o novo fluxo de navegação e garantir que erros da API sejam bem tratados.
 
-#### [MODIFY] `backend/server.js`
-- Adicionar rotas RESTful para `escritorios`:
-  - `GET /api/escritorios` - Retorna a lista de escritórios.
-  - `POST /api/escritorios` - Cria um novo escritório.
-  - `PUT /api/escritorios/:id` - Atualiza um escritório existente.
-  - `DELETE /api/escritorios/:id` - Exclui um escritório.
+### 4. Gestão de Comunicados (Novo/Recomendado)
+- **Status Atual:** O backend já possui as rotas `/api/comunicados` (GET, POST, PUT, DELETE), mas a gestão costuma ser complexa sem uma tela dedicada.
+- **Proposta:**
+  - Adicionar uma aba "Gerenciar Comunicados" no painel Admin para criar, editar e excluir os comunicados que aparecem na tela inicial dos usuários.
+
+### 5. Logs de Auditoria (Recomendado)
+- **Status Atual:** Existem logs isolados (ex: `plantoes_historico`).
+- **Proposta:**
+  - Criar uma tabela genérica `auditoria_logs` para rastrear: quem deu acesso de admin para quem, quem alterou comunicados, quem modificou responsáveis.
+  - Tela "Logs de Auditoria" exibindo uma tabela com filtros (data, usuário, tipo de ação).
+
+### 6. Configurações Globais do Sistema
+- **Status Atual:** Apenas o botão no menu lateral.
+- **Proposta:**
+  - Tela para configurações gerais (ex: Modo Manutenção, timeout de sessão da intranet).
+  - Pode ser implementado numa tabela `configuracoes_globais`.
 
 ---
 
-### Frontend (Interface do Usuário)
-A interface precisará consumir a API e fornecer formulários para usuários administradores.
+## Alterações Propostas na Arquitetura
 
-#### [MODIFY] `src/components/Offices.jsx`
-- **Estado Dinâmico:** Remover o import estático `officesData.js` e implementar um `useEffect` para buscar os dados via `GET /api/escritorios`.
-- **Controle de Acesso:** Obter o usuário logado (ex: via `useLogin` ou contexto de usuário) para verificar a propriedade `isAdmin`.
-- **Ações de Admin:**
-  - Adicionar um botão **"Adicionar Escritório"** no cabeçalho (visível apenas para admins).
-  - Adicionar ícones de **Editar** e **Excluir** ao lado de cada item na lista lateral de escritórios.
-- **Modal de Formulário:** Implementar um modal contendo os campos:
-  - Nome, Tipo (Dropdown), Cidade, Estado (Dropdown ou Texto), Endereço, CEP, Latitude, Longitude, Cor.
-- **Integração com o Mapa:** Garantir que o mapa (Leaflet) re-renderize os marcadores dinamicamente após qualquer operação de criação, edição ou exclusão.
+### Frontend (`src/`)
+- Modificar `Header.jsx` ou `Sidebar.jsx` para exibir um botão **"⚙️ Painel Admin"** apenas se `user?.is_admin === true`.
+- Atualizar `AdminDashboard.jsx` para incluir os novos componentes de abas:
+  - `[NEW]` `src/components/admin/AdminUsuarios.jsx`
+  - `[NEW]` `src/components/admin/AdminComunicados.jsx`
+  - `[NEW]` `src/components/admin/AdminAuditoria.jsx`
 
-#### [DELETE] `src/data/officesData.js`
-- Remover o arquivo após confirmar que a migração dos dados para o PostgreSQL e a integração com o frontend foram concluídas com sucesso.
+### Backend (`backend/`)
+- `[NEW]` `backend/migrations/016_auditoria_configs.sql` (Tabelas para logs e configurações globais).
+- `[MODIFY]` `backend/server.js`:
+  - Adicionar um *middleware* de validação administrativa para proteger rotas `/api/admin/*`.
+  - Adicionar endpoints para a listagem e edição do campo `is_admin` dos usuários (`PUT /api/admin/usuarios/:id/privilegios`).
+  - Adicionar endpoint `/api/admin/dashboard-stats`.
 
-## Verification Plan
+---
 
-### Manual Verification
-1. **Verificação de Permissões**: Acessar com um usuário comum e confirmar que os botões de edição NÃO aparecem. Acessar com um usuário admin e confirmar que eles aparecem.
-2. **Operação CRUD**: 
-   - Criar um escritório teste e verificar se ele aparece no mapa e na lista.
-   - Editar o escritório teste (ex: alterar endereço e cor) e confirmar se as alterações refletem na interface e no banco de dados.
-   - Excluir o escritório teste e confirmar sua remoção da interface.
-3. **Persistência**: Recarregar a página e garantir que todos os dados continuam corretos e renderizando o mapa normalmente.
+## User Review Required
+
+> [!WARNING]
+> Antes de iniciarmos a programação, preciso da sua aprovação sobre os seguintes pontos:
+> 
+> 1. **Local do botão de acesso:** Você prefere que o botão para entrar no "Prestek Admin" fique no `Header` (perto do perfil do usuário) ou no menu lateral (`Sidebar`)?
+> 2. **Funcionalidades:** As funcionalidades recomendadas (Gerenciar Usuários, Auditoria, Comunicados) atendem ao que você esperava?
+> 3. **Segurança:** Atualmente o backend não usa Tokens JWT (usa a sessão repassada pelo frontend). Precisaremos adicionar uma verificação de segurança no backend enviando o e-mail ou ID do admin que está realizando a ação para o backend confiar. Tem alguma preferência de como lidamos com essa segurança interna?
+
+Por favor, revise o plano e me dê a aprovação para iniciar a execução.

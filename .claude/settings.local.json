@@ -5,7 +5,12 @@
       "Bash(Get-ChildItem -Path \"f:\\\\Projetos em Dev\\\\prestek_intranet\" -Force)",
       "WebFetch(domain:maps.app.goo.gl)",
       "Bash(npx vite *)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(Get-ChildItem -Path \"f:\\\\Projetos em Dev\\\\prestek_intranet\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "PowerShell(head -50)",
+      "Bash(Get-ChildItem \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\hooks\\\\\" -File)",
+      "Bash(node run_migrations_admin.js)"
     ]
   }
 }
