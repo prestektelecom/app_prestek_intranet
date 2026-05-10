@@ -1,91 +1,50 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import lottie from 'lottie-web';
 
-/**
- * LottieAvatar Component
- * @param {any} src - Fonte do avatar: objeto JSON (Lottie), string URL ou base64
- * @param {string} className - Classes CSS adicionais
- * @param {Object} style - Estilos inline
- * @param {boolean} loop - Se a animação deve repetir (padrão: true)
- */
 const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
     const containerRef = useRef(null);
     const animRef = useRef(null);
 
-    // null = verificando | true = válida | false = inválida
-    const [imgStatus, setImgStatus] = useState(null);
-
-    // Verifica se src é um objeto Lottie JSON
-    const isLottie = useMemo(() => {
-        if (!src) return false;
-
-        const check = (obj) => {
-            if (!obj || typeof obj !== 'object') return false;
-            return !!( ('v' in obj || obj.v) && ('fr' in obj || obj.fr) );
-        };
-
-        if (check(src)) return true;
-        if (src.default && check(src.default)) return true;
-
+    const lottieData = useMemo(() => {
+        if (!src) return null;
+        const check = (obj) => obj && typeof obj === 'object' && ('v' in obj || 'fr' in obj);
+        if (check(src)) return src;
+        if (src?.default && check(src.default)) return src.default;
         if (typeof src === 'string' && src.trim().startsWith('{')) {
-            try { return check(JSON.parse(src)); }
-            catch (e) { return false; }
+            try { const p = JSON.parse(src); return check(p) ? p : null; } catch { return null; }
         }
-
-        return false;
+        return null;
     }, [src]);
 
-    // Pré-valida URL de imagem usando Image() nativo (sem renderizar tag <img>)
+    // Lottie animation — sempre no mesmo container div, lottie-web gerencia o SVG interno
     useEffect(() => {
-        // Se for Lottie ou sem src, não precisa verificar imagem
-        if (isLottie || !src || typeof src !== 'string' || src.length === 0) {
-            setImgStatus(null);
-            return;
-        }
-
-        // Base64 é sempre válido — não precisa de network request
-        if (src.startsWith('data:')) {
-            setImgStatus(true);
-            return;
-        }
-
-        setImgStatus(null); // Resetando estado enquanto verifica
-        const img = new Image();
-        img.onload = () => setImgStatus(true);
-        img.onerror = () => setImgStatus(false);
-        img.src = src;
-
-        return () => {
-            // Cancela verificação se src mudar antes de completar
-            img.onload = null;
-            img.onerror = null;
-        };
-    }, [src, isLottie]);
-
-    // Inicializa/atualiza animação Lottie
-    useEffect(() => {
-        if (!isLottie || !containerRef.current) return;
+        if (!containerRef.current) return;
 
         if (animRef.current) {
             animRef.current.destroy();
             animRef.current = null;
         }
 
+        if (!lottieData) return;
+
         try {
-            let animData = typeof src === 'string' && src.trim().startsWith('{')
-                ? JSON.parse(src)
-                : src;
-
-            if (animData?.default && (animData.default.v || 'v' in animData.default)) {
-                animData = animData.default;
-            }
-
             animRef.current = lottie.loadAnimation({
                 container: containerRef.current,
                 renderer: 'svg',
                 loop,
                 autoplay: true,
-                animationData: animData,
+                animationData: lottieData,
+            });
+            // Recorta o viewBox no personagem e usa slice para preencher o círculo sem distorção
+            animRef.current.addEventListener('DOMLoaded', () => {
+                const svg = containerRef.current?.querySelector('svg');
+                if (svg) {
+                    // Crop centrado no personagem (descarta ~25% de cada lado e 15% do topo/base)
+                    svg.setAttribute('viewBox', '300 100 400 400');
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+                    svg.style.width = '100%';
+                    svg.style.height = '100%';
+                }
             });
         } catch (err) {
             console.error('Lottie error:', err);
@@ -97,21 +56,21 @@ const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
                 animRef.current = null;
             }
         };
-    }, [isLottie, src, loop]);
+    }, [lottieData, loop]);
 
-    // Renderização: animação Lottie
-    if (isLottie) {
+    // Sempre renderiza o mesmo div — lottie-web gerencia os filhos SVG diretamente
+    // Nunca colocar filhos React dentro deste div pois causaria conflito de DOM
+    if (lottieData) {
         return (
-            <div
-                ref={containerRef}
-                className={`overflow-hidden flex items-center justify-center ${className}`}
-                style={style}
-            />
+            <div className={`overflow-hidden ${className}`} style={style}>
+                <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+            </div>
         );
     }
 
-    // Renderização: imagem validada com sucesso
-    if (imgStatus === true) {
+    // URL de imagem (base64 ou http)
+    const isImageUrl = src && typeof src === 'string' && (src.startsWith('data:') || src.startsWith('http') || (src.startsWith('/') && !src.startsWith('/src/')));
+    if (isImageUrl) {
         return (
             <div
                 className={`bg-center bg-no-repeat bg-cover ${className}`}
@@ -120,19 +79,12 @@ const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
         );
     }
 
-    // Placeholder visual: sem src válido, imagem inválida ou ainda carregando
+    // Placeholder
     return (
         <div
-            className={`flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/20 ${className}`}
+            className={`flex items-center justify-center bg-surface-raised ${className}`}
             style={style}
-        >
-            <span
-                className="material-symbols-outlined text-orange-400 dark:text-orange-300"
-                style={{ fontSize: '48px' }}
-            >
-                person
-            </span>
-        </div>
+        />
     );
 };
 

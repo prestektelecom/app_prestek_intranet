@@ -903,7 +903,8 @@ app.get('/api/colaboradores/online', async (req, res) => {
                 email: u.usuario_email,
                 foto: fotoUrl,
                 lottie: lottieData,
-                status: 'online'
+                status: 'online',
+                id_departamento: u.id_departamento || null
             };
         });
 

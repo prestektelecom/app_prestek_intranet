@@ -355,14 +355,14 @@ export default function Configuracoes({ user, setCurrentView }) {
                     {/* Toast flutuante de confirmação */}
                     {saveSuccess && (
                         <div className="fixed bottom-8 left-1/2 z-50" style={{ transform: 'translateX(-50%)', animation: 'toastSlideUp 0.4s ease-out' }}>
-                            <div className="flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border border-green-200 dark:border-green-800 bg-white dark:bg-[#1a130b]"
+                            <div className="flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border border-green-200 dark:border-green-800 bg-card"
                                 style={{ boxShadow: '0 8px 32px rgba(34,197,94,0.2)' }}>
                                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40">
                                     <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-[24px]">check_circle</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-[#1d150c] dark:text-white">Perfil atualizado</span>
-                                    <span className="text-xs text-[#a17745] dark:text-orange-300">Suas configurações foram sincronizadas com sucesso.</span>
+                                    <span className="text-sm font-bold text-foreground">Perfil atualizado</span>
+                                    <span className="text-xs text-muted">Suas configurações foram sincronizadas com sucesso.</span>
                                 </div>
                             </div>
                             <style>{`
@@ -376,11 +376,11 @@ export default function Configuracoes({ user, setCurrentView }) {
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4">
                     <div className="lg:col-span-4 xl:col-span-3">
-                        <div className="sticky top-24 bg-white dark:bg-[#1a130b] rounded-xl p-6 shadow-sm border border-[#eaddcd] dark:border-gray-800 flex flex-col items-center gap-6">
+                        <div className="sticky top-24 bg-card rounded-xl p-6 shadow-sm border border-border flex flex-col items-center gap-6">
                             <div className="relative group avatar-container flex flex-col items-center">
-                                <LottieAvatar 
+                                <LottieAvatar
                                     src={avatarUrl}
-                                    className="aspect-square rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-gradient-to-br from-primary/20 to-orange-100"
+                                    className="aspect-square rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-surface-raised"
                                 />
                                 <button
                                     onClick={() => setShowAvatarMenu(!showAvatarMenu)}
@@ -400,15 +400,15 @@ export default function Configuracoes({ user, setCurrentView }) {
 
                                 {/* Menu de Opções de Avatar */}
                                 {showAvatarMenu && (
-                                    <div className="absolute top-[140px] z-20 w-48 bg-white dark:bg-[#1a130b] rounded-lg shadow-xl border border-[#eaddcd] dark:border-gray-800 py-1 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="absolute top-[140px] z-20 w-48 bg-card rounded-lg shadow-xl border border-border py-1 flex flex-col animate-in fade-in zoom-in-95 duration-200">
                                         <button
                                             onClick={() => { fileInputRef.current?.click(); setShowAvatarGrid(false); }}
-                                            className="px-4 py-2 text-sm text-left text-[#1d150c] dark:text-white hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] transition-colors flex items-center gap-2">
+                                            className="px-4 py-2 text-sm text-left text-foreground hover:bg-surface-raised transition-colors flex items-center gap-2">
                                             <span className="material-symbols-outlined text-[18px]">upload</span> Fazer Upload
                                         </button>
                                         <button
                                             onClick={() => { setShowAvatarGrid(!showAvatarGrid); }}
-                                            className="px-4 py-2 text-sm text-left text-[#1d150c] dark:text-white hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] transition-colors flex items-center gap-2 border-b border-[#eaddcd] dark:border-gray-800">
+                                            className="px-4 py-2 text-sm text-left text-foreground hover:bg-surface-raised transition-colors flex items-center gap-2 border-b border-border">
                                             <span className="material-symbols-outlined text-[18px]">sentiment_satisfied</span> Escolher Avatar
                                         </button>
                                         {avatarUrl && (
@@ -417,7 +417,6 @@ export default function Configuracoes({ user, setCurrentView }) {
                                                     setAvatarUrl(null);
                                                     setShowAvatarMenu(false);
                                                     setShowAvatarGrid(false);
-                                                    // Limpa avatar do formData para ser salvo como removido
                                                     setFormData(prev => ({ ...prev, avatarUrl: '' }));
                                                 }}
                                                 className="px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2">
@@ -429,14 +428,14 @@ export default function Configuracoes({ user, setCurrentView }) {
 
                                 {/* Grid de Seleção de Avatares */}
                                 {showAvatarGrid && (
-                                    <div className="absolute top-[230px] z-30 w-64 bg-white dark:bg-[#1a130b] rounded-lg shadow-xl border border-[#eaddcd] dark:border-gray-800 p-3 pt-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300 mb-3 text-center">Avatares Padrão</h4>
+                                    <div className="absolute top-[230px] z-30 w-64 bg-card rounded-lg shadow-xl border border-border p-3 pt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted mb-3 text-center">Avatares Padrão</h4>
                                         <div className="grid grid-cols-3 gap-2">
                                             {PREDEFINED_AVATARS.map((url, idx) => (
                                                 <button
                                                     key={idx}
                                                     onClick={() => handleChangeAvatar(url)}
-                                                    className="aspect-square rounded-lg border border-[#eaddcd] dark:border-gray-800 hover:border-primary dark:hover:border-primary focus:ring-2 ring-primary/30 transition-all bg-[#fcfaf8] dark:bg-[#2c2217] overflow-hidden">
+                                                    className="aspect-square rounded-lg border border-border hover:border-primary focus:ring-2 ring-primary/30 transition-all bg-surface-raised overflow-hidden">
                                                     <LottieAvatar src={url} className="w-full h-full" />
                                                 </button>
                                             ))}
@@ -445,7 +444,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                                 )}
                             </div>
                             <div className="text-center w-full">
-                                <h2 className="text-[#1d150c] dark:text-white text-xl font-bold mb-1">{safeName}</h2>
+                                <h2 className="text-foreground text-xl font-bold mb-1">{safeName}</h2>
                                 <p className="text-primary font-medium text-sm mb-4">{cargoName}</p>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                     {isActive ? 'Colaborador Ativo' : 'Inativo'}

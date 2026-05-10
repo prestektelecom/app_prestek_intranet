@@ -25,42 +25,48 @@ function resolveLottieFromStorage(raw) {
     return null;
 }
 
-function MemberAvatar({ member, ringClass, avatarClass }) {
+function MemberAvatar({ member, ringClass, avatarClass, setor }) {
     const [imgFailed, setImgFailed] = useState(false);
+    const [hovered, setHovered] = useState(false);
 
-    // Lottie JSON vindo do backend
+    const tooltip = (
+        <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 transition-all duration-150 pointer-events-none ${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}`}>
+            <div className="bg-card border border-border rounded-lg shadow-lg px-3 py-2 text-left min-w-max">
+                <p className="text-xs font-semibold text-foreground leading-tight">{member.nome}</p>
+                {setor && <p className="text-[11px] text-muted leading-tight mt-0.5">{setor}</p>}
+                <p className="text-[11px] text-green-500 font-medium mt-1 flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-green-500 inline-block"></span>
+                    Online agora
+                </p>
+            </div>
+            <div className="w-2 h-2 bg-card border-b border-r border-border rotate-45 mx-auto -mt-1"></div>
+        </div>
+    );
+
+    const wrapperClass = 'relative inline-block cursor-default';
+
     if (member.lottie) {
         return (
-            <div className="relative inline-block" title={member.nome}>
-                <LottieAvatar
-                    src={member.lottie}
-                    className={`${avatarClass} ${ringClass}`}
-                />
-                <span className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ${ringClass} bg-green-500`}></span>
+            <div className={wrapperClass} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                {tooltip}
+                <LottieAvatar src={member.lottie} className={`${avatarClass} ${ringClass}`} />
             </div>
         );
     }
 
-    // URL de imagem real
     if (member.foto && !imgFailed) {
         return (
-            <div className="relative inline-block" title={member.nome}>
-                <img
-                    alt={member.nome}
-                    className={`${avatarClass} ${ringClass} object-cover bg-surface-raised`}
-                    src={member.foto}
-                    onError={() => setImgFailed(true)}
-                />
-                <span className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ${ringClass} bg-green-500`}></span>
+            <div className={wrapperClass} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                {tooltip}
+                <img alt={member.nome} className={`${avatarClass} ${ringClass} object-cover bg-surface-raised`} src={member.foto} onError={() => setImgFailed(true)} />
             </div>
         );
     }
 
-    // Fallback: iniciais
     return (
-        <div className="relative inline-block" title={member.nome}>
-            <InitialsAvatar name={member.nome} className={`${avatarClass} ${ringClass} text-[11px]`} />
-            <span className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ${ringClass} bg-green-500`}></span>
+        <div className={wrapperClass} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+            {tooltip}
+            <InitialsAvatar name={member.nome} className={`${avatarClass} ${ringClass} text-sm`} />
         </div>
     );
 }
@@ -68,6 +74,20 @@ function MemberAvatar({ member, ringClass, avatarClass }) {
 export default function TeamAvailability({ user }) {
     const [onlineMembers, setOnlineMembers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [deptoMap, setDeptoMap] = useState({});
+
+    useEffect(() => {
+        fetch('/api/departamentos-empresa')
+            .then(r => r.json())
+            .then(d => {
+                if (d.sucesso) {
+                    const map = {};
+                    (d.departamentos || []).forEach(dep => { map[String(dep.id)] = dep.departamento; });
+                    setDeptoMap(map);
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     useEffect(() => {
         const fetchOnline = async () => {
@@ -138,10 +158,16 @@ export default function TeamAvailability({ user }) {
 
             <div className="flex -space-x-2 mb-3">
                 {displayedMembers.map((member, idx) => (
-                    <MemberAvatar key={member.id || idx} member={member} ringClass={ringClass} avatarClass={avatarClass} />
+                    <MemberAvatar
+                        key={member.id || idx}
+                        member={member}
+                        ringClass={ringClass}
+                        avatarClass={avatarClass}
+                        setor={deptoMap[String(member.id_departamento)] || null}
+                    />
                 ))}
                 {extraCount > 0 && (
-                    <div className={`flex items-center justify-center h-8 w-8 rounded-full ${ringClass} bg-surface-raised text-xs font-bold text-muted`}>
+                    <div className={`flex items-center justify-center h-12 w-12 rounded-full ${ringClass} bg-surface-raised text-xs font-bold text-muted`}>
                         +{extraCount}
                     </div>
                 )}
