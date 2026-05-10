@@ -1,6 +1,70 @@
 import { useState, useEffect } from 'react';
+import LottieAvatar from './common/LottieAvatar';
+import InitialsAvatar from './common/InitialsAvatar';
 
-// Widget de disponibilidade da equipe com fotos empilhadas
+import avatar1 from '../image/avatar/4472612.json';
+import avatar2 from '../image/avatar/4472613.json';
+import avatar3 from '../image/avatar/4472614.json';
+import avatar4 from '../image/avatar/4472615.json';
+import avatar5 from '../image/avatar/4472616.json';
+import avatar6 from '../image/avatar/4472617.json';
+import avatar7 from '../image/avatar/4472622.json';
+import avatar8 from '../image/avatar/4472623.json';
+import avatar9 from '../image/avatar/4472624.json';
+import avatar10 from '../image/avatar/4472625.json';
+
+const PREDEFINED_AVATARS = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, avatar7, avatar8, avatar9, avatar10];
+
+function resolveLottieFromStorage(raw) {
+    if (!raw) return null;
+    if (typeof raw === 'string' && raw.startsWith('__lottie_idx:')) {
+        const idx = parseInt(raw.split(':')[1], 10);
+        return PREDEFINED_AVATARS[idx] ?? null;
+    }
+    if (typeof raw === 'object' && (raw.v || raw.fr)) return raw;
+    return null;
+}
+
+function MemberAvatar({ member, ringClass, avatarClass }) {
+    const [imgFailed, setImgFailed] = useState(false);
+
+    // Lottie JSON vindo do backend
+    if (member.lottie) {
+        return (
+            <div className="relative inline-block" title={member.nome}>
+                <LottieAvatar
+                    src={member.lottie}
+                    className={`${avatarClass} ${ringClass}`}
+                />
+                <span className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ${ringClass} bg-green-500`}></span>
+            </div>
+        );
+    }
+
+    // URL de imagem real
+    if (member.foto && !imgFailed) {
+        return (
+            <div className="relative inline-block" title={member.nome}>
+                <img
+                    alt={member.nome}
+                    className={`${avatarClass} ${ringClass} object-cover bg-surface-raised`}
+                    src={member.foto}
+                    onError={() => setImgFailed(true)}
+                />
+                <span className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ${ringClass} bg-green-500`}></span>
+            </div>
+        );
+    }
+
+    // Fallback: iniciais
+    return (
+        <div className="relative inline-block" title={member.nome}>
+            <InitialsAvatar name={member.nome} className={`${avatarClass} ${ringClass} text-[11px]`} />
+            <span className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ${ringClass} bg-green-500`}></span>
+        </div>
+    );
+}
+
 export default function TeamAvailability({ user }) {
     const [onlineMembers, setOnlineMembers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -12,26 +76,29 @@ export default function TeamAvailability({ user }) {
                 const data = await response.json();
                 if (data.sucesso) {
                     let members = data.colaboradores || [];
-                    
-                    // Ordenação inteligente: Coloca o usuário atual no topo se ele estiver na lista
                     if (user?.id) {
-                        const currentUserIndex = members.findIndex(m => String(m.id) === String(user.id) || String(m.id) === String(user.funcionario?.id));
-                        if (currentUserIndex > -1) {
-                            const [currentUser] = members.splice(currentUserIndex, 1);
-                            members = [currentUser, ...members];
+                        // Lê Lottie do localStorage independente de onde o usuário aparece na lista
+                        const localKey = `stitch_profile_${user.funcionario?.id ?? user.id}`;
+                        let localLottie = null;
+                        try {
+                            const saved = localStorage.getItem(localKey);
+                            if (saved) {
+                                const p = JSON.parse(saved);
+                                localLottie = resolveLottieFromStorage(p.avatarUrl);
+                            }
+                        } catch (_) { }
+
+                        const idx = members.findIndex(
+                            m => String(m.id) === String(user.id) || String(m.id) === String(user.funcionario?.id)
+                        );
+                        if (idx > -1) {
+                            const [cur] = members.splice(idx, 1);
+                            // Sobrescreve lottie com o do localStorage (mais confiável que o banco)
+                            members = [{ ...cur, lottie: localLottie || cur.lottie }, ...members];
                         } else if (user.nome) {
-                            // Se o ping ainda não registrou no banco mas o usuário está com a aba aberta,
-                            // forçamos ele na lista localmente para feedback imediato
-                            const self = {
-                                id: user.id,
-                                nome: user.nome,
-                                foto: user.funcionario?.foto_perfil || null,
-                                status: 'online'
-                            };
-                            members = [self, ...members];
+                            members = [{ id: user.id, nome: user.nome, foto: null, lottie: localLottie, status: 'online' }, ...members];
                         }
                     }
-                    
                     setOnlineMembers(members);
                 }
             } catch (err) {
@@ -42,65 +109,49 @@ export default function TeamAvailability({ user }) {
         };
 
         fetchOnline();
-        // Atualiza a cada 1 minuto para manter a lista fresca
         const interval = setInterval(fetchOnline, 60 * 1000);
         return () => clearInterval(interval);
     }, []);
 
-    // Limita a exibição a 4 avatares
     const displayedMembers = onlineMembers.slice(0, 4);
     const extraCount = Math.max(0, onlineMembers.length - 4);
+    const ringClass = 'ring-2 ring-card';
+    const avatarClass = 'h-12 w-12 rounded-full';
 
     if (loading && onlineMembers.length === 0) {
         return (
-            <div className="mt-6 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-lg p-5 shadow-sm animate-pulse">
-                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded mb-4"></div>
+            <div className="mt-6 bg-card border border-border rounded-lg p-5 shadow-sm animate-pulse">
+                <div className="h-4 w-32 bg-surface-raised rounded mb-4"></div>
                 <div className="flex -space-x-2 mb-3">
-                    {[1, 2, 3].map(i => <div key={i} className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-800 ring-2 ring-white dark:ring-[#1a130b]"></div>)}
+                    {[1, 2, 3].map(i => <div key={i} className={`${avatarClass} ${ringClass} bg-surface-raised`}></div>)}
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="mt-6 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-lg p-5 shadow-sm">
+        <div className="mt-6 bg-card border border-border rounded-lg p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-sm">Disponibilidade da Equipe</h3>
-                <span className="material-symbols-outlined text-gray-400 text-sm">more_horiz</span>
+                <h3 className="font-bold text-sm text-foreground">Disponibilidade da Equipe</h3>
+                <span className="material-symbols-outlined text-muted text-sm">more_horiz</span>
             </div>
 
-            {/* Fotos empilhadas */}
             <div className="flex -space-x-2 mb-3">
                 {displayedMembers.map((member, idx) => (
-                    <div key={member.id || idx} className="relative inline-block" title={member.nome}>
-                        <img
-                            alt={member.nome}
-                            className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a130b] object-cover bg-gray-100 dark:bg-gray-800"
-                            src={member.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.nome)}&background=random`}
-                            onError={(e) => {
-                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.nome)}&background=random`;
-                            }}
-                        />
-                        <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-[#1a130b] bg-green-500"></span>
-                    </div>
+                    <MemberAvatar key={member.id || idx} member={member} ringClass={ringClass} avatarClass={avatarClass} />
                 ))}
-                
                 {extraCount > 0 && (
-                    <div className="relative inline-block">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a130b] bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-500 dark:text-gray-400">
-                            +{extraCount}
-                        </div>
+                    <div className={`flex items-center justify-center h-8 w-8 rounded-full ${ringClass} bg-surface-raised text-xs font-bold text-muted`}>
+                        +{extraCount}
                     </div>
                 )}
-
                 {onlineMembers.length === 0 && !loading && (
-                    <span className="text-xs text-gray-400 italic">Ninguém online no momento</span>
+                    <span className="text-xs text-muted italic">Ninguém online no momento</span>
                 )}
             </div>
 
-            {/* Status online */}
-            <div className="flex items-center gap-2 text-xs text-[#635c55] dark:text-gray-300">
-                <span className={`size-2 rounded-full ${onlineMembers.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+            <div className="flex items-center gap-2 text-xs text-muted">
+                <span className={`size-2 rounded-full ${onlineMembers.length > 0 ? 'bg-green-500' : 'bg-surface-raised'}`}></span>
                 {onlineMembers.length} {onlineMembers.length === 1 ? 'Online agora' : 'Online agora'}
             </div>
         </div>

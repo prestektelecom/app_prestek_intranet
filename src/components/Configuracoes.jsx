@@ -181,14 +181,18 @@ export default function Configuracoes({ user, setCurrentView }) {
         const rawAvatar = formData.avatarUrl || user?.funcionario?.foto_perfil;
         const currentAvatar = sanitizarAvatar(rawAvatar) || avatar2;
 
-        // Se o valor salvo estiver no formato inválido, limpa do localStorage
+        // Se o valor do banco for inválido, limpa apenas se o localStorage também tiver valor inválido
         if (rawAvatar && !sanitizarAvatar(rawAvatar)) {
             const saved = localStorage.getItem(`stitch_profile_${safeId}`);
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    delete parsed.avatarUrl;
-                    localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(parsed));
+                    const localAv = parsed.avatarUrl;
+                    // Só apaga se o localStorage também tiver string inválida — preserva Lottie objeto
+                    if (localAv && typeof localAv === 'string' && !sanitizarAvatar(localAv)) {
+                        delete parsed.avatarUrl;
+                        localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(parsed));
+                    }
                 } catch (e) { /* ignora erros de parse */ }
             }
         }
@@ -264,8 +268,12 @@ export default function Configuracoes({ user, setCurrentView }) {
                 body: JSON.stringify(formData)
             });
 
-            // Backup offline no localStorage para carregamento rápido
-            localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(formData));
+            // Salva índice leve do avatar (ex: "__lottie_idx:2") em vez do JSON gigante
+            const lottieIdx = PREDEFINED_AVATARS.indexOf(avatarUrl);
+            const avatarParaSalvar = lottieIdx >= 0 ? `__lottie_idx:${lottieIdx}` : avatarUrl;
+            localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify({ ...formData, avatarUrl: avatarParaSalvar }));
+            // Sincroniza formData para que o useEffect não sobrescreva o localStorage com valor inválido
+            setFormData(prev => ({ ...prev, avatarUrl }));
 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);

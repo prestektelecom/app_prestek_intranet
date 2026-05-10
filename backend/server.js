@@ -876,16 +876,33 @@ app.get('/api/colaboradores/online', async (req, res) => {
         
         // Formata para o padrão esperado pelo componente
         const online = result.rows.map(u => {
-            let fotoFim = u.foto_custom || u.ixc_foto || null;
-            if (fotoFim && typeof fotoFim === 'string' && fotoFim.trim().startsWith('<svg')) {
-                fotoFim = null;
+            const raw = u.foto_custom || u.ixc_foto || null;
+            let fotoUrl = null;
+            let lottieData = null;
+
+            if (raw && typeof raw === 'string') {
+                const trimmed = raw.trim();
+                if (trimmed.startsWith('<svg')) {
+                    // SVG inline — descarta
+                } else if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                    // JSON Lottie — parseia e repassa como objeto
+                    try { lottieData = JSON.parse(trimmed); } catch (_) { }
+                } else if (trimmed.startsWith('data:')) {
+                    fotoUrl = trimmed;
+                } else if (trimmed.startsWith('http')) {
+                    fotoUrl = trimmed;
+                } else if (trimmed.startsWith('/') && !trimmed.startsWith('/src/')) {
+                    // Aceita apenas URLs de servidor (/api/..., /uploads/...) — descarta caminhos de build (/src/...)
+                    fotoUrl = trimmed;
+                }
             }
-            
+
             return {
                 id: u.funcionario_id || u.usuario_id,
                 nome: u.funcionario_nome || u.usuario_nome || 'Colaborador',
                 email: u.usuario_email,
-                foto: fotoFim,
+                foto: fotoUrl,
+                lottie: lottieData,
                 status: 'online'
             };
         });
