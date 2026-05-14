@@ -78,6 +78,7 @@ export default function App() {
             const userData = {
                 ...resultado.usuario,
                 funcionario: resultado.funcionario,
+                nome_grupo: resultado.nome_grupo || null,
                 is_admin: resultado.usuario?.is_admin || false
             }
             setUser(userData)

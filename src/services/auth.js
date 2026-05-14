@@ -38,6 +38,7 @@ export async function loginUsuario(email, senha) {
         return {
             usuario: dados.usuario,
             funcionario: dados.funcionario ?? null,
+            nome_grupo: dados.nome_grupo ?? null,
             is_admin: dados.usuario?.is_admin || false,
             host: dados.host
         }

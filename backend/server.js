@@ -186,8 +186,9 @@ app.post('/api/login', async (req, res) => {
             })
         }
 
-        // ── Busca dados do funcionário em paralelo ──
+        // ── Busca dados do funcionário e grupo do usuário em paralelo ──
         let funcionario = null
+        let nomeGrupo = null
         try {
             const urlFunc = `https://${host}/webservice/v1/funcionarios`
             const bodyFunc = JSON.stringify({
@@ -199,15 +200,21 @@ app.post('/api/login', async (req, res) => {
                 sortname: 'funcionarios.id',
                 sortorder: 'asc'
             })
-            const resFunc = await fetch(urlFunc, { method: 'POST', headers, body: bodyFunc })
-            if (resFunc.ok) {
+
+            const [resFunc, grupoRow] = await Promise.all([
+                fetch(urlFunc, { method: 'POST', headers, body: bodyFunc }),
+                usuario.id_grupo && usuario.id_grupo !== '0'
+                    ? pool.query('SELECT nome FROM grupos_nomes WHERE id_grupo = $1', [String(usuario.id_grupo)])
+                    : Promise.resolve({ rows: [] })
+            ])
+
+            if (resFunc?.ok) {
                 const dadosFunc = await resFunc.json()
-                if (dadosFunc.total > 0) {
-                    funcionario = dadosFunc.registros[0]
-                }
+                if (dadosFunc.total > 0) funcionario = dadosFunc.registros[0]
             }
+            if (grupoRow.rows.length > 0) nomeGrupo = grupoRow.rows[0].nome
         } catch (errFunc) {
-            console.warn('Aviso: não foi possível buscar dados de funcionário:', errFunc.message)
+            console.warn('Aviso: não foi possível buscar dados de funcionário/grupo:', errFunc.message)
         }
 
         // Sincroniza dados do perfil no banco (bloqueia resposta para pegar is_admin)
@@ -220,7 +227,7 @@ app.post('/api/login', async (req, res) => {
         }
 
         // Retorna dados combinados de usuarios + funcionarios
-        console.log(`Login bem-sucedido: ${usuario.nome} (${usuario.email})`)
+        console.log(`Login bem-sucedido: ${usuario.nome} (${usuario.email}) | id_grupo=${usuario.id_grupo} | nome_grupo=${nomeGrupo}`)
         return res.json({
             sucesso: true,
             usuario: {
@@ -231,6 +238,7 @@ app.post('/api/login', async (req, res) => {
                 is_admin: isAdmin
             },
             funcionario,
+            nome_grupo: nomeGrupo,
             host
         })
 
@@ -416,6 +424,71 @@ app.get('/api/departamentos-empresa', async (req, res) => {
         const resposta = await fetch(url, { method: 'POST', headers, body })
         const dados = await resposta.json()
         return res.json({ sucesso: true, departamentos: dados.registros || [] })
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message })
+    }
+})
+
+// ─── Rota: Debug de departamento por funcionário (temporária) ───────────
+app.get('/api/debug-funcionario/:id', async (req, res) => {
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
+    const host = process.env.IXC_HOST
+    const authHeader = 'Basic ' + Buffer.from(token).toString('base64')
+    const headers = { 'Content-Type': 'application/json', Authorization: authHeader, ixcsoft: 'listar' }
+    const funcId = req.params.id
+
+    try {
+        const [resFuncionario, resDept, resDeptEmp, resCargo] = await Promise.all([
+            fetch(`https://${host}/webservice/v1/funcionarios`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ qtype: 'funcionarios.id', query: funcId, oper: '=', page: '1', rp: '1', sortname: 'funcionarios.id', sortorder: 'asc' })
+            }),
+            fetch(`https://${host}/webservice/v1/su_ticket_setor`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ qtype: 'su_ticket_setor.id', query: '0', oper: '>', page: '1', rp: '1000' })
+            }),
+            fetch(`https://${host}/webservice/v1/departamento`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ qtype: 'id', query: '0', oper: '>', page: '1', rp: '1000' })
+            }),
+            fetch(`https://${host}/webservice/v1/empresa_setor`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ qtype: 'empresa_setor.id', query: '0', oper: '>', page: '1', rp: '1000' })
+            })
+        ])
+
+        const func = await resFuncionario.json()
+        const depts = await resDept.json()
+        const deptsEmp = await resDeptEmp.json()
+        const cargos = await resCargo.json()
+
+        const funcionario = (func.registros || [])[0] || null
+        const idDepto = funcionario?.id_departamento || null
+        const idFuncao = funcionario?.id_funcao || null
+
+        const matchDept    = (depts.registros    || []).find(d => String(d.id) === String(idDepto))
+        const matchDeptEmp = (deptsEmp.registros || []).find(d => String(d.id) === String(idDepto))
+        const matchCargo   = (cargos.registros   || []).find(c => String(c.id) === String(idDepto))
+
+        // Matches pelo id_funcao (fallback usado quando id_departamento é null)
+        const matchCargoByFuncao = idFuncao ? (cargos.registros || []).find(c => String(c.id) === String(idFuncao)) : null
+        const matchDeptByFuncao  = idFuncao ? (depts.registros  || []).find(d => String(d.id) === String(idFuncao)) : null
+        const matchDeptEmpByFuncao = idFuncao ? (deptsEmp.registros || []).find(d => String(d.id) === String(idFuncao)) : null
+
+        return res.json({
+            funcionario_raw: func.registros?.[0] || func,
+            funcionario: { id: funcId, nome: funcionario?.funcionario, id_departamento: idDepto, id_funcao: idFuncao },
+            matches_por_id_departamento: {
+                su_ticket_setor: matchDept    ? { id: matchDept.id,    nome: matchDept.setor }           : null,
+                departamento:    matchDeptEmp ? { id: matchDeptEmp.id, nome: matchDeptEmp.departamento } : null,
+                empresa_setor:   matchCargo   ? { id: matchCargo.id,   nome: matchCargo.setor }          : null,
+            },
+            matches_por_id_funcao: {
+                su_ticket_setor: matchDeptByFuncao    ? { id: matchDeptByFuncao.id,    nome: matchDeptByFuncao.setor }           : null,
+                departamento:    matchDeptEmpByFuncao ? { id: matchDeptEmpByFuncao.id, nome: matchDeptEmpByFuncao.departamento } : null,
+                empresa_setor:   matchCargoByFuncao   ? { id: matchCargoByFuncao.id,   nome: matchCargoByFuncao.setor }          : null,
+            }
+        })
     } catch (e) {
         return res.status(500).json({ sucesso: false, erro: e.message })
     }
@@ -1748,6 +1821,37 @@ app.get('/api/grupos', async (req, res) => {
         return res.json({ sucesso: true, grupos });
     } catch (e) {
         console.error('Erro rota /api/grupos:', e);
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+// ─── Rotas: Admin — Mapeamento local id_grupo → nome ────────────────────────
+
+app.get('/api/admin/grupos-nomes', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id_grupo, nome FROM grupos_nomes ORDER BY id_grupo::int');
+        return res.json({ sucesso: true, grupos: result.rows });
+    } catch (e) {
+        return res.status(500).json({ sucesso: false, erro: e.message });
+    }
+});
+
+app.post('/api/admin/grupos-nomes', async (req, res) => {
+    const { id_grupo, nome, acao } = req.body; // acao: 'salvar' | 'remover'
+    if (!id_grupo || !acao) return res.status(400).json({ sucesso: false, erro: 'id_grupo e acao são obrigatórios' });
+    try {
+        if (acao === 'salvar') {
+            if (!nome) return res.status(400).json({ sucesso: false, erro: 'nome é obrigatório para salvar' });
+            await pool.query(
+                'INSERT INTO grupos_nomes (id_grupo, nome) VALUES ($1, $2) ON CONFLICT (id_grupo) DO UPDATE SET nome = EXCLUDED.nome',
+                [String(id_grupo), nome]
+            );
+        } else if (acao === 'remover') {
+            await pool.query('DELETE FROM grupos_nomes WHERE id_grupo = $1', [String(id_grupo)]);
+        }
+        const result = await pool.query('SELECT id_grupo, nome FROM grupos_nomes ORDER BY id_grupo::int');
+        return res.json({ sucesso: true, grupos: result.rows });
+    } catch (e) {
         return res.status(500).json({ sucesso: false, erro: e.message });
     }
 });

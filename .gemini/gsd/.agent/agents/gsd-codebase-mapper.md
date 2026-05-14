@@ -1,6 +1,6 @@
 ---
 name: gsd-codebase-mapper
-description: Explores codebase and writes structured analysis documents. Spawned by map-codebase with a focus area (tech, arch, quality, concerns). Writes documents directly to reduce orchestrator context load.
+description: Explores codebase and writes structured analysis documents. Spawned by map-codebase with a focus area (tech, arch, quality, concerns). Writes documents directly to reduce orchestrator context load. // Explora a base de código e escreve documentos de análise estruturados. Gerado pelo map-codebase com uma área de foco (tech, arch, quality, concerns). Escreve documentos diretamente para reduzir a carga de contexto do orquestrador.
 tools: read_file, run_shell_command, search_file_content, glob, write_file
 color: cyan
 ---

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { resolveNomeSetor } from '../utils/resolveSetor';
 import defaultAvatar from '../image/avatar/4472613.json';
 import logoP from '../image/logos/Logo_P.webp';
 import LottieAvatar from './common/LottieAvatar';
@@ -88,39 +89,10 @@ export default function Header({ currentView, setCurrentView, user }) {
     }, []);
 
     useEffect(() => {
-        const fetchCargoESetor = async () => {
-            let nomeFinal = safeRole;
-            try {
-                const [resDept, resCargo, resDeptEmp] = await Promise.all([
-                    fetch('/api/departamentos').catch(() => null),
-                    fetch('/api/cargos').catch(() => null),
-                    fetch('/api/departamentos-empresa').catch(() => null)
-                ]);
-                let departamentos = [], cargos = [], deptosEmpresa = [];
-                if (resDept?.ok)   { const d = await resDept.json();   if (d.sucesso) departamentos = d.departamentos || []; }
-                if (resCargo?.ok)  { const d = await resCargo.json();  if (d.sucesso) cargos = d.cargos || []; }
-                if (resDeptEmp?.ok){ const d = await resDeptEmp.json();if (d.sucesso) deptosEmpresa = d.departamentos || []; }
-
-                let deptoName = 'N/D';
-                if (safeDepto) {
-                    const foundDeptEmp = deptosEmpresa.find(d => String(d.id).trim() === String(safeDepto).trim());
-                    const foundDept    = departamentos.find(d => String(d.id).trim() === String(safeDepto).trim());
-                    const foundCargo   = cargos.find(c => String(c.id).trim() === String(safeDepto).trim());
-                    deptoName = foundDeptEmp?.departamento || foundDept?.setor || foundCargo?.setor || safeDepto;
-                }
-                if (deptoName !== 'N/D' && deptoName !== '') {
-                    nomeFinal = deptoName;
-                } else if (safeRole && safeRole !== 'Colaborador') {
-                    const foundRole = cargos.find(c => String(c.id).trim() === String(safeRole).trim());
-                    if (foundRole?.setor) nomeFinal = foundRole.setor;
-                }
-                setCargoName(nomeFinal);
-            } catch (err) {
-                console.error("Erro ao buscar cargos/departamentos no header", err);
-            }
-        };
-        fetchCargoESetor();
-    }, [safeDepto, safeRole]);
+        resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo)
+            .then(setCargoName)
+            .catch(err => console.error("Erro ao resolver setor no header", err));
+    }, [safeDepto, safeRole, user?.nome_grupo]);
 
     const avatarUrlRef = useRef(avatarUrl);
     useEffect(() => { avatarUrlRef.current = avatarUrl; }, [avatarUrl]);

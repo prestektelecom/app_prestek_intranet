@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS grupos_nomes (
+    id_grupo VARCHAR(50) PRIMARY KEY,
+    nome     VARCHAR(200) NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

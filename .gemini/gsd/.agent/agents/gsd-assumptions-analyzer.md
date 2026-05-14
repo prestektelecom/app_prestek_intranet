@@ -1,6 +1,6 @@
 ---
 name: gsd-assumptions-analyzer
-description: Deeply analyzes codebase for a phase and returns structured assumptions with evidence. Spawned by discuss-phase assumptions mode.
+description: Deeply analyzes codebase for a phase and returns structured assumptions with evidence. Spawned by discuss-phase assumptions mode. // Analisa profundamente a base de código de uma fase e retorna suposições estruturadas com evidências. Gerado pelo modo de suposições da fase de discussão.
 tools: read_file, run_shell_command, search_file_content, glob
 color: cyan
 ---

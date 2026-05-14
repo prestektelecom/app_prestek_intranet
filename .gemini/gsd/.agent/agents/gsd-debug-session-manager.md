@@ -1,6 +1,6 @@
 ---
 name: gsd-debug-session-manager
-description: Manages multi-cycle /gsd-debug checkpoint and continuation loop in isolated context. Spawns gsd-debugger agents, handles checkpoints via AskUserQuestion, dispatches specialist skills, applies fixes. Returns compact summary to main context. Spawned by /gsd-debug command.
+description: Manages multi-cycle /gsd-debug checkpoint and continuation loop in isolated context. Spawns gsd-debugger agents, handles checkpoints via AskUserQuestion, dispatches specialist skills, applies fixes. Returns compact summary to main context. Spawned by /gsd-debug command. // Gerencia o loop de continuação e checkpoint /gsd-debug de múltiplos ciclos em contexto isolado. Gera agentes gsd-debugger, lida com checkpoints via AskUserQuestion, despacha habilidades especializadas, aplica correções. Retorna resumo compacto ao contexto principal. Gerado pelo comando /gsd-debug.
 tools: read_file, write_file, run_shell_command, search_file_content, glob, ask_user
 color: orange
 ---

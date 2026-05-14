@@ -3,11 +3,12 @@ import AnnouncementsList from './AnnouncementsList'
 import QuickShortcuts from './QuickShortcuts'
 import TeamAvailability from './TeamAvailability'
 import { useState, useEffect } from 'react'
+import { resolveNomeSetor } from '../utils/resolveSetor'
 
 // Página principal do Dashboard
 export default function Dashboard({ setCurrentView, user }) {
     const [currentDateTime, setCurrentDateTime] = useState('');
-    const [cargoName, setCargoName] = useState('Comercial');
+    const [cargoName, setCargoName] = useState('');
     const [osCount, setOsCount] = useState(0);
     const [osStatusCount, setOsStatusCount] = useState(null);
     const [osLoading, setOsLoading] = useState(true);
@@ -22,59 +23,10 @@ export default function Dashboard({ setCurrentView, user }) {
     const funcId = func.id || user?.id; // Fallback para user.id se func.id estiver vazio
 
     useEffect(() => {
-        const fetchCargoESetor = async () => {
-            let nomeFinal = safeRole;
-            try {
-                // Busca departamentos (tickets), cargos (empresa_setor) e departamentos (organizacional)
-                const [resDept, resCargo, resDeptEmp] = await Promise.all([
-                    fetch('/api/departamentos').catch(() => null),
-                    fetch('/api/cargos').catch(() => null),
-                    fetch('/api/departamentos-empresa').catch(() => null)
-                ]);
-
-                let departamentos = [];
-                let cargos = [];
-                let deptosEmpresa = [];
-
-                if (resDept?.ok) {
-                    const data = await resDept.json();
-                    if (data.sucesso) departamentos = data.departamentos || [];
-                }
-                if (resCargo?.ok) {
-                    const data = await resCargo.json();
-                    if (data.sucesso) cargos = data.cargos || [];
-                }
-                if (resDeptEmp?.ok) {
-                    const data = await resDeptEmp.json();
-                    if (data.sucesso) deptosEmpresa = data.departamentos || [];
-                }
-
-                // Tenta achar pelo departamento primeiro (organizacional, ticket ou cargo)
-                let deptoName = 'N/D';
-                if (safeDepto) {
-                    const foundDeptEmp = deptosEmpresa.find(d => String(d.id).trim() === String(safeDepto).trim());
-                    const foundDept = departamentos.find(d => String(d.id).trim() === String(safeDepto).trim());
-                    const foundCargo = cargos.find(c => String(c.id).trim() === String(safeDepto).trim());
-                    
-                    deptoName = foundDeptEmp?.departamento || foundDept?.setor || foundCargo?.setor || safeDepto;
-                }
-
-                // Se encontrou o departamento, usa ele; senão, cai para id_funcao
-                if (deptoName !== 'N/D' && deptoName !== '') {
-                    nomeFinal = deptoName;
-                } else if (safeRole && safeRole !== 'Colaborador') {
-                    const foundRole = cargos.find(c => String(c.id).trim() === String(safeRole).trim());
-                    if (foundRole?.setor) nomeFinal = foundRole.setor;
-                }
-
-                setCargoName(nomeFinal);
-            } catch (err) {
-                console.error("Erro ao buscar cargos/departamentos no dashboard", err);
-            }
-        };
-
-        fetchCargoESetor();
-    }, [safeDepto, safeRole]);
+        resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo)
+            .then(setCargoName)
+            .catch(err => console.error("Erro ao resolver setor no dashboard", err));
+    }, [safeDepto, safeRole, user?.nome_grupo]);
 
     useEffect(() => {
         const fetchOsCount = async () => {

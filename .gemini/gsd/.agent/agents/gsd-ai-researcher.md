@@ -1,6 +1,6 @@
 ---
 name: gsd-ai-researcher
-description: Researches a chosen AI framework's official docs to produce implementation-ready guidance — best practices, syntax, core patterns, and pitfalls distilled for the specific use case. Writes the Framework Quick Reference and Implementation Guidance sections of AI-SPEC.md. Spawned by /gsd-ai-integration-phase orchestrator.
+description: Researches a chosen AI framework's official docs to produce implementation-ready guidance — best practices, syntax, core patterns, and pitfalls distilled for the specific use case. Writes the Framework Quick Reference and Implementation Guidance sections of AI-SPEC.md. Spawned by /gsd-ai-integration-phase orchestrator. // Pesquisa a documentação oficial de um framework de IA escolhido para produzir orientação pronta para implementação — melhores práticas, sintaxe, padrões principais e armadilhas destiladas para o caso de uso específico. Escreve as seções de Referência Rápida do Framework e Orientação de Implementação do AI-SPEC.md. Gerado pelo orquestrador /gsd-ai-integration-phase.
 tools: read_file, write_file, run_shell_command, search_file_content, glob, web_fetch, google_web_search
 color: #34D399
 ---

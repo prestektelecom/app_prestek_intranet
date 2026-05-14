@@ -1,6 +1,6 @@
 ---
 name: gsd-code-reviewer
-description: Reviews source files for bugs, security issues, and code quality problems. Produces structured REVIEW.md with severity-classified findings. Spawned by /gsd-code-review.
+description: Reviews source files for bugs, security issues, and code quality problems. Produces structured REVIEW.md with severity-classified findings. Spawned by /gsd-code-review. // Revisa arquivos fonte em busca de bugs, vulnerabilidades de segurança e problemas de qualidade de código. Produz REVIEW.md estruturado com descobertas classificadas por gravidade. Gerado pelo fluxo de trabalho /gsd-code-review.
 tools: read_file, write_file, run_shell_command, search_file_content, glob
 color: #F59E0B
 ---
