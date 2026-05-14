@@ -1,6 +1,6 @@
 ---
 name: gsd-debugger
-description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /gsd-debug orchestrator.
+description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /gsd-debug orchestrator. // investiga bugs usando método científico, gerencia sessões de depuração, lida com checkpoints. Gerado pelo orquestrador /gsd-debug.
 tools: read_file, write_file, replace, run_shell_command, search_file_content, glob, google_web_search
 color: orange
 ---

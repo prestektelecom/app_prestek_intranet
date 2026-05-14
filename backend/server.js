@@ -621,6 +621,202 @@ app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
     }
 });
 
+// ─── Rota: Eficiência Individual do Colaborador ──────────────────────────────
+// Calcula % de OS resolvidas no prazo no mês atual vs. mês anterior
+// Fonte: su_oss_chamado (IXC Soft) — filtrado por id_tecnico do colaborador logado
+app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
+    const { funcionarioId } = req.params;
+
+    if (!funcionarioId || funcionarioId === 'undefined') {
+        return res.status(400).json({ sucesso: false, erro: 'ID do funcionário é obrigatório.' });
+    }
+
+    const host = process.env.IXC_HOST;
+    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+    const headers = {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
+        ixcsoft: 'listar'
+    };
+
+    try {
+        // 1. Resolver o ID de técnico do IXC (mesma lógica de /api/os-chamados)
+        let ixcTecnicoId = funcionarioId;
+        const pRes = await pool.query(
+            'SELECT usuario_email, funcionario_id FROM usuarios_perfil WHERE funcionario_id = $1 OR usuario_id = $1 LIMIT 1',
+            [funcionarioId]
+        );
+        if (pRes.rows.length > 0) {
+            const email = pRes.rows[0].usuario_email;
+            if (email) {
+                const rUser = await fetchIXC(`https://${host}/webservice/v1/usuarios`, {
+                    method: 'POST', headers,
+                    body: JSON.stringify({ qtype: 'usuarios.email', query: email, oper: '=', page: '1', rp: '1' })
+                });
+                const dUser = await rUser.json();
+                if (dUser.total > 0 && dUser.registros[0].funcionario) {
+                    ixcTecnicoId = dUser.registros[0].funcionario;
+                } else if (pRes.rows[0].funcionario_id) {
+                    ixcTecnicoId = pRes.rows[0].funcionario_id;
+                }
+            } else if (pRes.rows[0].funcionario_id) {
+                ixcTecnicoId = pRes.rows[0].funcionario_id;
+            }
+        }
+
+        console.log(`[Eficiência] funcionarioId=${funcionarioId} → ixcTecnicoId=${ixcTecnicoId}`);
+
+        // 2. Definir intervalos: mês atual e mês anterior
+        const agora = new Date();
+        const inicioMesAtual = new Date(agora.getFullYear(), agora.getMonth(), 1);
+        const inicioMesAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+        const fimMesAnterior = new Date(agora.getFullYear(), agora.getMonth(), 0, 23, 59, 59);
+
+        // Formata data para YYYY-MM-DD HH:MM:SS (padrão IXC)
+        const fmt = (d) => d.toISOString().slice(0, 10) + ' 00:00:00';
+        const isDataValida = (d) => d && d.trim() !== '' && d !== '0000-00-00 00:00:00' && d !== '0000-00-00';
+
+        // 3. Buscar TODAS as OS fechadas do técnico (addFields não filtra no IXC — só qtype é filtro real)
+        // Filtragem por período é feita no código após receber os dados
+        const resTodasOS = await fetchIXC(`https://${host}/webservice/v1/su_oss_chamado`, {
+            method: 'POST', headers,
+            body: JSON.stringify({
+                qtype: 'su_oss_chamado.id_tecnico',
+                query: String(ixcTecnicoId),
+                oper: '=',
+                page: '1',
+                rp: '5000',
+                addFields: JSON.stringify([{ field: 'su_oss_chamado.status', query: 'F', oper: '=' }])
+            })
+        }).then(r => r.json()).catch(() => ({ registros: [] }));
+
+        // Filtra por período usando data_final (primário) ou data_fechamento (fallback)
+        const getDataFechamento = (os) => {
+            const raw = [os.data_final, os.data_fechamento].find(isDataValida);
+            return raw ? new Date(raw) : null;
+        };
+
+        const registrosFechados = (resTodasOS.registros || []).filter(os => {
+            const d = getDataFechamento(os);
+            return d !== null && os.status === 'F';
+        });
+
+        const resMesAtual = { registros: registrosFechados.filter(os => getDataFechamento(os) >= inicioMesAtual) };
+        const resMesAnterior = { registros: registrosFechados.filter(os => { const d = getDataFechamento(os); return d >= inicioMesAnterior && d <= fimMesAnterior; }) };
+
+        // 4. Buscar SLA dos assuntos das OS (su_oss_assunto)
+        // meta_horas_abertura / meta_horas_agendamento conforme considerar_sla
+
+        const todasOS = [...(resMesAtual.registros || []), ...(resMesAnterior.registros || [])];
+        const idsAssunto = [...new Set(todasOS.map(os => os.id_assunto).filter(Boolean))];
+
+        const assuntoMap = new Map();
+        if (idsAssunto.length > 0) {
+            const resAssuntos = await fetchIXC(`https://${host}/webservice/v1/su_oss_assunto`, {
+                method: 'POST', headers,
+                body: JSON.stringify({
+                    qtype: 'su_oss_assunto.id',
+                    query: idsAssunto.join(','),
+                    oper: 'IN',
+                    page: '1',
+                    rp: '5000'
+                })
+            }).then(r => r.json()).catch(() => ({ registros: [] }));
+            (resAssuntos.registros || []).forEach(a => assuntoMap.set(String(a.id), a));
+        }
+
+        // Retorna { metaHoras, apenasUteis } conforme configuração do assunto
+        const getMetaAssunto = (os) => {
+            const assunto = assuntoMap.get(String(os.id_assunto));
+            if (!assunto) return null;
+            const sla = assunto.considerar_sla || 'AB';
+            const metaHoras = sla === 'AG'
+                ? parseFloat(assunto.meta_horas_agendamento)
+                : parseFloat(assunto.meta_horas_abertura);
+            if (!metaHoras || isNaN(metaHoras)) return null;
+            return { metaHoras, apenasUteis: assunto.sla_apenas_dias_uteis === 'S' };
+        };
+
+        // Conta horas úteis entre dois instantes (seg–sex, 08:00–18:00)
+        const HORA_INICIO = 8;
+        const HORA_FIM = 18;
+        const calcHorasUteis = (inicio, fim) => {
+            let horas = 0;
+            const cur = new Date(inicio);
+            while (cur < fim) {
+                const diaSemana = cur.getDay(); // 0=dom, 6=sab
+                if (diaSemana !== 0 && diaSemana !== 6) {
+                    const hora = cur.getHours();
+                    if (hora >= HORA_INICIO && hora < HORA_FIM) horas++;
+                }
+                cur.setHours(cur.getHours() + 1);
+            }
+            return horas;
+        };
+
+        const calcHoras = (abertura, fechamento, apenasUteis) => {
+            if (apenasUteis) return calcHorasUteis(abertura, fechamento);
+            return (fechamento - abertura) / (1000 * 60 * 60);
+        };
+
+        const calcEficiencia = (registros) => {
+            if (!registros || registros.length === 0) return { eficiencia: null, total: 0, noPrazo: 0, osSemPrazo: 0 };
+            let noPrazo = 0;
+            let totalComPrazo = 0;
+            let osSemPrazo = 0;
+            registros.forEach(os => {
+                const dataFechamentoRaw = [os.data_final, os.data_fechamento].find(isDataValida);
+                const fechamento = dataFechamentoRaw ? new Date(dataFechamentoRaw) : null;
+                const abertura = isDataValida(os.data_abertura) ? new Date(os.data_abertura) : null;
+                if (!fechamento || !abertura) return;
+                const metaAssunto = getMetaAssunto(os);
+                if (!metaAssunto) { osSemPrazo++; return; }
+                totalComPrazo++;
+                if (calcHoras(abertura, fechamento, metaAssunto.apenasUteis) <= metaAssunto.metaHoras) noPrazo++;
+            });
+            if (totalComPrazo === 0) return { eficiencia: null, total: registros.length, noPrazo: 0, osSemPrazo, semPrazo: true };
+            const eficiencia = Math.round((noPrazo / totalComPrazo) * 100);
+            return { eficiencia, total: totalComPrazo, noPrazo, osSemPrazo, totalBruto: registros.length };
+        };
+
+        const dadosMesAtual = calcEficiencia(resMesAtual.registros || []);
+        const dadosMesAnterior = calcEficiencia(resMesAnterior.registros || []);
+
+        // 5. Calcular variação
+        let variacao = null;
+        let tendencia = 'estavel';
+        if (dadosMesAtual.eficiencia !== null && dadosMesAnterior.eficiencia !== null && dadosMesAnterior.eficiencia > 0) {
+            variacao = dadosMesAtual.eficiencia - dadosMesAnterior.eficiencia;
+            tendencia = variacao > 0 ? 'subindo' : variacao < 0 ? 'caindo' : 'estavel';
+        } else if (dadosMesAtual.eficiencia !== null && dadosMesAnterior.total === 0) {
+            // Sem dados do mês anterior — mostra eficiência sem variação
+            variacao = null;
+        }
+
+        const periodoNome = agora.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
+            .replace('.', '').replace(' de ', '/');
+
+        console.log(`[Eficiência] Técnico ${ixcTecnicoId}: Atual=${dadosMesAtual.eficiencia}% (${dadosMesAtual.noPrazo}/${dadosMesAtual.total}), Sem prazo=${dadosMesAtual.osSemPrazo}, Anterior=${dadosMesAnterior.eficiencia}%, Variação=${variacao}`);
+
+        return res.json({
+            sucesso: true,
+            eficiencia_atual: dadosMesAtual.eficiencia,
+            eficiencia_anterior: dadosMesAnterior.eficiencia,
+            total_os_mes: dadosMesAtual.total,
+            no_prazo_mes: dadosMesAtual.noPrazo,
+            os_sem_prazo: dadosMesAtual.osSemPrazo,
+            variacao,
+            tendencia,
+            periodo: periodoNome,
+            sem_dados: dadosMesAtual.total === 0 || dadosMesAtual.semPrazo === true
+        });
+
+    } catch (e) {
+        console.error('[Eficiência] Erro:', e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao calcular eficiência.' });
+    }
+});
+
 // ─── Rota: Atualizar dados de Funcionário no IXC ───────────────────────────
 app.put('/api/funcionario/:usuarioId', async (req, res) => {
     const { usuarioId } = req.params;

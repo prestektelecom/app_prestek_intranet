@@ -10,7 +10,9 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "PowerShell(head -50)",
       "Bash(Get-ChildItem \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\hooks\\\\\" -File)",
-      "Bash(node run_migrations_admin.js)"
+      "Bash(node run_migrations_admin.js)",
+      "Bash(curl -s -X GET 'https://sistema.prestek.com.br/webservice/v1/su_oss_assunto?page=1&rp=1' -H 'Authorization: Basic __CMDSUB_OUTPUT__')",
+      "Bash(python -m json.tool)"
     ]
   }
 }
