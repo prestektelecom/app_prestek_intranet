@@ -17,19 +17,19 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
     // Technical Services State
     const [techServices, setTechServices] = useState([
-        { id: 1, service: "InstalaÃ§Ã£o de roteador", value: "R$ 50,00", deadline: "AtÃ© 5 dias Ãºteis", payment: "Ã€ vista ou 2x Boleto", icon: "router", isFree: false },
-        { id: 2, service: "Mudar roteador de local", value: "R$ 30,00 + custo material", deadline: "AtÃ© 5 dias Ãºteis", payment: "Ã€ vista ou 2x Boleto", icon: "swap_horiz", isFree: false },
-        { id: 3, service: "Configurar roteador", value: "R$ 50,00", deadline: "AtÃ© 5 dias Ãºteis", payment: "Ã€ vista ou 2x Boleto", icon: "settings", isFree: false },
-        { id: 4, service: "ManutenÃ§Ã£o interna", value: "R$ 50,00", deadline: "AtÃ© 5 dias Ãºteis", payment: "Ã€ vista ou 2x Boleto", icon: "build", isFree: false },
-        { id: 5, service: "Mudar de titularidade", value: "R$ 0,00", deadline: "AtÃ© 24 horas", payment: "", icon: "people", isFree: true },
+        { id: 1, service: "Instalação de roteador", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "router", isFree: false },
+        { id: 2, service: "Mudar roteador de local", value: "R$ 30,00 + custo material", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "swap_horiz", isFree: false },
+        { id: 3, service: "Configurar roteador", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "settings", isFree: false },
+        { id: 4, service: "Manutenção interna", value: "R$ 50,00", deadline: "Até 5 dias úteis", payment: "À vista ou 2x Boleto", icon: "build", isFree: false },
+        { id: 5, service: "Mudar de titularidade", value: "R$ 0,00", deadline: "Até 24 horas", payment: "", icon: "people", isFree: true },
         { id: 6, service: "Mudar tecnologia", value: "â„¹ï¸ Consulte o NOC", deadline: "", payment: "", icon: "info", isSpecial: true },
-        { id: 7, service: "Mudar senha no local", value: "R$ 50,00", deadline: "AtÃ© 5 dias", payment: "Ã€ vista ou 2x Boleto", icon: "password", isFree: false },
-        { id: 8, service: "ExtensÃ£o de rede", value: "Custo de material", deadline: "AtÃ© 5 dias", payment: "Ã€ vista ou 1x Boleto", icon: "lan", isFree: false },
-        { id: 9, service: "IP fixo", value: "R$ 99,90 Ã€ vista (ANUAL)", deadline: "24h", payment: "Ã€ vista (ANUAL) ou 12x R$9,90 junto mensalidade", icon: "dns", isFree: false },
-        { id: 10, service: "Roteador 360Âº WI-FI", value: "R$ 50,00", deadline: "AtÃ© 5 dias", payment: "Adicional mensal fatura: R$ 20,00", icon: "wifi_tethering", isFree: false },
-        { id: 11, service: "AlteraÃ§Ã£o de senha WI-FI", value: "", deadline: "AtÃ© 5 dias", payment: "", icon: "wifi_lock", isFree: true },
-        { id: 12, service: "Trocar Comodato", value: "R$ 50,00", deadline: "AtÃ© 5 dias", payment: "Ã€ vista ou 2x Boleto", icon: "swap_vertical_circle", isFree: false },
-        { id: 13, service: "SolicitaÃ§Ã£o de Comodato", value: "R$ 50,00", deadline: "AtÃ© 5 dias", payment: "Ã€ vista ou 2x Boleto", icon: "add_task", isFree: false }
+        { id: 7, service: "Mudar senha no local", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "password", isFree: false },
+        { id: 8, service: "Extensão de rede", value: "Custo de material", deadline: "Até 5 dias", payment: "À vista ou 1x Boleto", icon: "lan", isFree: false },
+        { id: 9, service: "IP fixo", value: "R$ 99,90 À vista (ANUAL)", deadline: "24h", payment: "À vista (ANUAL) ou 12x R$9,90 junto mensalidade", icon: "dns", isFree: false },
+        { id: 10, service: "Roteador 360Âº WI-FI", value: "R$ 50,00", deadline: "Até 5 dias", payment: "Adicional mensal fatura: R$ 20,00", icon: "wifi_tethering", isFree: false },
+        { id: 11, service: "Alteração de senha WI-FI", value: "", deadline: "Até 5 dias", payment: "", icon: "wifi_lock", isFree: true },
+        { id: 12, service: "Trocar Comodato", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "swap_vertical_circle", isFree: false },
+        { id: 13, service: "Solicitação de Comodato", value: "R$ 50,00", deadline: "Até 5 dias", payment: "À vista ou 2x Boleto", icon: "add_task", isFree: false }
     ]);
     const [editingTechService, setEditingTechService] = useState(null);
     const [editTechForm, setEditTechForm] = useState({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
@@ -196,12 +196,12 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
         const handleDeleteTechClick = (id) => {
         const item = techServices.find(s => s.id === id);
-        setDeleteModal({ isOpen: true, id, title: item?.service || 'este serviÃ§o', type: 'tech' });
+        setDeleteModal({ isOpen: true, id, title: item?.service || 'este serviço', type: 'tech' });
     };
 
     const handleSaveTechEdit = async () => {
         const payload = {
-            servico: editTechForm.service || 'Novo ServiÃ§o',
+            servico: editTechForm.service || 'Novo Serviço',
             valor: editTechForm.value || '',
             prazo: editTechForm.deadline || '',
             pagamento: editTechForm.payment || '',
@@ -262,13 +262,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
             if (response.ok) {
                 if (type === 'tech') setTechServices(prev => prev.filter(s => s.id !== id));
                 else setStreamingServices(prev => prev.filter(s => s.id !== id));
-                showToast('ExcluÃ­do com sucesso!', 'success');
+                showToast('Excluído com sucesso!', 'success');
             } else {
                 const data = await response.json().catch(() => ({}));
                 showToast(data.erro || 'Erro ao excluir', 'error');
             }
         } catch (error) {
-            showToast('Erro de conexÃ£o', 'error');
+            showToast('Erro de conexão', 'error');
         } finally {
             setDeleteModal({ isOpen: false, id: null, title: '', type: '' });
         }
@@ -398,7 +398,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
                         >
                             <span className="material-symbols-outlined text-lg">home</span>
-                            InÃ­cio
+                            Início
                         </button>
                         <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
                         <button 
@@ -408,13 +408,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             Dashboard
                         </button>
                         <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
-                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">ServiÃ§os Internos</span>
+                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">Serviços Internos</span>
                     </div>
 
                     <div className="flex flex-wrap justify-between items-end gap-4">
                         <div className="flex flex-col gap-1">
-                            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">DiretÃ³rio de ServiÃ§os Internos</h1>
-                            <p className="text-base text-slate-500 dark:text-slate-400">Gerencie planos de internet, detalhes de serviÃ§os e prazos de instalaÃ§Ã£o.</p>
+                            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl">Diretório de Serviços Internos</h1>
+                            <p className="text-base text-slate-500 dark:text-slate-400">Gerencie planos de internet, detalhes de serviços e prazos de instalação.</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
                             {/* Ativo */}
@@ -439,13 +439,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 </div>
                             </div>
 
-                            {/* PrÃ©-contratos */}
+                            {/* Pré-contratos */}
                             <div className="flex items-center gap-3 bg-white dark:bg-[#1a130b] px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm">
                                 <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">schedule</span>
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">PrÃ©-contratos</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pré-contratos</p>
                                     <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{countPre}</p>
                                 </div>
                             </div>
@@ -472,13 +472,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 </div>
                             </div>
                             
-                            {/* Total no MÃªs */}
+                            {/* Total no Mês */}
                             <div className="flex items-center gap-3 bg-white dark:bg-[#1a130b] px-4 py-2 rounded-lg border border-[#eaddcd] dark:border-gray-800 shadow-sm">
                                 <div className="p-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md flex items-center justify-center">
                                     <span className="material-symbols-outlined text-xl">trending_up</span>
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total no MÃªs</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total no Mês</p>
                                     <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">{totalVendasMes}</p>
                                 </div>
                             </div>
@@ -498,17 +498,17 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 : 'bg-white dark:bg-[#1a130b] border border-slate-200 text-slate-600 hover:border-primary hover:text-primary dark:border-gray-800 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary'
                             }`}
                         >
-                            {f === 'All' && 'Todos os ServiÃ§os'}
+                            {f === 'All' && 'Todos os Serviços'}
                             {f === 'PF' && <><span className="material-symbols-outlined text-lg">person</span>Internet PF</>}
                             {f === 'PJ' && <><span className="material-symbols-outlined text-lg">business</span>Internet PJ</>}
                             {f === 'Link' && <><span className="material-symbols-outlined text-lg">router</span>Link Dedicado</>}
-                            {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>ServiÃ§os TÃ©cnicos</>}
+                            {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>Serviços Técnicos</>}
                             {f === 'Streaming' && <><span className="material-symbols-outlined text-lg">play_circle</span>Streaming's</>}
                         </button>
                     ))}
                 </div>
 
-                {/* Services Table - NÃ£o mostrar quando filter Ã© Technical ou Streaming */}
+                {/* Services Table - Não mostrar quando filter é Technical ou Streaming */}
                 {filter !== 'Technical' && filter !== 'Streaming' && (
                 <div className="rounded-xl border border-[#eaddcd] bg-white dark:bg-[#1a130b] shadow-sm overflow-hidden dark:border-gray-800 relative min-h-[300px]">
                     <div className="overflow-x-auto">
@@ -517,7 +517,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 <tr>
                                     <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col" onClick={() => handleSort('descricao')}>
                                         <div className="flex items-center gap-1">
-                                            NOME DO SERVIÃ‡O
+                                            NOME DO SERVIÇO
                                             {sortConfig.key === 'descricao' && (
                                                 <span className="material-symbols-outlined text-[1rem]">
                                                     {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
@@ -537,7 +537,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     </th>
                                     <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col" onClick={() => handleSort('vendas_mes')}>
                                         <div className="flex items-center gap-1">
-                                            VENDAS NO MÃŠS
+                                            VENDAS NO MÊS
                                             {sortConfig.key === 'vendas_mes' && (
                                                 <span className="material-symbols-outlined text-[1rem]">
                                                     {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
@@ -545,7 +545,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                             )}
                                         </div>
                                     </th>
-                                    <th className="px-6 py-4 font-semibold text-right" scope="col">AÃ‡Ã•ES</th>
+                                    <th className="px-6 py-4 font-semibold text-right" scope="col">AÇÕES</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-gray-800">
@@ -620,15 +620,15 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                 </div>
                 )}
 
-                {/* Technical Services Section - Mostrar apenas quando filter Ã© Technical */}
+                {/* Technical Services Section - Mostrar apenas quando filter é Technical */}
                 {filter === 'Technical' && (
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-1">
                         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-2xl text-[#a17745] dark:text-orange-300">build</span>
-                            ServiÃ§os TÃ©cnicos e Complementares
+                            Serviços Técnicos e Complementares
                         </h2>
-                        <p className="text-base text-slate-500 dark:text-slate-400">ServiÃ§os tÃ©cnicos especializados para infraestrutura de rede e suporte de TI.</p>
+                        <p className="text-base text-slate-500 dark:text-slate-400">Serviços técnicos especializados para infraestrutura de rede e suporte de TI.</p>
                     </div>
 
                     {isAdmin && (
@@ -640,7 +640,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             className="self-start flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-orange-600 transition-colors cursor-pointer font-medium text-sm"
                         >
                             <span className="material-symbols-outlined">add</span>
-                            Novo ServiÃ§o
+                            Novo Serviço
                         </button>
                     )}
 
@@ -650,7 +650,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-[#1a130b]/50 dark:text-slate-400">
                                     <tr>
                                         <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col">
-                                            SERVIÃ‡OS
+                                            SERVIÇOS
                                         </th>
                                         <th className="px-6 py-4 font-semibold cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200 transition-colors" scope="col">
                                             VALOR
@@ -662,7 +662,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                             PAGAMENTO
                                         </th>
                                         <th className="px-6 py-4 font-semibold text-right" scope="col">
-                                            AÃ‡Ã•ES
+                                            AÇÕES
                                         </th>
                                     </tr>
                                 </thead>
@@ -681,7 +681,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 {item.isFree ? (
                                                     <span className="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-0.5 text-sm font-bold text-green-700 dark:text-green-400">
                                                         <span className="material-symbols-outlined text-sm">check_circle</span>
-                                                        GRÃTIS
+                                                        GRÁTIS
                                                     </span>
                                                 ) : item.isSpecial ? (
                                                     <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
@@ -694,7 +694,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
-                                                {item.deadline || <span className="text-slate-400 font-normal italic">NÃ£o definido</span>}
+                                                {item.deadline || <span className="text-slate-400 font-normal italic">Não definido</span>}
                                             </td>
                                             <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
                                                 {item.payment || <span className="text-slate-400 font-normal italic">-</span>}
@@ -767,8 +767,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     <tr>
                                         <th className="px-6 py-4 font-semibold" scope="col">PACOTE</th>
                                         <th className="px-6 py-4 font-semibold" scope="col">VALOR MENSAL</th>
-                                        <th className="px-6 py-4 font-semibold" scope="col">PERÃODO</th>
-                                        <th className="px-6 py-4 font-semibold text-right" scope="col">AÃ‡Ã•ES</th>
+                                        <th className="px-6 py-4 font-semibold" scope="col">PERÍODO</th>
+                                        <th className="px-6 py-4 font-semibold text-right" scope="col">AÇÕES</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700 border-t border-slate-100 dark:border-gray-800">
@@ -902,7 +902,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 
                                                 <div className={`flex items-baseline gap-1 ${isGold ? 'mt-3 sm:mt-4' : 'mt-2 sm:mt-3'}`}>
                                                     <span className={`font-extrabold ${rc.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>{formatCurrency(plan.valor_mensal)}</span>
-                                                    <span className="text-[10px] sm:text-xs font-medium text-slate-400">/mÃªs</span>
+                                                    <span className="text-[10px] sm:text-xs font-medium text-slate-400">/mês</span>
                                                 </div>
 
                                                 <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-gray-800 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
@@ -1026,10 +1026,10 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                     </div>
 
 
-                    {/* TOP 3 COLABORADORAS (TICKET MÃ‰DIO) */}
+                    {/* TOP 3 COLABORADORAS (TICKET MÉDIO) */}
                     <div className="w-full shrink-0 flex flex-col gap-5 px-1 py-2">
                         <div className="flex items-center justify-center gap-3">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Ticket MÃ©dio</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Ticket Médio</h3>
                             <div className="hidden sm:flex items-center gap-1.5">
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
                                     <span className="material-symbols-outlined text-[12px]">workspace_premium</span> Ouro
@@ -1051,7 +1051,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             ) : topTicket.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-10 w-full">
                                     <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-5xl mb-2">request_quote</span>
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Nenhum ticket mÃ©dio registrado.</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Nenhum ticket médio registrado.</p>
                                 </div>
                             ) : (
                                 (() => {
@@ -1109,7 +1109,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
 
                                                 <div className={`flex flex-col border-t border-dashed border-slate-200 dark:border-gray-800 ${isGold ? 'mt-3 sm:mt-4 gap-2 sm:gap-2.5 pt-2 sm:pt-3' : 'mt-2 sm:mt-3 gap-1.5 sm:gap-2 pt-2 sm:pt-3'}`}>
                                                     <div className="flex justify-between text-[10px] sm:text-xs items-center">
-                                                        <span className="text-slate-400 dark:text-slate-500">Valor MÃ©dio</span>
+                                                        <span className="text-slate-400 dark:text-slate-500">Valor Médio</span>
                                                         <span className={`font-extrabold ${rc?.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>{formatCurrency(ticket)}</span>
                                                     </div>
                                                     <div className="w-full">
@@ -1147,30 +1147,30 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </div>
                         <div className="p-6 flex flex-col gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do ServiÃ§o</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do Serviço</label>
                                 <input 
                                     type="text" 
                                     value={editingPlan.descricao || ''} 
                                     disabled 
                                     className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"
                                 />
-                                <p className="text-xs text-slate-500 mt-1">O nome Ã© puxado automaticamente do IXC.</p>
+                                <p className="text-xs text-slate-500 mt-1">O nome é puxado automaticamente do IXC.</p>
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prazo de InstalaÃ§Ã£o</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prazo de Instalação</label>
                                 <input 
                                     type="text" 
                                     value={editForm.prazo_instalacao} 
                                     onChange={(e) => setEditForm({...editForm, prazo_instalacao: e.target.value})}
-                                    placeholder="Ex: 3 Dias, Imediato, 5 Dias Ãšteis..."
+                                    placeholder="Ex: 3 Dias, Imediato, 5 Dias Úteis..."
                                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
-                                <p className="text-xs text-slate-500 mt-1">Este dado serÃ¡ salvo nativamente no banco de dados local.</p>
+                                <p className="text-xs text-slate-500 mt-1">Este dado será salvo nativamente no banco de dados local.</p>
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taxa de InstalaÃ§Ã£o</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Taxa de Instalação</label>
                                 <input 
                                     type="text" 
                                     value={editForm.taxa_instalacao} 
@@ -1178,7 +1178,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     placeholder="Ex: 50.00"
                                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
-                                <p className="text-xs text-slate-500 mt-1">Insira o valor apenas com nÃºmeros e ponto (ex: 50.00).</p>
+                                <p className="text-xs text-slate-500 mt-1">Insira o valor apenas com números e ponto (ex: 50.00).</p>
                             </div>
                         </div>
                         <div className="p-6 border-t border-slate-100 dark:border-gray-800 flex justify-end gap-3 bg-slate-50 dark:bg-[#1a130b]/50">
@@ -1196,7 +1196,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 {isSaving ? (
                                     <><span className="material-symbols-outlined animate-spin text-sm">autorenew</span> Salvando...</>
                                 ) : (
-                                    'Salvar AlteraÃ§Ãµes'
+                                    'Salvar Alterações'
                                 )}
                             </button>
                         </div>
@@ -1211,7 +1211,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         <div className="p-6 border-b border-slate-100 dark:border-gray-800">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                                    {editingTechService?.id ? 'Editar ServiÃ§o TÃ©cnico' : 'Novo ServiÃ§o TÃ©cnico'}
+                                    {editingTechService?.id ? 'Editar Serviço Técnico' : 'Novo Serviço Técnico'}
                                 </h3>
                                 <button 
                                     onClick={() => setEditingTechService(null)}
@@ -1223,7 +1223,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </div>
                         <div className="p-6 flex flex-col gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ServiÃ§o</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serviço</label>
                                 <input 
                                     type="text" 
                                     value={editTechForm.service} 
@@ -1249,7 +1249,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     type="text" 
                                     value={editTechForm.deadline} 
                                     onChange={(e) => setEditTechForm({...editTechForm, deadline: e.target.value})}
-                                    placeholder="Ex: AtÃ© 5 dias Ãºteis"
+                                    placeholder="Ex: Até 5 dias úteis"
                                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
@@ -1260,13 +1260,13 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     type="text" 
                                     value={editTechForm.payment} 
                                     onChange={(e) => setEditTechForm({...editTechForm, payment: e.target.value})}
-                                    placeholder="Ex: Ã€ vista ou 2x Boleto"
+                                    placeholder="Ex: À vista ou 2x Boleto"
                                     className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-[#1a130b] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ãcone</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ícone</label>
                                 <div className="flex items-center gap-3">
                                     <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
                                         <span className="material-symbols-outlined text-lg">{editTechForm.icon || 'build'}</span>
@@ -1304,7 +1304,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 onClick={handleSaveTechEdit}
                                 className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2"
                             >
-                                Salvar AlteraÃ§Ãµes
+                                Salvar Alterações
                             </button>
                         </div>
                     </div>
@@ -1352,7 +1352,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">PerÃ­odo</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Período</label>
                                 <input 
                                     type="text" 
                                     value={editStreamingForm.deadline} 
@@ -1363,7 +1363,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ãcone</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ícone</label>
                                 <div className="flex items-center gap-3">
                                     <div className="rounded bg-[#a17745]/10 p-2 text-[#a17745] dark:bg-[#a17745]/20 dark:text-[#a17745]">
                                         <span className="material-symbols-outlined text-lg">{editStreamingForm.icon || 'play_circle'}</span>
@@ -1395,7 +1395,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                 onClick={handleSaveStreamingEdit}
                                 className="px-5 py-2.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2"
                             >
-                                Salvar AlteraÃ§Ãµes
+                                Salvar Alterações
                             </button>
                         </div>
                     </div>
@@ -1404,7 +1404,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         </div>
 
         
-            {/* Modal de ConfirmaÃ§Ã£o de ExclusÃ£o Premium */}
+            {/* Modal de Confirmação de Exclusão Premium */}
             {deleteModal.isOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}></div>
@@ -1413,9 +1413,9 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                                 <span className="material-symbols-outlined text-3xl">delete_forever</span>
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Confirmar ExclusÃ£o</h3>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Confirmar Exclusão</h3>
                             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                                Tem certeza que deseja excluir <span className="font-bold text-slate-700 dark:text-slate-200">"{deleteModal.title}"</span>? Esta aÃ§Ã£o nÃ£o poderÃ¡ ser desfeita.
+                                Tem certeza que deseja excluir <span className="font-bold text-slate-700 dark:text-slate-200">"{deleteModal.title}"</span>? Esta ação não poderá ser desfeita.
                             </p>
                         </div>
 

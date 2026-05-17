@@ -1,41 +1,70 @@
-import { useRef } from 'react'
 import { useLogin } from '../hooks/useLogin'
-import ParticlesBackground from './ParticlesBackground'
-import MagneticSandCard from './MagneticSandCard'
-import LoginHeader from './Login/LoginHeader'
+import LoginIllustration from './Login/LoginIllustration'
 import LoginForm from './Login/LoginForm'
-import LoginFooter from './Login/LoginFooter'
+import { ArrowIcon } from './Login/Icons'
 
 export default function Login({ onLogin }) {
-    const cardRef = useRef(null)
     const loginProps = useLogin(onLogin)
 
     return (
-        <div className="min-h-screen flex flex-col font-display bg-[#f8f7f5] dark:bg-[#231a0f] text-slate-900 dark:text-slate-100 transition-colors duration-300">
-            <main className="flex-grow flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-                {/* Interactive Particle Network Background */}
-                <ParticlesBackground />
+        <div className="min-h-screen w-full relative overflow-hidden flex flex-col justify-between bg-gradient-to-br from-[#EAF4FF] via-[#F0F8FF] to-[#FAFCFF] font-sans selection:bg-[#4A9EF5]/20">
+            {/* Dotted backdrop */}
+            <svg className="absolute inset-0 opacity-[0.25] pointer-events-none" width="100%" height="100%">
+                <defs>
+                    <pattern id="dots-bg" width="32" height="32" patternUnits="userSpaceOnUse">
+                        <circle cx="2" cy="2" r="1.1" fill="#4A9EF5" opacity="0.25" />
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#dots-bg)" />
+            </svg>
 
-                {/* Animated Ambient Glow */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#ff8c00]/10 dark:bg-[#ff8c00]/5 blur-[100px] rounded-full pointer-events-none"></div>
+            {/* Soft Ambient Blobs */}
+            <div className="absolute -top-40 -left-28 w-[460px] h-[460px] rounded-full bg-[#4A9EF5]/15 filter blur-[80px] pointer-events-none" />
+            <div className="absolute -bottom-40 -right-24 w-[420px] h-[420px] rounded-full bg-[#4A9EF5]/10 filter blur-[80px] pointer-events-none" />
 
-                <div className="w-full max-w-[400px] z-10 relative">
-                    {/* Header: Logo & Title */}
-                    <LoginHeader />
+            {/* Header / Top Bar */}
+            <header className="relative z-10 flex justify-between items-center px-6 md:px-12 py-7 select-none">
+                <div className="flex items-center gap-2">
+                    <span className="font-sans font-extrabold text-xl tracking-tight text-[#1C2B3A]">
+                        Prestek
+                    </span>
+                </div>
+                <div className="flex gap-7 text-[13.5px] text-[#475467] font-medium items-center">
+                    <a href="#" className="hover:text-[#4A9EF5] transition-colors">Status</a>
+                    <a href="#" className="hover:text-[#4A9EF5] transition-colors">Docs</a>
+                    <a 
+                        href="https://prestek.com.br" 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-[#4A9EF5] font-semibold hover:opacity-80 transition-opacity inline-flex items-center gap-1"
+                    >
+                        Suporte <ArrowIcon />
+                    </a>
+                </div>
+            </header>
 
-                    {/* Login Card */}
-                    <div ref={cardRef} className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 rounded-3xl overflow-hidden border border-white/50 dark:border-slate-700/50 relative">
-                        {/* Magnetic Sand Effect Area */}
-                        <MagneticSandCard cardRef={cardRef} />
+            {/* Centered Dual Card */}
+            <main className="relative z-10 flex-grow flex items-center justify-center px-4 py-8 md:py-16">
+                <div 
+                    className="w-full max-w-[980px] grid grid-cols-1 lg:grid-cols-2 bg-white rounded-3xl overflow-hidden shadow-[0_50px_100px_-30px_rgba(74,158,245,0.22),_0_0_0_1px_rgba(255,255,255,0.8)] border border-[#EAF4FF] transition-all duration-300"
+                >
+                    {/* Painel Esquerdo: Ilustração */}
+                    <div className="hidden lg:block h-full">
+                        <LoginIllustration />
+                    </div>
 
-                        {/* Form: Inputs & Actions */}
+                    {/* Painel Direito: Formulário */}
+                    <div className="h-full">
                         <LoginForm {...loginProps} />
                     </div>
                 </div>
             </main>
 
-            {/* Footer: Rights & Links */}
-            <LoginFooter />
+            {/* Footer */}
+            <footer className="relative z-10 text-center py-6 text-[12px] text-[#9AA5B4] font-mono tracking-wider">
+                © {new Date().getFullYear()} Prestek Inc. · Todos os direitos reservados
+            </footer>
         </div>
     )
 }
+

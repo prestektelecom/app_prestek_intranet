@@ -1,32 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell($lines = \\(Get-Content \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\components\\\\Schedule.jsx\"\\).Count; Write-Host \"Linhas: $lines\")",
-      "Bash(Get-ChildItem -Path \"f:\\\\Projetos em Dev\\\\prestek_intranet\" -Force)",
-      "WebFetch(domain:maps.app.goo.gl)",
-      "Bash(npx vite *)",
-      "Bash(node -e ' *)",
-      "Bash(Get-ChildItem -Path \"f:\\\\Projetos em Dev\\\\prestek_intranet\" -Recurse -Directory)",
-      "Bash(Select-Object -ExpandProperty FullName)",
-      "PowerShell(head -50)",
-      "Bash(Get-ChildItem \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\hooks\\\\\" -File)",
-      "Bash(node run_migrations_admin.js)",
-      "Bash(curl -s -X GET 'https://sistema.prestek.com.br/webservice/v1/su_oss_assunto?page=1&rp=1' -H 'Authorization: Basic __CMDSUB_OUTPUT__')",
-      "Bash(python -m json.tool)",
-      "Bash(findstr /i \"scripts\" -A 10)",
-      "Bash(npm run *)",
-      "Bash(netstat -ano)",
-      "Bash(findstr \":5000\")",
-      "Bash(wmic process *)",
-      "PowerShell(Get-Process -Id 1372)",
-      "PowerShell(Get-Process -Id 1372 -ErrorAction SilentlyContinue)",
-      "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
-      "Bash(findstr LISTENING)",
-      "PowerShell(Get-Process -Id 1372 | Select-Object Id,Name; \\(Get-WmiObject Win32_Process -Filter \"ProcessId=1372\"\\).CommandLine)",
-      "PowerShell(Get-ChildItem \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\image\\\\avatar\\\\\" | Where-Object { $_.Extension -eq '.png' } | Sort-Object Name | Select-Object -ExpandProperty Name)",
-      "PowerShell(cmd /c \"dir /b \"\"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\image\\\\avatar\"\"\")",
-      "PowerShell(Get-NetTCPConnection -LocalPort 3001 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Get-Process -Id $_ })",
-      "PowerShell(Stop-Process -Id 25820 -Force)"
+      "Bash(openspec status *)",
+      "Bash(python3 -c ' *)",
+      "Bash(openspec list *)",
+      "Bash(dir /s /b \"login-b*\")",
+      "Bash(dir /s /b \"nova_tela*\")",
+      "Bash(npm run *)"
     ]
   }
 }
