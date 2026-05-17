@@ -1,383 +1,337 @@
 import { useState, useEffect, useRef } from 'react';
 import { resolveNomeSetor } from '../utils/resolveSetor';
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs';
-import logoP from '../image/logos/Logo_P.webp';
+import { Icons } from './common/Icons';
 
-const defaultAvatar = AVATAR_PNGS[7]; // boy-avatar-7944049
+const C = {
+  accent: '#4A9EF5',
+  accentDeep: '#1F5BA8',
+  accentSoft: '#EAF4FF',
+  surfaceSoft: '#F7FAFD',
+  ink: '#0B1B2E',
+  ink2: '#475467',
+  muted: '#8896A8',
+  line: '#E4ECF5',
+  danger: '#E84545',
+};
+
+const defaultAvatar = AVATAR_PNGS[7];
+
+const iconBtn = {
+  width: 40, height: 40, borderRadius: 10, border: `1px solid ${C.line}`, cursor: 'pointer',
+  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+  transition: 'all .12s', boxShadow: `0 1px 2px rgba(31,91,168,0.04)`,
+};
 
 export default function Header({ currentView, setCurrentView, user }) {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-    const headerMenuItems = [
-        { id: 'dashboard', label: 'Dashboard' },
-        { id: 'services', label: 'Serviços' },
-        { id: 'coverage', label: 'Cobertura' },
-        { id: 'directory', label: 'Colaboradores' },
-        { id: 'sectors', label: 'Setores' },
-        { id: 'schedule', label: 'Plantão' },
-        { id: 'offices', label: 'Escritórios' },
-        { id: 'processes', label: 'Processos' },
-    ];
+  const func = user?.funcionario ?? {};
+  const safeName = func.funcionario || user?.nome || 'Usuário';
+  const safeRole = func.id_funcao || 'Colaborador';
+  const safeDepto = func.id_departamento || '';
+  const safeId = func.id ?? user?.id ?? null;
 
-    const func = user?.funcionario ?? {};
-    const safeName = func.funcionario || user?.nome || 'Usuário';
-    const nameParts = safeName.split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-    const safeRole = func.id_funcao || 'Colaborador';
-    const safeDepto = func.id_departamento || '';
-    const safeId = func.id ?? user?.id ?? null;
+  const [avatarUrl, setAvatarUrl] = useState(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
+  const [cargoName, setCargoName] = useState(safeRole);
+  const [hasUrgent, setHasUrgent] = useState(false);
+  const [urgentAnnouncements, setUrgentAnnouncements] = useState([]);
+  const [hasViewedUrgent, setHasViewedUrgent] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const notificationsRef = useRef(null);
+  const avatarUrlRef = useRef(avatarUrl);
 
-    const [avatarUrl, setAvatarUrl] = useState(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
+  const mobileMenuItems = [
+    { id: 'dashboard',  label: 'Dashboard',    icon: 'Dashboard' },
+    { id: 'services',   label: 'Serviços',      icon: 'Tools' },
+    { id: 'coverage',   label: 'Cobertura',     icon: 'Shield' },
+    { id: 'directory',  label: 'Colaboradores', icon: 'People' },
+    { id: 'sectors',    label: 'Setores',       icon: 'Pie' },
+    { id: 'schedule',   label: 'Plantão',       icon: 'Clock' },
+    { id: 'offices',    label: 'Escritórios',   icon: 'Building' },
+    { id: 'processes',  label: 'Processos',     icon: 'Doc' },
+  ];
 
-    useEffect(() => {
-        setAvatarUrl(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
-    }, [user?.funcionario?.foto_perfil]);
+  useEffect(() => {
+    setAvatarUrl(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
+  }, [user?.funcionario?.foto_perfil]);
 
-    const [cargoName, setCargoName] = useState(safeRole);
-    const [hasUrgent, setHasUrgent] = useState(false);
-    const [urgentAnnouncements, setUrgentAnnouncements] = useState([]);
-    const [hasViewedUrgent, setHasViewedUrgent] = useState(false);
-    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-    const notificationsRef = useRef(null);
+  useEffect(() => { avatarUrlRef.current = avatarUrl; }, [avatarUrl]);
 
-    useEffect(() => {
-        const fetchUrgentCount = async () => {
-            try {
-                const response = await fetch('/api/comunicados');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.sucesso && data.comunicados) {
-                        const urgentOnly = data.comunicados.filter(c => c.tipo === 'Urgente');
-                        setHasUrgent(urgentOnly.length > 0);
-                        setUrgentAnnouncements(prev => {
-                            if (urgentOnly.length > prev.length) setHasViewedUrgent(false);
-                            return urgentOnly;
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error("Erro ao buscar comunicados no header", err);
-            }
-        };
-        fetchUrgentCount();
-        const intervalId = setInterval(fetchUrgentCount, 30000);
-        return () => clearInterval(intervalId);
-    }, []);
+  useEffect(() => {
+    resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo)
+      .then(setCargoName)
+      .catch(err => console.error('Erro ao resolver setor no header', err));
+  }, [safeDepto, safeRole, user?.nome_grupo]);
 
-    useEffect(() => {
-        resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo)
-            .then(setCargoName)
-            .catch(err => console.error("Erro ao resolver setor no header", err));
-    }, [safeDepto, safeRole, user?.nome_grupo]);
+  useEffect(() => {
+    if (!safeId) return;
+    const syncAvatar = () => {
+      const saved = localStorage.getItem(`stitch_profile_${safeId}`);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.avatarUrl) {
+            const resolved = resolveAvatarUrl(parsed.avatarUrl) || defaultAvatar;
+            if (JSON.stringify(avatarUrlRef.current) !== JSON.stringify(resolved)) setAvatarUrl(resolved);
+          }
+        } catch (_) {}
+      }
+    };
+    syncAvatar();
+    const id = setInterval(syncAvatar, 1500);
+    return () => clearInterval(id);
+  }, [safeId]);
 
-    const avatarUrlRef = useRef(avatarUrl);
-    useEffect(() => { avatarUrlRef.current = avatarUrl; }, [avatarUrl]);
-
-    useEffect(() => {
-        if (!safeId) return;
-        const syncAvatar = () => {
-            const currentSaved = localStorage.getItem(`stitch_profile_${safeId}`);
-            if (currentSaved) {
-                try {
-                    const parsed = JSON.parse(currentSaved);
-                    if (parsed.avatarUrl) {
-                        const resolved = resolveAvatarUrl(parsed.avatarUrl) || defaultAvatar;
-                        if (JSON.stringify(avatarUrlRef.current) !== JSON.stringify(resolved)) {
-                            setAvatarUrl(resolved);
-                        }
-                    }
-                } catch (e) { }
-            }
-        };
-        syncAvatar();
-        const interval = setInterval(syncAvatar, 1500);
-        return () => clearInterval(interval);
-    }, [safeId]);
-
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
-                setIsNotificationsOpen(false);
-            }
+  useEffect(() => {
+    const fetchUrgents = async () => {
+      try {
+        const res = await fetch('/api/comunicados');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.sucesso && data.comunicados) {
+            const urgentOnly = data.comunicados.filter(c => c.tipo === 'Urgente');
+            setHasUrgent(urgentOnly.length > 0);
+            setUrgentAnnouncements(prev => {
+              if (urgentOnly.length > prev.length) setHasViewedUrgent(false);
+              return urgentOnly;
+            });
+          }
         }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+      } catch (err) { console.error('Erro ao buscar comunicados no header', err); }
+    };
+    fetchUrgents();
+    const id = setInterval(fetchUrgents, 30000);
+    return () => clearInterval(id);
+  }, []);
 
-    /* ─────────────────────── Render ─────────────────────────── */
-    return (
-        <header className="glass flex items-center justify-between whitespace-nowrap px-4 md:px-6 py-3 shrink-0 h-16 z-[1000] sticky top-0 transition-all duration-200">
-            {/* Logo + Busca + Navegação */}
-            <div className="flex items-center gap-4 xl:gap-8 flex-1">
-                {/* Hambúrguer mobile */}
-                <button
-                    onClick={() => { setIsMobileMenuOpen(!isMobileMenuOpen); if (isMobileSearchOpen) setIsMobileSearchOpen(false); }}
-                    className="xl:hidden flex items-center justify-center p-2 min-h-[44px] min-w-[44px] -ml-2 rounded-lg text-foreground hover:bg-surface-raised transition-colors focus:ring-2 focus:ring-primary/50 outline-none"
-                    aria-label="Alternar menu"
-                    aria-expanded={isMobileMenuOpen}
-                >
-                    <span className="material-symbols-outlined text-[26px]">{isMobileMenuOpen ? 'close' : 'menu'}</span>
-                </button>
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) setIsNotificationsOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-                {/* Logo */}
-                <div
-                    className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
-                    onClick={() => setCurrentView('dashboard')}
-                    title="Ir para o Dashboard"
-                >
-                    <div className="size-8 flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
-                        <img src={logoP} alt="Logo" className="w-full h-full object-contain" />
-                    </div>
-                    <h2 className="text-foreground text-lg md:text-xl font-bold leading-tight tracking-tight hidden sm:block group-hover:text-primary transition-colors">
-                        Prestek Intranet
-                    </h2>
-                    <h2 className="text-foreground text-lg font-bold leading-tight tracking-tight sm:hidden group-hover:text-primary transition-colors">
-                        Prestek
-                    </h2>
-                </div>
+  const nameParts = safeName.split(' ');
+  const displayName = nameParts.length > 2
+    ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
+    : safeName;
 
-                {/* Campo de busca (md+) */}
-                <label className="hidden md:flex relative group min-w-40 w-full max-w-sm h-10 transition-all duration-300">
-                    <div className="absolute inset-0 bg-input rounded-full group-focus-within:bg-card transition-colors duration-300"></div>
-                    <div className="relative flex w-full items-stretch rounded-full h-full border border-transparent group-focus-within:border-primary/25 group-focus-within:shadow-[0_2px_12px_var(--ring)] transition-all duration-300">
-                        <div className="text-faint flex items-center justify-center pl-4 pr-2">
-                            <span className="material-symbols-outlined text-[20px] group-focus-within:text-foreground transition-colors duration-300">search</span>
-                        </div>
-                        <input
-                            type="text"
-                            className="flex-1 min-w-0 bg-transparent text-foreground border-0 focus:ring-0 px-2 text-sm font-medium placeholder:text-faint/70 outline-none w-full"
-                            placeholder="Buscar serviços, pessoas ou documentos..."
-                        />
-                    </div>
-                </label>
+  return (
+    <header style={{
+      position: 'sticky', top: 0, zIndex: 1000,
+      height: 72, background: 'rgba(245,249,255,0.88)', backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
+      borderBottom: `1px solid ${C.line}`,
+      display: 'flex', alignItems: 'center', padding: '0 24px', gap: 20,
+      fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+    }}>
+      {/* Mobile hamburger */}
+      <button
+        className="lg:hidden"
+        onClick={() => setIsMobileMenuOpen(v => !v)}
+        style={{ ...iconBtn, flexShrink: 0 }}
+        aria-label="Menu"
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 22, color: C.ink2 }}>
+          {isMobileMenuOpen ? 'close' : 'menu'}
+        </span>
+      </button>
 
-                {/* Navegação horizontal (fora do dashboard, xl+) */}
-                {currentView !== 'dashboard' && (
-                    <nav className="hidden xl:flex items-center gap-1 ml-4 animate-in fade-in slide-in-from-left-4 duration-300">
-                        {headerMenuItems.map(item => {
-                            if (item.id === 'dashboard') {
-                                return (
-                                    <div key={item.id} className="flex items-center pr-2 mr-2 border-r border-border">
-                                        <button
-                                            onClick={() => setCurrentView(item.id)}
-                                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-bold rounded-lg transition-all duration-200 bg-primary/10 text-primary hover:bg-primary/20"
-                                        >
-                                            <span className="material-symbols-outlined text-[20px]">dashboard</span>
-                                            {item.label}
-                                        </button>
-                                    </div>
-                                );
-                            }
-                            return (
-                                <button
-                                    key={item.id}
-                                    onClick={() => setCurrentView(item.id)}
-                                    className={`px-4 py-2 text-sm font-semibold rounded-full transition-all duration-200 relative ${
-                                        currentView === item.id
-                                            ? 'text-primary bg-primary/8 dark:bg-primary/15'
-                                            : 'text-muted hover:text-foreground hover:bg-surface-raised'
-                                    }`}
-                                >
-                                    {item.label}
-                                    {currentView === item.id && (
-                                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[3px] bg-primary rounded-t-full"></span>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </nav>
+      {/* Spacer para centralizar a busca quando o menu estiver oculto (Dashboard) */}
+      {currentView === 'dashboard' && <div style={{ flex: 1 }} className="hidden lg:block" />}
+
+      {/* Search box */}
+      <div style={{
+        flex: '1 1 0%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
+        height: 42, padding: '0 14px',
+        background: 'white', border: `1px solid ${C.line}`, borderRadius: 12,
+        boxShadow: `0 1px 2px rgba(31,91,168,0.04)`,
+      }}>
+        <span style={{ color: C.muted, display: 'flex' }}><Icons.Search /></span>
+        <input
+          placeholder="Buscar serviços, pessoas ou documentos..."
+          style={{
+            flex: '1 1 0%', border: 'none', outline: 'none', background: 'transparent',
+            fontFamily: 'inherit', fontSize: 14, color: C.ink,
+          }}
+        />
+        <span style={{
+          fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5,
+          padding: '3px 7px', border: `1px solid ${C.line}`, borderRadius: 5,
+          color: C.muted, background: C.surfaceSoft, flexShrink: 0,
+        }}>⌘K</span>
+      </div>
+
+      <div style={{ flex: 1 }} />
+
+      {/* Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Notifications */}
+        <div style={{ position: 'relative' }} ref={notificationsRef}>
+          <button
+            onClick={() => { setIsNotificationsOpen(v => !v); if (!isNotificationsOpen) setHasViewedUrgent(true); }}
+            style={iconBtn}
+          >
+            <span style={{ position: 'relative', display: 'flex', color: C.ink2 }}>
+              <Icons.Bell />
+              {hasUrgent && !hasViewedUrgent && (
+                <span style={{
+                  position: 'absolute', top: -3, right: -3, width: 8, height: 8,
+                  borderRadius: 4, background: C.danger, border: '2px solid #F5F9FF',
+                }} />
+              )}
+            </span>
+          </button>
+
+          {isNotificationsOpen && (
+            <div style={{
+              position: 'absolute', right: 0, marginTop: 8, width: 320,
+              background: 'white', border: `1px solid ${C.line}`, borderRadius: 16,
+              boxShadow: '0 12px 32px rgba(11,27,46,0.12)', zIndex: 50, overflow: 'hidden',
+            }}>
+              <div style={{
+                background: C.surfaceSoft, padding: '12px 16px',
+                borderBottom: `1px solid ${C.line}`,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <span style={{ fontWeight: 700, color: C.ink }}>Notificações</span>
+                {hasUrgent && (
+                  <span style={{
+                    background: '#FDEDED', color: C.danger,
+                    fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                  }}>
+                    {urgentAnnouncements.length} Urgente(s)
+                  </span>
                 )}
-            </div>
+              </div>
 
-            {/* Ações + Perfil */}
-            <div className="flex items-center gap-2 md:gap-3">
-                {/* Busca mobile */}
-                <button
-                    onClick={() => { setIsMobileSearchOpen(!isMobileSearchOpen); if (isMobileMenuOpen) setIsMobileMenuOpen(false); }}
-                    className="md:hidden flex items-center justify-center p-1.5 sm:p-2 min-h-[44px] min-w-[44px] rounded-full text-foreground hover:bg-surface-raised transition-colors"
-                    aria-label="Alternar busca"
-                >
-                    <span className="material-symbols-outlined text-[24px]">search</span>
-                </button>
-
-                {/* Notificações */}
-                <div className="relative" ref={notificationsRef}>
-                    <button
-                        onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); if (!isNotificationsOpen) setHasViewedUrgent(true); }}
-                        className={`flex items-center justify-center size-10 rounded-full transition-colors relative ${
-                            isNotificationsOpen ? 'bg-surface-raised text-primary' : 'text-foreground hover:bg-surface-raised'
-                        }`}
-                    >
-                        <span className={`material-symbols-outlined text-[24px] ${hasUrgent && !hasViewedUrgent ? 'animate-bell-ring text-orange-500' : ''}`}>
-                            notifications
-                        </span>
-                        {hasUrgent && !hasViewedUrgent && (
-                            <span className="absolute top-2 right-2 size-2 bg-primary rounded-full border-2 border-card"></span>
-                        )}
-                    </button>
-
-                    {isNotificationsOpen && (
-                        <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                            <div className="bg-surface px-4 py-3 border-b border-border flex justify-between items-center">
-                                <h3 className="font-bold text-foreground">Notificações</h3>
-                                {hasUrgent && (
-                                    <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                        {urgentAnnouncements.length} Urgente(s)
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="max-h-[350px] overflow-y-auto no-scrollbar">
-                                {!hasUrgent ? (
-                                    <div className="px-4 py-8 text-center flex flex-col items-center gap-2">
-                                        <div className="size-12 rounded-full bg-green-50 dark:bg-green-900/20 text-green-500 flex items-center justify-center mb-2">
-                                            <span className="material-symbols-outlined text-[28px]">task_alt</span>
-                                        </div>
-                                        <p className="text-foreground font-semibold">Tudo tranquilo!</p>
-                                        <p className="text-muted text-xs text-balance">Nenhum comunicado urgente no momento.</p>
-                                    </div>
-                                ) : (
-                                    <div className="divide-y divide-border">
-                                        {urgentAnnouncements.map((announcement) => {
-                                            let dateFormatted = announcement.criado_em;
-                                            try {
-                                                dateFormatted = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(announcement.criado_em));
-                                            } catch (e) { }
-                                            return (
-                                                <div key={announcement.id} className="px-4 py-3 hover:bg-surface transition-colors cursor-pointer group">
-                                                    <div className="flex gap-3">
-                                                        <div className="shrink-0 pt-0.5">
-                                                            <div className="size-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 flex items-center justify-center">
-                                                                <span className="material-symbols-outlined text-[18px]">priority_high</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <h4 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors mb-1">
-                                                                {announcement.titulo}
-                                                            </h4>
-                                                            <p className="text-xs text-muted line-clamp-2 leading-relaxed">
-                                                                {announcement.descricao}
-                                                            </p>
-                                                            <div className="mt-2 flex items-center justify-between">
-                                                                <p className="text-[10px] font-medium text-primary">{announcement.departamento_autor}</p>
-                                                                <p className="text-[10px] text-muted">{dateFormatted}</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="p-2 bg-surface border-t border-border">
-                                <button
-                                    onClick={() => { setIsNotificationsOpen(false); setCurrentView('announcements'); }}
-                                    className="w-full py-2 text-xs font-bold text-center text-primary hover:text-primary/70 transition-colors"
-                                >
-                                    Ver todos os comunicados
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Painel Admin */}
-                {user?.is_admin && (
-                    <button
-                        onClick={() => setCurrentView('admin')}
-                        title="Painel Administrativo"
-                        className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 text-primary transition-colors"
-                    >
-                        <span className="material-symbols-outlined text-[24px]">admin_panel_settings</span>
-                    </button>
-                )}
-
-                {/* Logout */}
-                <button
-                    onClick={async () => {
-                        if (user?.id) {
-                            try {
-                                await fetch(`/api/presenca/${user.id}/logout`, { method: 'POST' });
-                            } catch (_) {}
-                        }
-                        localStorage.removeItem('@Stitch:user');
-                        localStorage.removeItem('@Stitch:currentView');
-                        sessionStorage.removeItem('@Stitch:user');
-                        sessionStorage.removeItem('@Stitch:currentView');
-                        setCurrentView('login');
-                    }}
-                    title="Sair da Conta"
-                    className="flex items-center justify-center size-10 rounded-full text-muted hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-colors"
-                >
-                    <span className="material-symbols-outlined text-[24px]">logout</span>
-                </button>
-
-                <div className="h-8 w-px bg-border mx-1"></div>
-
-                {/* Avatar + Nome */}
-                <div onClick={() => setCurrentView('settings')} className="flex items-center gap-3 cursor-pointer group">
-                    <img
-                        src={avatarUrl || defaultAvatar}
-                        alt={safeName}
-                        className="rounded-full size-10 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-surface-raised object-cover"
-                    />
-                    <div className="hidden lg:block text-left">
-                        <p className="text-sm font-bold leading-none text-foreground truncate max-w-[220px]">{safeName}</p>
-                        <p className="text-xs text-muted mt-1 truncate max-w-[220px]">{cargoName}</p>
+              <div style={{ maxHeight: 350, overflowY: 'auto' }}>
+                {!hasUrgent ? (
+                  <div style={{ padding: '32px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 22, background: '#E6F4EC', color: '#1F8A5B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 24 }}>task_alt</span>
                     </div>
-                </div>
-            </div>
-
-            {/* Mobile Menu Dropdown */}
-            {isMobileMenuOpen && (
-                <div className="absolute top-full left-0 right-0 bg-card border-b border-border p-4 shadow-xl xl:hidden flex flex-col gap-2 z-50 animate-in slide-in-from-top-2">
-                    {headerMenuItems.map(item => (
-                        <button
-                            key={item.id}
-                            onClick={() => { setCurrentView(item.id); setIsMobileMenuOpen(false); }}
-                            className={`flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl font-bold transition-all ${
-                                currentView === item.id
-                                    ? 'bg-primary/10 text-primary'
-                                    : 'text-muted hover:bg-surface-raised hover:text-foreground'
-                            }`}
-                        >
-                            <span className="material-symbols-outlined text-[22px]">
-                                {item.id === 'dashboard' ? 'dashboard' :
-                                    item.id === 'services' ? 'construction' :
-                                    item.id === 'coverage' ? 'verified_user' :
-                                    item.id === 'directory' ? 'groups' :
-                                    item.id === 'sectors' ? 'pie_chart' :
-                                    item.id === 'schedule' ? 'schedule' :
-                                    item.id === 'offices' ? 'apartment' : 'description'}
-                            </span>
-                            {item.label}
-                        </button>
-                    ))}
-                </div>
-            )}
-
-            {/* Mobile Search Overlay */}
-            {isMobileSearchOpen && (
-                <div className="absolute top-full left-0 right-0 glass border-b border-border p-4 shadow-xl md:hidden z-50 animate-in slide-in-from-top-2 duration-300">
-                    <label className="flex relative w-full h-12 group">
-                        <div className="absolute inset-0 bg-input rounded-full group-focus-within:bg-card transition-colors duration-300"></div>
-                        <div className="relative flex w-full flex-1 items-stretch rounded-full h-full border border-transparent group-focus-within:border-primary/25 group-focus-within:shadow-[0_2px_12px_var(--ring)] transition-all duration-300">
-                            <div className="text-faint flex items-center justify-center pl-5 pr-2">
-                                <span className="material-symbols-outlined text-[22px] group-focus-within:text-foreground transition-colors">search</span>
-                            </div>
-                            <input
-                                autoFocus
-                                type="text"
-                                className="flex-1 min-w-0 bg-transparent text-foreground border-0 focus:ring-0 px-2 text-base font-medium placeholder:text-faint/70 outline-none w-full"
-                                placeholder="Buscar serviços, pessoas..."
-                            />
+                    <div style={{ fontWeight: 600, color: C.ink }}>Tudo tranquilo!</div>
+                    <div style={{ fontSize: 12, color: C.ink2 }}>Nenhum comunicado urgente.</div>
+                  </div>
+                ) : urgentAnnouncements.map(a => {
+                  let dateFormatted = a.criado_em;
+                  try { dateFormatted = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(a.criado_em)); } catch (_) {}
+                  return (
+                    <div key={a.id} style={{ padding: '12px 16px', display: 'flex', gap: 12, cursor: 'pointer', borderBottom: `1px solid ${C.line}` }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 16, background: '#FDEDED', color: C.danger, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>priority_high</span>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.titulo}</div>
+                        <div style={{ fontSize: 12, color: C.ink2, marginTop: 2 }}>{a.descricao}</div>
+                        <div style={{ marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 10.5, fontWeight: 600, color: C.accent }}>{a.departamento_autor}</span>
+                          <span style={{ fontSize: 10.5, color: C.muted }}>{dateFormatted}</span>
                         </div>
-                    </label>
-                </div>
-            )}
-        </header>
-    );
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ padding: 8, background: C.surfaceSoft, borderTop: `1px solid ${C.line}` }}>
+                <button
+                  onClick={() => { setIsNotificationsOpen(false); setCurrentView('announcements'); }}
+                  style={{ width: '100%', padding: '8px 0', fontSize: 12, fontWeight: 700, color: C.accent, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Ver todos os comunicados
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Admin */}
+        {user?.is_admin && (
+          <button onClick={() => setCurrentView('admin')} title="Painel Administrativo" style={iconBtn}>
+            <span style={{ color: C.accent, display: 'flex' }}><Icons.Admin /></span>
+          </button>
+        )}
+
+        {/* Logout */}
+        <button
+          onClick={async () => {
+            if (user?.id) {
+              try { await fetch(`/api/presenca/${user.id}/logout`, { method: 'POST' }); } catch (_) {}
+            }
+            localStorage.removeItem('@Stitch:user');
+            localStorage.removeItem('@Stitch:currentView');
+            sessionStorage.removeItem('@Stitch:user');
+            sessionStorage.removeItem('@Stitch:currentView');
+            setCurrentView('login');
+          }}
+          title="Sair da Conta"
+          style={iconBtn}
+        >
+          <span style={{ color: C.ink2, display: 'flex' }}><Icons.Logout /></span>
+        </button>
+
+        {/* Profile pill */}
+        <div
+          onClick={() => setCurrentView('settings')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10, marginLeft: 4,
+            padding: '5px 14px 5px 5px', borderRadius: 999,
+            background: 'white', border: `1px solid ${C.line}`,
+            boxShadow: `0 1px 2px rgba(31,91,168,0.04)`,
+            cursor: 'pointer', flexShrink: 0,
+          }}
+        >
+          <img
+            src={avatarUrl || defaultAvatar}
+            alt={safeName}
+            style={{ width: 34, height: 34, borderRadius: 17, objectFit: 'cover', flexShrink: 0, background: C.surfaceSoft }}
+          />
+          <div className="hidden lg:flex flex-col" style={{ lineHeight: 1.15 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: C.ink, letterSpacing: '0.02em', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {displayName.toUpperCase()}
+            </span>
+            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9.5, color: C.muted, letterSpacing: '0.15em', marginTop: 2, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'uppercase' }}>
+              {cargoName}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden" style={{
+          position: 'absolute', top: '100%', left: 0, right: 0,
+          background: 'white', borderBottom: `1px solid ${C.line}`,
+          padding: 16, boxShadow: '0 8px 24px rgba(11,27,46,0.10)',
+          zIndex: 50, display: 'flex', flexDirection: 'column', gap: 4,
+        }}>
+          {mobileMenuItems.map(item => {
+            const IconC = Icons[item.icon];
+            return (
+              <button
+                key={item.id}
+                onClick={() => { setCurrentView(item.id); setIsMobileMenuOpen(false); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 14px', borderRadius: 10,
+                  background: currentView === item.id ? C.accentSoft : 'transparent',
+                  color: currentView === item.id ? C.accentDeep : C.ink2,
+                  border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                  fontWeight: 600, fontSize: 14, textAlign: 'left',
+                }}
+              >
+                <span style={{ color: currentView === item.id ? C.accent : C.muted, display: 'flex' }}>
+                  {IconC && <IconC />}
+                </span>
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </header>
+  );
 }

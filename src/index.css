@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,6 +45,24 @@
   --shadow-md:       0 4px 16px rgba(29, 21, 12, 0.08), 0 2px 6px rgba(29, 21, 12, 0.04);
   --shadow-lg:       0 12px 32px rgba(29, 21, 12, 0.10), 0 4px 12px rgba(29, 21, 12, 0.06);
   --shadow-xl:       0 24px 48px rgba(29, 21, 12, 0.12), 0 8px 20px rgba(29, 21, 12, 0.06);
+
+  /* Bento / Dashboard v2 tokens */
+  --accent:          #4A9EF5;
+  --accent-dark:     #2D7BD4;
+  --accent-deep:     #1F5BA8;
+  --accent-soft:     #EAF4FF;
+  --surface-soft:    #F7FAFD;
+  --ink:             #0B1B2E;
+  --ink2:            #475467;
+  --muted-bento:     #8896A8;
+  --line:            #E4ECF5;
+  --line-soft:       #EFF4FA;
+  --success-bento:   #1F8A5B;
+  --success-soft:    #E6F4EC;
+  --warning-bento:   #D97706;
+  --warning-soft:    #FEF3E2;
+  --danger-bento:    #E84545;
+  --danger-soft:     #FDEDED;
 }
 
 .dark {
@@ -175,4 +195,34 @@
 /* ── Elevation cards (dark mode border-top highlight) ────────── */
 .dark .card-elevated {
   border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── React Grid Layout Customizations ────────────────────────── */
+.layout.is-editing {
+  background: rgba(74, 158, 245, 0.02);
+  border: 1px dashed rgba(74, 158, 245, 0.3);
+  border-radius: 24px;
+  min-height: 800px;
+}
+
+.widget-editable {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: grab;
+}
+
+.widget-editable:active {
+  cursor: grabbing;
+}
+
+.widget-editable:hover {
+  transform: scale(1.01);
+  box-shadow: 0 12px 32px rgba(31, 91, 168, 0.12);
+  z-index: 10;
+}
+
+/* Estilo do placeholder ao arrastar um widget */
+.react-grid-item.react-grid-placeholder {
+  background: var(--accent) !important;
+  opacity: 0.1 !important;
+  border-radius: 20px !important;
 }

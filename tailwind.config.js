@@ -42,7 +42,9 @@ export default {
                 "on-secondary-fixed":       "var(--foreground)",
             },
             fontFamily: {
-                display: ["Manrope", "sans-serif"],
+                display:  ["Manrope", "sans-serif"],
+                jakarta:  ['"Plus Jakarta Sans"', "sans-serif"],
+                mono:     ['"JetBrains Mono"', "monospace"],
             },
             borderRadius: {
                 DEFAULT: "0.5rem",

@@ -3415,6 +3415,51 @@ app.put('/api/admin/configuracoes/:chave', adminAuth, async (req, res) => {
     }
 });
 
+// ─── Rotas: Layout Personalizado da Dashboard ────────────────────────────────
+
+// GET /api/user/dashboard-layout?userId=<id>
+// Retorna o layout JSONB salvo para o usuário ou array vazio (sem layout salvo)
+app.get('/api/user/dashboard-layout', async (req, res) => {
+    const { userId } = req.query;
+    if (!userId) {
+        return res.status(400).json({ sucesso: false, erro: 'userId é obrigatório.' });
+    }
+    try {
+        const { rows } = await pool.query(
+            'SELECT layout FROM user_dashboard_layouts WHERE user_id = $1',
+            [String(userId)]
+        );
+        const layout = rows.length > 0 ? rows[0].layout : null;
+        return res.json({ sucesso: true, layout });
+    } catch (err) {
+        console.error('[dashboard-layout GET] Erro:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar layout.' });
+    }
+});
+
+// POST /api/user/dashboard-layout
+// Corpo: { userId: string, layout: Array<{i, x, y, w, h}> }
+// Salva ou sobrescreve o layout do usuário (upsert)
+app.post('/api/user/dashboard-layout', async (req, res) => {
+    const { userId, layout } = req.body;
+    if (!userId || !Array.isArray(layout)) {
+        return res.status(400).json({ sucesso: false, erro: 'userId e layout (array) são obrigatórios.' });
+    }
+    try {
+        await pool.query(
+            `INSERT INTO user_dashboard_layouts (user_id, layout, updated_at)
+             VALUES ($1, $2::jsonb, NOW())
+             ON CONFLICT (user_id)
+             DO UPDATE SET layout = EXCLUDED.layout, updated_at = NOW()`,
+            [String(userId), JSON.stringify(layout)]
+        );
+        return res.json({ sucesso: true });
+    } catch (err) {
+        console.error('[dashboard-layout POST] Erro:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao salvar layout.' });
+    }
+});
+
 // ─── Inicialização ───────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)

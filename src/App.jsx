@@ -138,28 +138,30 @@ export default function App() {
     }
 
     return (
-        <div className="bg-background text-foreground font-display h-screen flex flex-col transition-colors duration-200">
-            <Header currentView={currentView} setCurrentView={setCurrentView} user={user} />
-            <div className="flex flex-1 overflow-hidden">
-                {currentView === 'dashboard' && (
-                    <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
-                )}
-                {/* Renderização baseada em currentView */}
-                {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
-                {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} user={user} />}
-                {currentView === 'coverage' && <Coverage user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'directory' && <Directory user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'sectors' && <Sectors user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'schedule' && <Schedule user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'processes' && <Processos setCurrentView={setCurrentView} />}
-                {currentView === 'announcements' && <Comunicados user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'tickets' && <TicketsList user={user} setCurrentView={setCurrentView} />}
-                {currentView === 'offices' && <Offices user={user} setCurrentView={setCurrentView} />}
-                {/* Fallback para outros menus n implementados ou páginas inexistentes */}
-                {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings', 'tickets', 'offices'].includes(currentView) && (
-                    <NotFound setCurrentView={setCurrentView} user={user} />
-                )}
+        <div className="bg-background text-foreground font-display h-screen flex transition-colors duration-200">
+            {currentView !== 'dashboard' && (
+                <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+            )}
+            <div className="flex flex-1 flex-col overflow-hidden">
+                <Header currentView={currentView} setCurrentView={setCurrentView} user={user} />
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Renderização baseada em currentView */}
+                    {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
+                    {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} user={user} />}
+                    {currentView === 'coverage' && <Coverage user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'directory' && <Directory user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'sectors' && <Sectors user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'schedule' && <Schedule user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'processes' && <Processos setCurrentView={setCurrentView} />}
+                    {currentView === 'announcements' && <Comunicados user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'tickets' && <TicketsList user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'offices' && <Offices user={user} setCurrentView={setCurrentView} />}
+                    {/* Fallback para outros menus não implementados ou páginas inexistentes */}
+                    {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings', 'tickets', 'offices'].includes(currentView) && (
+                        <NotFound setCurrentView={setCurrentView} user={user} />
+                    )}
+                </div>
             </div>
         </div>
     )

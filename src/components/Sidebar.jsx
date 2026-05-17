@@ -1,108 +1,213 @@
 import { useState, useEffect } from 'react';
+import { Icons } from './common/Icons';
+import logoP from '../image/logos/Logo_P.webp';
+
+const C = {
+  accent: '#4A9EF5',
+  accentDeep: '#1F5BA8',
+  accentSoft: '#EAF4FF',
+  surfaceSoft: '#F7FAFD',
+  ink: '#0B1B2E',
+  ink2: '#475467',
+  muted: '#8896A8',
+  line: '#E4ECF5',
+};
 
 const menuItems = [
-    { id: 'services',  icon: 'construction',        label: 'Serviços' },
-    { id: 'coverage',  icon: 'verified_user',        label: 'Cobertura' },
-    { id: 'directory', icon: 'groups',               label: 'Colaboradores' },
-    { id: 'sectors',   icon: 'pie_chart',            label: 'Setores' },
-    { id: 'schedule',  icon: 'schedule',             label: 'Plantão' },
-    { id: 'offices',   icon: 'apartment',            label: 'Escritórios' },
-    { id: 'processes', icon: 'description',          label: 'Processos' },
-    { id: 'tickets',   icon: 'confirmation_number',  label: 'Meus Chamados' },
+  { id: 'services',  icon: 'Tools',    label: 'Serviços',      group: 'menu' },
+  { id: 'coverage',  icon: 'Shield',   label: 'Cobertura',     group: 'menu' },
+  { id: 'directory', icon: 'People',   label: 'Colaboradores', group: 'menu' },
+  { id: 'sectors',   icon: 'Pie',      label: 'Setores',       group: 'menu' },
+  { id: 'schedule',  icon: 'Clock',    label: 'Plantão',       group: 'menu' },
+  { id: 'offices',   icon: 'Building', label: 'Escritórios',   group: 'menu' },
+  { id: 'processes', icon: 'Doc',      label: 'Processos',     group: 'menu' },
+  { id: 'tickets',   icon: 'Ticket',   label: 'Meus Chamados', group: 'menu' },
 ];
 
+function GroupLabel({ children }) {
+  return (
+    <div style={{
+      marginTop: 18, marginBottom: 4, padding: '0 12px',
+      fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+      letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', fontWeight: 600,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function NavRow({ id, icon, label, active, badge, onClick }) {
+  const [hover, setHover] = useState(false);
+  const IconComponent = Icons[icon];
+
+  return (
+    <button
+      onClick={() => onClick(id)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '9px 12px', borderRadius: 10, cursor: 'pointer',
+        background: active ? C.accentSoft : (hover ? C.surfaceSoft : 'transparent'),
+        color: active ? C.accentDeep : (hover ? C.ink : C.ink2),
+        fontWeight: active ? 600 : 500, fontSize: 13.5,
+        transition: 'all .12s',
+        border: 'none', width: '100%', textAlign: 'left',
+        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+      }}
+    >
+      <span style={{ display: 'flex', color: active ? C.accent : (hover ? C.accent : C.muted) }}>
+        {IconComponent && <IconComponent />}
+      </span>
+      <span style={{ flex: 1 }}>{label}</span>
+      {badge != null && (
+        <span style={{
+          background: active ? C.accent : '#FFE6E0',
+          color: active ? 'white' : '#E84545',
+          fontSize: 10.5, fontWeight: 700,
+          minWidth: 18, height: 18, padding: '0 6px', borderRadius: 9,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
 export default function Sidebar({ currentView, setCurrentView }) {
-    const [urgentCount, setUrgentCount] = useState(0);
+  const [urgentCount, setUrgentCount] = useState(0);
 
-    useEffect(() => {
-        const fetchUrgents = async () => {
-            try {
-                const res = await fetch('/api/comunicados');
-                const data = await res.json();
-                if (data.sucesso) {
-                    setUrgentCount(data.comunicados.filter(item => item.tipo === 'Urgente').length);
-                }
-            } catch (error) {
-                console.error("Erro ao carregar quantidade de urgentes no sidebar:", error);
-            }
-        };
-        fetchUrgents();
-        const intervalId = setInterval(fetchUrgents, 30000);
-        return () => clearInterval(intervalId);
-    }, []);
-
-    const systemItems = [
-        { id: 'announcements', icon: 'campaign',             label: 'Comunicados', badge: urgentCount > 0 ? String(urgentCount) : null },
-        { id: 'settings',      icon: 'settings',             label: 'Configurações' },
-        { id: 'admin',         icon: 'admin_panel_settings', label: 'Painel Admin' },
-    ];
-
-    const navBtn = (item) => {
-        const active = currentView === item.id;
-        return (
-            <button
-                key={item.id}
-                onClick={() => setCurrentView(item.id)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors w-full text-left group ${
-                    active
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted hover:bg-surface-raised hover:text-foreground'
-                }`}
-            >
-                <span className={`material-symbols-outlined ${active ? 'text-primary' : 'group-hover:text-foreground'}`}>
-                    {item.icon}
-                </span>
-                <span className="text-sm font-medium">{item.label}</span>
-                {item.badge && (
-                    <span className="ml-auto bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                        {item.badge}
-                    </span>
-                )}
-            </button>
-        );
+  useEffect(() => {
+    const fetchUrgents = async () => {
+      try {
+        const res = await fetch('/api/comunicados');
+        const data = await res.json();
+        if (data.sucesso) {
+          setUrgentCount(data.comunicados.filter(item => item.tipo === 'Urgente').length);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar urgentes no sidebar:', error);
+      }
     };
+    fetchUrgents();
+    const id = setInterval(fetchUrgents, 30000);
+    return () => clearInterval(id);
+  }, []);
 
-    return (
-        <aside className="w-64 bg-card border-r border-border flex flex-col py-4 overflow-y-auto no-scrollbar hidden lg:flex shrink-0 transition-colors duration-200">
-            <nav className="flex flex-col gap-0.5 px-3">
-                {/* Dashboard */}
-                <button
-                    onClick={() => setCurrentView('dashboard')}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-left group ${
-                        currentView === 'dashboard'
-                            ? 'bg-primary/10 text-primary'
-                            : 'text-muted hover:bg-surface-raised hover:text-foreground'
-                    }`}
-                >
-                    <span className={`material-symbols-outlined fill-1 ${currentView === 'dashboard' ? 'text-primary' : 'group-hover:text-foreground'}`}>
-                        dashboard
-                    </span>
-                    <span className="text-sm font-bold">Dashboard</span>
-                </button>
+  const systemItems = [
+    { id: 'announcements', icon: 'Megaphone', label: 'Comunicados', badge: urgentCount > 0 ? String(urgentCount) : null, group: 'sistema' },
+    { id: 'settings',      icon: 'Settings',  label: 'Configurações', group: 'sistema' },
+    { id: 'admin',         icon: 'Admin',     label: 'Painel Admin',  group: 'sistema' },
+  ];
 
-                <div className="pt-4 pb-1.5 px-3">
-                    <p className="text-xs font-bold text-muted/60 uppercase tracking-wider">Menu</p>
-                </div>
-                {menuItems.map(navBtn)}
+  return (
+    <aside
+      className="hidden lg:flex flex-col"
+      style={{
+        width: 248, flexShrink: 0,
+        background: 'white',
+        borderRight: `1px solid ${C.line}`,
+        padding: '20px 14px 20px',
+        position: 'sticky', top: 0, height: '100vh',
+        overflowY: 'auto',
+        gap: 2,
+      }}
+    >
+      {/* Brand */}
+      <button
+        onClick={() => setCurrentView('dashboard')}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 11,
+          padding: '6px 10px 22px',
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+        }}
+      >
+        <img src={logoP} alt="Prestek" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', color: C.ink }}>
+            Prestek
+          </span>
+          <span style={{
+            fontFamily: '"JetBrains Mono", monospace', fontWeight: 500,
+            fontSize: 9.5, letterSpacing: '0.22em', color: C.muted,
+            marginTop: 3, textTransform: 'uppercase',
+          }}>
+            Intranet
+          </span>
+        </div>
+      </button>
 
-                <div className="pt-4 pb-1.5 px-3">
-                    <p className="text-xs font-bold text-muted/60 uppercase tracking-wider">Sistema</p>
-                </div>
-                {systemItems.map(navBtn)}
-            </nav>
+      {/* Dashboard link */}
+      <NavRow
+        id="dashboard"
+        icon="Dashboard"
+        label="Dashboard"
+        active={currentView === 'dashboard'}
+        onClick={setCurrentView}
+      />
 
-            {/* Widget "Precisa de Ajuda?" */}
-            <div className="mt-auto p-4">
-                <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 border border-primary/15 card-elevated">
-                    <h4 className="text-sm font-bold text-primary mb-1">Precisa de Ajuda?</h4>
-                    <p className="text-xs text-muted mb-3">
-                        Contate o suporte de TI para problemas de acesso.
-                    </p>
-                    <button className="w-full bg-card text-primary text-xs font-bold py-2 rounded-lg border border-primary/20 hover:bg-primary hover:text-white transition-colors shadow-sm">
-                        Contatar Suporte
-                    </button>
-                </div>
-            </div>
-        </aside>
-    );
+      <GroupLabel>Menu</GroupLabel>
+      {menuItems.map(item => (
+        <NavRow
+          key={item.id}
+          {...item}
+          active={currentView === item.id}
+          onClick={setCurrentView}
+        />
+      ))}
+
+      <GroupLabel>Sistema</GroupLabel>
+      {systemItems.map(item => (
+        <NavRow
+          key={item.id}
+          {...item}
+          active={currentView === item.id}
+          onClick={setCurrentView}
+        />
+      ))}
+
+      <div style={{ flex: 1 }} />
+
+      {/* Help card */}
+      <div style={{
+        marginTop: 16, padding: 14, borderRadius: 14,
+        background: `linear-gradient(140deg, ${C.accent} 0%, ${C.accentDeep} 100%)`,
+        color: 'white', position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: -30, right: -30, width: 110, height: 110, borderRadius: 55,
+          background: 'rgba(255,255,255,0.15)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -40, left: -20, width: 90, height: 90, borderRadius: 45,
+          background: 'rgba(255,255,255,0.08)',
+        }} />
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: 'rgba(255,255,255,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: 10,
+          }}>
+            <Icons.Headset />
+          </div>
+          <div style={{ fontSize: 13.5, fontWeight: 700 }}>Precisa de Ajuda?</div>
+          <div style={{ fontSize: 11.5, opacity: 0.85, marginTop: 4, lineHeight: 1.4 }}>
+            Suporte de TI disponível.
+          </div>
+          <button style={{
+            marginTop: 11, width: '100%', height: 32, border: 'none', borderRadius: 8,
+            background: 'white', color: C.accentDeep,
+            fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+            fontWeight: 700, fontSize: 12, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+          }}>
+            Contatar <Icons.ArrowR />
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
 }
