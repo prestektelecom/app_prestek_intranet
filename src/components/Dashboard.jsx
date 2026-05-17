@@ -320,23 +320,22 @@ function AtalhosCard({ setCurrentView }) {
   return (
     <div style={{ background: 'white', borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <h2 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Atalhos Rápidos</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
         {atalhos.map(a => {
           const IconC = Icons[a.icon];
           return (
             <button key={a.id} onClick={() => setCurrentView(a.id)}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, border: `1px solid ${C.line}`, background: 'white', cursor: 'pointer', textAlign: 'left', transition: 'all .15s', fontFamily: 'inherit' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px', borderRadius: 14, border: `1px solid ${C.line}`, background: 'white', cursor: 'pointer', textAlign: 'left', transition: 'all .15s', fontFamily: 'inherit' }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 10px 24px ${tone(C.accentDeep, 0.10)}`; e.currentTarget.style.borderColor = tone(a.accent, 0.4); }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = C.line; }}
             >
-              <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, background: tone(a.accent, 0.12), color: a.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: tone(a.accent, 0.12), color: a.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {IconC && <IconC />}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>{a.label}</div>
-                <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{a.hint}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.label}</div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.hint}</div>
               </div>
-              <span style={{ color: C.muted, display: 'flex' }}><Icons.ArrowR /></span>
             </button>
           );
         })}
