@@ -1,33 +1,5 @@
 import { useState, useEffect } from 'react';
-import LottieAvatar from './common/LottieAvatar';
-import InitialsAvatar from './common/InitialsAvatar';
-
-import avatar1 from '../image/avatar/4472612.json';
-import avatar2 from '../image/avatar/4472613.json';
-import avatar3 from '../image/avatar/4472614.json';
-import avatar4 from '../image/avatar/4472615.json';
-import avatar5 from '../image/avatar/4472616.json';
-import avatar6 from '../image/avatar/4472617.json';
-import avatar7 from '../image/avatar/4472622.json';
-import avatar8 from '../image/avatar/4472623.json';
-import avatar9 from '../image/avatar/4472624.json';
-import avatar10 from '../image/avatar/4472625.json';
-
-const PREDEFINED_AVATARS = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, avatar7, avatar8, avatar9, avatar10];
-
-function resolveLottieFromStorage(raw) {
-    if (!raw) return null;
-    if (typeof raw === 'string' && raw.startsWith('__lottie_idx:')) {
-        const idx = parseInt(raw.split(':')[1], 10);
-        const data = PREDEFINED_AVATARS[idx] ?? null;
-        if (!data) return null;
-        if (typeof data === 'object' && data.default) return data.default;
-        return data;
-    }
-    if (typeof raw === 'object' && raw.default && (raw.default.v || raw.default.fr)) return raw.default;
-    if (typeof raw === 'object' && (raw.v || raw.fr)) return raw;
-    return null;
-}
+import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs';
 
 
 function MemberAvatar({ member, ringClass, avatarClass, setor }) {
@@ -49,29 +21,17 @@ function MemberAvatar({ member, ringClass, avatarClass, setor }) {
     );
 
     const wrapperClass = 'relative inline-block cursor-default';
-
-    if (member.lottie) {
-        return (
-            <div className={wrapperClass} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-                {tooltip}
-                <LottieAvatar src={member.lottie} className={`${avatarClass} ${ringClass}`} />
-            </div>
-        );
-    }
-
-    if (member.foto && !imgFailed) {
-        return (
-            <div className={wrapperClass} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-                {tooltip}
-                <img alt={member.nome} className={`${avatarClass} ${ringClass} object-cover bg-surface-raised`} src={member.foto} onError={() => setImgFailed(true)} />
-            </div>
-        );
-    }
+    const fallbackSrc = AVATAR_PNGS[(member.id || 0) % AVATAR_PNGS.length];
 
     return (
         <div className={wrapperClass} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
             {tooltip}
-            <InitialsAvatar name={member.nome} className={`${avatarClass} ${ringClass} text-sm`} />
+            <img
+                alt={member.nome}
+                className={`${avatarClass} ${ringClass} object-cover bg-surface-raised`}
+                src={(!imgFailed && member.foto) ? member.foto : fallbackSrc}
+                onError={() => setImgFailed(true)}
+            />
         </div>
     );
 }
@@ -102,7 +62,7 @@ export default function TeamAvailability({ user }) {
                 if (data.sucesso) {
                     let members = (data.colaboradores || []).map(m => ({
                         ...m,
-                        lottie: m.lottie || resolveLottieFromStorage(m.lottie_ref) || null,
+                        foto: m.foto || resolveAvatarUrl(m.lottie_ref) || null,
                     }));
                     if (user?.id) {
                         const resolvedId = user.funcionario?.id ?? user.id;
@@ -110,18 +70,12 @@ export default function TeamAvailability({ user }) {
                             ? null
                             : `stitch_profile_${resolvedId}`;
 
-                        // Tenta localStorage primeiro, depois header polling já resolve via Header.jsx
-                        let localLottie = null;
                         let localFoto = null;
                         try {
                             const saved = localKey ? localStorage.getItem(localKey) : null;
                             if (saved) {
                                 const p = JSON.parse(saved);
-                                localLottie = resolveLottieFromStorage(p.avatarUrl);
-                                if (!localLottie && p.avatarUrl && typeof p.avatarUrl === 'string'
-                                    && (p.avatarUrl.startsWith('data:') || p.avatarUrl.startsWith('http'))) {
-                                    localFoto = p.avatarUrl;
-                                }
+                                localFoto = resolveAvatarUrl(p.avatarUrl) || null;
                             }
                         } catch (_) { }
 
@@ -130,13 +84,9 @@ export default function TeamAvailability({ user }) {
                         );
                         if (idx > -1) {
                             const [cur] = members.splice(idx, 1);
-                            members = [{
-                                ...cur,
-                                lottie: localLottie || cur.lottie || null,
-                                foto: localFoto || cur.foto || null,
-                            }, ...members];
+                            members = [{ ...cur, foto: localFoto || cur.foto || null }, ...members];
                         } else if (user.nome) {
-                            members = [{ id: user.id, nome: user.nome, foto: localFoto, lottie: localLottie, status: 'online' }, ...members];
+                            members = [{ id: user.id, nome: user.nome, foto: localFoto, status: 'online' }, ...members];
                         }
                     }
                     setOnlineMembers(members);
@@ -156,7 +106,7 @@ export default function TeamAvailability({ user }) {
     const displayedMembers = onlineMembers.slice(0, 4);
     const extraCount = Math.max(0, onlineMembers.length - 4);
     const ringClass = 'ring-2 ring-card';
-    const avatarClass = 'h-12 w-12 rounded-full';
+    const avatarClass = 'h-14 w-14 rounded-full';
 
     if (loading && onlineMembers.length === 0) {
         return (
@@ -179,7 +129,7 @@ export default function TeamAvailability({ user }) {
             <div className="flex -space-x-2 mb-3">
                 {displayedMembers.map((member, idx) => (
                     <MemberAvatar
-                        key={`${member.id || idx}-${!!member.lottie}-${!!member.foto}`}
+                        key={`${member.id || idx}-${!!member.foto}`}
                         member={member}
                         ringClass={ringClass}
                         avatarClass={avatarClass}
@@ -187,7 +137,7 @@ export default function TeamAvailability({ user }) {
                     />
                 ))}
                 {extraCount > 0 && (
-                    <div className={`flex items-center justify-center h-12 w-12 rounded-full ${ringClass} bg-surface-raised text-xs font-bold text-muted`}>
+                    <div className={`flex items-center justify-center h-14 w-14 rounded-full ${ringClass} bg-surface-raised text-xs font-bold text-muted`}>
                         +{extraCount}
                     </div>
                 )}

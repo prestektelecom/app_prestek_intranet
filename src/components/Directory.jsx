@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import LottieAvatar from './common/LottieAvatar';
+import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs';
 
 // Quantidade de colaboradores por página
 const POR_PAGINA = 8;
@@ -274,15 +274,17 @@ function EmployeeCard({ colab, departamentoNome }) {
     const ramal = colab.ramal || '—';
     const isAtivo = colab.ativo === 'S';
     const statusColor = isAtivo ? 'bg-green-500' : 'bg-gray-400';
-    const avatarSrc = colab.foto_perfil || null;
+    const resolvedFoto = resolveAvatarUrl(colab.foto_perfil);
+    const avatarSrc = resolvedFoto || AVATAR_PNGS[(colab.funcionario_id || colab.usuario_id || 0) % AVATAR_PNGS.length];
 
     return (
         <div className="bg-white dark:bg-[#1a130b] rounded-xl overflow-hidden border border-[#eaddcd] dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow group flex flex-col h-full hover:border-[#ff8c00]/50">
             <div className="p-6 flex flex-col items-center text-center flex-grow">
                 <div className="relative mb-4">
-                    <LottieAvatar
+                    <img
                         src={avatarSrc}
-                        className="size-24 rounded-full border-4 border-white dark:border-[#1a130b] shadow-sm bg-gradient-to-br from-primary/20 to-orange-100"
+                        alt={nome}
+                        className="size-24 rounded-full border-4 border-white dark:border-[#1a130b] shadow-sm object-cover bg-gradient-to-br from-primary/20 to-orange-100"
                     />
                     <div className={`absolute bottom-0 right-0 ${statusColor} border-2 border-white dark:border-[#1a130b] size-4 rounded-full`} title={isAtivo ? 'Ativo' : 'Inativo'} />
                 </div>

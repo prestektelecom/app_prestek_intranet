@@ -1,32 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { resolveNomeSetor } from '../utils/resolveSetor';
-import defaultAvatar from '../image/avatar/4472613.json';
+import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs';
 import logoP from '../image/logos/Logo_P.webp';
-import LottieAvatar from './common/LottieAvatar';
 
-import avatar1 from '../image/avatar/4472612.json';
-import avatar2 from '../image/avatar/4472613.json';
-import avatar3 from '../image/avatar/4472614.json';
-import avatar4 from '../image/avatar/4472615.json';
-import avatar5 from '../image/avatar/4472616.json';
-import avatar6 from '../image/avatar/4472617.json';
-import avatar7 from '../image/avatar/4472622.json';
-import avatar8 from '../image/avatar/4472623.json';
-import avatar9 from '../image/avatar/4472624.json';
-import avatar10 from '../image/avatar/4472625.json';
-
-const PREDEFINED_AVATARS = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, avatar7, avatar8, avatar9, avatar10];
-
-function resolveAvatar(raw) {
-    if (!raw) return null;
-    if (typeof raw === 'string' && raw.startsWith('__lottie_idx:')) {
-        const idx = parseInt(raw.split(':')[1], 10);
-        return PREDEFINED_AVATARS[idx] ?? null;
-    }
-    if (typeof raw === 'object' && (raw.v || raw.fr)) return raw;
-    if (typeof raw === 'string' && (raw.startsWith('data:') || raw.startsWith('http') || raw.startsWith('/'))) return raw;
-    return null;
-}
+const defaultAvatar = AVATAR_PNGS[7]; // boy-avatar-7944049
 
 export default function Header({ currentView, setCurrentView, user }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -51,10 +28,10 @@ export default function Header({ currentView, setCurrentView, user }) {
     const safeDepto = func.id_departamento || '';
     const safeId = func.id ?? user?.id ?? null;
 
-    const [avatarUrl, setAvatarUrl] = useState(resolveAvatar(user?.funcionario?.foto_perfil) || defaultAvatar);
+    const [avatarUrl, setAvatarUrl] = useState(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
 
     useEffect(() => {
-        setAvatarUrl(resolveAvatar(user?.funcionario?.foto_perfil) || defaultAvatar);
+        setAvatarUrl(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
     }, [user?.funcionario?.foto_perfil]);
 
     const [cargoName, setCargoName] = useState(safeRole);
@@ -105,7 +82,7 @@ export default function Header({ currentView, setCurrentView, user }) {
                 try {
                     const parsed = JSON.parse(currentSaved);
                     if (parsed.avatarUrl) {
-                        const resolved = resolveAvatar(parsed.avatarUrl) || defaultAvatar;
+                        const resolved = resolveAvatarUrl(parsed.avatarUrl) || defaultAvatar;
                         if (JSON.stringify(avatarUrlRef.current) !== JSON.stringify(resolved)) {
                             setAvatarUrl(resolved);
                         }
@@ -342,9 +319,10 @@ export default function Header({ currentView, setCurrentView, user }) {
 
                 {/* Avatar + Nome */}
                 <div onClick={() => setCurrentView('settings')} className="flex items-center gap-3 cursor-pointer group">
-                    <LottieAvatar
+                    <img
                         src={avatarUrl || defaultAvatar}
-                        className="rounded-full size-10 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-surface-raised"
+                        alt={safeName}
+                        className="rounded-full size-10 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-surface-raised object-cover"
                     />
                     <div className="hidden lg:block text-left">
                         <p className="text-sm font-bold leading-none text-foreground truncate max-w-[220px]">{safeName}</p>

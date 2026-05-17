@@ -1182,7 +1182,7 @@ app.get('/api/colaboradores/online', async (req, res) => {
                 const trimmed = raw.trim();
                 if (trimmed.startsWith('<svg') || trimmed.startsWith('/src/image/')) {
                     // Paths de build inválidos ou SVG inline — descarta
-                } else if (trimmed.startsWith('__lottie_idx:')) {
+                } else if (trimmed.startsWith('__lottie_idx:') || trimmed.startsWith('__png_idx:')) {
                     lottieRef = trimmed;
                 } else if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
                     try { lottieData = JSON.parse(trimmed); } catch (_) { }

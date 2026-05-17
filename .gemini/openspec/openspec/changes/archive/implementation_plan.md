@@ -1,136 +1,73 @@
-# Corrigir Presença Online após Logout
+# Correção e Melhoria do Avatar no TeamAvailability
 
-## Problema
+## Contexto
 
-Quando um usuário clica em **Sair**, o sistema apenas apaga dados do `localStorage`/`sessionStorage` e redireciona para o login — mas **não notifica o backend**. A coluna `ultima_atividade` na tabela `usuarios_perfil` permanece com o timestamp da última atualização de presença.
+No widget **"Disponibilidade da Equipe"**, os avatares Lottie estão sendo exibidos cortados — o personagem é mostrado apenas parcialmente dentro do círculo, com cabeça e corpo truncados.
 
-O endpoint `/api/colaboradores/online` considera "online" quem teve atividade nos últimos **5 minutos**. Então o usuário que saiu fica visível por até 5 minutos depois do logout.
-
----
-
-## Diagnóstico (fluxo atual)
-
-```
-[Frontend] Usuário clica "Sair"
-    → localStorage.removeItem + sessionStorage.removeItem
-    → setCurrentView('login')
-    ← NÃO avisa o backend
-
-[Backend] ultima_atividade = ainda tem o valor antigo
-    → /api/colaboradores/online retorna o usuário por até 5 min
-```
-
-```
-[usePresence.js] heartbeat a cada 2 min → POST /api/presenca/:id
-[Backend] /api/presenca/:id → UPDATE usuarios_perfil SET ultima_atividade = NOW()
-[Backend] /api/colaboradores/online → WHERE ultima_atividade > NOW() - interval '5 minutes'
-```
+A causa raiz está em `LottieAvatar.jsx`: o atributo `viewBox` do SVG gerado pelo lottie-web está fixo em `'300 100 400 400'`, um recorte genérico que não se adapta à composição de cada animação, resultando em cortes para certos avatares.
 
 ---
 
-## Solução Proposta
+## Causa Raiz Identificada
 
-### 1. Novo endpoint de logout no backend
+| Arquivo | Linha | Problema |
+|---|---|---|
+| `LottieAvatar.jsx` | L43 | `viewBox` hardcoded `'300 100 400 400'` — valor fixo inadequado para todos os avatares |
+| `LottieAvatar.jsx` | L44 | `preserveAspectRatio: 'xMidYMid slice'` — força o corte ao invés de encaixar o personagem |
+| `TeamAvailability.jsx` | L179 | Container com `flex -space-x-2` — sobreposição pode ocultar parte dos avatares |
 
-**`POST /api/presenca/:usuarioId/logout`**
+---
 
-Zera a `ultima_atividade` para um valor muito antigo (ou `NULL`), removendo o usuário imediatamente da lista de online:
+## User Review Required
 
-```js
-app.post('/api/presenca/:usuarioId/logout', async (req, res) => {
-    await pool.query(
-        "UPDATE usuarios_perfil SET ultima_atividade = '1970-01-01' WHERE usuario_id = $1",
-        [usuarioId]
-    );
-    return res.json({ sucesso: true });
-});
-```
-
-### 2. Chamar o endpoint no botão "Sair" (Header.jsx)
-
-Antes de limpar o storage e redirecionar, disparar a chamada:
-
-```js
-// Header.jsx — botão Sair
-onClick={async () => {
-    // Notifica o backend antes de sair
-    if (user?.id) {
-        try {
-            await fetch(`/api/presenca/${user.id}/logout`, { method: 'POST' });
-        } catch (_) {} // falha silenciosa — o timeout de 5 min cobre como fallback
-    }
-    localStorage.removeItem('@Stitch:user');
-    localStorage.removeItem('@Stitch:currentView');
-    sessionStorage.removeItem('@Stitch:user');
-    sessionStorage.removeItem('@Stitch:currentView');
-    setCurrentView('login');
-}}
-```
-
-### 3. Fallback via `navigator.sendBeacon` (fechamento de aba)
-
-Para cobrir o caso onde o usuário fecha a aba/navegador sem clicar em Sair, adicionar um listener de `beforeunload` usando a **BeaconAPI** (fire-and-forget que o browser envia mesmo ao fechar):
-
-Isso será adicionado no hook `usePresence.js`:
-
-```js
-useEffect(() => {
-    if (!user?.id) return;
-    const handleUnload = () => {
-        navigator.sendBeacon(`/api/presenca/${user.id}/logout`);
-    };
-    window.addEventListener('beforeunload', handleUnload);
-    return () => window.removeEventListener('beforeunload', handleUnload);
-}, [user?.id]);
-```
+> [!IMPORTANT]
+> **Decisão de design:** Após a correção do corte, o avatar deve:
+> - **B) Fazer um crop inteligente no rosto/busto** (zoom no rosto, não no corpo inteiro)
 
 > [!NOTE]
-> `sendBeacon` é assíncrono e não garantido em 100% dos browsers, mas é o mecanismo recomendado para essa finalidade. O timeout de 5 min do backend funciona como fallback definitivo.
+> A animação Lottie original de cada avatar tem dimensões próprias. O `viewBox` original do arquivo JSON (ex: `0 0 1000 1000`) precisa ser respeitado para exibir o personagem sem corte.
 
 ---
 
-## Arquivos a Modificar
+## Proposed Changes
 
-### Backend
+### Componente LottieAvatar
 
-#### [MODIFY] [server.js](file:///f:/Projetos%20em%20Dev/prestek_intranet/backend/server.js)
-- Adicionar rota `POST /api/presenca/:usuarioId/logout`
-- Zerar `ultima_atividade` para remover imediatamente da lista de online
+#### [MODIFY] [LottieAvatar.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/common/LottieAvatar.jsx)
 
----
-
-### Frontend
-
-#### [MODIFY] [Header.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Header.jsx)
-- Tornar o `onClick` do botão Sair assíncrono
-- Chamar `POST /api/presenca/:id/logout` antes de limpar o storage
-
-#### [MODIFY] [usePresence.js](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/hooks/usePresence.js)
-- Adicionar listener `beforeunload` com `navigator.sendBeacon` para cobrir fechamento de aba
+- **Remover o `viewBox` hardcoded** (`'300 100 400 400'`) que causa o corte
+- **Ler o `viewBox` original** do SVG gerado pelo lottie-web logo após o `DOMLoaded`
+- **Usar `xMidYMid meet`** (ou `contain`) para garantir que o personagem inteiro apareça dentro do círculo sem distorção
+- Adicionar prop `crop` opcional (booleano, padrão `false`) para contextos que precisam do comportamento antigo de recorte
 
 ---
 
-## Opção Adicional: Reduzir o timeout do backend
+### Componente TeamAvailability
 
-> [!IMPORTANT]
-> O backend atualmente considera "online" quem teve atividade nos últimos **5 minutos**, mas o heartbeat é a cada **2 minutos**. Isso significa que mesmo sem logout, um usuário que fecha a aba demora até 5 min para sumir.
->
-> Podemos reduzir o intervalo de `5 minutes` para **3 minutes** no backend (tempo razoável dado o heartbeat de 2 min + margem) para melhorar a responsividade geral.
+#### [MODIFY] [TeamAvailability.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/TeamAvailability.jsx)
 
----
-
-## Verificação
-
-1. Usuário A loga e aparece em "Disponibilidade da Equipe"
-2. Usuário A clica "Sair"
-3. Usuário B (em outro browser) atualiza o dashboard → Usuário A some imediatamente
-4. Fechar aba sem clicar "Sair" → após ≤3 min, o usuário some (via timeout ajustado)
+- **Aumentar o `avatarClass`** de `h-12 w-12` para `h-14 w-14` para dar mais espaço ao personagem completo
+- **Ajustar `ringClass`** de `ring-2` para `ring-2` (mantém, mas verificar cor no modo escuro)
+- **Adicionar fundo nos avatares Lottie** — cor neutra (`bg-surface-raised`) para contrastar com o personagem
+- Manter o `-space-x-2` mas garantir `overflow-hidden` no container do avatar para o clip circular funcionar corretamente
 
 ---
 
-## Questões Abertas
+## Verification Plan
 
-> [!IMPORTANT]
-> **Deseja também reduzir o timeout de "5 minutos" para "3 minutos" no backend?**
-> Isso deixa a lista mais precisa mesmo em casos de fechamento abrupto de aba.
+### Testes no Browser
+
+1. Navegar até o Dashboard com ao menos 2 membros online
+2. Verificar visualmente que os personagens aparecem **completos** (cabeça + corpo) dentro do círculo
+3. Testar com diferentes avatares (vários índices `__lottie_idx:0` até `:9`)
+4. Verificar o tooltip (hover sobre o avatar) — deve funcionar normalmente
+5. Checar responsividade no modo escuro e claro
+
+### Critérios de Aceite
+
+- [ ] Nenhum personagem cortado/truncado no widget de disponibilidade
+- [ ] Círculo do avatar mantém formato redondo com borda (`ring`)
+- [ ] Animação Lottie continua funcionando (loop ativo)
+- [ ] Tooltip de nome/setor/status continua aparecendo no hover
+- [ ] Layout com avatares sobrepostos (`-space-x-2`) não oculta nenhuma parte visível
 

@@ -22,7 +22,11 @@
       "PowerShell(Get-Process -Id 1372 -ErrorAction SilentlyContinue)",
       "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
       "Bash(findstr LISTENING)",
-      "PowerShell(Get-Process -Id 1372 | Select-Object Id,Name; \\(Get-WmiObject Win32_Process -Filter \"ProcessId=1372\"\\).CommandLine)"
+      "PowerShell(Get-Process -Id 1372 | Select-Object Id,Name; \\(Get-WmiObject Win32_Process -Filter \"ProcessId=1372\"\\).CommandLine)",
+      "PowerShell(Get-ChildItem \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\image\\\\avatar\\\\\" | Where-Object { $_.Extension -eq '.png' } | Sort-Object Name | Select-Object -ExpandProperty Name)",
+      "PowerShell(cmd /c \"dir /b \"\"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\image\\\\avatar\"\"\")",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3001 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Get-Process -Id $_ })",
+      "PowerShell(Stop-Process -Id 25820 -Force)"
     ]
   }
 }

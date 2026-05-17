@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import lottie from 'lottie-web';
 
-const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
+const LottieAvatar = ({ src, className = '', style = {}, loop = true, crop = false }) => {
     const containerRef = useRef(null);
     const animRef = useRef(null);
 
@@ -39,8 +39,17 @@ const LottieAvatar = ({ src, className = '', style = {}, loop = true }) => {
             animRef.current.addEventListener('DOMLoaded', () => {
                 const svg = containerRef.current?.querySelector('svg');
                 if (svg) {
-                    // Crop centrado no personagem (descarta ~25% de cada lado e 15% do topo/base)
-                    svg.setAttribute('viewBox', '300 100 400 400');
+                    if (crop) {
+                        svg.setAttribute('viewBox', '300 100 400 400');
+                    } else {
+                        // Mantém o viewBox original e usa slice para preencher o círculo
+                        const originalVB = svg.getAttribute('viewBox');
+                        if (!originalVB) {
+                            const w = svg.getAttribute('width') || '1000';
+                            const h = svg.getAttribute('height') || '1000';
+                            svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                        }
+                    }
                     svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
                     svg.style.width = '100%';
                     svg.style.height = '100%';

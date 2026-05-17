@@ -1,22 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import ThemeSwitcher from './ThemeSwitcher';
-import LottieAvatar from './common/LottieAvatar';
+import { AVATAR_PNGS, resolveAvatarUrl } from '../utils/avatarPngs';
 
-import avatar1 from '../image/avatar/4472612.json';
-import avatar2 from '../image/avatar/4472613.json';
-import avatar3 from '../image/avatar/4472614.json';
-import avatar4 from '../image/avatar/4472615.json';
-import avatar5 from '../image/avatar/4472616.json';
-import avatar6 from '../image/avatar/4472617.json';
-import avatar7 from '../image/avatar/4472622.json';
-import avatar8 from '../image/avatar/4472623.json';
-import avatar9 from '../image/avatar/4472624.json';
-import avatar10 from '../image/avatar/4472625.json';
-
-const PREDEFINED_AVATARS = [
-    avatar1, avatar2, avatar3, avatar4, avatar5, avatar6,
-    avatar7, avatar8, avatar9, avatar10
-];
+const PREDEFINED_PNG_AVATARS = AVATAR_PNGS;
 
 export default function Configuracoes({ user, setCurrentView }) {
     const fileInputRef = useRef(null);
@@ -163,42 +149,19 @@ export default function Configuracoes({ user, setCurrentView }) {
         fetchListas();
     }, []);
 
-    // Sanitiza avatar: descarta paths inválidos (formato antigo /src/image/)
-    // que só existiam em dist/assets/ e não funcionam no ambiente de desenvolvimento
-    const sanitizarAvatar = (url) => {
-        if (!url) return null;
-        if (typeof url === 'string' && url.startsWith('/src/image/')) return null;
-        return url;
-    };
+    const sanitizarAvatar = resolveAvatarUrl;
 
-    // AvatarUrl usa o formData (do banco) ou o default do usuário
-    // Padronização: Usuário deseja que o avatar inicial seja o da garota-3d (avatar2)
     const [avatarUrl, setAvatarUrl] = useState(
-        sanitizarAvatar(formData.avatarUrl) || sanitizarAvatar(user?.funcionario?.foto_perfil) || avatar2
+        sanitizarAvatar(formData.avatarUrl) || sanitizarAvatar(user?.funcionario?.foto_perfil) || null
     );
 
+    // Quando os dados do banco carregam (formData populado pelo useEffect de carregarConfiguracoes),
+    // sincroniza o avatarUrl exibido — mas só se o usuário não tiver selecionado nada ainda
     useEffect(() => {
-        const rawAvatar = formData.avatarUrl || user?.funcionario?.foto_perfil;
-        const currentAvatar = sanitizarAvatar(rawAvatar) || avatar2;
-
-        // Se o valor do banco for inválido, limpa apenas se o localStorage também tiver valor inválido
-        if (safeId && rawAvatar && !sanitizarAvatar(rawAvatar)) {
-            const saved = localStorage.getItem(`stitch_profile_${safeId}`);
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    const localAv = parsed.avatarUrl;
-                    // Só apaga se o localStorage também tiver string inválida — preserva Lottie objeto
-                    if (localAv && typeof localAv === 'string' && !sanitizarAvatar(localAv)) {
-                        delete parsed.avatarUrl;
-                        localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(parsed));
-                    }
-                } catch (e) { /* ignora erros de parse */ }
-            }
+        if (formData.avatarUrl) {
+            setAvatarUrl(sanitizarAvatar(formData.avatarUrl));
         }
-
-        setAvatarUrl(currentAvatar);
-    }, [formData.avatarUrl, user?.funcionario?.foto_perfil, safeId]);
+    }, [formData.avatarUrl]);
 
     // Fechar menus ao clicar fora
     useEffect(() => {
@@ -249,11 +212,9 @@ export default function Configuracoes({ user, setCurrentView }) {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            // Converte avatar para formato compacto: "__lottie_idx:N" se for Lottie pré-definido,
-            // string base64/url se for imagem, null se inválido
-            const lottieIdx = PREDEFINED_AVATARS.indexOf(avatarUrl);
-            const avatarCompacto = lottieIdx >= 0
-                ? `__lottie_idx:${lottieIdx}`
+            const pngIdx = PREDEFINED_PNG_AVATARS.indexOf(avatarUrl);
+            const avatarCompacto = pngIdx >= 0
+                ? `__png_idx:${pngIdx}`
                 : (typeof avatarUrl === 'string' ? avatarUrl : null);
 
             // Monta dados a salvar: campos do formData (sem readonly) + avatarUrl sempre presente
@@ -389,10 +350,17 @@ export default function Configuracoes({ user, setCurrentView }) {
                     <div className="lg:col-span-4 xl:col-span-3">
                         <div className="sticky top-24 bg-card rounded-xl p-6 shadow-sm border border-border flex flex-col items-center gap-6">
                             <div className="relative group avatar-container flex flex-col items-center">
-                                <LottieAvatar
-                                    src={avatarUrl}
-                                    className="aspect-square rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-surface-raised"
-                                />
+                                {avatarUrl ? (
+                                    <img
+                                        src={avatarUrl}
+                                        alt="Avatar"
+                                        className="aspect-square rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-surface-raised object-cover"
+                                    />
+                                ) : (
+                                    <div className="aspect-square rounded-full w-32 h-32 border-2 border-transparent bg-surface-raised flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-[48px] text-muted">person</span>
+                                    </div>
+                                )}
                                 <button
                                     onClick={() => setShowAvatarMenu(!showAvatarMenu)}
                                     className="absolute bottom-0 right-0 bg-primary hover:bg-[#e67e00] text-white p-2 text-sm rounded-full shadow-lg transition-transform transform hover:scale-105"
@@ -439,15 +407,15 @@ export default function Configuracoes({ user, setCurrentView }) {
 
                                 {/* Grid de Seleção de Avatares */}
                                 {showAvatarGrid && (
-                                    <div className="absolute top-[230px] z-30 w-64 bg-card rounded-lg shadow-xl border border-border p-3 pt-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted mb-3 text-center">Avatares Padrão</h4>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {PREDEFINED_AVATARS.map((url, idx) => (
+                                    <div className="absolute top-[230px] z-30 w-72 bg-card rounded-lg shadow-xl border border-border p-3 pt-4 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[420px] overflow-y-auto">
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted mb-3 text-center">Avatares 3D</h4>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {PREDEFINED_PNG_AVATARS.map((url, idx) => (
                                                 <button
-                                                    key={idx}
+                                                    key={`png-${idx}`}
                                                     onClick={() => handleChangeAvatar(url)}
                                                     className="aspect-square rounded-lg border border-border hover:border-primary focus:ring-2 ring-primary/30 transition-all bg-surface-raised overflow-hidden">
-                                                    <LottieAvatar src={url} className="w-full h-full" />
+                                                    <img src={url} alt={`Avatar ${idx + 1}`} className="w-full h-full object-cover" />
                                                 </button>
                                             ))}
                                         </div>
