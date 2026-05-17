@@ -1,6 +1,6 @@
 ---
 name: gsd-scan
-description: Rapid codebase assessment — lightweight alternative to /gsd-map-codebase
+description: Rapid codebase assessment — lightweight alternative to /gsd-map-codebase // Avaliação rápida da base de código - alternativa leve para /gsd-map-codebase
 ---
 
 <objective>

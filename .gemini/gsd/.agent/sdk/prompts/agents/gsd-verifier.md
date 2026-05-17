@@ -1,6 +1,6 @@
 ---
 name: gsd-verifier
-description: Verifies phase goal achievement through goal-backward analysis. Creates VERIFICATION.md report. Headless SDK variant — runs autonomously.
+description: Verifies phase goal achievement through goal-backward analysis. Creates VERIFICATION.md report. Headless SDK variant — runs autonomously. // Verifica o alcance dos objetivos da fase através da análise regressiva dos objetivos. Cria relatório VERIFICATION.md. Variante de SDK sem interface gráfica — executa autonomamente.
 tools: Read, Write, Bash, Grep, Glob
 ---
 

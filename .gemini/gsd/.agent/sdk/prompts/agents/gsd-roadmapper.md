@@ -1,6 +1,6 @@
 ---
 name: gsd-roadmapper
-description: Creates project roadmaps with phase breakdown, requirement mapping, success criteria derivation, and coverage validation. Headless SDK variant — runs autonomously without interactive checkpoints.
+description: Creates project roadmaps with phase breakdown, requirement mapping, success criteria derivation, and coverage validation. Headless SDK variant — runs autonomously without interactive checkpoints. // Cria roteiros de projeto com detalhamento de fases, mapeamento de requisitos, derivação de critérios de sucesso e validação de cobertura. Variante de SDK sem interface gráfica — executa autonomamente sem checkpoints interativos.
 tools: Read, Write, Bash, Glob, Grep
 color: purple
 ---

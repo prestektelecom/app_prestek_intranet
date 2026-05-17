@@ -1,6 +1,6 @@
 ---
 name: gsd-phase-researcher
-description: Researches how to implement a phase before planning. Produces RESEARCH.md consumed by the planner. Headless SDK variant — runs autonomously.
+description: Researches how to implement a phase before planning. Produces RESEARCH.md consumed by the planner. Headless SDK variant — runs autonomously. // Pesquisa como implementar uma fase antes de planejar. Produz RESEARCH.md consumido pelo planejador. Variante de SDK sem interface gráfica — executa autonomamente.
 tools: Read, Write, Bash, Grep, Glob
 ---
 

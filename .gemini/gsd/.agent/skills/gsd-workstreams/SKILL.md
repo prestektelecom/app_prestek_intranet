@@ -1,6 +1,6 @@
 ---
 name: gsd-workstreams
-description: Manage parallel workstreams — list, create, switch, status, progress, complete, and resume
+description: Manage parallel workstreams — list, create, switch, status, progress, complete, and resume // Gerenciar fluxos de trabalho paralelos - listar, criar, alternar, status, progresso, completar e retomar
 ---
 
 

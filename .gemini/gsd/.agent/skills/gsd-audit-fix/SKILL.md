@@ -1,6 +1,6 @@
 ---
 name: gsd-audit-fix
-description: Autonomous audit-to-fix pipeline — find issues, classify, fix, test, commit
+description: Autonomous audit-to-fix pipeline — find issues, classify, fix, test, commit // Pipeline autônomo de auditoria para correção — encontrar problemas, classificar, corrigir, testar, confirmar
 ---
 
 <objective>

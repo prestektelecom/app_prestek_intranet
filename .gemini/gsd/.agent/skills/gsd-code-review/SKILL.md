@@ -1,6 +1,6 @@
 ---
 name: gsd-code-review
-description: Review source files changed during a phase for bugs, security issues, and code quality problems
+description: Review source files changed during a phase for bugs, security issues, and code quality problems // Revisão de código para bugs, vulnerabilidades de segurança e problemas de qualidade do código
 ---
 
 <objective>

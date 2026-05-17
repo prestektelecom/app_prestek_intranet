@@ -1,6 +1,6 @@
 ---
 name: gsd-review-backlog
-description: Review and promote backlog items to active milestone
+description: Review and promote backlog items to active milestone // Revisar e promover itens do backlog para o marco ativo
 ---
 
 

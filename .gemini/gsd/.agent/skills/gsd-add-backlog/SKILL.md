@@ -1,6 +1,6 @@
 ---
 name: gsd-add-backlog
-description: Add an idea to the backlog parking lot (999.x numbering)
+description: Add an idea to the backlog parking lot (999.x numbering) // Adicionar uma ideia ao estacionamento de backlog (numeração 999.x) // Adiciona uma ideia ao estacionamento de backlog (numeração 999.x)
 ---
 
 

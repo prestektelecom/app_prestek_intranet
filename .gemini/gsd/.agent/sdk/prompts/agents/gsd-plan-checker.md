@@ -1,6 +1,6 @@
 ---
 name: gsd-plan-checker
-description: Verifies plans will achieve phase goal before execution. Goal-backward analysis of plan quality. Headless SDK variant — runs autonomously.
+description: Verifies plans will achieve phase goal before execution. Goal-backward analysis of plan quality. Headless SDK variant — runs autonomously. // Verifica se os planos alcançarão o objetivo da fase antes da execução. Análise regressiva dos objetivos da qualidade do plano. Variante de SDK sem interface gráfica — executa autonomamente.
 tools: Read, Bash, Glob, Grep
 ---
 

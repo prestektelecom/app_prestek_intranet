@@ -19,11 +19,16 @@ function resolveLottieFromStorage(raw) {
     if (!raw) return null;
     if (typeof raw === 'string' && raw.startsWith('__lottie_idx:')) {
         const idx = parseInt(raw.split(':')[1], 10);
-        return PREDEFINED_AVATARS[idx] ?? null;
+        const data = PREDEFINED_AVATARS[idx] ?? null;
+        if (!data) return null;
+        if (typeof data === 'object' && data.default) return data.default;
+        return data;
     }
+    if (typeof raw === 'object' && raw.default && (raw.default.v || raw.default.fr)) return raw.default;
     if (typeof raw === 'object' && (raw.v || raw.fr)) return raw;
     return null;
 }
+
 
 function MemberAvatar({ member, ringClass, avatarClass, setor }) {
     const [imgFailed, setImgFailed] = useState(false);
@@ -95,16 +100,28 @@ export default function TeamAvailability({ user }) {
                 const response = await fetch('/api/colaboradores/online');
                 const data = await response.json();
                 if (data.sucesso) {
-                    let members = data.colaboradores || [];
+                    let members = (data.colaboradores || []).map(m => ({
+                        ...m,
+                        lottie: m.lottie || resolveLottieFromStorage(m.lottie_ref) || null,
+                    }));
                     if (user?.id) {
-                        // Lê Lottie do localStorage independente de onde o usuário aparece na lista
-                        const localKey = `stitch_profile_${user.funcionario?.id ?? user.id}`;
+                        const resolvedId = user.funcionario?.id ?? user.id;
+                        const localKey = (!resolvedId || String(resolvedId) === '0' || String(resolvedId) === '0000')
+                            ? null
+                            : `stitch_profile_${resolvedId}`;
+
+                        // Tenta localStorage primeiro, depois header polling já resolve via Header.jsx
                         let localLottie = null;
+                        let localFoto = null;
                         try {
-                            const saved = localStorage.getItem(localKey);
+                            const saved = localKey ? localStorage.getItem(localKey) : null;
                             if (saved) {
                                 const p = JSON.parse(saved);
                                 localLottie = resolveLottieFromStorage(p.avatarUrl);
+                                if (!localLottie && p.avatarUrl && typeof p.avatarUrl === 'string'
+                                    && (p.avatarUrl.startsWith('data:') || p.avatarUrl.startsWith('http'))) {
+                                    localFoto = p.avatarUrl;
+                                }
                             }
                         } catch (_) { }
 
@@ -113,10 +130,13 @@ export default function TeamAvailability({ user }) {
                         );
                         if (idx > -1) {
                             const [cur] = members.splice(idx, 1);
-                            // Sobrescreve lottie com o do localStorage (mais confiável que o banco)
-                            members = [{ ...cur, lottie: localLottie || cur.lottie }, ...members];
+                            members = [{
+                                ...cur,
+                                lottie: localLottie || cur.lottie || null,
+                                foto: localFoto || cur.foto || null,
+                            }, ...members];
                         } else if (user.nome) {
-                            members = [{ id: user.id, nome: user.nome, foto: null, lottie: localLottie, status: 'online' }, ...members];
+                            members = [{ id: user.id, nome: user.nome, foto: localFoto, lottie: localLottie, status: 'online' }, ...members];
                         }
                     }
                     setOnlineMembers(members);
@@ -131,7 +151,7 @@ export default function TeamAvailability({ user }) {
         fetchOnline();
         const interval = setInterval(fetchOnline, 60 * 1000);
         return () => clearInterval(interval);
-    }, []);
+    }, [user?.id, user?.funcionario?.id]);
 
     const displayedMembers = onlineMembers.slice(0, 4);
     const extraCount = Math.max(0, onlineMembers.length - 4);
@@ -159,7 +179,7 @@ export default function TeamAvailability({ user }) {
             <div className="flex -space-x-2 mb-3">
                 {displayedMembers.map((member, idx) => (
                     <MemberAvatar
-                        key={member.id || idx}
+                        key={`${member.id || idx}-${!!member.lottie}-${!!member.foto}`}
                         member={member}
                         ringClass={ringClass}
                         avatarClass={avatarClass}

@@ -12,7 +12,17 @@
       "Bash(Get-ChildItem \"f:\\\\Projetos em Dev\\\\prestek_intranet\\\\src\\\\hooks\\\\\" -File)",
       "Bash(node run_migrations_admin.js)",
       "Bash(curl -s -X GET 'https://sistema.prestek.com.br/webservice/v1/su_oss_assunto?page=1&rp=1' -H 'Authorization: Basic __CMDSUB_OUTPUT__')",
-      "Bash(python -m json.tool)"
+      "Bash(python -m json.tool)",
+      "Bash(findstr /i \"scripts\" -A 10)",
+      "Bash(npm run *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":5000\")",
+      "Bash(wmic process *)",
+      "PowerShell(Get-Process -Id 1372)",
+      "PowerShell(Get-Process -Id 1372 -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
+      "Bash(findstr LISTENING)",
+      "PowerShell(Get-Process -Id 1372 | Select-Object Id,Name; \\(Get-WmiObject Win32_Process -Filter \"ProcessId=1372\"\\).CommandLine)"
     ]
   }
 }

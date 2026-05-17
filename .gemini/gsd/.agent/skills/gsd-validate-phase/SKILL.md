@@ -1,6 +1,6 @@
 ---
 name: gsd-validate-phase
-description: Retroactively audit and fill Nyquist validation gaps for a completed phase
+description: Retroactively audit and fill Nyquist validation gaps for a completed phase // Auditar retroativamente e preencher lacunas de validação Nyquist para uma fase concluída
 ---
 
 <objective>

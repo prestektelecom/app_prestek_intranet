@@ -1,6 +1,6 @@
 ---
 name: gsd-review
-description: Request cross-AI peer review of phase plans from external AI CLIs
+description: Request cross-AI peer review of phase plans from external AI CLIs // Solicitar revisão por pares de IA cruzada dos planos de fase de CLIs de IA externos
 ---
 
 

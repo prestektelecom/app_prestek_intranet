@@ -14,12 +14,18 @@ export function usePresence(user) {
             }
         };
 
-        // Atualiza imediatamente ao carregar
         updatePresence();
 
-        // Atualiza a cada 2 minutos
         const interval = setInterval(updatePresence, 2 * 60 * 1000);
 
-        return () => clearInterval(interval);
+        const handleUnload = () => {
+            navigator.sendBeacon(`/api/presenca/${user.id}/logout`);
+        };
+        window.addEventListener('beforeunload', handleUnload);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('beforeunload', handleUnload);
+        };
     }, [user]);
 }

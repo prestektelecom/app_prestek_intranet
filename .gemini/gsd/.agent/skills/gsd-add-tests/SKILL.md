@@ -1,6 +1,6 @@
 ---
 name: gsd-add-tests
-description: Generate tests for a completed phase based on UAT criteria and implementation
+description: Generate tests for a completed phase based on UAT criteria and implementation // Gera testes para uma fase concluída com base nos critérios de UAT e implementação
 ---
 
 <objective>

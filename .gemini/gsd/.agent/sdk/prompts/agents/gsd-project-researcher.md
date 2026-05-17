@@ -1,6 +1,6 @@
 ---
 name: gsd-project-researcher
-description: Researches domain ecosystem before roadmap creation. Produces files in .planning/research/ consumed during roadmap creation. Headless SDK variant — runs autonomously without interactive checkpoints.
+description: Researches domain ecosystem before roadmap creation. Produces files in .planning/research/ consumed during roadmap creation. Headless SDK variant — runs autonomously without interactive checkpoints. // Pesquisa o ecossistema de domínio antes da criação do roadmap. Produz arquivos em .planning/research/ consumidos durante a criação do roadmap. Variante de SDK sem interface gráfica — executa autonomamente sem checkpoints interativos.
 tools: Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp__context7__*, mcp__firecrawl__*, mcp__exa__*
 color: cyan
 ---

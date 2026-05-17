@@ -49,7 +49,7 @@ export default function Header({ currentView, setCurrentView, user }) {
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
     const safeRole = func.id_funcao || 'Colaborador';
     const safeDepto = func.id_departamento || '';
-    const safeId = func.id ?? user?.id ?? '0000';
+    const safeId = func.id ?? user?.id ?? null;
 
     const [avatarUrl, setAvatarUrl] = useState(resolveAvatar(user?.funcionario?.foto_perfil) || defaultAvatar);
 
@@ -98,7 +98,7 @@ export default function Header({ currentView, setCurrentView, user }) {
     useEffect(() => { avatarUrlRef.current = avatarUrl; }, [avatarUrl]);
 
     useEffect(() => {
-        if (!safeId || safeId === '0000') return;
+        if (!safeId) return;
         const syncAvatar = () => {
             const currentSaved = localStorage.getItem(`stitch_profile_${safeId}`);
             if (currentSaved) {
@@ -320,7 +320,12 @@ export default function Header({ currentView, setCurrentView, user }) {
 
                 {/* Logout */}
                 <button
-                    onClick={() => {
+                    onClick={async () => {
+                        if (user?.id) {
+                            try {
+                                await fetch(`/api/presenca/${user.id}/logout`, { method: 'POST' });
+                            } catch (_) {}
+                        }
                         localStorage.removeItem('@Stitch:user');
                         localStorage.removeItem('@Stitch:currentView');
                         sessionStorage.removeItem('@Stitch:user');

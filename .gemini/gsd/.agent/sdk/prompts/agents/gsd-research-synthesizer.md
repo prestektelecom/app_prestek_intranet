@@ -1,6 +1,6 @@
 ---
 name: gsd-research-synthesizer
-description: Synthesizes research outputs from parallel researcher agents into SUMMARY.md. Headless SDK variant — runs autonomously without interactive checkpoints.
+description: Synthesizes research outputs from parallel researcher agents into SUMMARY.md. Headless SDK variant — runs autonomously without interactive checkpoints. // Sintetiza os resultados da pesquisa dos agentes pesquisadores paralelos em SUMMARY.md. Variante de SDK sem interface gráfica — executa autonomamente sem checkpoints interativos.
 tools: Read, Write, Bash
 color: purple
 ---

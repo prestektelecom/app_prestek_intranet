@@ -1,6 +1,6 @@
 ---
 name: gsd-analyze-dependencies
-description: Analyze phase dependencies and suggest Depends on entries for ROADMAP.md
+description: Analyze phase dependencies and suggest Depends on entries for ROADMAP.md // Analisar dependências de fases e sugerir entradas Depends on para ROADMAP.md
 ---
 
 <objective>

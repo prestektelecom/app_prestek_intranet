@@ -37,7 +37,7 @@ export default function Configuracoes({ user, setCurrentView }) {
     const safeBirthDate = func.data_nascimento || '';
     const safeAdmission = func.data_admissao || 'N/D';
     const safeRamal = func.ramal || '';
-    const safeId = func.id ?? user?.id ?? '0000';
+    const safeId = func.id ?? user?.id ?? null;
     const isActive = func.ativo === 'S';
 
     // Estado para os formulários e UI
@@ -56,7 +56,7 @@ export default function Configuracoes({ user, setCurrentView }) {
 
     // Carrega perfil do banco (usuarios_perfil) e preferências (usuarios_preferencias)
     useEffect(() => {
-        if (!safeId || safeId === '0000') {
+        if (!safeId) {
             setIsLoading(false);
             return;
         }
@@ -182,7 +182,7 @@ export default function Configuracoes({ user, setCurrentView }) {
         const currentAvatar = sanitizarAvatar(rawAvatar) || avatar2;
 
         // Se o valor do banco for inválido, limpa apenas se o localStorage também tiver valor inválido
-        if (rawAvatar && !sanitizarAvatar(rawAvatar)) {
+        if (safeId && rawAvatar && !sanitizarAvatar(rawAvatar)) {
             const saved = localStorage.getItem(`stitch_profile_${safeId}`);
             if (saved) {
                 try {
@@ -249,10 +249,20 @@ export default function Configuracoes({ user, setCurrentView }) {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            // Filtra campos readonly antes de salvar nas preferências
-            const dadosParaSalvar = Object.entries(formData)
-                .filter(([chave]) => !CAMPOS_READONLY.includes(chave));
-            const promessas = dadosParaSalvar.map(([chave, valor]) =>
+            // Converte avatar para formato compacto: "__lottie_idx:N" se for Lottie pré-definido,
+            // string base64/url se for imagem, null se inválido
+            const lottieIdx = PREDEFINED_AVATARS.indexOf(avatarUrl);
+            const avatarCompacto = lottieIdx >= 0
+                ? `__lottie_idx:${lottieIdx}`
+                : (typeof avatarUrl === 'string' ? avatarUrl : null);
+
+            // Monta dados a salvar: campos do formData (sem readonly) + avatarUrl sempre presente
+            const baseData = Object.fromEntries(
+                Object.entries(formData).filter(([chave]) => !CAMPOS_READONLY.includes(chave))
+            );
+            const dadosFinais = { ...baseData, avatarUrl: avatarCompacto ?? '' };
+
+            const promessas = Object.entries(dadosFinais).map(([chave, valor]) =>
                 fetch(`/api/configuracoes/${safeId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -262,17 +272,18 @@ export default function Configuracoes({ user, setCurrentView }) {
             await Promise.all(promessas);
 
             // Sincroniza dados críticos (como celular, nome, ramal) com a API IXC
+            // avatarUrl é excluído pois pode ser um objeto Lottie gigante
+            const { avatarUrl: _av, ...formDataSemAvatar } = formData;
             await fetch(`/api/funcionario/${safeId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formDataSemAvatar)
             });
 
-            // Salva índice leve do avatar (ex: "__lottie_idx:2") em vez do JSON gigante
-            const lottieIdx = PREDEFINED_AVATARS.indexOf(avatarUrl);
-            const avatarParaSalvar = lottieIdx >= 0 ? `__lottie_idx:${lottieIdx}` : avatarUrl;
-            localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify({ ...formData, avatarUrl: avatarParaSalvar }));
-            // Sincroniza formData para que o useEffect não sobrescreva o localStorage com valor inválido
+            // Salva no localStorage com mesmo formato compacto
+            if (safeId) {
+                localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(dadosFinais));
+            }
             setFormData(prev => ({ ...prev, avatarUrl }));
 
             setSaveSuccess(true);

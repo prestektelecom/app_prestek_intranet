@@ -71,6 +71,40 @@ export default function App() {
     useTheme() // Initialize theme globally
     usePresence(user) // Rastreia atividade do usuário logado
 
+    useEffect(() => {
+        localStorage.removeItem('stitch_profile_0000');
+    }, [])
+
+    // Sincroniza avatar do localStorage para o banco ao iniciar sessão
+    useEffect(() => {
+        if (!user) return;
+        const safeId = user.funcionario?.id ?? user.id;
+        const safeEmail = user.funcionario?.email || user.email;
+        if (!safeId || !safeEmail) return;
+
+        const localKey = `stitch_profile_${safeId}`;
+        try {
+            const saved = localStorage.getItem(localKey);
+            if (!saved) return;
+            const parsed = JSON.parse(saved);
+            let avatarVal = parsed.avatarUrl;
+            if (!avatarVal) return;
+
+            // Se for objeto Lottie (não compactado), descartar — não enviamos JSON gigante ao banco
+            if (typeof avatarVal === 'object') return;
+            // Se for string de índice compacto ou base64/url, enviar normalmente
+            if (typeof avatarVal !== 'string') return;
+            // Descartar paths de build inválidos
+            if (avatarVal.startsWith('/src/image/')) return;
+
+            fetch(`/api/configuracoes/${safeId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: safeEmail, chave: 'avatarUrl', valor: avatarVal })
+            }).catch(() => {});
+        } catch (_) {}
+    }, [user?.id, user?.funcionario?.id])
+
     // Simulador de is admin status, permitindo apenas mostrar interface de admin se selecionado
     // Tela de login — renderizada isoladamente sem Header/Sidebar
     if (currentView === 'login') {

@@ -1127,6 +1127,20 @@ app.post('/api/presenca/:usuarioId', async (req, res) => {
     }
 });
 
+app.post('/api/presenca/:usuarioId/logout', async (req, res) => {
+    const { usuarioId } = req.params;
+    try {
+        await pool.query(
+            "UPDATE usuarios_perfil SET ultima_atividade = '1970-01-01' WHERE usuario_id = $1",
+            [usuarioId]
+        );
+        return res.json({ sucesso: true });
+    } catch (err) {
+        console.error('Erro ao registrar logout de presença:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao registrar logout' });
+    }
+});
+
 app.get('/api/colaboradores/online', async (req, res) => {
     try {
         // Considera online quem teve atividade nos últimos 5 minutos, e busca a foto customizada
@@ -1138,30 +1152,45 @@ app.get('/api/colaboradores/online', async (req, res) => {
             FROM usuarios_perfil p
             LEFT JOIN usuarios_preferencias pref 
                 ON LOWER(p.usuario_email) = LOWER(pref.usuario_email) AND pref.chave = 'avatarUrl'
-            WHERE p.ultima_atividade > NOW() - interval '5 minutes'
+            WHERE p.ultima_atividade > NOW() - interval '3 minutes'
             ORDER BY p.funcionario_nome ASC;
         `;
         const result = await pool.query(query);
-        
+
+        // DEBUG — mostra foto_custom de cada membro online
+        result.rows.forEach(u => console.log(`[online] ${u.funcionario_nome} | email="${u.usuario_email}" | foto_custom="${u.foto_custom}"`));
+
+        // Limpa valores podres de avatar no banco (paths /src/image/ são inválidos fora do build)
+        const emailsParaLimpar = result.rows
+            .filter(u => u.foto_custom && typeof u.foto_custom === 'string' && u.foto_custom.trim().startsWith('/src/image/'))
+            .map(u => u.usuario_email);
+        if (emailsParaLimpar.length > 0) {
+            pool.query(
+                `DELETE FROM usuarios_preferencias WHERE chave = 'avatarUrl' AND usuario_email = ANY($1)`,
+                [emailsParaLimpar]
+            ).catch(err => console.error('[avatar-cleanup] Erro ao limpar avatares podres:', err.message));
+        }
+
         // Formata para o padrão esperado pelo componente
         const online = result.rows.map(u => {
             const raw = u.foto_custom || u.ixc_foto || null;
             let fotoUrl = null;
             let lottieData = null;
+            let lottieRef = null;
 
             if (raw && typeof raw === 'string') {
                 const trimmed = raw.trim();
-                if (trimmed.startsWith('<svg')) {
-                    // SVG inline — descarta
+                if (trimmed.startsWith('<svg') || trimmed.startsWith('/src/image/')) {
+                    // Paths de build inválidos ou SVG inline — descarta
+                } else if (trimmed.startsWith('__lottie_idx:')) {
+                    lottieRef = trimmed;
                 } else if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-                    // JSON Lottie — parseia e repassa como objeto
                     try { lottieData = JSON.parse(trimmed); } catch (_) { }
                 } else if (trimmed.startsWith('data:')) {
                     fotoUrl = trimmed;
                 } else if (trimmed.startsWith('http')) {
                     fotoUrl = trimmed;
-                } else if (trimmed.startsWith('/') && !trimmed.startsWith('/src/')) {
-                    // Aceita apenas URLs de servidor (/api/..., /uploads/...) — descarta caminhos de build (/src/...)
+                } else if (trimmed.startsWith('/')) {
                     fotoUrl = trimmed;
                 }
             }
@@ -1172,6 +1201,7 @@ app.get('/api/colaboradores/online', async (req, res) => {
                 email: u.usuario_email,
                 foto: fotoUrl,
                 lottie: lottieData,
+                lottie_ref: lottieRef,
                 status: 'online',
                 id_departamento: u.id_departamento || null
             };

@@ -1,6 +1,6 @@
 ---
 name: gsd-executor
-description: Executes GSD plans with deviation handling and state management. Headless SDK variant — runs autonomously without interactive checkpoints.
+description: Executes GSD plans with deviation handling and state management. Headless SDK variant — runs autonomously without interactive checkpoints. // Executa planos GSD com tratamento de desvio e gerenciamento de estado. Variante de SDK sem interface gráfica — executa autonomamente sem checkpoints interativos.
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 

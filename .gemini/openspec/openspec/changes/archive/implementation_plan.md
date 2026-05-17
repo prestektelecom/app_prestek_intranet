@@ -1,146 +1,136 @@
-# Bug: Usuário 59832 (LUANA SILVA) exibindo "Recursos Humanos" em vez de "ATENDIMENTO"
+# Corrigir Presença Online após Logout
 
-## Diagnóstico
+## Problema
 
-A LUANA SILVA está no setor **ATENDIMENTO** no IXC Soft, mas o card "Meu Setor" no Dashboard (e o subtítulo no Header) mostra **"Recursos Humanos"**.
+Quando um usuário clica em **Sair**, o sistema apenas apaga dados do `localStorage`/`sessionStorage` e redireciona para o login — mas **não notifica o backend**. A coluna `ultima_atividade` na tabela `usuarios_perfil` permanece com o timestamp da última atualização de presença.
 
-### Causa Raiz: Lógica de resolução de departamento ambígua em dois componentes
+O endpoint `/api/colaboradores/online` considera "online" quem teve atividade nos últimos **5 minutos**. Então o usuário que saiu fica visível por até 5 minutos depois do logout.
 
-O campo `funcionario.id_departamento` retornado pelo IXC é consultado contra **três fontes** em paralelo — e a prioridade errada pode causar uma correspondência falsa:
+---
+
+## Diagnóstico (fluxo atual)
 
 ```
-Dashboard.jsx (linha 55–59) e Header.jsx (linha 106–109):
+[Frontend] Usuário clica "Sair"
+    → localStorage.removeItem + sessionStorage.removeItem
+    → setCurrentView('login')
+    ← NÃO avisa o backend
 
-foundDeptEmp?.departamento  ← /api/departamentos-empresa  (tabela "departamento" IXC)
-|| foundDept?.setor          ← /api/departamentos           (tabela "su_ticket_setor")
-|| foundCargo?.setor         ← /api/cargos                  (tabela "empresa_setor")
-|| safeDepto                 ← fallback: usa o próprio ID numérico
+[Backend] ultima_atividade = ainda tem o valor antigo
+    → /api/colaboradores/online retorna o usuário por até 5 min
 ```
 
-**O problema**: O `id_departamento` de LUANA é o ID do seu setor no IXC (`ATENDIMENTO`).
-Porém, esse mesmo ID também existe em outra tabela (`departamento` ou `empresa_setor`) com o nome **"Recursos Humanos"** — e como `deptosEmpresa` tem prioridade máxima (`foundDeptEmp` é verificado primeiro), ele "vence" com o nome errado.
-
-### Evidências
-
-| Local | Linha | Código problemático |
-|---|---|---|
-| `Dashboard.jsx` | 55–59 | `foundDeptEmp?.departamento \|\| foundDept?.setor \|\| foundCargo?.setor` |
-| `Header.jsx` | 106–109 | Lógica idêntica duplicada |
-
-O campo correto para nome do setor é `su_ticket_setor.setor` (rota `/api/departamentos`) — que reflete os setores de atendimento do IXC onde o funcionário está registrado.
+```
+[usePresence.js] heartbeat a cada 2 min → POST /api/presenca/:id
+[Backend] /api/presenca/:id → UPDATE usuarios_perfil SET ultima_atividade = NOW()
+[Backend] /api/colaboradores/online → WHERE ultima_atividade > NOW() - interval '5 minutes'
+```
 
 ---
 
 ## Solução Proposta
 
-### Estratégia
+### 1. Novo endpoint de logout no backend
 
-1. **Adicionar rota de diagnóstico no backend** (temporária, para confirmar os dados brutos do IXC para o funcionário 59832)
-2. **Corrigir a ordem de prioridade** nas duas lógicas de lookup (Dashboard + Header) para respeitar a hierarquia correta:
-   - Primeiro: `su_ticket_setor` (setor de atendimento — mais específico, fonte direta de `id_departamento`)
-   - Segundo: `departamento` organizacional (fallback)  
-   - Terceiro: `empresa_setor` (cargo/lotação geral — último recurso)
-3. **Extrair a lógica duplicada** para um utilitário compartilhado `src/utils/resolveSetor.js`
+**`POST /api/presenca/:usuarioId/logout`**
 
-> [!IMPORTANT]
-> A lógica de resolução está **duplicada** em `Dashboard.jsx` e `Header.jsx`. Qualquer correção deve ser feita nos dois arquivos (ou melhor, extraída para um helper).
-
-> [!WARNING]
-> Antes de inverter a prioridade, precisamos confirmar via API quais IDs cada tabela retorna para a Luana. A rota de diagnóstico evita corrigir no escuro.
-
----
-
-## Alterações Propostas
-
-### 1. Backend — Rota de diagnóstico temporária
-
-#### [MODIFY] [server.js](file:///f:/Projetos%20em%20Dev/prestek_intranet/backend/server.js)
-
-Adicionar uma rota GET `/api/debug-funcionario/:id` que retorna os dados brutos de departamento para um ID de funcionário, permitindo confirmar qual tabela está causando a colisão.
-
----
-
-### 2. Frontend — Utilitário compartilhado
-
-#### [NEW] [resolveSetor.js](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/utils/resolveSetor.js)
+Zera a `ultima_atividade` para um valor muito antigo (ou `NULL`), removendo o usuário imediatamente da lista de online:
 
 ```js
-/**
- * Resolve o nome do setor/departamento de um funcionário.
- * Prioridade correta:
- *  1. su_ticket_setor (setor de atendimento — fonte direta de id_departamento)
- *  2. departamento organizacional
- *  3. empresa_setor (cargo geral)
- *  4. Fallback: ID bruto
- */
-export async function resolveNomeSetor(safeDepto, safeRole) {
-    if (!safeDepto && !safeRole) return 'Colaborador';
-    
-    const [resDept, resCargo, resDeptEmp] = await Promise.all([
-        fetch('/api/departamentos').catch(() => null),
-        fetch('/api/cargos').catch(() => null),
-        fetch('/api/departamentos-empresa').catch(() => null)
-    ]);
-
-    let departamentos = [], cargos = [], deptosEmpresa = [];
-    if (resDept?.ok) { const d = await resDept.json(); if (d.sucesso) departamentos = d.departamentos || []; }
-    if (resCargo?.ok) { const d = await resCargo.json(); if (d.sucesso) cargos = d.cargos || []; }
-    if (resDeptEmp?.ok) { const d = await resDeptEmp.json(); if (d.sucesso) deptosEmpresa = d.departamentos || []; }
-
-    if (safeDepto) {
-        // PRIORIDADE CORRETA: su_ticket_setor primeiro (mais específico)
-        const foundDept    = departamentos.find(d => String(d.id).trim() === String(safeDepto).trim());
-        const foundDeptEmp = deptosEmpresa.find(d => String(d.id).trim() === String(safeDepto).trim());
-        const foundCargo   = cargos.find(c => String(c.id).trim() === String(safeDepto).trim());
-        
-        const nome = foundDept?.setor || foundDeptEmp?.departamento || foundCargo?.setor;
-        if (nome) return nome;
-    }
-
-    // Fallback: tenta pelo id_funcao
-    if (safeRole && safeRole !== 'Colaborador') {
-        const foundRole = cargos.find(c => String(c.id).trim() === String(safeRole).trim());
-        if (foundRole?.setor) return foundRole.setor;
-    }
-
-    return safeDepto || safeRole || 'Colaborador';
-}
+app.post('/api/presenca/:usuarioId/logout', async (req, res) => {
+    await pool.query(
+        "UPDATE usuarios_perfil SET ultima_atividade = '1970-01-01' WHERE usuario_id = $1",
+        [usuarioId]
+    );
+    return res.json({ sucesso: true });
+});
 ```
 
-#### [MODIFY] [Dashboard.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Dashboard.jsx)
+### 2. Chamar o endpoint no botão "Sair" (Header.jsx)
 
-- Remover o `useEffect` de `fetchCargoESetor` (linhas 24–77)
-- Importar e usar `resolveNomeSetor` do utilitário
+Antes de limpar o storage e redirecionar, disparar a chamada:
 
-#### [MODIFY] [Header.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Header.jsx)
+```js
+// Header.jsx — botão Sair
+onClick={async () => {
+    // Notifica o backend antes de sair
+    if (user?.id) {
+        try {
+            await fetch(`/api/presenca/${user.id}/logout`, { method: 'POST' });
+        } catch (_) {} // falha silenciosa — o timeout de 5 min cobre como fallback
+    }
+    localStorage.removeItem('@Stitch:user');
+    localStorage.removeItem('@Stitch:currentView');
+    sessionStorage.removeItem('@Stitch:user');
+    sessionStorage.removeItem('@Stitch:currentView');
+    setCurrentView('login');
+}}
+```
 
-- Remover o `useEffect` de `fetchCargoESetor` (linhas 90–123)
-- Importar e usar `resolveNomeSetor` do utilitário
+### 3. Fallback via `navigator.sendBeacon` (fechamento de aba)
 
----
+Para cobrir o caso onde o usuário fecha a aba/navegador sem clicar em Sair, adicionar um listener de `beforeunload` usando a **BeaconAPI** (fire-and-forget que o browser envia mesmo ao fechar):
 
-## Plano de Verificação
+Isso será adicionado no hook `usePresence.js`:
 
-### 1. Diagnóstico prévio (via API de debug)
-- Acessar `/api/debug-funcionario/59832` e verificar qual tabela está retornando "Recursos Humanos" para o `id_departamento` de LUANA
-
-### 2. Após a correção
-- Logar como LUANA SILVA (ou simular via localStorage com seus dados)
-- Verificar o card "Meu Setor" no Dashboard → deve exibir **ATENDIMENTO**
-- Verificar o subtítulo no Header → deve exibir **ATENDIMENTO**
-- Verificar outros usuários para garantir que nenhum setor foi quebrado
-
-### 3. Regressão
-- Testar 2–3 usuários de outros setores (TI, Financeiro, etc.) para confirmar que a mudança de prioridade não afeta casos já corretos
-
----
-
-## Perguntas em Aberto
-
-> [!IMPORTANT]
-> **Antes de aplicar a correção**, precisamos confirmar: o `id_departamento` de LUANA no IXC — qual é o número? E qual tabela tem esse ID com o nome "Recursos Humanos"?
->
-> Se tiver acesso ao painel do IXC ou puder rodar a rota de debug, isso confirma a causa raiz com 100% de certeza.
+```js
+useEffect(() => {
+    if (!user?.id) return;
+    const handleUnload = () => {
+        navigator.sendBeacon(`/api/presenca/${user.id}/logout`);
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+}, [user?.id]);
+```
 
 > [!NOTE]
-> A extração do helper `resolveSetor.js` é opcional — posso corrigir apenas invertendo a prioridade nos dois arquivos existentes, sem criar o novo arquivo, se preferir uma mudança mais cirúrgica.
+> `sendBeacon` é assíncrono e não garantido em 100% dos browsers, mas é o mecanismo recomendado para essa finalidade. O timeout de 5 min do backend funciona como fallback definitivo.
+
+---
+
+## Arquivos a Modificar
+
+### Backend
+
+#### [MODIFY] [server.js](file:///f:/Projetos%20em%20Dev/prestek_intranet/backend/server.js)
+- Adicionar rota `POST /api/presenca/:usuarioId/logout`
+- Zerar `ultima_atividade` para remover imediatamente da lista de online
+
+---
+
+### Frontend
+
+#### [MODIFY] [Header.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Header.jsx)
+- Tornar o `onClick` do botão Sair assíncrono
+- Chamar `POST /api/presenca/:id/logout` antes de limpar o storage
+
+#### [MODIFY] [usePresence.js](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/hooks/usePresence.js)
+- Adicionar listener `beforeunload` com `navigator.sendBeacon` para cobrir fechamento de aba
+
+---
+
+## Opção Adicional: Reduzir o timeout do backend
+
+> [!IMPORTANT]
+> O backend atualmente considera "online" quem teve atividade nos últimos **5 minutos**, mas o heartbeat é a cada **2 minutos**. Isso significa que mesmo sem logout, um usuário que fecha a aba demora até 5 min para sumir.
+>
+> Podemos reduzir o intervalo de `5 minutes` para **3 minutes** no backend (tempo razoável dado o heartbeat de 2 min + margem) para melhorar a responsividade geral.
+
+---
+
+## Verificação
+
+1. Usuário A loga e aparece em "Disponibilidade da Equipe"
+2. Usuário A clica "Sair"
+3. Usuário B (em outro browser) atualiza o dashboard → Usuário A some imediatamente
+4. Fechar aba sem clicar "Sair" → após ≤3 min, o usuário some (via timeout ajustado)
+
+---
+
+## Questões Abertas
+
+> [!IMPORTANT]
+> **Deseja também reduzir o timeout de "5 minutos" para "3 minutos" no backend?**
+> Isso deixa a lista mais precisa mesmo em casos de fechamento abrupto de aba.
+

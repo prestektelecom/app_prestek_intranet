@@ -1,6 +1,6 @@
 ---
 name: gsd-verify-work
-description: Validate built features through conversational UAT
+description: Validate built features through conversational UAT // Validação de features com teste conversacional de UAT
 ---
 
 <objective>
