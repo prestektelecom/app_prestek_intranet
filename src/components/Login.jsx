@@ -3,7 +3,7 @@ import LoginIllustration from './Login/LoginIllustration'
 import LoginForm from './Login/LoginForm'
 import { ArrowIcon } from './Login/Icons'
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, setCurrentView }) {
     const loginProps = useLogin(onLogin)
 
     return (
@@ -30,8 +30,18 @@ export default function Login({ onLogin }) {
                     </span>
                 </div>
                 <div className="flex gap-7 text-[13.5px] text-[#475467] font-medium items-center">
-                    <a href="#" className="hover:text-[#4A9EF5] transition-colors">Status</a>
-                    <a href="#" className="hover:text-[#4A9EF5] transition-colors">Docs</a>
+                    <button 
+                        onClick={() => setCurrentView('status')} 
+                        className="hover:text-[#4A9EF5] transition-colors text-[13.5px] text-[#475467] font-medium"
+                    >
+                        Status
+                    </button>
+                    <button 
+                        onClick={() => setCurrentView('docs')} 
+                        className="hover:text-[#4A9EF5] transition-colors text-[13.5px] text-[#475467] font-medium"
+                    >
+                        Docs
+                    </button>
                     <a 
                         href="https://prestek.com.br" 
                         target="_blank" 
@@ -45,8 +55,8 @@ export default function Login({ onLogin }) {
 
             {/* Centered Dual Card */}
             <main className="relative z-10 flex-grow flex items-center justify-center px-4 py-8 md:py-16">
-                <div 
-                    className="w-full max-w-[980px] grid grid-cols-1 lg:grid-cols-2 bg-white rounded-3xl overflow-hidden shadow-[0_50px_100px_-30px_rgba(74,158,245,0.22),_0_0_0_1px_rgba(255,255,255,0.8)] border border-[#EAF4FF] transition-all duration-300"
+                <div
+                    className="w-full max-w-[980px] grid grid-cols-1 lg:grid-cols-2 bg-gradient-to-br from-[#EAF4FF] via-[#F0F8FF] to-[rgba(74,158,245,0.05)] rounded-3xl overflow-hidden shadow-[0_50px_100px_-30px_rgba(74,158,245,0.22),_0_0_0_1px_rgba(255,255,255,0.8)] border border-[#EAF4FF] transition-all duration-300"
                 >
                     {/* Painel Esquerdo: Ilustração */}
                     <div className="hidden lg:block h-full">
@@ -54,7 +64,7 @@ export default function Login({ onLogin }) {
                     </div>
 
                     {/* Painel Direito: Formulário */}
-                    <div className="h-full">
+                    <div className="h-full bg-white rounded-none lg:rounded-tl-[80px] shadow-[-8px_0_32px_rgba(74,158,245,0.08)]">
                         <LoginForm {...loginProps} />
                     </div>
                 </div>

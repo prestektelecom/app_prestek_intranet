@@ -107,6 +107,10 @@ export default function App() {
 
     // Simulador de is admin status, permitindo apenas mostrar interface de admin se selecionado
     // Tela de login — renderizada isoladamente sem Header/Sidebar
+    if (!user && currentView !== 'login') {
+        return <NotFound setCurrentView={setCurrentView} user={null} />
+    }
+
     if (currentView === 'login') {
         return <Login onLogin={(resultado) => {
             const userData = {
@@ -126,7 +130,7 @@ export default function App() {
                 sessionStorage.setItem('@Stitch:currentView', 'dashboard')
             }
             setCurrentView('dashboard')
-        }} />
+        }} setCurrentView={setCurrentView} />
     }
 
     if (currentView === 'admin') {
@@ -154,7 +158,7 @@ export default function App() {
                 {currentView === 'offices' && <Offices user={user} setCurrentView={setCurrentView} />}
                 {/* Fallback para outros menus n implementados ou páginas inexistentes */}
                 {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings', 'tickets', 'offices'].includes(currentView) && (
-                    <NotFound setCurrentView={setCurrentView} />
+                    <NotFound setCurrentView={setCurrentView} user={user} />
                 )}
             </div>
         </div>

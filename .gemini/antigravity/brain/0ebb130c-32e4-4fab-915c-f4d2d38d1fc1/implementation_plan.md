@@ -1,58 +1,31 @@
-# Correção de Encoding (Mojibake) no Repositório
+# Aplicar Curva Varredora no Layout de Login
 
-Este plano detalha a estratégia para corrigir os caracteres corrompidos (mojibake) encontrados nos arquivos `.jsx` e `.js` da aplicação. O problema ocorreu porque arquivos salvos em UTF-8 foram re-salvos com codificações incorretas (como Windows-1252/ISO-8859-1), resultando em strings como `InstalaÃ§Ã£o` em vez de `Instalação`.
+O objetivo é implementar o estilo visual "Opção B" discutido anteriormente. Isso consiste em criar uma curva ampla e orgânica no canto superior esquerdo do painel do formulário (branco), fazendo-o sobrepor de forma suave e elegante a área de ilustração.
 
-## User Review Required
+## ⚠️ Revisão do Usuário Necessária
+Esta é uma mudança estritamente visual (CSS/Tailwind). Não afeta a lógica de autenticação. Confirme se as classes e raios da curva (`80px`) estão alinhados com sua expectativa de design.
 
-> [!WARNING]
-> A correção envolverá alterações em múltiplos arquivos-chave do sistema. Peço que confirme se deseja que o script faça a substituição automática em todos os arquivos identificados de uma só vez, ou se prefere fazer arquivo por arquivo. Recomendo usar um script em Node.js ou PowerShell para aplicar um "Localizar e Substituir" universal e evitar esquecer algum caractere.
+## Mudanças Propostas
 
-## Proposed Changes
+### 1. `src/components/Login.jsx`
+- O contêiner principal (`grid`) **deixará de ser** totalmente branco (`bg-white`).
+- Ele **receberá o gradiente** de fundo para que essa cor preencha a área vazada pela curva.
+- O painel direito (onde fica o `LoginForm`) **receberá o fundo branco** e a classe de curva apenas para desktop (`bg-white rounded-none lg:rounded-tl-[80px]`), além de uma leve sombra lateral para dar a ilusão de profundidade.
 
-Os arquivos a seguir foram identificados com a presença de caracteres corrompidos da família do `Ã`:
+#### [MODIFY] Login.jsx
+- Editar o `div` principal (linha ~58).
+- Editar o `div` que envolve o `<LoginForm />`.
 
-### Componentes Afetados
+### 2. `src/components/Login/LoginIllustration.jsx`
+- Precisamos **remover o fundo** deste componente, já que o gradiente foi movido para o contêiner pai no `Login.jsx`.
+- Isso garante que não haja problemas de bordas duras ou inconsistências de cor no encontro da ilustração com a curva do formulário.
 
-#### [MODIFY] [Configuracoes.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Configuracoes.jsx)
-#### [MODIFY] [Processos.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Processos.jsx)
-#### [MODIFY] [Schedule.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Schedule.jsx)
-#### [MODIFY] [ServicesDirectory.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/ServicesDirectory.jsx)
-#### [MODIFY] [Sectors.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Sectors.jsx)
-#### [MODIFY] [ManagePlantaoModal.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/schedule/ManagePlantaoModal.jsx)
-#### [MODIFY] [Coverage.jsx](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/components/Coverage.jsx)
-#### [MODIFY] [officesData.js](file:///f:/Projetos%20em%20Dev/prestek_intranet/src/data/officesData.js)
+#### [MODIFY] LoginIllustration.jsx
+- Remover `bg-gradient-to-br from-[#EAF4FF] via-[#F0F8FF] to-[rgba(74,158,245,0.05)]` da div principal.
 
----
+## Plano de Verificação
 
-### Mapeamento de Correção
-Aplicaremos um script para substituir exatamente as strings corrompidas abaixo pelos caracteres corretos em UTF-8:
-
-- `Ã§Ã£o` ➔ `ção`
-- `Ã§Ãµes` ➔ `ções`
-- `Ã§` ➔ `ç`
-- `Ã£` ➔ `ã`
-- `Ãµ` ➔ `õ`
-- `Ã¡` ➔ `á`
-- `Ã©` ➔ `é`
-- `Ã³` ➔ `ó`
-- `Ãº` ➔ `ú`
-- `Ã­` ➔ `í`
-- `Ãª` ➔ `ê`
-- `Ã¢` ➔ `â`
-- `Ã` ➔ `À` (no contexto de `Ã  vista` ou maiúsculas)
-- `Ã‡Ã•ES` ➔ `ÇÕES`
-- `ÃŠ` ➔ `Ê`
-- `Ã“` ➔ `Ó`
-- `Ã` ➔ `Á`
-- `Ã` ➔ `Í`
-- `Âº` ➔ `º`
-- `Âª` ➔ `ª`
-
-## Verification Plan
-
-### Automated Tests
-- Executarei um script customizado em Node.js para buscar e substituir as strings em todo o diretório `src/`.
-- Após rodar o script, farei uma varredura com `grep` (`Ã`) para garantir que nenhum resquício de Mojibake foi deixado para trás.
-
-### Manual Verification
-- Com o `npm run dev` rodando, pedirei que você acesse a aba "Diretório de Serviços Internos", "Configurações" e "Processos" no navegador e verifique se a acentuação voltou ao normal sem precisar do Google Tradutor.
+### Verificação Manual
+1. Abrir o navegador no modo Desktop e visualizar a tela de login.
+2. Confirmar se o formulário à direita possui uma grande curva superior esquerda (80px) sobrepondo o fundo da ilustração.
+3. Redimensionar para o modo Mobile e garantir que o layout retorne a uma única coluna branca fluida (sem a curva quebrada).

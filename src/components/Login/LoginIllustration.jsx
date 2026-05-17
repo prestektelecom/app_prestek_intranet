@@ -36,7 +36,7 @@ export default function LoginIllustration() {
     }, [])
 
     return (
-        <div className="bg-gradient-to-br from-[#EAF4FF] via-[#F0F8FF] to-[rgba(74,158,245,0.05)] p-11 flex flex-col justify-between relative overflow-hidden min-h-[600px]">
+        <div className="p-11 flex flex-col justify-between relative overflow-hidden min-h-[600px]">
             {/* Dotted pattern overlay */}
             <svg className="absolute inset-0 opacity-45 pointer-events-none" width="100%" height="100%">
                 <defs>
@@ -54,10 +54,12 @@ export default function LoginIllustration() {
             <div className="relative z-10 flex items-center justify-between gap-4">
                 <Brand />
                 
+                {/* 
                 <div className="inline-flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full text-[12px] font-semibold text-[#2D7BD4] shadow-[0_4px_12px_rgba(74,158,245,0.08)] border border-[#EAF4FF]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#1F8A5B] animate-pulse" />
                     Sistemas operacionais
                 </div>
+                */}
             </div>
 
             {/* Middle Row: Lottie Animation Container */}
@@ -95,6 +97,7 @@ export default function LoginIllustration() {
                     Monitore seus chamados, analise o desempenho da equipe e gerencie tudo a partir de um único painel integrado.
                 </p>
 
+                {/* 
                 <div className="flex gap-8 border-t border-[#4A9EF5]/10 pt-5">
                     <div>
                         <div className="text-xl font-bold text-[#1C2B3A]">99.99%</div>
@@ -109,6 +112,7 @@ export default function LoginIllustration() {
                         <div className="font-mono text-[9px] tracking-wider text-[#9AA5B4] uppercase mt-0.5">Suporte NOC</div>
                     </div>
                 </div>
+                */}
             </div>
         </div>
     )

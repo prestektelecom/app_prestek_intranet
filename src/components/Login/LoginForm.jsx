@@ -62,7 +62,7 @@ export default function LoginForm({
 
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                 <Field
-                    label="E-mail ou Usuário"
+                    label="E-mail"
                     icon={<UserIcon />}
                     placeholder="Seu usuário IXC"
                     value={email}
