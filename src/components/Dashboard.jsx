@@ -311,7 +311,7 @@ function ComunicadosCard({ setCurrentView }) {
 
 function AtalhosCard({ setCurrentView }) {
   const atalhos = [
-    { icon: 'Room',      label: 'Serviços',    hint: 'Ordens e chamados',     id: 'services',      accent: C.accent },
+    { icon: 'Room',      label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento', accent: C.accent },
     { icon: 'Headset',   label: 'Suporte TI',  hint: 'Tempo médio: ~12 min',  id: 'tickets',       accent: C.accent },
     { icon: 'Badge',     label: 'Meu Perfil',  hint: 'Dados e segurança',     id: 'settings',      accent: C.accentDeep },
     { icon: 'Lightning', label: 'Comunicados', hint: 'Avisos e urgentes',     id: 'announcements', accent: C.warning },
@@ -324,7 +324,13 @@ function AtalhosCard({ setCurrentView }) {
         {atalhos.map(a => {
           const IconC = Icons[a.icon];
           return (
-            <button key={a.id} onClick={() => setCurrentView(a.id)}
+            <button key={a.id} onClick={() => {
+              if (a.url) {
+                window.open(a.url, '_blank');
+              } else {
+                setCurrentView(a.id);
+              }
+            }}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px', borderRadius: 14, border: `1px solid ${C.line}`, background: 'white', cursor: 'pointer', textAlign: 'left', transition: 'all .15s', fontFamily: 'inherit' }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 10px 24px ${tone(C.accentDeep, 0.10)}`; e.currentTarget.style.borderColor = tone(a.accent, 0.4); }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = C.line; }}
