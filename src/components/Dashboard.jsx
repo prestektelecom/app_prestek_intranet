@@ -5,6 +5,7 @@ import Sparkline from './common/Sparkline'
 import BentoAvatar from './common/Avatar'
 import { Icons } from './common/Icons'
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs'
+import TiSupportModal from './TiSupportModal'
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -309,7 +310,7 @@ function ComunicadosCard({ setCurrentView }) {
   );
 }
 
-function AtalhosCard({ setCurrentView }) {
+function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   const atalhos = [
     { icon: 'Room',      label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento', accent: C.accent },
     { icon: 'Headset',   label: 'Suporte TI',  hint: 'Tempo médio: ~12 min',  id: 'tickets',       accent: C.accent },
@@ -327,6 +328,8 @@ function AtalhosCard({ setCurrentView }) {
             <button key={a.id} onClick={() => {
               if (a.url) {
                 window.open(a.url, '_blank');
+              } else if (a.id === 'tickets') {
+                onSuporteTIClick();
               } else {
                 setCurrentView(a.id);
               }
@@ -454,6 +457,7 @@ export default function Dashboard({ setCurrentView, user }) {
   const [layout, setLayout] = useState(DEFAULT_LAYOUT);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTiModalOpen, setIsTiModalOpen] = useState(false);
 
   const func = user?.funcionario ?? {};
   const safeRole = func.id_funcao || 'Colaborador';
@@ -611,7 +615,7 @@ export default function Dashboard({ setCurrentView, user }) {
             <ComunicadosCard setCurrentView={setCurrentView} />
           </div>
           <div key="atalhos" className={isEditing ? 'widget-editable' : ''}>
-            <AtalhosCard setCurrentView={setCurrentView} />
+            <AtalhosCard setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
           </div>
           <div key="team" className={isEditing ? 'widget-editable' : ''}>
             <TeamBento />
@@ -634,6 +638,8 @@ export default function Dashboard({ setCurrentView, user }) {
           </div>
         </div>
       </div>
+
+      <TiSupportModal isOpen={isTiModalOpen} onClose={() => setIsTiModalOpen(false)} user={user} />
     </main>
   );
 }

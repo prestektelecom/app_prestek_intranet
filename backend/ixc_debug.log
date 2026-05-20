@@ -1,0 +1,17 @@
+[2026-05-20T23:53:38.461Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-05-20T23:54:21.058Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-05-20T23:54:21.506Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"761753","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"06f0ace7acce2e95329d27f638fa7a0acbd5f4e5"},{"tipo":"i","campo":"id_filial","valor":"1"},{"tipo":"i","campo":"interacao_pendente","valor":"I"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-20 20:54:22"}]}
+[2026-05-20T23:54:24.514Z] buscando ticket 761753...
+[2026-05-20T23:54:24.694Z] Buscando OS vinculada ao ticket 761753 [TENTATIVA 1]
+[2026-05-20T23:54:24.991Z] ENCONTROU OS! ID: 1781766. Protocolo OS: 20260599781
+[2026-05-20T23:54:24.992Z] Atualizando OS 1781766 para o técnico 59570
+[2026-05-20T23:54:25.164Z] Técnico 59570 agendado com sucesso na OS 1781766. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1781766","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-20 20:54:26"}]}
+[2026-05-20T23:54:25.165Z] FIM. Retornando protocolo 20260599781
+[2026-05-20T23:55:20.558Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-05-20T23:55:21.062Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"761754","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"2c54cbef543feb5b9735a03182eb2d5a0df79a70"},{"tipo":"i","campo":"id_filial","valor":"1"},{"tipo":"i","campo":"interacao_pendente","valor":"I"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-20 20:55:22"}]}
+[2026-05-20T23:55:24.066Z] buscando ticket 761754...
+[2026-05-20T23:55:24.209Z] Buscando OS vinculada ao ticket 761754 [TENTATIVA 1]
+[2026-05-20T23:55:24.504Z] ENCONTROU OS! ID: 1781767. Protocolo OS: 20260599782
+[2026-05-20T23:55:24.505Z] Atualizando OS 1781767 para o técnico 59570
+[2026-05-20T23:55:24.663Z] Técnico 59570 agendado com sucesso na OS 1781767. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1781767","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-20 20:55:25"}]}
+[2026-05-20T23:55:24.664Z] FIM. Retornando protocolo 20260599782

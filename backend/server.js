@@ -1552,7 +1552,7 @@ app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
 
 // ─── Rota: Abrir Ticket de Suporte no IXC ────────────────────────────────────
 app.post('/api/ixc/su-ticket', async (req, res) => {
-    const { mensagem, colaborador_id, tecnico_id } = req.body;
+    const { mensagem, colaborador_id, tecnico_id, nome_solicitante } = req.body;
 
     if (!mensagem) {
         return res.status(400).json({ sucesso: false, erro: 'A descrição da situação é obrigatória.' });
@@ -1582,14 +1582,22 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         console.warn("Aviso ao buscar dados do colaborador no banco:", dbErr.message);
     }
 
+    // Formata a mensagem com o nome do solicitante
+    let mensagemFormatada = '';
+    if (nome_solicitante) {
+        mensagemFormatada = `Solicitante: ${nome_solicitante}\n\n========================\nDESCREVA A SITUAÇÃO:\n${mensagem}\n========================`;
+    } else {
+        mensagemFormatada = `========================\nDESCREVA A SITUAÇÃO:\n${mensagem}\n========================`;
+    }
+
     const dados = {
         tipo: 'C',
         id_cliente: ixcIds.id_cliente,
         id_login: ixcIds.id_login,
         id_contrato: ixcIds.id_contrato,
-        id_filial: '8',
+        id_filial: '1',
         id_assunto: '1154',
-        id_canal_atendimento: '12',
+        id_canal_atendimento: '4',
         id_ticket_setor: '16',
         id_wfl_processo: '237',
         id_responsavel_tecnico: tecnico_id || colaborador_id || '0',
@@ -1600,17 +1608,17 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         bairro: 'SENHOR DO BONFIM',
         cidade: '1721',
         cep: '57200-000',
-        latitude: '-10.2872659',
-        longitude: '-36.5772428',
+        latitude: '-10.277295',
+        longitude: '-36.5581617',
         gerar_protocolo: 'S',
-        menssagem: mensagem,
+        menssagem: mensagemFormatada,
         status: 'T',
         su_status: 'N',
         origem_cadastro: 'P',
         prioridade: 'M',
         melhor_horario_reserva: 'Q',
         id_ticket_origem: 'I',
-        interacao_pendente: 'N',
+        interacao_pendente: 'I',
         finalizar_atendimento: 'N',
         atualizar_cliente: 'S',
         atualizar_login: 'S'
