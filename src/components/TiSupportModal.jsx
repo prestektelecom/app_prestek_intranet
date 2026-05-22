@@ -103,7 +103,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
   return (
     // Overlay
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 50,
+      position: 'fixed', inset: 0, zIndex: 1100,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 16,
       background: 'rgba(11, 27, 46, 0.55)',
