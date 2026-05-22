@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PlanoBentoCard from './services/PlanoBentoCard';
 import TechBentoCard from './services/TechBentoCard';
 import StreamingBentoCard from './services/StreamingBentoCard';
+import { AVATAR_PNGS, resolveAvatarUrl } from '../utils/avatarPngs';
 
 export default function ServicesDirectory({ setCurrentView, user }) {
     const isAdmin = user?.is_admin;
@@ -57,6 +58,10 @@ export default function ServicesDirectory({ setCurrentView, user }) {
     const [activeSlide, setActiveSlide] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
 
+    // Confetti and Gamification State
+    const [confettiLoaded, setConfettiLoaded] = useState(false);
+    const confettiLoadingRef = useRef(false);
+
     useEffect(() => {
         fetchPlans();
         fetchServicosTecnicos();
@@ -73,6 +78,77 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         }
         return () => clearInterval(interval);
     }, [isHovered]);
+
+    useEffect(() => {
+        if (activeSlide === 1 || activeSlide === 2) {
+            triggerConfetti();
+        }
+    }, [activeSlide]);
+
+    const getDeterministicAvatar = (vendor) => {
+        if (!vendor) return null;
+        const name = vendor.nome || '';
+        const id = vendor.id || 0;
+        const firstName = name.trim().split(' ')[0].toLowerCase();
+        const isFeminino = firstName.endsWith('a') || firstName.endsWith('e') || firstName.endsWith('i');
+        
+        if (isFeminino) {
+            const idx = 32 + (id % 16);
+            return AVATAR_PNGS[idx];
+        } else {
+            const idx = id % 32;
+            return AVATAR_PNGS[idx];
+        }
+    };
+
+    const triggerConfetti = () => {
+        if (window.confetti) {
+            runConfettiEffects();
+        } else {
+            if (confettiLoadingRef.current) return;
+            confettiLoadingRef.current = true;
+            
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
+            script.async = true;
+            script.onload = () => {
+                setConfettiLoaded(true);
+                confettiLoadingRef.current = false;
+                runConfettiEffects();
+            };
+            script.onerror = () => {
+                console.error("Erro ao carregar script de confetes via CDN");
+                confettiLoadingRef.current = false;
+            };
+            document.body.appendChild(script);
+        }
+    };
+
+    const runConfettiEffects = () => {
+        if (!window.confetti) return;
+        try {
+            const duration = 2.5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 25, spread: 360, ticks: 50, zIndex: 1000 };
+
+            const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+            const interval = setInterval(() => {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 40 * (timeLeft / duration);
+                window.confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                window.confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 250);
+        } catch (error) {
+            console.error("Erro ao disparar confetes:", error);
+        }
+    };
+
     const fetchPlans = async () => {
         setIsLoading(true);
         try {
@@ -676,7 +752,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                         const isGold = rank === 1;
 
                                         const rc = {
-                                            1: { border: 'border border-[#4A9EF5]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] via-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-2xl shadow-[#4A9EF5]/30', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#1F5BA8]', badgeColor: 'bg-white/20 text-white' },
+                                            1: { border: 'border border-[#4A9EF5]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] via-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-2xl shadow-[#4A9EF5]/30 animate-glow-gold', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#1F5BA8]', badgeColor: 'bg-white/20 text-white' },
                                             2: { border: 'border border-[#1F5BA8]/30', label: '2º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] to-[#2D7BD4]', glow: 'shadow-lg shadow-[#1F5BA8]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#1F5BA8]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
                                             3: { border: 'border border-[#2D7BD4]/30', label: '3º Lugar', bg: 'bg-gradient-to-br from-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-lg shadow-[#4A9EF5]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#2D7BD4]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
                                         }[rank];
@@ -691,8 +767,10 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                     </span>
                                                 </div>
                                                 {isGold && (
-                                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-white text-[#1F5BA8] shadow-lg shadow-[#4A9EF5]/30">
-                                                        <span className="material-symbols-outlined text-xl">crown</span>
+                                                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
+                                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-[#1F5BA8] shadow-lg shadow-[#4A9EF5]/30 animate-float-crown">
+                                                            <span className="material-symbols-outlined text-xl">crown</span>
+                                                        </div>
                                                     </div>
                                                 )}
                                                 <h4 className={`font-black ${rc.titleColor} truncate leading-tight ${isGold ? 'text-sm sm:text-base mt-1' : 'text-xs sm:text-sm'}`} title={plan.descricao}>{plan.descricao}</h4>
@@ -769,7 +847,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                         const isGold = rank === 1;
 
                                         const rc = {
-                                            1: { border: 'border border-[#4A9EF5]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] via-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-2xl shadow-[#4A9EF5]/30', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#1F5BA8]', badgeColor: 'bg-white/20 text-white' },
+                                            1: { border: 'border border-[#4A9EF5]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] via-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-2xl shadow-[#4A9EF5]/30 animate-glow-gold', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#1F5BA8]', badgeColor: 'bg-white/20 text-white' },
                                             2: { border: 'border border-[#1F5BA8]/30', label: '2º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] to-[#2D7BD4]', glow: 'shadow-lg shadow-[#1F5BA8]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#1F5BA8]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
                                             3: { border: 'border border-[#2D7BD4]/30', label: '3º Lugar', bg: 'bg-gradient-to-br from-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-lg shadow-[#4A9EF5]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#2D7BD4]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
                                         }[rank];
@@ -785,15 +863,26 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 </div>
 
                                                 {isGold && (
-                                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-white text-[#1F5BA8] shadow-lg shadow-[#4A9EF5]/30">
-                                                        <span className="material-symbols-outlined text-xl">crown</span>
+                                                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
+                                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-[#1F5BA8] shadow-lg shadow-[#4A9EF5]/30 animate-float-crown">
+                                                            <span className="material-symbols-outlined text-xl">crown</span>
+                                                        </div>
                                                     </div>
                                                 )}
 
                                                 <div className="flex items-center gap-2 sm:gap-3">
-                                                    <div className={`flex shrink-0 items-center justify-center rounded-full bg-white/10 text-white ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
-                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 20 : 16 }}>person</span>
-                                                    </div>
+                                                    {(() => {
+                                                        const avatarUrl = getDeterministicAvatar(vendor);
+                                                        return avatarUrl ? (
+                                                            <div className={`flex shrink-0 items-center justify-center rounded-full overflow-hidden bg-white/10 border border-white/20 ${isGold ? 'w-10 h-10' : 'w-8 h-8'}`}>
+                                                                <img src={avatarUrl} alt={vendor.nome} className="w-full h-full object-cover" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className={`flex shrink-0 items-center justify-center rounded-full bg-white/10 text-white ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
+                                                                <span className="material-symbols-outlined" style={{ fontSize: isGold ? 20 : 16 }}>person</span>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                     <div className="overflow-hidden">
                                                         <h4 className={`font-black text-white truncate leading-tight ${isGold ? 'text-sm sm:text-base mt-0' : 'text-xs sm:text-sm mt-0'}`} title={vendor.nome}>{vendor.nome.split(' ')[0]}</h4>
                                                         <p className={`text-[#E4ECF5]/70 ${isGold ? 'text-[9px] sm:text-[11px] mt-0.5' : 'text-[8px] sm:text-[10px] mt-0.5'}`}>Vendedora</p>
@@ -866,7 +955,7 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                         const isGold = rank === 1;
 
                                         const rc = {
-                                            1: { border: 'border border-[#4A9EF5]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] via-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-2xl shadow-[#4A9EF5]/30', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#1F5BA8]', badgeColor: 'bg-white/20 text-white' },
+                                            1: { border: 'border border-[#4A9EF5]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] via-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-2xl shadow-[#4A9EF5]/30 animate-glow-gold', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#1F5BA8]', badgeColor: 'bg-white/20 text-white' },
                                             2: { border: 'border border-[#1F5BA8]/30', label: '2º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] to-[#2D7BD4]', glow: 'shadow-lg shadow-[#1F5BA8]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#1F5BA8]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
                                             3: { border: 'border border-[#2D7BD4]/30', label: '3º Lugar', bg: 'bg-gradient-to-br from-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-lg shadow-[#4A9EF5]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#2D7BD4]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
                                         }[rank];
@@ -882,15 +971,26 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                                 </div>
 
                                                 {isGold && (
-                                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-white text-[#1F5BA8] shadow-lg shadow-[#4A9EF5]/30">
-                                                        <span className="material-symbols-outlined text-xl">crown</span>
+                                                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
+                                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-[#1F5BA8] shadow-lg shadow-[#4A9EF5]/30 animate-float-crown">
+                                                            <span className="material-symbols-outlined text-xl">crown</span>
+                                                        </div>
                                                     </div>
                                                 )}
 
                                                 <div className="flex items-center gap-2 sm:gap-3">
-                                                    <div className={`flex shrink-0 items-center justify-center rounded-full bg-white/10 text-white ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
-                                                        <span className="material-symbols-outlined" style={{ fontSize: isGold ? 20 : 16 }}>person</span>
-                                                    </div>
+                                                    {(() => {
+                                                        const avatarUrl = getDeterministicAvatar(vendor);
+                                                        return avatarUrl ? (
+                                                            <div className={`flex shrink-0 items-center justify-center rounded-full overflow-hidden bg-white/10 border border-white/20 ${isGold ? 'w-10 h-10' : 'w-8 h-8'}`}>
+                                                                <img src={avatarUrl} alt={vendor.nome} className="w-full h-full object-cover" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className={`flex shrink-0 items-center justify-center rounded-full bg-white/10 text-white ${isGold ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-6 h-6 sm:w-8 sm:h-8'}`}>
+                                                                <span className="material-symbols-outlined" style={{ fontSize: isGold ? 20 : 16 }}>person</span>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                     <div className="overflow-hidden">
                                                         <h4 className={`font-black text-white truncate leading-tight ${isGold ? 'text-sm sm:text-base mt-0' : 'text-xs sm:text-sm mt-0'}`} title={vendor.nome}>{vendor.nome.split(' ')[0]}</h4>
                                                         <p className={`text-[#E4ECF5]/70 ${isGold ? 'text-[9px] sm:text-[11px] mt-0.5' : 'text-[8px] sm:text-[10px] mt-0.5'}`}>Vendedora</p>
