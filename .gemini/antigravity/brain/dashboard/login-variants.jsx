@@ -77,14 +77,14 @@ function IllustrationPlaceholder({ width = 480, height = 480, label = '3D ISOMET
         <ellipse cx="240" cy="360" rx="140" ry="32" fill="none" stroke={palette.blue} strokeWidth="1" opacity="0.25" strokeDasharray="3 4" />
         {/* Central placeholder block */}
         <rect x="160" y="200" width="160" height="140" rx="6" fill={`url(#${stripeId})`}
-              stroke={palette.blue} strokeWidth="1.5" opacity="0.6" />
+          stroke={palette.blue} strokeWidth="1.5" opacity="0.6" />
         {/* Floating chips */}
         <rect x="80" y="160" width="50" height="50" rx="8" fill={palette.white}
-              stroke={palette.blue} strokeWidth="1.5" opacity="0.7" />
+          stroke={palette.blue} strokeWidth="1.5" opacity="0.7" />
         <rect x="350" y="130" width="44" height="44" rx="22" fill={palette.white}
-              stroke={palette.blue} strokeWidth="1.5" opacity="0.7" />
+          stroke={palette.blue} strokeWidth="1.5" opacity="0.7" />
         <rect x="370" y="240" width="56" height="36" rx="6" fill={palette.white}
-              stroke={palette.cyan} strokeWidth="1.5" opacity="0.7" />
+          stroke={palette.cyan} strokeWidth="1.5" opacity="0.7" />
         <circle cx="110" cy="280" r="14" fill={palette.white} stroke={palette.blue} strokeWidth="1.5" opacity="0.7" />
       </svg>
       <div style={{
@@ -200,10 +200,14 @@ function VariantA() {
       display: 'grid', gridTemplateColumns: '1fr 560px', position: 'relative', overflow: 'hidden',
     }}>
       {/* Soft decorative blobs */}
-      <div style={{ position: 'absolute', top: -120, left: -120, width: 360, height: 360,
-        background: `radial-gradient(circle, ${palette.blue}33 0%, transparent 70%)`, filter: 'blur(20px)' }} />
-      <div style={{ position: 'absolute', bottom: -160, right: 380, width: 420, height: 420,
-        background: `radial-gradient(circle, ${palette.cyan}22 0%, transparent 70%)`, filter: 'blur(20px)' }} />
+      <div style={{
+        position: 'absolute', top: -120, left: -120, width: 360, height: 360,
+        background: `radial-gradient(circle, ${palette.blue}33 0%, transparent 70%)`, filter: 'blur(20px)'
+      }} />
+      <div style={{
+        position: 'absolute', bottom: -160, right: 380, width: 420, height: 420,
+        background: `radial-gradient(circle, ${palette.cyan}22 0%, transparent 70%)`, filter: 'blur(20px)'
+      }} />
 
       {/* Left */}
       <div style={{ padding: '48px 64px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -212,7 +216,7 @@ function VariantA() {
           <IllustrationPlaceholder width={520} height={520} />
         </div>
         <div style={{ fontSize: 12, color: palette.muted, fontFamily: '"JetBrains Mono", monospace' }}>
-          v4.2.0 · © 2026 Prestek Inc.
+          v1.1.0 · © 2026 Prestek Inc.
         </div>
       </div>
 
@@ -227,8 +231,10 @@ function VariantA() {
               fontSize: 26, fontWeight: 700, color: palette.ink, margin: 0,
               letterSpacing: '-0.02em',
             }}>Welcome to the System</h1>
-            <div style={{ width: 56, height: 3, background: palette.blue,
-              borderRadius: 2, margin: '14px auto 0' }} />
+            <div style={{
+              width: 56, height: 3, background: palette.blue,
+              borderRadius: 2, margin: '14px auto 0'
+            }} />
             <p style={{ fontSize: 14, color: palette.ink2, margin: '14px 0 0' }}>
               Sign in to continue to your workspace
             </p>
@@ -236,13 +242,17 @@ function VariantA() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600,
-                color: palette.ink, marginBottom: 8 }}>Username</label>
+              <label style={{
+                display: 'block', fontSize: 13, fontWeight: 600,
+                color: palette.ink, marginBottom: 8
+              }}>Username</label>
               <Input icon={<UserIcon />} placeholder="your.name@prestek.com" value="kleanne@prestek.com" />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600,
-                color: palette.ink, marginBottom: 8 }}>Password</label>
+              <label style={{
+                display: 'block', fontSize: 13, fontWeight: 600,
+                color: palette.ink, marginBottom: 8
+              }}>Password</label>
               <Input icon={<LockIcon />} type="password" placeholder="••••••••"
                 value="passwordpassword" trailing={<EyeIcon />} />
             </div>
@@ -284,8 +294,10 @@ function VariantB() {
       </svg>
 
       {/* Top bar */}
-      <div style={{ position: 'absolute', top: 32, left: 64, right: 64,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{
+        position: 'absolute', top: 32, left: 64, right: 64,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
         <Brand size={28} />
         <div style={{ display: 'flex', gap: 28, fontSize: 14, color: palette.ink2 }}>
           <a style={{ color: 'inherit', textDecoration: 'none' }}>Status</a>
@@ -295,8 +307,10 @@ function VariantB() {
       </div>
 
       {/* Centered card */}
-      <div style={{ position: 'absolute', inset: 0, display: 'flex',
-        alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
+      <div style={{
+        position: 'absolute', inset: 0, display: 'flex',
+        alignItems: 'center', justifyContent: 'center', padding: '80px 0'
+      }}>
         <div style={{
           width: 920, display: 'grid', gridTemplateColumns: '1fr 1fr',
           background: 'white', borderRadius: 24, overflow: 'hidden',
@@ -331,8 +345,10 @@ function VariantB() {
 
           {/* Form panel */}
           <div style={{ padding: '56px 52px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <h1 style={{ fontSize: 28, fontWeight: 700, color: palette.ink, margin: 0,
-              letterSpacing: '-0.02em' }}>Welcome back</h1>
+            <h1 style={{
+              fontSize: 28, fontWeight: 700, color: palette.ink, margin: 0,
+              letterSpacing: '-0.02em'
+            }}>Welcome back</h1>
             <p style={{ fontSize: 14, color: palette.ink2, margin: '8px 0 32px' }}>
               Enter your credentials to access the system.
             </p>
@@ -351,9 +367,11 @@ function VariantB() {
               </div>
             </div>
 
-            <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${palette.line}`,
+            <div style={{
+              marginTop: 24, paddingTop: 20, borderTop: `1px solid ${palette.line}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              fontSize: 13, color: palette.ink2 }}>
+              fontSize: 13, color: palette.ink2
+            }}>
               <LockIcon />
               <span>Secured with SSO · SAML 2.0</span>
             </div>
@@ -384,36 +402,46 @@ function VariantC() {
           </linearGradient>
         </defs>
         <path d="M0,600 C300,520 600,720 900,600 C1200,480 1440,560 1440,560 L1440,900 L0,900 Z"
-              fill="url(#waveC)" />
+          fill="url(#waveC)" />
         <path d="M0,700 C400,640 700,780 1100,700 C1300,660 1440,700 1440,700 L1440,900 L0,900 Z"
-              fill={palette.blue} opacity="0.06" />
+          fill={palette.blue} opacity="0.06" />
       </svg>
 
       {/* Floating geometric chips */}
-      <div style={{ position: 'absolute', top: 140, left: 200, width: 80, height: 80,
+      <div style={{
+        position: 'absolute', top: 140, left: 200, width: 80, height: 80,
         background: 'white', borderRadius: 18, transform: 'rotate(-12deg)',
         boxShadow: '0 12px 32px rgba(31,91,168,0.12)', display: 'flex',
-        alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 36, height: 36, borderRadius: 8,
-          background: `linear-gradient(135deg, ${palette.blue}, ${palette.cyan})` }} />
+        alignItems: 'center', justifyContent: 'center'
+      }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 8,
+          background: `linear-gradient(135deg, ${palette.blue}, ${palette.cyan})`
+        }} />
       </div>
-      <div style={{ position: 'absolute', top: 200, right: 240, width: 64, height: 64,
+      <div style={{
+        position: 'absolute', top: 200, right: 240, width: 64, height: 64,
         background: 'white', borderRadius: 32, transform: 'rotate(8deg)',
         boxShadow: '0 12px 32px rgba(31,91,168,0.12)', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', color: palette.blue }}>
+        alignItems: 'center', justifyContent: 'center', color: palette.blue
+      }}>
         <UserIcon />
       </div>
-      <div style={{ position: 'absolute', bottom: 200, left: 280, width: 88, height: 56,
+      <div style={{
+        position: 'absolute', bottom: 200, left: 280, width: 88, height: 56,
         background: 'white', borderRadius: 12, transform: 'rotate(6deg)',
         boxShadow: '0 12px 32px rgba(31,91,168,0.12)',
-        padding: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        padding: 10, display: 'flex', flexDirection: 'column', gap: 4
+      }}>
         <div style={{ height: 4, borderRadius: 2, background: palette.line, width: '80%' }} />
         <div style={{ height: 4, borderRadius: 2, background: palette.line, width: '60%' }} />
         <div style={{ height: 4, borderRadius: 2, background: palette.blue, width: '40%', marginTop: 'auto' }} />
       </div>
-      <div style={{ position: 'absolute', bottom: 160, right: 280, width: 72, height: 72,
+      <div style={{
+        position: 'absolute', bottom: 160, right: 280, width: 72, height: 72,
         borderRadius: 36, background: `linear-gradient(135deg, ${palette.mint}, ${palette.cyan})`,
-        transform: 'rotate(-10deg)', boxShadow: '0 12px 32px rgba(31,91,168,0.12)' }} />
+        transform: 'rotate(-10deg)', boxShadow: '0 12px 32px rgba(31,91,168,0.12)'
+      }} />
 
       {/* Card */}
       <div style={{
@@ -424,12 +452,16 @@ function VariantC() {
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
           <PrestekMark size={44} />
         </div>
-        <h1 style={{ fontSize: 24, fontWeight: 700, textAlign: 'center', color: palette.ink,
-          margin: 0, letterSpacing: '-0.02em' }}>Sign in to Prestek</h1>
-        <div style={{ width: 40, height: 3, background: palette.blue,
-          borderRadius: 2, margin: '12px auto 8px' }} />
+        <h1 style={{
+          fontSize: 24, fontWeight: 700, textAlign: 'center', color: palette.ink,
+          margin: 0, letterSpacing: '-0.02em'
+        }}>Sign in to Prestek</h1>
+        <div style={{
+          width: 40, height: 3, background: palette.blue,
+          borderRadius: 2, margin: '12px auto 8px'
+        }} />
         <p style={{ fontSize: 14, color: palette.ink2, textAlign: 'center', margin: '0 0 32px' }}>
-          Middle Platform · v4.2.0
+          Middle Platform · v1.1.0
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -443,8 +475,10 @@ function VariantC() {
           </div>
         </div>
 
-        <div style={{ marginTop: 28, display: 'flex', alignItems: 'center', gap: 12,
-          fontSize: 12, color: palette.muted }}>
+        <div style={{
+          marginTop: 28, display: 'flex', alignItems: 'center', gap: 12,
+          fontSize: 12, color: palette.muted
+        }}>
           <div style={{ flex: 1, height: 1, background: palette.line }} />
           <span>or</span>
           <div style={{ flex: 1, height: 1, background: palette.line }} />
@@ -502,15 +536,19 @@ function VariantD() {
           </svg>
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
             <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em' }}>prestek</span>
-            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
-              letterSpacing: '0.2em', opacity: 0.7, marginTop: 3, textTransform: 'uppercase' }}>
+            <span style={{
+              fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+              letterSpacing: '0.2em', opacity: 0.7, marginTop: 3, textTransform: 'uppercase'
+            }}>
               middle platform
             </span>
           </div>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          position: 'relative' }}>
+        <div style={{
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'relative'
+        }}>
           {/* Lighter illustration variant for blue bg */}
           <div style={{ filter: 'hue-rotate(-15deg) brightness(1.6) saturate(0.5)' }}>
             <IllustrationPlaceholder width={420} height={420} label="3D ISOMETRIC ILLUSTRATION" />
@@ -524,22 +562,28 @@ function VariantD() {
           <div style={{ display: 'flex', gap: 24, marginTop: 28, opacity: 0.85, fontSize: 13 }}>
             <div>
               <div style={{ fontSize: 24, fontWeight: 700 }}>99.99%</div>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11,
-                letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase', marginTop: 2 }}>
+              <div style={{
+                fontFamily: '"JetBrains Mono", monospace', fontSize: 11,
+                letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase', marginTop: 2
+              }}>
                 Uptime SLA
               </div>
             </div>
             <div>
               <div style={{ fontSize: 24, fontWeight: 700 }}>1.2M</div>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11,
-                letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase', marginTop: 2 }}>
+              <div style={{
+                fontFamily: '"JetBrains Mono", monospace', fontSize: 11,
+                letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase', marginTop: 2
+              }}>
                 Endpoints
               </div>
             </div>
             <div>
               <div style={{ fontSize: 24, fontWeight: 700 }}>24/7</div>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11,
-                letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase', marginTop: 2 }}>
+              <div style={{
+                fontFamily: '"JetBrains Mono", monospace', fontSize: 11,
+                letterSpacing: '0.1em', opacity: 0.7, textTransform: 'uppercase', marginTop: 2
+              }}>
                 NOC Support
               </div>
             </div>
@@ -548,11 +592,15 @@ function VariantD() {
       </div>
 
       {/* Right — white form */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '0 80px', position: 'relative' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '0 80px', position: 'relative'
+      }}>
         <div style={{ position: 'absolute', top: 32, right: 64, fontSize: 13, color: palette.ink2 }}>
-          Need an account? <a style={{ color: palette.blue, fontWeight: 600,
-            textDecoration: 'none', marginLeft: 4 }}>Contact admin →</a>
+          Need an account? <a style={{
+            color: palette.blue, fontWeight: 600,
+            textDecoration: 'none', marginLeft: 4
+          }}>Contact admin →</a>
         </div>
 
         <div style={{ width: '100%', maxWidth: 420 }}>
@@ -566,27 +614,37 @@ function VariantD() {
             <span style={{ width: 6, height: 6, borderRadius: 3, background: palette.blue }} />
             Internal portal
           </div>
-          <h1 style={{ fontSize: 36, fontWeight: 800, color: palette.ink, margin: 0,
-            letterSpacing: '-0.03em' }}>Welcome to<br />the System.</h1>
-          <div style={{ width: 56, height: 4, background: palette.blue,
-            borderRadius: 2, marginTop: 16 }} />
-          <p style={{ fontSize: 15, color: palette.ink2, margin: '20px 0 36px',
-            lineHeight: 1.5 }}>
+          <h1 style={{
+            fontSize: 36, fontWeight: 800, color: palette.ink, margin: 0,
+            letterSpacing: '-0.03em'
+          }}>Welcome to<br />the System.</h1>
+          <div style={{
+            width: 56, height: 4, background: palette.blue,
+            borderRadius: 2, marginTop: 16
+          }} />
+          <p style={{
+            fontSize: 15, color: palette.ink2, margin: '20px 0 36px',
+            lineHeight: 1.5
+          }}>
             Sign in with your Prestek credentials to access dashboards, tickets,
             and infrastructure tools.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 700,
+              <label style={{
+                display: 'block', fontSize: 12, fontWeight: 700,
                 color: palette.ink, marginBottom: 8, fontFamily: '"JetBrains Mono", monospace',
-                letterSpacing: '0.1em', textTransform: 'uppercase' }}>Username</label>
+                letterSpacing: '0.1em', textTransform: 'uppercase'
+              }}>Username</label>
               <Input icon={<UserIcon />} placeholder="kleanne@prestek.com" value="kleanne@prestek.com" />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 700,
+              <label style={{
+                display: 'block', fontSize: 12, fontWeight: 700,
                 color: palette.ink, marginBottom: 8, fontFamily: '"JetBrains Mono", monospace',
-                letterSpacing: '0.1em', textTransform: 'uppercase' }}>Password</label>
+                letterSpacing: '0.1em', textTransform: 'uppercase'
+              }}>Password</label>
               <Input icon={<LockIcon />} type="password" value="passwordpassword" trailing={<EyeIcon />} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0' }}>
@@ -600,8 +658,10 @@ function VariantD() {
             </div>
           </div>
 
-          <div style={{ marginTop: 36, fontSize: 12, color: palette.muted,
-            fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.05em' }}>
+          <div style={{
+            marginTop: 36, fontSize: 12, color: palette.muted,
+            fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.05em'
+          }}>
             © 2026 PRESTEK INC. · ALL RIGHTS RESERVED
           </div>
         </div>

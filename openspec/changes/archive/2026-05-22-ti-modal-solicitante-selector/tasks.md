@@ -12,3 +12,9 @@
 - [x] 2.2 Validar que o banner informativo atualiza dinamicamente ao mudar a seleção
 - [x] 2.3 Validar que o payload enviado ao backend contém o `nome_solicitante` correto conforme a seleção
 - [x] 2.4 Verificar que os estilos do `<select>` estão alinhados ao padrão do Dashboard (borda `C.line`, fundo `C.bg`, fonte "Plus Jakarta Sans")
+
+## 3. Atribuição de Técnico Responsável (Márcio Felix)
+
+- [x] 3.1 Adicionar campo `<select>` fixo e desabilitado (disabled) no modal mostrando "MARCIO EDUARDO FELIX" como técnico padrão.
+- [x] 3.2 Atualizar o `handleSubmit` em `TiSupportModal.jsx` para enviar `tecnico_id: "59570"` no payload do chamado.
+- [x] 3.3 Validar que o chamado gerado e a OS correspondente são atribuídos e agendados para o técnico no IXC.

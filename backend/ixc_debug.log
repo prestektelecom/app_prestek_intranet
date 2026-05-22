@@ -23,3 +23,26 @@
 [2026-05-21T00:03:32.829Z] Atualizando OS 1781771 para o técnico 59570
 [2026-05-21T00:03:32.983Z] Técnico 59570 agendado com sucesso na OS 1781771. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1781771","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-20 21:03:34"}]}
 [2026-05-21T00:03:32.984Z] FIM. Retornando protocolo 20260599786
+[2026-05-21T23:57:08.714Z] == INICIANDO ABERTURA TICK: Tecnico undefined ==
+[2026-05-21T23:57:09.188Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","alert":"O Colaborador/Responsável selecionado não está ativo no departamento de atendimento.","id":"762295","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"82c1d802634f93c9a3b738e7005c342ed20bdcc8"},{"tipo":"i","campo":"id_filial","valor":"1"},{"tipo":"i","campo":"interacao_pendente","valor":"I"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-21 20:57:10"}]}
+[2026-05-21T23:57:12.205Z] buscando ticket 762295...
+[2026-05-21T23:57:12.372Z] Buscando OS vinculada ao ticket 762295 [TENTATIVA 1]
+[2026-05-21T23:57:12.664Z] ENCONTROU OS! ID: 1783033. Protocolo OS: 202605101675
+[2026-05-21T23:57:12.665Z] Não atualizou a OS. osIdFinal: 1783033, tecnicoId: undefined
+[2026-05-21T23:57:12.666Z] FIM. Retornando protocolo 202605101675
+[2026-05-22T00:07:58.290Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-05-22T00:07:58.697Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"762297","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"80c9079b792537233b92bfa5ef2ced0719dace01"},{"tipo":"i","campo":"id_filial","valor":"1"},{"tipo":"i","campo":"interacao_pendente","valor":"I"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-21 21:08:00"}]}
+[2026-05-22T00:08:01.711Z] buscando ticket 762297...
+[2026-05-22T00:08:01.893Z] Buscando OS vinculada ao ticket 762297 [TENTATIVA 1]
+[2026-05-22T00:08:02.213Z] ENCONTROU OS! ID: 1783037. Protocolo OS: 202605101681
+[2026-05-22T00:08:02.214Z] Atualizando OS 1783037 para o técnico 59570
+[2026-05-22T00:08:02.390Z] Técnico 59570 agendado com sucesso na OS 1783037. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1783037","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-21 21:08:04"}]}
+[2026-05-22T00:08:02.391Z] FIM. Retornando protocolo 202605101681
+[2026-05-22T00:09:33.328Z] == INICIANDO ABERTURA TICK: Tecnico 59570 ==
+[2026-05-22T00:09:33.761Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"762298","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"dfda1f960c2b13b815d098b2e5941a70f08ea9a1"},{"tipo":"i","campo":"id_filial","valor":"1"},{"tipo":"i","campo":"interacao_pendente","valor":"I"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-21 21:09:35"}]}
+[2026-05-22T00:09:36.774Z] buscando ticket 762298...
+[2026-05-22T00:09:36.953Z] Buscando OS vinculada ao ticket 762298 [TENTATIVA 1]
+[2026-05-22T00:09:37.247Z] ENCONTROU OS! ID: 1783038. Protocolo OS: 202605101682
+[2026-05-22T00:09:37.248Z] Atualizando OS 1783038 para o técnico 59570
+[2026-05-22T00:09:37.441Z] Técnico 59570 agendado com sucesso na OS 1783038. Resposta: {"type":"success","message":"Registro atualizado com sucesso!","id":"1783038","atualiza_campos":[{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-05-21 21:09:39"}]}
+[2026-05-22T00:09:37.442Z] FIM. Retornando protocolo 202605101682

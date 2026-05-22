@@ -29,9 +29,9 @@ const C = {
 };
 
 function tone(hex, a) {
-  const h = hex.replace('#','');
-  const x = h.length === 3 ? h.replace(/./g, c=>c+c) : h;
-  return `rgba(${parseInt(x.slice(0,2),16)},${parseInt(x.slice(2,4),16)},${parseInt(x.slice(4,6),16)},${a})`;
+  const h = hex.replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+  return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
 }
 
 // ─── Brand mark ─────────────────────────────────────────────────────────
@@ -48,34 +48,34 @@ function PrestekMark({ size = 32 }) {
 // ─── Icons (compact) ────────────────────────────────────────────────────
 const sk = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' };
 const I = {
-  Dashboard: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>,
-  Tools: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M14.7 6.3a4 4 0 1 0 5 5l-3-3 1-1-2-2-1 1-3-3-2 2 2 2-7 7v3h3l7-7 2 2 1-1z"/></svg>,
-  Shield: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/></svg>,
-  People: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><circle cx="9" cy="9" r="3.5"/><path d="M3 20c0-3 2.5-5 6-5s6 2 6 5"/><circle cx="17" cy="8" r="2.5"/><path d="M16 14c3 0 5 1.8 5 4.5"/></svg>,
-  Pie: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><circle cx="12" cy="12" r="9"/><path d="M12 3v9h9"/></svg>,
-  Clock: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>,
-  Building: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 8h2M9 12h2M9 16h2M13 8h2M13 12h2M13 16h2"/></svg>,
-  Doc: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 14h8M8 18h5"/></svg>,
-  Ticket: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg>,
-  Megaphone: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M3 11v2l13 5V6L3 11zM16 8v8"/></svg>,
-  Settings: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>,
-  Admin: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><circle cx="12" cy="10" r="2"/><path d="M8 17c.5-2 2-3 4-3s3.5 1 4 3"/></svg>,
-  Search: () => <svg width="18" height="18" viewBox="0 0 24 24" {...sk}><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>,
-  Bell: () => <svg width="18" height="18" viewBox="0 0 24 24" {...sk}><path d="M6 8a6 6 0 1 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>,
-  Logout: () => <svg width="18" height="18" viewBox="0 0 24 24" {...sk}><path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"/><path d="M18 8l4 4-4 4M22 12H10"/></svg>,
-  Sparkle: () => <svg width="14" height="14" viewBox="0 0 24 24" {...sk}><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg>,
-  Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7"/></svg>,
-  Plus: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>,
-  Room: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 6l9-3 9 3M8 12h8M8 16h5"/></svg>,
-  Headset: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="2"/><rect x="17" y="14" width="4" height="6" rx="2"/></svg>,
-  Badge: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.5"/><path d="M8 17c.5-2 2-3 4-3s3.5 1 4 3"/><path d="M10 3h4v3h-4z"/></svg>,
-  Lightning: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>,
-  ArrowUR: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>,
-  ArrowR: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>,
-  TrendDown: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l7 7 4-4 7 7M21 17v-4h-4"/></svg>,
-  TrendUp: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l7-7 4 4 7-7M21 7v4h-4"/></svg>,
-  More: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>,
-  Calendar: () => <svg width="14" height="14" viewBox="0 0 24 24" {...sk}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>,
+  Dashboard: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></svg>,
+  Tools: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M14.7 6.3a4 4 0 1 0 5 5l-3-3 1-1-2-2-1 1-3-3-2 2 2 2-7 7v3h3l7-7 2 2 1-1z" /></svg>,
+  Shield: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z" /></svg>,
+  People: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><circle cx="9" cy="9" r="3.5" /><path d="M3 20c0-3 2.5-5 6-5s6 2 6 5" /><circle cx="17" cy="8" r="2.5" /><path d="M16 14c3 0 5 1.8 5 4.5" /></svg>,
+  Pie: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><circle cx="12" cy="12" r="9" /><path d="M12 3v9h9" /></svg>,
+  Clock: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>,
+  Building: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><rect x="4" y="3" width="16" height="18" rx="1.5" /><path d="M9 8h2M9 12h2M9 16h2M13 8h2M13 12h2M13 16h2" /></svg>,
+  Doc: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6M8 14h8M8 18h5" /></svg>,
+  Ticket: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z" /></svg>,
+  Megaphone: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M3 11v2l13 5V6L3 11zM16 8v8" /></svg>,
+  Settings: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></svg>,
+  Admin: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z" /><circle cx="12" cy="10" r="2" /><path d="M8 17c.5-2 2-3 4-3s3.5 1 4 3" /></svg>,
+  Search: () => <svg width="18" height="18" viewBox="0 0 24 24" {...sk}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>,
+  Bell: () => <svg width="18" height="18" viewBox="0 0 24 24" {...sk}><path d="M6 8a6 6 0 1 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9z" /><path d="M10 21a2 2 0 0 0 4 0" /></svg>,
+  Logout: () => <svg width="18" height="18" viewBox="0 0 24 24" {...sk}><path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2" /><path d="M18 8l4 4-4 4M22 12H10" /></svg>,
+  Sparkle: () => <svg width="14" height="14" viewBox="0 0 24 24" {...sk}><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8" /></svg>,
+  Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7" /></svg>,
+  Plus: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>,
+  Room: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 6l9-3 9 3M8 12h8M8 16h5" /></svg>,
+  Headset: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="3" y="14" width="4" height="6" rx="2" /><rect x="17" y="14" width="4" height="6" rx="2" /></svg>,
+  Badge: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><rect x="4" y="3" width="16" height="18" rx="2" /><circle cx="12" cy="10" r="2.5" /><path d="M8 17c.5-2 2-3 4-3s3.5 1 4 3" /><path d="M10 3h4v3h-4z" /></svg>,
+  Lightning: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><path d="M13 2 4 14h7l-1 8 9-12h-7z" /></svg>,
+  ArrowUR: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M9 7h8v8" /></svg>,
+  ArrowR: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>,
+  TrendDown: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7l7 7 4-4 7 7M21 17v-4h-4" /></svg>,
+  TrendUp: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l7-7 4 4 7-7M21 7v4h-4" /></svg>,
+  More: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></svg>,
+  Calendar: () => <svg width="14" height="14" viewBox="0 0 24 24" {...sk}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>,
 };
 
 // ─── Sidebar (icon rail + flyout label on hover, more modern) ───────────
@@ -281,7 +281,7 @@ function Avatar({ name, size = 32, color }) {
   const palette = color || [C.accent, '#fff'];
   return (
     <div style={{
-      width: size, height: size, borderRadius: size/2,
+      width: size, height: size, borderRadius: size / 2,
       background: palette[0], color: palette[1],
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontWeight: 700, fontSize: size * 0.36, letterSpacing: '0.02em',
@@ -315,7 +315,7 @@ function Sparkline({ data, color = C.accent, height = 56, fill = true }) {
       <path d={path} fill="none" stroke={color} strokeWidth="1.6"
         strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       {/* Last point dot */}
-      <circle cx={points[points.length-1][0]} cy={points[points.length-1][1]}
+      <circle cx={points[points.length - 1][0]} cy={points[points.length - 1][1]}
         r="2" fill={color} stroke="white" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
     </svg>
   );
@@ -340,13 +340,19 @@ function HeroCard() {
         </defs>
         <rect width="100%" height="100%" fill="url(#hero-grid)" />
       </svg>
-      <div style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360,
-        borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)' }} />
-      <div style={{ position: 'absolute', bottom: -100, right: 80, width: 220, height: 220,
-        borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)' }} />
+      <div style={{
+        position: 'absolute', top: -120, right: -80, width: 360, height: 360,
+        borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)'
+      }} />
+      <div style={{
+        position: 'absolute', bottom: -100, right: 80, width: 220, height: 220,
+        borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)'
+      }} />
 
-      <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between',
-        alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
+      <div style={{
+        position: 'relative', display: 'flex', justifyContent: 'space-between',
+        alignItems: 'flex-start', gap: 24, flexWrap: 'wrap'
+      }}>
         <div style={{ maxWidth: 620 }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -456,7 +462,7 @@ function SetorBento() {
         value="47"
         sub="+12%"
         subTone="success"
-        sparkData={[20,28,22,32,30,38,42,47]}
+        sparkData={[20, 28, 22, 32, 30, 38, 42, 47]}
         sparkColor={C.success}
       />
       <KpiCard
@@ -464,7 +470,7 @@ function SetorBento() {
         value="12m"
         sub="-3min"
         subTone="success"
-        sparkData={[18,17,16,15,15,14,13,12]}
+        sparkData={[18, 17, 16, 15, 15, 14, 13, 12]}
         sparkColor={C.accent}
       />
       <KpiCard
@@ -472,7 +478,7 @@ function SetorBento() {
         value="86%"
         sub="estável"
         subTone="muted"
-        sparkData={[82,84,86,85,87,86,86,86]}
+        sparkData={[82, 84, 86, 85, 87, 86, 86, 86]}
         sparkColor={C.accent}
       />
     </div>
@@ -525,8 +531,10 @@ function _SetorBento_unused() {
         {[62, 78, 54, 88, 70, 45, 58].map((h, i) => {
           const isLast = i === 6;
           return (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: 6 }}>
+            <div key={i} style={{
+              flex: 1, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: 6
+            }}>
               <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end' }}>
                 <div style={{
                   width: '100%', height: `${h}%`, minHeight: 6, borderRadius: 6,
@@ -539,7 +547,7 @@ function _SetorBento_unused() {
               <div style={{
                 fontSize: 10.5, fontFamily: '"JetBrains Mono", monospace',
                 color: isLast ? C.accent : C.muted, fontWeight: isLast ? 700 : 500,
-              }}>{['S','T','Q','Q','S','S','D'][i]}</div>
+              }}>{['S', 'T', 'Q', 'Q', 'S', 'S', 'D'][i]}</div>
             </div>
           );
         })}
@@ -647,17 +655,23 @@ function ComunicadosCard() {
       background: 'white', borderRadius: 20, border: `1px solid ${C.line}`,
       padding: 24, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between',
-        alignItems: 'center', marginBottom: 18 }}>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between',
+        alignItems: 'center', marginBottom: 18
+      }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink,
-            letterSpacing: '-0.015em' }}>Comunicados Urgentes</h2>
+          <h2 style={{
+            margin: 0, fontSize: 17, fontWeight: 700, color: C.ink,
+            letterSpacing: '-0.015em'
+          }}>Comunicados Urgentes</h2>
           <div style={{ fontSize: 12.5, color: C.ink2, marginTop: 3 }}>
             Atualizações importantes do setor
           </div>
         </div>
-        <a href="#" style={{ fontSize: 13, fontWeight: 600, color: C.accent,
-          textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        <a href="#" style={{
+          fontSize: 13, fontWeight: 600, color: C.accent,
+          textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4
+        }}>
           Ver todos <I.ArrowR />
         </a>
       </div>
@@ -665,19 +679,25 @@ function ComunicadosCard() {
       {/* Activity feed — 3 calm items so it doesn't feel empty */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {[
-          { tag: 'INFO', tagBg: C.accentSoft, tagColor: C.accentDeep, title: 'Janela de manutenção · ERP',
-            sub: 'Sábado, 22 Mai · 02:00 às 04:00', time: 'há 2h', who: 'Infra' },
-          { tag: 'AVISO', tagBg: C.warningSoft, tagColor: C.warning, title: 'Nova política de senhas em vigor',
-            sub: 'Renovação obrigatória a cada 90 dias', time: 'ontem', who: 'Segurança' },
-          { tag: 'OK', tagBg: C.successSoft, tagColor: C.success, title: 'Sistema de chamados estável',
-            sub: 'Incidente de quinta resolvido', time: '2d', who: 'NOC' },
+          {
+            tag: 'INFO', tagBg: C.accentSoft, tagColor: C.accentDeep, title: 'Janela de manutenção · ERP',
+            sub: 'Sábado, 22 Mai · 02:00 às 04:00', time: 'há 2h', who: 'Infra'
+          },
+          {
+            tag: 'AVISO', tagBg: C.warningSoft, tagColor: C.warning, title: 'Nova política de senhas em vigor',
+            sub: 'Renovação obrigatória a cada 90 dias', time: 'ontem', who: 'Segurança'
+          },
+          {
+            tag: 'OK', tagBg: C.successSoft, tagColor: C.success, title: 'Sistema de chamados estável',
+            sub: 'Incidente de quinta resolvido', time: '2d', who: 'NOC'
+          },
         ].map((it, i) => (
           <div key={i} style={{
             display: 'flex', alignItems: 'center', gap: 14,
             padding: '14px 12px', borderRadius: 12,
             transition: 'background .12s', cursor: 'pointer',
           }} onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
-             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <div style={{
               fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
@@ -686,8 +706,10 @@ function ComunicadosCard() {
               background: it.tagBg, color: it.tagColor, flexShrink: 0,
             }}>{it.tag}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: C.ink,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{
+                fontSize: 14, fontWeight: 600, color: C.ink,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+              }}>
                 {it.title}
               </div>
               <div style={{ fontSize: 12, color: C.ink2, marginTop: 2 }}>
@@ -743,10 +765,14 @@ function AtalhosCard() {
       background: 'white', borderRadius: 20, border: `1px solid ${C.line}`,
       padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between',
-        alignItems: 'center', marginBottom: 14 }}>
-        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink,
-          letterSpacing: '-0.015em' }}>Atalhos Rápidos</h2>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between',
+        alignItems: 'center', marginBottom: 14
+      }}>
+        <h2 style={{
+          margin: 0, fontSize: 17, fontWeight: 700, color: C.ink,
+          letterSpacing: '-0.015em'
+        }}>Atalhos Rápidos</h2>
         <button style={{
           width: 28, height: 28, borderRadius: 8, border: `1px solid ${C.line}`,
           background: 'white', color: C.ink2, cursor: 'pointer',
@@ -778,11 +804,15 @@ function TeamBento() {
       background: 'white', borderRadius: 20, border: `1px solid ${C.line}`,
       padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between',
-        alignItems: 'flex-start', marginBottom: 16 }}>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between',
+        alignItems: 'flex-start', marginBottom: 16
+      }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink,
-            letterSpacing: '-0.015em' }}>Disponibilidade</h2>
+          <h2 style={{
+            margin: 0, fontSize: 17, fontWeight: 700, color: C.ink,
+            letterSpacing: '-0.015em'
+          }}>Disponibilidade</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
             <span style={{ position: 'relative', width: 8, height: 8 }}>
               <span style={{
@@ -822,8 +852,10 @@ function TeamBento() {
               }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.ink,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{
+                fontSize: 13, fontWeight: 600, color: C.ink,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+              }}>
                 {m.name}
               </div>
               <div style={{ fontSize: 11.5, color: C.muted }}>{m.role}</div>
@@ -884,7 +916,7 @@ function Dashboard() {
             <div style={{ display: 'flex', gap: 22 }}>
               <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Política de Privacidade</a>
               <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Diretrizes Internas</a>
-              <span style={{ color: C.success }}>● v4.2.0</span>
+              <span style={{ color: C.success }}>● v1.1.0</span>
             </div>
           </div>
         </main>

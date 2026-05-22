@@ -109,16 +109,7 @@ function HeroCard({ firstName, cargoName, currentDateTime, setCurrentView }) {
             background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)',
             color: 'white', fontFamily: 'inherit', fontWeight: 600, fontSize: 13.5, cursor: 'pointer',
           }}><Icons.Sparkle /> Assistente</button>
-          <button
-            onClick={() => setCurrentView('tickets')}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '11px 18px', borderRadius: 11, border: 'none',
-              background: 'white', color: C.accentDeep,
-              fontFamily: 'inherit', fontWeight: 700, fontSize: 13.5, cursor: 'pointer',
-              boxShadow: `0 8px 20px ${tone('#000', 0.18)}`,
-            }}
-          ><Icons.Plus /> Novo Chamado</button>
+
         </div>
       </div>
     </div>
@@ -245,7 +236,7 @@ function ComunicadosCard({ setCurrentView }) {
       .then(d => {
         if (d.sucesso) setComunicados(d.comunicados.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)).slice(0, 4));
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -284,26 +275,26 @@ function ComunicadosCard({ setCurrentView }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {loading ? [1, 2, 3].map(i => <div key={i} style={{ height: 56, borderRadius: 12, background: C.surfaceSoft }} />) :
           comunicados.length === 0 ? <div style={{ padding: '24px 0', textAlign: 'center', color: C.muted, fontSize: 13 }}>Nenhum comunicado recente.</div> :
-          comunicados.map((it, i) => {
-            const tag = tagStyle(it.tipo);
-            return (
-              <div key={it.id || i}
-                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 12px', borderRadius: 12, cursor: 'pointer', transition: 'background .12s' }}
-                onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: '0.12em', fontWeight: 700, padding: '4px 8px', borderRadius: 6, background: tag.bg, color: tag.color, flexShrink: 0 }}>{tag.label}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.titulo}</div>
-                  <div style={{ fontSize: 12, color: C.ink2, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.descricao}</div>
+            comunicados.map((it, i) => {
+              const tag = tagStyle(it.tipo);
+              return (
+                <div key={it.id || i}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 12px', borderRadius: 12, cursor: 'pointer', transition: 'background .12s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: '0.12em', fontWeight: 700, padding: '4px 8px', borderRadius: 6, background: tag.bg, color: tag.color, flexShrink: 0 }}>{tag.label}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.titulo}</div>
+                    <div style={{ fontSize: 12, color: C.ink2, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.descricao}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, color: C.muted }}>{relativeTime(it.criado_em)}</div>
+                    <div style={{ fontSize: 11.5, color: C.ink2, marginTop: 2 }}>{it.departamento_autor || ''}</div>
+                  </div>
                 </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, color: C.muted }}>{relativeTime(it.criado_em)}</div>
-                  <div style={{ fontSize: 11.5, color: C.ink2, marginTop: 2 }}>{it.departamento_autor || ''}</div>
-                </div>
-              </div>
-            );
-          })
+              );
+            })
         }
       </div>
     </div>
@@ -312,10 +303,10 @@ function ComunicadosCard({ setCurrentView }) {
 
 function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   const atalhos = [
-    { icon: 'Room',      label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento', accent: C.accent },
-    { icon: 'Headset',   label: 'Suporte TI',  hint: 'Tempo médio: ~12 min',  id: 'tickets',       accent: C.accent },
-    { icon: 'Badge',     label: 'Meu Perfil',  hint: 'Dados e segurança',     id: 'settings',      accent: C.accentDeep },
-    { icon: 'Lightning', label: 'Comunicados', hint: 'Avisos e urgentes',     id: 'announcements', accent: C.warning },
+    { icon: 'Room', label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento', accent: C.accent },
+    { icon: 'Headset', label: 'Suporte TI', hint: 'Tempo médio: ~12 min', id: 'tickets', accent: C.accent },
+    { icon: 'Badge', label: 'Meu Perfil', hint: 'Dados e segurança', id: 'settings', accent: C.accentDeep },
+    { icon: 'Lightning', label: 'Comunicados', hint: 'Avisos e urgentes', id: 'announcements', accent: C.warning },
   ];
 
   return (
@@ -368,7 +359,7 @@ function TeamBento() {
           setDeptoMap(map);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -386,7 +377,7 @@ function TeamBento() {
             }))
           );
         }
-      } catch (_) {}
+      } catch (_) { }
       finally { setLoading(false); }
     };
     fetchOnline();
@@ -410,22 +401,22 @@ function TeamBento() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {loading ? [1, 2, 3, 4].map(i => <div key={i} style={{ height: 44, borderRadius: 8, background: C.surfaceSoft }} />) :
           members.length === 0 ? <div style={{ padding: '16px 0', textAlign: 'center', color: C.muted, fontSize: 13 }}>Nenhum colaborador online.</div> :
-          members.map(m => (
-            <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', borderRadius: 8 }}>
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <img src={m.foto} alt={m.name}
-                  style={{ width: 32, height: 32, borderRadius: 16, objectFit: 'cover', background: C.surfaceSoft, display: 'block' }}
-                  onError={e => { e.target.style.display = 'none'; }}
-                />
-                <span style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: 5, background: C.success, border: '2px solid white' }} />
+            members.map(m => (
+              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', borderRadius: 8 }}>
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <img src={m.foto} alt={m.name}
+                    style={{ width: 32, height: 32, borderRadius: 16, objectFit: 'cover', background: C.surfaceSoft, display: 'block' }}
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                  <span style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: 5, background: C.success, border: '2px solid white' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                  <div style={{ fontSize: 11.5, color: C.muted }}>{m.role}</div>
+                </div>
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, color: C.success }}>Online</span>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                <div style={{ fontSize: 11.5, color: C.muted }}>{m.role}</div>
-              </div>
-              <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, color: C.success }}>Online</span>
-            </div>
-          ))
+            ))
         }
       </div>
     </div>
@@ -500,7 +491,7 @@ export default function Dashboard({ setCurrentView, user }) {
   };
 
   useEffect(() => {
-    resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo).then(setCargoName).catch(() => {});
+    resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo).then(setCargoName).catch(() => { });
   }, [safeDepto, safeRole, user?.nome_grupo]);
 
   useEffect(() => {
@@ -509,7 +500,7 @@ export default function Dashboard({ setCurrentView, user }) {
     fetch(`/api/os-chamados/${funcId}`)
       .then(r => r.json())
       .then(d => { if (d.sucesso) { setOsCount(d.quantidade); setOsStatusCount(d.statusCount); } })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setOsLoading(false));
   }, [funcId]);
 
@@ -519,7 +510,7 @@ export default function Dashboard({ setCurrentView, user }) {
     fetch(`/api/plantoes/meu-proximo/${user.id}`)
       .then(r => r.json())
       .then(d => { if (d.sucesso && d.proximo) setProximoPlantao(d.proximo); })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setPlantaoLoading(false));
   }, [user?.id]);
 
@@ -529,7 +520,7 @@ export default function Dashboard({ setCurrentView, user }) {
     fetch(`/api/eficiencia/${funcId}`)
       .then(r => r.json())
       .then(d => { if (d.sucesso) setEficiencia(d); })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setEficienciaLoading(false));
   }, [funcId]);
 
@@ -556,16 +547,16 @@ export default function Dashboard({ setCurrentView, user }) {
         maxWidth: 1400,
         margin: '0 auto',
       }}>
-        
+
         {/* Cabeçalho da Dashboard (Personalizar) */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
           {isEditing ? (
             <div style={{ display: 'flex', gap: 10 }}>
-              <button 
+              <button
                 onClick={() => setIsEditing(false)}
                 style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: 'white', color: C.ink2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
               >Cancelar</button>
-              <button 
+              <button
                 onClick={handleSaveLayout}
                 disabled={isSaving}
                 style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: C.accent, color: 'white', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
@@ -574,7 +565,7 @@ export default function Dashboard({ setCurrentView, user }) {
               </button>
             </div>
           ) : (
-            <button 
+            <button
               onClick={() => setIsEditing(true)}
               style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: 'white', color: C.ink2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
@@ -634,7 +625,7 @@ export default function Dashboard({ setCurrentView, user }) {
           <div style={{ display: 'flex', gap: 22 }}>
             <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Política de Privacidade</a>
             <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Diretrizes Internas</a>
-            <span style={{ color: C.success }}>● v4.2.0</span>
+            <span style={{ color: C.success }}>● v1.1.0</span>
           </div>
         </div>
       </div>

@@ -75,7 +75,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
         body: JSON.stringify({
           mensagem,
           colaborador_id,
-          tecnico_id: colaborador_id,
+          tecnico_id: '59570', // Márcio Eduardo Felix
           nome_solicitante
         })
       });
@@ -298,6 +298,51 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                           {s.nome}
                         </option>
                       ))}
+                    </select>
+                    <div style={{
+                      position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
+                      pointerEvents: 'none', color: C.muted, display: 'flex', alignItems: 'center'
+                    }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seleção do Técnico Responsável (Márcio Felix - Fixo) */}
+                <div style={{ marginBottom: 18 }}>
+                  <label style={{
+                    display: 'block',
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontSize: 10.5, fontWeight: 600,
+                    letterSpacing: '0.15em', textTransform: 'uppercase',
+                    color: C.muted, marginBottom: 8,
+                  }}>
+                    Técnico responsável
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      value="MARCIO EDUARDO FELIX"
+                      disabled
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        background: C.bg,
+                        border: `1px solid ${C.line}`,
+                        borderRadius: 14,
+                        fontSize: 13.5, color: C.ink2,
+                        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        appearance: 'none',
+                        cursor: 'not-allowed',
+                        opacity: 0.85,
+                      }}
+                    >
+                      <option value="MARCIO EDUARDO FELIX" style={{ background: C.surface, color: C.ink }}>
+                        MARCIO EDUARDO FELIX
+                      </option>
                     </select>
                     <div style={{
                       position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
