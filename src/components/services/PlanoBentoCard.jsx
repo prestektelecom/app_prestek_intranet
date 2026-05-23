@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurrency, maxVendas }) {
+export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurrency, maxVendas, isComparing = false, onToggleCompare }) {
     const vendas = plan.vendas_mes || 0;
     const maxVendasLocal = Math.max(maxVendas, 10);
     const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
@@ -18,11 +18,26 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
     return (
         <div 
             className={`relative flex flex-col justify-between p-6 rounded-2xl bg-white dark:bg-[#1c1917] border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                isTopSeller 
-                ? 'border-[#4A9EF5] shadow-[0_8px_30px_rgba(74,158,245,0.12)] ring-1 ring-[#4A9EF5]/30' 
-                : 'border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)]'
+                isComparing 
+                ? 'border-[#4A9EF5] dark:border-[#4A9EF5] shadow-[0_8px_30px_rgba(74,158,245,0.12)] ring-2 ring-[#4A9EF5]/40'
+                : isTopSeller 
+                    ? 'border-[#4A9EF5] shadow-[0_8px_30px_rgba(74,158,245,0.12)] ring-1 ring-[#4A9EF5]/30' 
+                    : 'border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)]'
             }`}
         >
+            {/* Checkbox Comparar */}
+            <div className="absolute top-3 left-4 z-10">
+                <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                    <input 
+                        type="checkbox" 
+                        checked={isComparing} 
+                        onChange={() => onToggleCompare(plan.id)}
+                        className="w-3.5 h-3.5 rounded border-slate-300 dark:border-[#2e2a26] text-[#4A9EF5] focus:ring-[#4A9EF5] dark:bg-[#141210] dark:focus:ring-offset-[#1c1917] cursor-pointer"
+                    />
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Comparar</span>
+                </label>
+            </div>
+
             {/* Top seller badge decoration */}
             {isTopSeller && (
                 <div className="absolute -top-3 right-4 flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white text-[10px] font-extrabold tracking-wider shadow-md">
@@ -33,7 +48,7 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
 
             <div>
                 {/* Header info */}
-                <div className="flex items-start gap-4 mb-4">
+                <div className="flex items-start gap-4 mb-4 mt-3">
                     <div className={`p-3 rounded-xl ${
                         isTopSeller 
                         ? 'bg-[#EAF4FF] text-[#4A9EF5] dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8]' 

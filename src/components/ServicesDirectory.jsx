@@ -2,13 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import PlanoBentoCard from './services/PlanoBentoCard';
 import TechBentoCard from './services/TechBentoCard';
 import StreamingBentoCard from './services/StreamingBentoCard';
+import PlanoComparador from './services/PlanoComparador';
 import { AVATAR_PNGS, resolveAvatarUrl } from '../utils/avatarPngs';
 
-export default function ServicesDirectory({ setCurrentView, user }) {
+export default function ServicesDirectory({ setCurrentView, user, searchQuery }) {
     const isAdmin = user?.is_admin;
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '', type: '' });
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [plans, setPlans] = useState([]);
+    const [comparingIds, setComparingIds] = useState([]);
     const [statusCounts, setStatusCounts] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const [filter, setFilter] = useState('All');
@@ -194,6 +196,24 @@ export default function ServicesDirectory({ setCurrentView, user }) {
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+    };
+
+    const handleToggleCompare = (id) => {
+        setComparingIds(prev => {
+            if (prev.includes(id)) {
+                return prev.filter(item => item !== id);
+            } else {
+                if (prev.length >= 3) {
+                    showToast('Máximo de 3 planos para comparação', 'error');
+                    return prev;
+                }
+                return [...prev, id];
+            }
+        });
+    };
+
+    const handleClearCompare = () => {
+        setComparingIds([]);
     };
 
     const fetchPacotesStreaming = async () => {
@@ -411,6 +431,21 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         setSortConfig({ key, direction });
     };
 
+    const matchesSearch = (plan, term) => {
+        if (!term) return true;
+        const normalizedTerm = term.toLowerCase().trim();
+        
+        const desc = (plan.descricao || '').toLowerCase();
+        const valorRaw = (plan.valor_mensal || '').toString();
+        const valorFormatado = formatCurrency(plan.valor_mensal).toLowerCase();
+        const id = (plan.id || '').toString();
+        
+        return desc.includes(normalizedTerm) || 
+               valorRaw.includes(normalizedTerm) || 
+               valorFormatado.includes(normalizedTerm) ||
+               id.includes(normalizedTerm);
+    };
+
     // Filter and Sort plans logic
     const maxVendas = Math.max(...plans.map(p => p.vendas_mes || 0), 1);
     
@@ -421,7 +456,9 @@ export default function ServicesDirectory({ setCurrentView, user }) {
         if (filter === 'PJ' && desc.includes('P. JURIDICA')) return true;
         if (filter === 'Link' && desc.includes('LINK')) return true;
         return false;
-    });
+    }).filter(p => matchesSearch(p, searchQuery));
+
+    const comparingPlans = plans.filter(p => comparingIds.includes(p.id));
 
     if (sortConfig.key) {
         filteredPlans.sort((a, b) => {
@@ -597,8 +634,12 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                         </div>
                     ) : filteredPlans.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1c1917] rounded-2xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)] gap-2">
-                            <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">wifi_off</span>
-                            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Nenhum plano encontrado.</p>
+                            <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">
+                                {searchQuery ? 'search_off' : 'wifi_off'}
+                            </span>
+                            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                                {searchQuery ? 'Nenhum plano encontrado para essa busca.' : 'Nenhum plano encontrado.'}
+                            </p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -610,6 +651,8 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                                     onEditClick={handleEditClick}
                                     formatCurrency={formatCurrency}
                                     maxVendas={maxVendas}
+                                    isComparing={comparingIds.includes(plan.id)}
+                                    onToggleCompare={handleToggleCompare}
                                 />
                             ))}
                         </div>
@@ -1326,6 +1369,14 @@ export default function ServicesDirectory({ setCurrentView, user }) {
                     </div>
                 </div>
             )}
+
+            {/* Comparador de Planos */}
+            <PlanoComparador 
+                plans={comparingPlans}
+                isOpen={comparingIds.length >= 2 && filter !== 'Technical' && filter !== 'Streaming'}
+                onClear={handleClearCompare}
+                formatCurrency={formatCurrency}
+            />
 
             {/* Toast de Sucesso/Erro Premium */}
             {toast.show && (

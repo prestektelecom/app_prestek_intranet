@@ -71,6 +71,12 @@ export default function App() {
     useTheme() // Initialize theme globally
     usePresence(user) // Rastreia atividade do usuário logado
 
+    const [searchQuery, setSearchQuery] = useState('')
+
+    useEffect(() => {
+        setSearchQuery('')
+    }, [currentView])
+
     useEffect(() => {
         localStorage.removeItem('stitch_profile_0000');
     }, [])
@@ -143,11 +149,11 @@ export default function App() {
                 <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
             )}
             <div className="flex flex-1 flex-col overflow-hidden">
-                <Header currentView={currentView} setCurrentView={setCurrentView} user={user} />
+                <Header currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
                 <div className="flex-1 flex overflow-hidden">
                     {/* Renderização baseada em currentView */}
                     {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
-                    {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} user={user} />}
+                    {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} />}
                     {currentView === 'coverage' && <Coverage user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'directory' && <Directory user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'sectors' && <Sectors user={user} setCurrentView={setCurrentView} />}

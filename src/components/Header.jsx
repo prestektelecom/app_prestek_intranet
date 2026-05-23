@@ -23,7 +23,7 @@ const iconBtn = {
   transition: 'all .12s', boxShadow: `0 1px 2px rgba(31,91,168,0.04)`,
 };
 
-export default function Header({ currentView, setCurrentView, user }) {
+export default function Header({ currentView, setCurrentView, user, searchQuery, setSearchQuery }) {
   const func = user?.funcionario ?? {};
   const safeName = func.funcionario || user?.nome || 'Usuário';
   const safeRole = func.id_funcao || 'Colaborador';
@@ -39,6 +39,7 @@ export default function Header({ currentView, setCurrentView, user }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const notificationsRef = useRef(null);
   const avatarUrlRef = useRef(avatarUrl);
+  const searchInputRef = useRef(null);
 
   const mobileMenuItems = [
     { id: 'dashboard',  label: 'Dashboard',    icon: 'Dashboard' },
@@ -112,6 +113,19 @@ export default function Header({ currentView, setCurrentView, user }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
   const nameParts = safeName.split(' ');
   const displayName = nameParts.length > 2
     ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
@@ -150,7 +164,18 @@ export default function Header({ currentView, setCurrentView, user }) {
       }}>
         <span style={{ color: C.muted, display: 'flex' }}><Icons.Search /></span>
         <input
-          placeholder="Buscar serviços, pessoas ou documentos..."
+          ref={searchInputRef}
+          value={searchQuery || ''}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setSearchQuery('');
+              if (searchInputRef.current) {
+                searchInputRef.current.blur();
+              }
+            }
+          }}
+          placeholder={currentView === 'services' ? "Buscar planos por nome, valor ou ID..." : "Buscar serviços, pessoas ou documentos..."}
           style={{
             flex: '1 1 0%', border: 'none', outline: 'none', background: 'transparent',
             fontFamily: 'inherit', fontSize: 14, color: C.ink,
