@@ -602,26 +602,66 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {['All', 'PF', 'PJ', 'Link', 'Technical', 'Streaming'].map(f => (
-                        <button 
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 cursor-pointer ${
-                                filter === f 
-                                ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)]'
-                                : 'bg-[#EAF4FF] dark:bg-[#211e1b] border border-[#E4ECF5] dark:border-[#2e2a26]/40 text-[#1F5BA8] dark:text-[#7FD4E8] hover:opacity-90'
-                            }`}
-                        >
-                            {f === 'All' && 'Todos os Serviços'}
-                            {f === 'PF' && <><span className="material-symbols-outlined text-lg">person</span>Internet PF</>}
-                            {f === 'PJ' && <><span className="material-symbols-outlined text-lg">business</span>Internet PJ</>}
-                            {f === 'Link' && <><span className="material-symbols-outlined text-lg">router</span>Link Dedicado</>}
-                            {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>Serviços Técnicos</>}
-                            {f === 'Streaming' && <><span className="material-symbols-outlined text-lg">play_circle</span>Streaming's</>}
-                        </button>
-                    ))}
+                {/* Filters and Sorting */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide flex-1">
+                        {['All', 'PF', 'PJ', 'Link', 'Technical', 'Streaming'].map(f => (
+                            <button 
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 cursor-pointer shrink-0 ${
+                                    filter === f 
+                                    ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)]'
+                                    : 'bg-[#EAF4FF] dark:bg-[#211e1b] border border-[#E4ECF5] dark:border-[#2e2a26]/40 text-[#1F5BA8] dark:text-[#7FD4E8] hover:opacity-90'
+                                }`}
+                            >
+                                {f === 'All' && 'Todos os Serviços'}
+                                {f === 'PF' && <><span className="material-symbols-outlined text-lg">person</span>Internet PF</>}
+                                {f === 'PJ' && <><span className="material-symbols-outlined text-lg">business</span>Internet PJ</>}
+                                {f === 'Link' && <><span className="material-symbols-outlined text-lg">router</span>Link Dedicado</>}
+                                {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>Serviços Técnicos</>}
+                                {f === 'Streaming' && <><span className="material-symbols-outlined text-lg">play_circle</span>Streaming's</>}
+                            </button>
+                        ))}
+                    </div>
+
+                    {filter !== 'Technical' && filter !== 'Streaming' && (
+                        <div className="flex items-center gap-2 shrink-0 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400 mr-1 hidden sm:block">Ordenar por:</span>
+                            <button 
+                                onClick={() => handleSort('vendas_mes')}
+                                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap ${
+                                    sortConfig.key === 'vendas_mes' 
+                                    ? 'bg-[#EAF4FF] text-[#1F5BA8] border-[#4A9EF5]/30 shadow-sm dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8] dark:border-[#4A9EF5]/40' 
+                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-[#1c1917] dark:text-slate-400 dark:border-[#2e2a26] dark:hover:bg-[#211e1b]'
+                                }`}
+                            >
+                                <span className="material-symbols-outlined text-[16px]">trending_up</span>
+                                Vendas
+                                {sortConfig.key === 'vendas_mes' && (
+                                    <span className="material-symbols-outlined text-[14px]">
+                                        {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
+                                    </span>
+                                )}
+                            </button>
+                            <button 
+                                onClick={() => handleSort('valor_mensal')}
+                                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap ${
+                                    sortConfig.key === 'valor_mensal' 
+                                    ? 'bg-[#EAF4FF] text-[#1F5BA8] border-[#4A9EF5]/30 shadow-sm dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8] dark:border-[#4A9EF5]/40' 
+                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-[#1c1917] dark:text-slate-400 dark:border-[#2e2a26] dark:hover:bg-[#211e1b]'
+                                }`}
+                            >
+                                <span className="material-symbols-outlined text-[16px]">payments</span>
+                                Preço
+                                {sortConfig.key === 'valor_mensal' && (
+                                    <span className="material-symbols-outlined text-[14px]">
+                                        {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Services Table - Não mostrar quando filter é Technical ou Streaming */}
