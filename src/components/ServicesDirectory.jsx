@@ -1376,6 +1376,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                 isOpen={comparingIds.length >= 2 && filter !== 'Technical' && filter !== 'Streaming'}
                 onClear={handleClearCompare}
                 formatCurrency={formatCurrency}
+                streamingServices={streamingServices}
             />
 
             {/* Toast de Sucesso/Erro Premium */}
