@@ -452,8 +452,8 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
     const filteredPlans = plans.filter(p => {
         if (filter === 'All' || filter === 'Technical') return true;
         const desc = (p.descricao || '').toUpperCase();
-        if (filter === 'PF' && !desc.includes('P. JURIDICA') && !desc.includes('LINK')) return true;
-        if (filter === 'PJ' && desc.includes('P. JURIDICA')) return true;
+        if (filter === 'PF' && !desc.includes('P. JURIDICA') && !desc.includes('P JURIDICA') && !desc.includes('LINK')) return true;
+        if (filter === 'PJ' && (desc.includes('P. JURIDICA') || desc.includes('P JURIDICA'))) return true;
         if (filter === 'Link' && desc.includes('LINK')) return true;
         return false;
     }).filter(p => matchesSearch(p, searchQuery));
