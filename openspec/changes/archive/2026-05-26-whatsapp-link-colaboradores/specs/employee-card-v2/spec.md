@@ -1,8 +1,5 @@
-# employee-card-v2 Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change redesign-colaboradores-people-hub. Update Purpose after archive.
-## Requirements
 ### Requirement: Card de colaborador redesenhado v2
 Cada card de colaborador SHALL exibir: avatar circular com ring colorido conforme o departamento, indicador de presença pulsante (ativo=verde/inativo=cinza), nome, nome do departamento com badge colorido, e ações de contato (email + WhatsApp ou telefone) que revelam-se no hover com transição suave.
 
@@ -25,4 +22,3 @@ Cada card de colaborador SHALL exibir: avatar circular com ring colorido conform
 #### Scenario: Fallback de contato ausente
 - **WHEN** o colaborador não possui email cadastrado, ou nenhum celular/ramal disponível
 - **THEN** o botão de ação correspondente é renderizado como desabilitado (`opacity: 0.5`, `cursor: not-allowed` e clique prevenido)
-

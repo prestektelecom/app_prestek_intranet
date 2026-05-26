@@ -432,6 +432,17 @@ function ChipButton({ label, count, active, onClick, color }) {
   );
 }
 
+// ── Helper para formatar o link do WhatsApp ──────────────────────────────────
+function getWhatsAppUrl(phoneStr) {
+  if (!phoneStr) return '';
+  const digits = phoneStr.replace(/\D/g, '');
+  if (digits.length < 10) return ''; // Número inválido para WhatsApp
+  if (digits.length === 10 || digits.length === 11) {
+    return `https://wa.me/55${digits}`;
+  }
+  return `https://wa.me/${digits}`;
+}
+
 // ── Card de Colaborador v2 ───────────────────────────────────────────────────
 function EmployeeCardV2({ colab, departamentoNome, animDelay }) {
   const [hover, setHover] = useState(false);
@@ -439,6 +450,9 @@ function EmployeeCardV2({ colab, departamentoNome, animDelay }) {
   const email = colab.usuario_email || '';
   const ramal = colab.ramal && colab.ramal !== '0' ? colab.ramal : '';
   const celular = colab.fone_celular || '';
+  const whatsAppUrl = celular ? getWhatsAppUrl(celular) : '';
+  const hasWhatsApp = !!whatsAppUrl;
+  const hasContact = hasWhatsApp || !!ramal;
   const isAtivo = colab.ativo === 'S';
   const resolvedFoto = resolveAvatarUrl(colab.foto_perfil);
   const avatarSrc = resolvedFoto || AVATAR_PNGS[(colab.funcionario_id || colab.usuario_id || 0) % AVATAR_PNGS.length];
@@ -572,24 +586,42 @@ function EmployeeCardV2({ colab, departamentoNome, animDelay }) {
         </a>
 
         <a
-          href={celular ? `tel:${celular}` : ramal ? `tel:${ramal}` : undefined}
-          onClick={(celular || ramal) ? undefined : e => e.preventDefault()}
+          href={hasWhatsApp ? whatsAppUrl : ramal ? `tel:${ramal}` : undefined}
+          onClick={hasContact ? undefined : e => e.preventDefault()}
+          target={hasWhatsApp ? "_blank" : undefined}
+          rel={hasWhatsApp ? "noopener noreferrer" : undefined}
           style={{
             flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '9px 12px', borderRadius: 10,
-            background: (celular || ramal) ? C.surfaceSoft : C.surfaceSoft,
-            color: (celular || ramal) ? C.ink2 : C.muted,
+            background: C.surfaceSoft,
+            color: hasContact ? C.ink2 : C.muted,
             border: `1px solid ${C.line}`,
             textDecoration: 'none', fontSize: 12.5, fontWeight: 600,
-            cursor: (celular || ramal) ? 'pointer' : 'not-allowed',
-            opacity: (celular || ramal) ? 1 : 0.5,
+            cursor: hasContact ? 'pointer' : 'not-allowed',
+            opacity: hasContact ? 1 : 0.5,
             transition: 'all 0.15s',
           }}
-          onMouseEnter={e => { if (celular || ramal) { e.currentTarget.style.background = C.line; } }}
-          onMouseLeave={e => { e.currentTarget.style.background = C.surfaceSoft; }}
+          onMouseEnter={e => {
+            if (hasContact) {
+              e.currentTarget.style.background = hasWhatsApp ? 'rgba(37, 211, 102, 0.12)' : C.line;
+              e.currentTarget.style.color = hasWhatsApp ? '#128C7E' : C.ink2;
+              e.currentTarget.style.borderColor = hasWhatsApp ? 'rgba(37, 211, 102, 0.3)' : C.line;
+            }
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = C.surfaceSoft;
+            e.currentTarget.style.color = hasContact ? C.ink2 : C.muted;
+            e.currentTarget.style.borderColor = C.line;
+          }}
         >
-          <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 16, lineHeight: 1 }}>phone</span>
-          Ligar
+          {hasWhatsApp ? (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ display: 'block' }}>
+              <path d="M12.004 2C6.48 2 2 6.48 2 12.004c0 1.854.507 3.593 1.39 5.093L2 22l5.09-1.336a9.96 9.96 0 0 0 4.914 1.34c5.524 0 10.004-4.48 10.004-10.004C22.008 6.48 17.528 2 12.004 2zm0 1.796c4.526 0 8.208 3.682 8.208 8.208 0 4.526-3.682 8.208-8.208 8.208-1.637 0-3.155-.483-4.437-1.31l-.317-.208-3.003.787.801-2.92-.228-.363a8.167 8.167 0 0 1-1.228-4.194c0-4.526 3.682-8.208 8.208-8.208zm-1.895 2.873c-.237 0-.462.1-.634.27-.37.369-.748 1.077-.748 1.91 0 1.547 1.127 3.037 1.285 3.25 0 0 2.213 3.376 5.361 4.734.75.324 1.332.518 1.788.663.754.24 1.442.206 1.986.125.606-.09 1.862-.761 2.124-1.46.262-.697.262-1.296.184-1.42-.078-.125-.288-.2-.596-.356-.308-.156-1.821-.898-2.103-1.002-.281-.103-.487-.156-.693.156-.205.311-.8 1.002-.98 1.21-.18.206-.359.231-.667.076-.308-.155-1.303-.48-2.483-1.533-.918-.818-1.537-1.83-1.717-2.138-.18-.309-.02-.476.135-.63.139-.14.308-.36.462-.54.154-.18.205-.309.308-.515.103-.206.051-.386-.026-.54-.077-.155-.693-1.67-.95-2.288-.25-.6-.548-.515-.748-.525-.193-.01-.41-.01-.628-.01z"/>
+            </svg>
+          ) : (
+            <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 16, lineHeight: 1 }}>phone</span>
+          )}
+          {hasWhatsApp ? 'WhatsApp' : 'Ligar'}
         </a>
       </div>
     </div>
