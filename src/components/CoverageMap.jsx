@@ -65,10 +65,10 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         import('leaflet').then(({ default: L }) => {
             const map = L.map(containerRef.current, {
                 center: [-10.5, -36.5], zoom: 8,
-                zoomControl: true, scrollWheelZoom: true,
+                zoomControl: false, scrollWheelZoom: true,
             });
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
                 maxZoom: 18,
             }).addTo(map);
             mapRef.current = { map, L };
@@ -92,18 +92,11 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
 
             const cor    = COR_STATUS[d.status] || COR_PADRAO;
             const popupContent = `
-                <div style="font-family:sans-serif;min-width:150px">
-                    <strong style="font-size:13px">${d.cidade}</strong><br/>
-                    <span style="color:#a17745;font-size:11px">📍 ${d.bairro}</span><br/>
-                    <span style="color:#a17745;font-size:11px">${d.total_contratos} contrato(s)</span><br/>
-                    ${d.contratos_ids && d.contratos_ids.length > 0 ? `
-                        <div style="margin-top:4px; padding:4px; background:#fcfaf8; border-radius:4px; border:1px solid #f4eee6; font-size:10px; color:#1d150c">
-                            <strong>Contratos:</strong><br/>
-                            ${d.contratos_ids.join(', ')}
-                        </div>
-                    ` : ''}
-                    <span style="color:${cor};font-size:11px;font-weight:600">${d.status || 'Não configurado'}</span><br/>
-                    <span style="color:#94a3b8;font-size:10px">★ Localização manual</span>
+                <div class="text-[#0B1B2E] dark:text-[#f5f0eb] font-sans min-w-[160px] text-xs flex flex-col gap-1">
+                    <strong class="text-sm font-bold">${d.cidade}</strong>
+                    <span class="text-[#1F5BA8] dark:text-[#4A9EF5] font-semibold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">pin_drop</span> ${d.bairro}
+                    </span>
                 </div>
             `;
 
@@ -115,7 +108,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             const icone  = criarIconeBairro(L, cor, false);
             const marker = L.marker([d.latitude, d.longitude], { icon: icone })
                 .addTo(map)
-                .bindPopup(popupContent);
+                .bindPopup(popupContent, { className: 'noc-popup' });
             marker.on('click', () => onCidadeClick(`${d.cidade_ixc_id}::${d.bairro}`));
             marker._cidadeId = d.cidade_ixc_id;
             marker._cor      = cor;
@@ -146,15 +139,14 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
 
                 const cor    = COR_STATUS[cidade.status] || COR_PADRAO;
                 const icone  = criarIconeCidade(L, cor, false);
+                const popupCidadeContent = `
+                    <div class="text-[#0B1B2E] dark:text-[#f5f0eb] font-sans min-w-[140px] text-xs flex flex-col gap-1">
+                        <strong class="text-sm font-bold">${cidade.nome}</strong>
+                    </div>
+                `;
                 const marker = L.marker([coords.lat, coords.lng], { icon: icone })
                     .addTo(map)
-                    .bindPopup(`
-                        <div style="font-family:sans-serif;min-width:140px">
-                            <strong style="font-size:13px">${cidade.nome}</strong><br/>
-                            <span style="color:#a17745;font-size:11px">${cidade.contratos} contrato(s)</span><br/>
-                            <span style="color:${cor};font-size:11px;font-weight:600">${cidade.status || 'Não configurado'}</span>
-                        </div>
-                    `);
+                    .bindPopup(popupCidadeContent, { className: 'noc-popup' });
                 marker.on('click', () => onCidadeClick(id));
                 marker._cidadeId = id;
                 marker._cor      = cor;
@@ -197,44 +189,12 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     }, [cidadeSelecionada]);
 
     return (
-        <div className="mb-6 rounded-xl overflow-hidden shadow-sm border border-[#f4eee6] relative">
-            {/* Cabeçalho */}
-            <div className="bg-white dark:bg-[#1a130b] px-5 py-3 flex items-center justify-between border-b border-[#f4eee6]">
-                <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-[20px]">map</span>
-                    <span className="text-[#1d150c] dark:text-white font-bold text-sm">Mapa de Cobertura</span>
-                    {cidadeSelecionada && (
-                        <span className="ml-2 text-xs text-[#a17745] dark:text-orange-300 bg-[#fcfaf8] dark:bg-[#2c2217] px-2 py-0.5 rounded-full">
-                            Zoom no local selecionado
-                        </span>
-                    )}
-                </div>
-                <div className="flex items-center gap-3 text-xs text-[#a17745] dark:text-orange-300">
-                    {geocodando && (
-                        <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[14px] animate-spin">autorenew</span>
-                            Geocodificando...
-                        </span>
-                    )}
-                    <div className="hidden sm:flex items-center gap-3">
-                        {[['#22c55e','Ativo'],['#3b82f6','Expansão'],['#ef4444','Inativo'],['#94a3b8','Não config.']].map(([cor, label]) => (
-                            <span key={label} className="flex items-center gap-1">
-                                <span style={{ background: cor }} className="inline-block w-2.5 h-2.5 rounded-full" />
-                                {label}
-                            </span>
-                        ))}
-                        <span className="flex items-center gap-1 pl-2 border-l border-[#f4eee6]">
-                            <span>★ bairro</span>
-                            <span className="ml-1">● cidade</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
+        <div className="absolute inset-0 w-full h-full z-0">
             {/* Container do Mapa - Isola o stacking context para não vazar z-index alto */}
             <div 
                 ref={containerRef} 
-                style={{ height: '380px', width: '100%', isolation: 'isolate' }} 
-                className="relative z-0"
+                style={{ height: '100%', width: '100%', isolation: 'isolate' }} 
+                className="w-full h-full"
             />
         </div>
     );

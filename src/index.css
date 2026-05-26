@@ -251,3 +251,59 @@
 .animate-glow-gold {
   animation: glow-pulse 3s ease-in-out infinite;
 }
+
+/* ── Leaflet Custom Styling (Dark & Glassmorphic) ───────────── */
+.noc-popup .leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid var(--border) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.noc-popup .leaflet-popup-tip {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.noc-popup .leaflet-popup-close-button {
+  color: var(--foreground-muted) !important;
+  padding: 8px 8px 0 0 !important;
+}
+
+.noc-popup .leaflet-popup-close-button:hover {
+  color: var(--foreground) !important;
+}
+
+.dark .noc-popup .leaflet-popup-content-wrapper {
+  background: rgba(28, 25, 23, 0.92) !important;
+  border: 1px solid rgba(46, 42, 38, 0.5) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark .noc-popup .leaflet-popup-tip {
+  background: rgba(28, 25, 23, 0.92) !important;
+  border: 1px solid rgba(46, 42, 38, 0.5) !important;
+}
+
+/* Ajuste da atribuição do Leaflet para não quebrar o visual escuro */
+.leaflet-container .leaflet-control-attribution {
+  background: rgba(248, 247, 245, 0.7) !important;
+  color: var(--foreground-muted) !important;
+  font-family: inherit;
+  font-size: 9px !important;
+  border-top-left-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+.dark .leaflet-container .leaflet-control-attribution {
+  background: rgba(20, 18, 16, 0.7) !important;
+  color: var(--foreground-muted) !important;
+  border-top-left-radius: 8px;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: var(--primary) !important;
+}
+

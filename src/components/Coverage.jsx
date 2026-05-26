@@ -7,15 +7,15 @@ const STATUS_OPCOES = ['Ativo', 'Expansão', 'Inativo'];
 const VELOCIDADES = ['10 MEGA', '20 MEGA', '50 MEGA', '100 MEGA', '200 MEGA', '300 MEGA', '500 MEGA', '1 GIGA'];
 
 const TECH_STYLES = {
-    FTTH:  { cls: 'bg-purple-100 text-purple-700', icon: 'fiber_manual_record' },
-    Rádio: { cls: 'bg-blue-100 text-blue-700',     icon: 'settings_input_antenna' },
-    UTP:   { cls: 'bg-green-100 text-green-700',   icon: 'cable' },
+    FTTH:  { cls: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-900/30', icon: 'fiber_manual_record' },
+    Rádio: { cls: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30',     icon: 'settings_input_antenna' },
+    UTP:   { cls: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30',   icon: 'cable' },
 };
 
 const STATUS_BAR = {
-    Ativo:    { barCls: 'bg-green-500',  textCls: 'text-green-600' },
-    Expansão: { barCls: 'bg-blue-500',   textCls: 'text-blue-500' },
-    Inativo:  { barCls: 'bg-red-400',    textCls: 'text-red-500' },
+    Ativo:    { barCls: 'bg-emerald-500 dark:bg-emerald-400',  textCls: 'text-emerald-600 dark:text-emerald-400' },
+    Expansão: { barCls: 'bg-blue-500 dark:bg-blue-400',   textCls: 'text-blue-600 dark:text-blue-400' },
+    Inativo:  { barCls: 'bg-rose-500 dark:bg-rose-400',    textCls: 'text-rose-600 dark:text-rose-400' },
 };
 
 // ─── Mini-mapa para seleção de coordenadas ────────────────────────
@@ -29,8 +29,8 @@ function MapaPicker({ lat, lng, onChange }) {
             const center = (lat && lng) ? [lat, lng] : [-10.5, -36.5];
             const zoom   = (lat && lng) ? 14 : 9;
             const map = L.map(containerRef.current, { center, zoom, zoomControl: true });
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap',
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
                 maxZoom: 18,
             }).addTo(map);
 
@@ -84,7 +84,7 @@ function MapaPicker({ lat, lng, onChange }) {
         map.setView([lat, lng], Math.max(map.getZoom(), 13));
     }, [lat, lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return <div ref={containerRef} style={{ height: '240px', width: '100%', borderRadius: '8px' }} />;
+    return <div ref={containerRef} style={{ height: '240px', width: '100%', borderRadius: '16px' }} />;
 }
 
 // ─── Modal Override (configurar campos manuais de uma linha IXC) ──
@@ -153,29 +153,29 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="bg-white dark:bg-[#1a130b] rounded-2xl shadow-2xl w-full max-w-lg border border-[#f4eee6] my-4">
+            <div className="bg-white dark:bg-[#1c1917] rounded-2xl shadow-2xl w-full max-w-lg border border-[#E4ECF5] dark:border-[#2e2a26] my-4">
                 {/* Cabeçalho */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#f4eee6]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] dark:border-[#2e2a26]">
                     <div>
-                        <h3 className="text-[#1d150c] dark:text-white font-bold text-lg">Configurar Cobertura</h3>
-                        <p className="text-xs text-[#a17745] dark:text-orange-300 mt-0.5">
+                        <h3 className="text-[#0B1B2E] dark:text-[#f5f0eb] font-bold text-lg">Configurar Cobertura</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {registro.cidade} — {registro.bairro}
                         </p>
                     </div>
-                    <button onClick={onFechar} className="text-[#a17745] dark:text-orange-300 hover:text-primary p-1 rounded-full hover:bg-gray-100 transition-colors">
+                    <button onClick={onFechar} className="text-slate-400 dark:text-slate-500 hover:text-[#1F5BA8] dark:hover:text-[#4A9EF5] p-1.5 rounded-xl hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="px-6 py-5 grid grid-cols-2 gap-4">
                     {/* Info somente leitura */}
-                    <div className="col-span-2 bg-[#fcfaf8] dark:bg-[#2c2217] rounded-lg px-4 py-3 flex items-center gap-3">
-                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300">info</span>
+                    <div className="col-span-2 bg-[#F5F9FF] dark:bg-[#141210]/50 rounded-xl px-4 py-3 flex items-center gap-3 border border-[#E4ECF5] dark:border-[#2e2a26]">
+                        <span className="material-symbols-outlined text-[#1F5BA8] dark:text-[#4A9EF5]">info</span>
                         <div>
-                            <p className="text-xs text-[#a17745] dark:text-orange-300">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                                 Cidade e bairro são gerados automaticamente pelo IXC.
                             </p>
-                            <p className="text-xs text-[#a17745] dark:text-orange-300 font-semibold mt-0.5">
+                            <p className="text-xs text-[#1F5BA8] dark:text-[#4A9EF5] font-semibold mt-0.5">
                                 {registro.total_contratos} contrato(s) ativo(s) neste bairro
                             </p>
                         </div>
@@ -183,59 +183,59 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
 
                     {/* Tecnologia */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Tecnologia</label>
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tecnologia</label>
                         <select
-                            className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                             value={form.tecnologia}
                             onChange={e => handleChange('tecnologia', e.target.value)}
                         >
-                            {TECNOLOGIAS.map(t => <option key={t} value={t}>{t}</option>)}
+                            {TECNOLOGIAS.map(t => <option key={t} value={t} className="dark:bg-[#1c1917]">{t}</option>)}
                         </select>
                     </div>
 
                     {/* Velocidade */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Veloc. Máxima</label>
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Veloc. Máxima</label>
                         <select
-                            className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                             value={form.velocidade_maxima}
                             onChange={e => handleChange('velocidade_maxima', e.target.value)}
                         >
-                            {VELOCIDADES.map(v => <option key={v} value={v}>{v}</option>)}
+                            {VELOCIDADES.map(v => <option key={v} value={v} className="dark:bg-[#1c1917]">{v}</option>)}
                         </select>
                     </div>
 
                     {/* Status */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Status</label>
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</label>
                         <select
-                            className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                             value={form.status}
                             onChange={e => handleChange('status', e.target.value)}
                         >
-                            {STATUS_OPCOES.map(s => <option key={s} value={s}>{s}</option>)}
+                            {STATUS_OPCOES.map(s => <option key={s} value={s} className="dark:bg-[#1c1917]">{s}</option>)}
                         </select>
                     </div>
 
                     {/* Percentual */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">
-                            Cobertura: <span className="text-primary font-bold">{form.percentual_cobertura}%</span>
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            Cobertura: <span className="text-[#1F5BA8] dark:text-[#4A9EF5] font-bold">{form.percentual_cobertura}%</span>
                         </label>
                         <input
                             type="range" min={0} max={100} step={1}
-                            className="accent-primary mt-2"
+                            className="accent-[#1F5BA8] dark:accent-[#4A9EF5] mt-2 cursor-pointer"
                             value={form.percentual_cobertura}
                             onChange={e => handleChange('percentual_cobertura', e.target.value)}
                         />
                     </div>
 
                     {/* ─── Seção Localização ─── */}
-                    <div className="col-span-2 border-t border-[#f4eee6] pt-3">
+                    <div className="col-span-2 border-t border-[#E4ECF5] dark:border-[#2e2a26] pt-3">
                         <button
                             type="button"
                             onClick={() => setMapaAberto(v => !v)}
-                            className="flex items-center gap-2 text-sm font-semibold text-[#a17745] dark:text-orange-300 hover:text-primary transition-colors mb-3"
+                            className="flex items-center gap-2 text-sm font-semibold text-[#1F5BA8] dark:text-[#4A9EF5] hover:text-[#4A9EF5] dark:hover:text-[#F5F9FF] transition-colors mb-3"
                         >
                             <span className="material-symbols-outlined text-[18px]">pin_drop</span>
                             Localização do Bairro
@@ -243,30 +243,30 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                                 {mapaAberto ? 'expand_less' : 'expand_more'}
                             </span>
                             {coordsValidas && (
-                                <span className="ml-1 text-xs text-green-600 font-normal">✓ definida</span>
+                                <span className="ml-1 text-xs text-emerald-600 dark:text-emerald-400 font-normal">✓ definida</span>
                             )}
                         </button>
 
                         {/* Campos de texto lat/lng */}
                         <div className="grid grid-cols-2 gap-3 mb-3">
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Latitude</label>
+                                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Latitude</label>
                                 <input
                                     type="text"
                                     inputMode="decimal"
                                     placeholder="-9.9170800"
-                                    className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                                    className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent font-mono transition-all"
                                     value={form.latitude}
                                     onChange={e => handleCoordChange('latitude', e.target.value)}
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide">Longitude</label>
+                                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Longitude</label>
                                 <input
                                     type="text"
                                     inputMode="decimal"
                                     placeholder="-36.5560000"
-                                    className="border border-[#f4eee6] rounded-lg px-3 py-2 text-sm text-[#1d150c] dark:text-white dark:bg-[#2c2217] focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                                    className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent font-mono transition-all"
                                     value={form.longitude}
                                     onChange={e => handleCoordChange('longitude', e.target.value)}
                                 />
@@ -275,8 +275,8 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
 
                         {/* Mini-mapa colapsável */}
                         {mapaAberto && (
-                            <div className="rounded-xl overflow-hidden border border-[#f4eee6]">
-                                <div className="bg-[#fcfaf8] dark:bg-[#2c2217] px-3 py-2 text-xs text-[#a17745] dark:text-orange-300 flex items-center gap-1">
+                            <div className="rounded-xl overflow-hidden border border-[#E4ECF5] dark:border-[#2e2a26] shadow-inner">
+                                <div className="bg-[#F5F9FF] dark:bg-[#141210]/50 px-3 py-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 border-b border-[#E4ECF5] dark:border-[#2e2a26]">
                                     <span className="material-symbols-outlined text-[14px]">touch_app</span>
                                     Clique no mapa para definir a posição exata do bairro
                                 </div>
@@ -290,16 +290,16 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     </div>
 
                     {erro && (
-                        <div className="col-span-2 bg-red-50 border border-red-200 text-red-600 rounded-lg px-3 py-2 text-sm">
+                        <div className="col-span-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-xl px-3 py-2 text-sm">
                             {erro}
                         </div>
                     )}
 
                     <div className="col-span-2 flex gap-3 justify-end pt-2">
-                        <button type="button" onClick={onFechar} className="px-4 py-2 text-sm border border-[#f4eee6] rounded-lg text-[#a17745] dark:text-orange-300 hover:bg-gray-100 transition-colors">
+                        <button type="button" onClick={onFechar} className="px-4 py-2.5 text-sm font-semibold border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl text-slate-600 dark:text-[#a09080] bg-white dark:bg-[#211e1b] hover:bg-[#F5F9FF] dark:hover:bg-[#2a2622] active:scale-[0.98] transition-all cursor-pointer">
                             Cancelar
                         </button>
-                        <button type="submit" disabled={salvando} className="px-5 py-2 text-sm bg-primary hover:bg-[#cc7000] text-white rounded-lg font-semibold transition-colors disabled:opacity-60 flex items-center gap-2">
+                        <button type="submit" disabled={salvando} className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:opacity-90 active:scale-[0.98] rounded-xl shadow-[0_4px_12px_rgba(74,158,245,0.25)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60">
                             {salvando && <span className="material-symbols-outlined text-[16px] animate-spin">autorenew</span>}
                             Salvar Configuração
                         </button>
@@ -310,98 +310,85 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
     );
 }
 // ─── Linha da tabela IXC ──────────────────────────────────────────
-function RowIXC({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) {
+function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) {
     const tech = TECH_STYLES[row.tecnologia] || null;
     const stat = STATUS_BAR[row.status] || null;
 
     return (
-        <tr
+        <div
             onClick={() => onSelecionar(`${row.cidade_ixc_id}::${row.bairro}`)}
-            className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2c2217] transition-colors ${
-                selecionada ? 'ring-2 ring-inset ring-primary/40 bg-primary/5 dark:bg-primary/10' : ''
+            className={`p-3 rounded-xl cursor-pointer transition-all duration-200 flex flex-col gap-2 border ${
+                selecionada 
+                    ? 'bg-[#1F5BA8]/10 border-[#1F5BA8]/30' 
+                    : 'border-transparent hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917]/70'
             }`}
         >
-            <td className="px-6 py-4 font-medium text-[#1d150c] dark:text-white">
-                <div className="flex items-center gap-3">
-                    <div className="size-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 text-xs">
+            <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className="size-6 rounded bg-[#1F5BA8]/10 flex items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] font-bold shrink-0 text-[10px]">
                         {row.estado}
                     </div>
-                    <div>
-                        <span>{row.cidade}</span>
-                        <span className="ml-2 text-xs text-[#a17745] dark:text-orange-300">
-                            #{row.cidade_ixc_id}
-                        </span>
+                    <div className="truncate">
+                        <p className="text-xs font-bold text-[#0B1B2E] dark:text-[#f5f0eb] truncate">{row.cidade}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{row.bairro}</p>
                     </div>
                 </div>
-            </td>
 
-            <td className="px-6 py-4 text-[#a17745] dark:text-orange-300">{row.bairro}</td>
-
-            {/* Tecnologia */}
-            <td className="px-6 py-4">
-                {tech ? (
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${tech.cls}`}>
-                        <span className="material-symbols-outlined text-[14px]">{tech.icon}</span>
-                        {row.tecnologia}
-                    </span>
-                ) : (
-                    <span className="inline-flex items-center gap-1 text-xs text-[#a17745] dark:text-orange-300 italic">
-                        <span className="material-symbols-outlined text-[14px]">pending</span>
-                        Não definido
-                    </span>
-                )}
-            </td>
-
-            {/* Velocidade */}
-            <td className="px-6 py-4 font-semibold text-[#1d150c] dark:text-white">
-                {row.velocidade_maxima || <span className="text-[#a17745] dark:text-orange-300 italic text-xs">—</span>}
-            </td>
-
-            {/* Status + Barra */}
-            <td className="px-6 py-4">
-                {stat ? (
-                    <div className="flex flex-col gap-1 w-28">
-                        <div className="flex justify-between text-xs text-[#a17745] dark:text-orange-300">
-                            <span>{row.status}</span>
-                            <span className={`font-bold ${stat.textCls}`}>{row.percentual_cobertura}%</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-gray-200 dark:bg-[#3a2c20] rounded-full overflow-hidden">
-                            <div className={`h-full ${stat.barCls} transition-all`} style={{ width: `${row.percentual_cobertura}%` }} />
-                        </div>
-                    </div>
-                ) : (
-                    <span className="inline-flex items-center gap-1 text-xs text-[#a17745] dark:text-orange-300 italic">
-                        <span className="material-symbols-outlined text-[14px]">settings</span>
-                        Configurar
-                    </span>
-                )}
-            </td>
-
-            {/* Contratos */}
-            <td className="px-6 py-4 text-center">
-                <span className="text-xs font-semibold text-[#1d150c] dark:text-white bg-gray-100 dark:bg-[#2c2217] px-2 py-1 rounded-full">
-                    {row.total_contratos}
-                </span>
-            </td>
-
-            {/* Ações */}
-            {isAdmin && (
-                <td className="px-6 py-4 text-right">
+                {isAdmin && (
                     <button
-                        onClick={() => onConfigurar(row)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onConfigurar(row);
+                        }}
                         title={row.tem_override ? 'Editar configuração' : 'Configurar dados de cobertura'}
-                        className={`transition-colors p-1 rounded-full flex items-center justify-center ml-auto ${row.tem_override
-                            ? 'text-[#a17745] dark:text-orange-300 hover:text-primary hover:bg-gray-100 dark:hover:bg-[#3a2c20]'
-                            : 'text-primary hover:bg-primary/10'
+                        className={`p-1 rounded-lg shrink-0 transition-all duration-200 ${
+                            row.tem_override
+                                ? 'text-slate-400 dark:text-slate-500 hover:text-[#1F5BA8] dark:hover:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917]'
+                                : 'text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#1F5BA8]/10'
                         }`}
                     >
-                        <span className="material-symbols-outlined text-[20px]">
+                        <span className="material-symbols-outlined text-[16px]">
                             {row.tem_override ? 'edit' : 'tune'}
                         </span>
                     </button>
-                </td>
+                )}
+            </div>
+
+            <div className="flex items-center justify-between text-[10px]">
+                {/* Tech Badge */}
+                {tech ? (
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold ${tech.cls}`}>
+                        <span className="material-symbols-outlined text-[11px]">{tech.icon}</span>
+                        {row.tecnologia}
+                    </span>
+                ) : (
+                    <span className="text-slate-400 italic">Sem tech</span>
+                )}
+
+                {/* Speed */}
+                <span className="font-bold text-[#0B1B2E] dark:text-[#f5f0eb]">
+                    {row.velocidade_maxima || '—'}
+                </span>
+
+                {/* Contratos */}
+                <span className="text-slate-500 font-bold bg-[#F5F9FF]/80 dark:bg-[#141210]/50 border border-[#E4ECF5] dark:border-[#2e2a26] px-1.5 py-0.5 rounded">
+                    {row.total_contratos} contr.
+                </span>
+            </div>
+
+            {/* Status progress bar */}
+            {stat && (
+                <div className="flex flex-col gap-1 mt-1">
+                    <div className="flex justify-between text-[9px] text-slate-500 dark:text-slate-400 font-bold">
+                        <span>{row.status}</span>
+                        <span className={stat.textCls}>{row.percentual_cobertura}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-[#E4ECF5] dark:bg-[#2e2a26] rounded-full overflow-hidden">
+                        <div className={`h-full ${stat.barCls} transition-all`} style={{ width: `${row.percentual_cobertura}%` }} />
+                    </div>
+                </div>
             )}
-        </tr>
+        </div>
     );
 }
 
@@ -418,9 +405,10 @@ export default function Coverage({ user }) {
     const [page, setPage] = useState(1);
     const [modalOverride, setModalOverride] = useState(null);
     const [cidadeSelecionada, setCidadeSelecionada] = useState(null);
+    const [sidebarAberta, setSidebarAberta] = useState(true);
     // Metadados de auditoria vindos do backend (paginação + contratos sem localização)
     const [metaAuditoria, setMetaAuditoria] = useState(null);
-    const LIMIT = 15;
+    const LIMIT = 6;
 
     const carregar = useCallback(async () => {
         setCarregando(true);
@@ -472,217 +460,213 @@ export default function Coverage({ user }) {
     const limparFiltros = () => { setBusca(''); setBuscaInput(''); setFiltroTec(''); setFiltroStatus(''); setPage(1); };
 
     return (
-        <main className="layout-container flex h-full grow flex-col px-4 md:px-10 lg:px-40 py-8 overflow-y-auto">
-            <div className="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
+        <main className="layout-container flex h-full grow flex-col px-4 md:px-6 py-6 overflow-hidden bg-[#F5F9FF] dark:bg-[#141210] text-[#0B1B2E] dark:text-[#f5f0eb]">
+            <div className="layout-content-container flex flex-col h-full w-full max-w-[1400px] mx-auto relative gap-4">
 
                 {/* Breadcrumbs */}
-                <div className="flex flex-wrap items-center gap-2 mb-4 text-sm"><button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"><span className="material-symbols-outlined text-lg">home</span>Início</button><span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span><button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer">Dashboard</button><span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span><span className="text-[#1d150c] dark:text-white text-sm font-bold">Mapa de Cobertura de Rede</span></div>
-
-                {/* Header */}
-                <div className="flex flex-wrap justify-between items-end gap-4 mb-8">
-                    <div className="flex flex-col gap-2">
-                        <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
-                            Mapa de Cobertura de Rede
-                        </h1>
-                        <p className="text-[#a17745] dark:text-orange-300 text-base font-normal max-w-2xl">
-                            Cidades e bairros atendidos detectados automaticamente via contratos ativos no IXC. Configure tecnologia, velocidade e percentual por região.
-                        </p>
-                    </div>
-                    <button
-                        onClick={carregar}
-                        disabled={carregando}
-                        className="flex items-center justify-center gap-2 h-10 px-5 bg-primary hover:bg-[#cc7000] transition-colors rounded-lg text-white text-sm font-bold shadow-sm hover:shadow-md disabled:opacity-60"
+                <div className="flex flex-wrap items-center gap-2 text-sm shrink-0">
+                    <button 
+                        onClick={() => setCurrentView?.('dashboard')} 
+                        className="text-[#1F5BA8] dark:text-[#7FD4E8] text-sm font-medium hover:text-[#4A9EF5] dark:hover:text-[#4A9EF5] transition-colors flex items-center gap-1 cursor-pointer"
                     >
-                        <span className={`material-symbols-outlined text-[20px] ${carregando ? 'animate-spin' : ''}`}>sync</span>
-                        <span>{carregando ? 'Sincronizando...' : 'Sincronizar IXC'}</span>
+                        <span className="material-symbols-outlined text-lg">home</span>
+                        Início
                     </button>
+                    <span className="material-symbols-outlined text-[#1F5BA8]/50 dark:text-[#7FD4E8]/50 text-sm">chevron_right</span>
+                    <button 
+                        onClick={() => setCurrentView?.('dashboard')} 
+                        className="text-[#1F5BA8] dark:text-[#7FD4E8] text-sm font-medium hover:text-[#4A9EF5] dark:hover:text-[#4A9EF5] transition-colors cursor-pointer"
+                    >
+                        Dashboard
+                    </button>
+                    <span className="material-symbols-outlined text-[#1F5BA8]/50 dark:text-[#7FD4E8]/50 text-sm">chevron_right</span>
+                    <span className="text-[#0B1B2E] dark:text-[#f5f0eb] text-sm font-bold">Mapa de Cobertura de Rede</span>
                 </div>
-
-                {/* Cards de resumo */}
-                {isAdmin && !carregando && dados.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        {[
-                            { icon: 'location_city', label: 'Cidades Atendidas', valor: cidadesUnicas, cor: 'text-primary' },
-                            { icon: 'home_pin', label: 'Combos Cidade+Bairro', valor: dados.length, cor: 'text-blue-600' },
-                            { icon: 'check_circle', label: 'Configurados', valor: totalComConfig, cor: 'text-green-600' },
-                            { icon: 'pending', label: 'Sem Configuração', valor: totalSemConfig, cor: 'text-orange-500' },
-                        ].map((c, i) => (
-                            <div key={i} className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#f4eee6] px-5 py-4 flex items-center gap-4 shadow-sm">
-                                <div className="p-2 bg-gray-100 dark:bg-[#2c2217] rounded-lg">
-                                    <span className={`material-symbols-outlined ${c.cor} text-[24px]`}>{c.icon}</span>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-[#a17745] dark:text-orange-300 font-medium">{c.label}</p>
-                                    <p className="text-xl font-black text-[#1d150c] dark:text-white">{c.valor}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
 
                 {/* Card de alerta — contratos sem localização cadastrada no IXC */}
                 {isAdmin && !carregando && metaAuditoria && metaAuditoria.total_sem_localizacao > 0 && (
-                    <div className="mb-6 flex items-start gap-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700/50 rounded-xl px-5 py-4 shadow-sm">
-                        <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex-shrink-0 mt-0.5">
-                            <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[22px]">location_off</span>
+                    <div className="flex items-start gap-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700/50 rounded-xl px-5 py-3 shadow-sm shrink-0">
+                        <div className="p-1.5 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex-shrink-0 mt-0.5">
+                            <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[20px]">location_off</span>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
-                                {metaAuditoria.total_sem_localizacao.toLocaleString('pt-BR')} contratos sem localização cadastrada
+                        <div className="flex-grow min-w-0">
+                            <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                                {metaAuditoria.total_sem_localizacao.toLocaleString('pt-BR')} contratos sem localização cadastrada no IXC (cidade_id = 0). Eles não são exibidos no mapa.
                             </p>
-                            <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">
-                                Esses contratos estão ativos no IXC mas não possuem cidade vinculada (campo <code className="bg-amber-100 dark:bg-amber-900/60 px-1 rounded font-mono">cidade_id = 0</code>).
-                                Eles não aparecem no mapa pois não têm localização definida. Para corrigir, vincule a cidade no cadastro do cliente no IXC.
-                            </p>
-                            <div className="flex flex-wrap gap-4 mt-2">
-                                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                                    <span className="font-bold">{metaAuditoria.total_contratos_ixc?.toLocaleString('pt-BR')}</span> contratos ativos totais
-                                </span>
-                                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                                    <span className="font-bold text-green-600 dark:text-green-400">{metaAuditoria.total_com_localizacao?.toLocaleString('pt-BR')}</span> com localização (exibidos no mapa)
-                                </span>
-                                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                                    {metaAuditoria.paginas_consultadas} {metaAuditoria.paginas_consultadas === 1 ? 'página consultada' : 'páginas consultadas'} na API IXC
-                                </span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Central de Controle NOC Wrapper */}
+                <div className="relative w-full flex-grow min-h-[500px] md:min-h-[600px] rounded-3xl overflow-hidden border border-[#E4ECF5] dark:border-[#2e2a26] shadow-xl bg-slate-900">
+                    
+                    {/* Mapa de Cobertura (Fundo) */}
+                    {!carregando && dados.length > 0 && (
+                        <CoverageMap
+                            dados={dados}
+                            cidadeSelecionada={cidadeSelecionada}
+                            onCidadeClick={setCidadeSelecionada}
+                        />
+                    )}
+
+                    {/* Barra de Controle Superior Flutuante */}
+                    <div className="absolute top-4 left-4 right-4 z-[10] bg-white/80 dark:bg-[#1c1917]/80 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[#2e2a26]/30 shadow-lg rounded-2xl px-5 py-3 flex flex-wrap justify-between items-center gap-4 transition-all duration-300">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-[#1F5BA8]/10 text-[#1F5BA8] dark:text-[#4A9EF5] rounded-xl flex items-center justify-center">
+                                <span className="material-symbols-outlined text-[24px]">map</span>
+                            </div>
+                            <div>
+                                <h1 className="text-[#0B1B2E] dark:text-[#f5f0eb] text-base md:text-lg font-bold leading-tight">
+                                    Central de Cobertura de Rede
+                                </h1>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                                    Gestão e monitoramento por região de contratos do IXC
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Filtros Integrados */}
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            <div className="flex items-center gap-2 bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-2.5 h-8.5 focus-within:ring-2 focus-within:ring-[#4A9EF5] focus-within:border-transparent transition-all">
+                                <span className="material-symbols-outlined text-[#1F5BA8] dark:text-[#4A9EF5] text-[16px]">search</span>
+                                <input
+                                    className="bg-transparent text-xs text-[#0B1B2E] dark:text-[#f5f0eb] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none w-28 md:w-40"
+                                    placeholder="Buscar cidade/bairro"
+                                    value={buscaInput}
+                                    onChange={e => setBuscaInput(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && setBusca(buscaInput)}
+                                />
+                            </div>
+
+                            <select
+                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5] dark:border-[#2e2a26] px-2.5 text-xs text-[#0B1B2E] dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all"
+                                value={filtroTec}
+                                onChange={e => setFiltroTec(e.target.value)}
+                            >
+                                <option value="" className="dark:bg-[#1c1917]">Tecnologia: Todas</option>
+                                {TECNOLOGIAS.map(t => <option key={t} value={t} className="dark:bg-[#1c1917]">{t}</option>)}
+                            </select>
+
+                            <select
+                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5] dark:border-[#2e2a26] px-2.5 text-xs text-[#0B1B2E] dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all"
+                                value={filtroStatus}
+                                onChange={e => setFiltroStatus(e.target.value)}
+                            >
+                                <option value="" className="dark:bg-[#1c1917]">Status: Todos</option>
+                                {STATUS_OPCOES.map(s => <option key={s} value={s} className="dark:bg-[#1c1917]">{s}</option>)}
+                            </select>
+
+                            {(busca || filtroTec || filtroStatus) && (
+                                <button onClick={limparFiltros} className="text-[#1F5BA8] dark:text-[#4A9EF5] hover:text-[#4A9EF5] dark:hover:text-[#F5F9FF] text-xs font-bold uppercase transition-colors">
+                                    Limpar
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Botão Sync */}
+                        <button
+                            onClick={carregar}
+                            disabled={carregando}
+                            className="flex items-center justify-center gap-2 h-8.5 px-4 bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:opacity-90 active:scale-[0.98] transition-all duration-200 rounded-xl text-white text-xs font-bold shadow-[0_4px_12px_rgba(74,158,245,0.25)] disabled:opacity-60"
+                        >
+                            <span className={`material-symbols-outlined text-[16px] ${carregando ? 'animate-spin' : ''}`}>sync</span>
+                            <span>{carregando ? 'Sincronizando...' : 'Sincronizar'}</span>
+                        </button>
+                    </div>
+
+                    {/* Botão Toggle da Sidebar */}
+                    <button
+                        onClick={() => setSidebarAberta(!sidebarAberta)}
+                        className="absolute top-[88px] z-[20] size-9 rounded-xl bg-white dark:bg-[#1c1917] border border-[#E4ECF5] dark:border-[#2e2a26] shadow-lg flex items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917]/50 transition-all duration-300"
+                        style={{ transform: sidebarAberta ? 'translateX(326px)' : 'translateX(16px)' }}
+                        title={sidebarAberta ? 'Recolher Painel' : 'Expandir Painel'}
+                    >
+                        <span className="material-symbols-outlined text-[18px]">
+                            {sidebarAberta ? 'chevron_left' : 'chevron_right'}
+                        </span>
+                    </button>
+
+                    {/* Painel Lateral Flutuante */}
+                    <div 
+                        className={`absolute top-[88px] bottom-4 left-4 z-[10] w-[310px] max-w-[calc(100vw-32px)] bg-white/90 dark:bg-[#1c1917]/90 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[#2e2a26]/30 shadow-2xl rounded-2xl flex flex-col transition-all duration-300 ${
+                            sidebarAberta ? 'translate-x-0 opacity-100' : '-translate-x-[330px] opacity-0 pointer-events-none'
+                        }`}
+                    >
+                        <div className="px-4 py-3 border-b border-[#E4ECF5]/40 dark:border-[#2e2a26]/40 flex justify-between items-center">
+                            <span className="text-[#0B1B2E] dark:text-[#f5f0eb] font-bold text-xs">Cidades e Bairros ({dadosFiltrados.length})</span>
+                            {carregando && (
+                                <span className="material-symbols-outlined text-[#1F5BA8] text-[14px] animate-spin">autorenew</span>
+                            )}
+                        </div>
+
+                        {/* Lista de itens compacta */}
+                        <div className="flex-1 overflow-y-auto px-2 py-2 flex flex-col gap-1.5 custom-scrollbar">
+                            {carregando && pagAtual.length === 0 ? (
+                                <div className="py-16 text-center text-slate-400 dark:text-slate-500 text-xs">
+                                    <span className="material-symbols-outlined text-4xl animate-spin block mb-2">autorenew</span>
+                                    Buscando cidades no IXC...
+                                </div>
+                            ) : pagAtual.length === 0 ? (
+                                <div className="py-16 text-center text-slate-400 dark:text-slate-500 text-xs">
+                                    <span className="material-symbols-outlined text-4xl block mb-2">location_off</span>
+                                    Nenhuma cidade/bairro.
+                                </div>
+                            ) : pagAtual.map((row, i) => (
+                                <RowCompacto
+                                    key={`${row.cidade_ixc_id}::${row.bairro}::${i}`}
+                                    row={row}
+                                    onConfigurar={setModalOverride}
+                                    selecionada={`${row.cidade_ixc_id}::${row.bairro}` === cidadeSelecionada}
+                                    onSelecionar={setCidadeSelecionada}
+                                    isAdmin={isAdmin}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Paginação da Sidebar */}
+                        <div className="px-3.5 py-2.5 border-t border-[#E4ECF5]/40 dark:border-[#2e2a26]/40 bg-[#F5F9FF]/50 dark:bg-[#141210]/30 rounded-b-2xl flex items-center justify-between">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
+                                {page} de {totalPaginas || 1}
+                            </span>
+                            <div className="flex gap-1.5">
+                                <button
+                                    disabled={page <= 1}
+                                    onClick={() => setPage(p => p - 1)}
+                                    className="p-1 border border-[#E4ECF5] dark:border-[#2e2a26] rounded-lg bg-white dark:bg-[#1c1917] text-slate-600 dark:text-[#a09080] disabled:opacity-40 hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all cursor-pointer"
+                                >
+                                    <span className="material-symbols-outlined text-sm block">chevron_left</span>
+                                </button>
+                                <button
+                                    disabled={page >= totalPaginas}
+                                    onClick={() => setPage(p => p + 1)}
+                                    className="p-1 border border-[#E4ECF5] dark:border-[#2e2a26] rounded-lg bg-white dark:bg-[#1c1917] text-slate-600 dark:text-[#a09080] disabled:opacity-40 hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all cursor-pointer"
+                                >
+                                    <span className="material-symbols-outlined text-sm block">chevron_right</span>
+                                </button>
                             </div>
                         </div>
                     </div>
-                )}
 
-                {/* Mapa de Cobertura */}
-                {!carregando && dados.length > 0 && (
-                    <CoverageMap
-                        dados={dados}
-                        cidadeSelecionada={cidadeSelecionada}
-                        onCidadeClick={setCidadeSelecionada}
-                    />
-                )}
-
-                {/* Filtros */}
-                <div className="flex flex-wrap gap-3 mb-6 items-center bg-white dark:bg-[#1a130b] p-4 rounded-xl shadow-sm border border-[#f4eee6]">
-                    <span className="text-[#a17745] dark:text-orange-300 text-sm font-semibold uppercase tracking-wider mr-2">FILTROS:</span>
-
-                    <div className="flex items-center gap-2 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#f4eee6] rounded-lg px-3 h-9">
-                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-[18px]">search</span>
-                        <input
-                            className="bg-transparent text-sm text-[#1d150c] dark:text-white placeholder:text-[#a17745] focus:outline-none w-36"
-                            placeholder="Cidade ou bairro"
-                            value={buscaInput}
-                            onChange={e => setBuscaInput(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && setBusca(buscaInput)}
-                        />
-                    </div>
-
-                    <select
-                        className="flex h-9 items-center rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#f4eee6] px-3 text-sm text-[#1d150c] dark:text-white focus:outline-none"
-                        value={filtroTec}
-                        onChange={e => setFiltroTec(e.target.value)}
-                    >
-                        <option value="">Tecnologia: Todas</option>
-                        {TECNOLOGIAS.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-
-                    <select
-                        className="flex h-9 items-center rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#f4eee6] px-3 text-sm text-[#1d150c] dark:text-white focus:outline-none"
-                        value={filtroStatus}
-                        onChange={e => setFiltroStatus(e.target.value)}
-                    >
-                        <option value="">Status: Todos</option>
-                        {STATUS_OPCOES.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-
-                    <div className="ml-auto flex items-center">
-                        <button onClick={limparFiltros} className="text-primary text-sm font-medium hover:underline">Limpar Filtros</button>
-                    </div>
-                </div>
-
-                {/* Tabela */}
-                <div className="bg-white dark:bg-[#1a130b] rounded-xl shadow-sm border border-[#f4eee6] overflow-hidden">
-                    <div className="px-6 py-5 border-b border-[#f4eee6] flex justify-between items-center bg-gray-50/50">
-                        <div>
-                            <h2 className="text-[#1d150c] dark:text-white text-xl font-bold">Cidades com Cobertura</h2>
-                            <p className="text-xs text-[#a17745] dark:text-orange-300 mt-0.5">
-                                Fonte: contratos ativos no IXC
-                            </p>
+                    {/* Resumo Bento Flutuante (Bottom-Right) */}
+                    {isAdmin && !carregando && dados.length > 0 && (
+                        <div className="absolute bottom-4 right-4 z-[10] bg-white/95 dark:bg-[#1c1917]/95 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[#2e2a26]/30 shadow-2xl rounded-2xl p-4 flex flex-col gap-2 max-w-[220px] transition-all duration-300">
+                            <span className="text-[9px] font-bold text-[#1F5BA8] dark:text-[#4A9EF5] uppercase tracking-wider">Estatísticas Gerais</span>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5]/50 dark:border-[#2e2a26]/50 rounded-xl p-2 flex flex-col">
+                                    <span className="text-[9px] text-slate-400 font-medium">Cidades</span>
+                                    <span className="text-base font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight mt-0.5">{cidadesUnicas}</span>
+                                </div>
+                                <div className="bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5]/50 dark:border-[#2e2a26]/50 rounded-xl p-2 flex flex-col">
+                                    <span className="text-[9px] text-slate-400 font-medium">Regiões</span>
+                                    <span className="text-base font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight mt-0.5">{dados.length}</span>
+                                </div>
+                                <div className="bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5]/50 dark:border-[#2e2a26]/50 rounded-xl p-2 flex flex-col col-span-2">
+                                    <span className="text-[9px] text-slate-400 font-medium">Configuradas (Override)</span>
+                                    <span className="text-xs font-bold text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight mt-0.5">{totalComConfig} / {dados.length}</span>
+                                </div>
+                            </div>
                         </div>
-                        {carregando && (
-                            <span className="material-symbols-outlined text-[#a17745] text-[20px] animate-spin">autorenew</span>
-                        )}
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-[#fcfaf8] dark:bg-[#2c2217] text-[#a17745] dark:text-orange-300 text-xs uppercase tracking-wider font-semibold">
-                                    <th className="px-6 py-4 whitespace-nowrap">REGIÃO / CIDADE</th>
-                                    <th className="px-6 py-4 whitespace-nowrap">BAIRRO</th>
-                                    <th className="px-6 py-4 whitespace-nowrap">TECNOLOGIA</th>
-                                    <th className="px-6 py-4 whitespace-nowrap">VELOC. MÁXIMA</th>
-                                    <th className="px-6 py-4 whitespace-nowrap">STATUS / COBERTURA</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-center">CONTRATOS</th>
-                                    {isAdmin && <th className="px-6 py-4 text-right whitespace-nowrap">AÇÕES</th>}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#f4eee6] text-sm">
-                                {carregando && pagAtual.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="px-6 py-16 text-center text-[#a17745] dark:text-orange-300">
-                                            <span className="material-symbols-outlined text-5xl animate-spin block mx-auto mb-3">autorenew</span>
-                                            Buscando cidades no IXC...
-                                        </td>
-                                    </tr>
-                                ) : pagAtual.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="px-6 py-16 text-center text-[#a17745] dark:text-orange-300">
-                                            <span className="material-symbols-outlined text-5xl block mx-auto mb-3">location_off</span>
-                                            Nenhuma cidade encontrada com os filtros aplicados.
-                                        </td>
-                                    </tr>
-                                ) : pagAtual.map((row, i) => (
-                                    <RowIXC
-                                        key={`${row.cidade_ixc_id}::${row.bairro}::${i}`}
-                                        row={row}
-                                        onConfigurar={setModalOverride}
-                                        selecionada={`${row.cidade_ixc_id}::${row.bairro}` === cidadeSelecionada}
-                                        onSelecionar={setCidadeSelecionada}
-                                        isAdmin={isAdmin}
-                                    />
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Paginação */}
-                    <div className="px-6 py-4 border-t border-[#f4eee6] bg-gray-50 dark:bg-[#1a130b] flex items-center justify-between flex-wrap gap-3">
-                        <p className="text-sm text-[#a17745] dark:text-orange-300">
-                            Mostrando {dadosFiltrados.length > 0 ? ((page - 1) * LIMIT + 1) : 0} a {Math.min(page * LIMIT, dadosFiltrados.length)} de {dadosFiltrados.length} entradas
-                        </p>
-                        <div className="flex gap-2 flex-wrap">
-                            <button
-                                disabled={page <= 1}
-                                onClick={() => setPage(p => p - 1)}
-                                className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-white dark:bg-[#1a130b] text-[#a17745] dark:text-orange-300 disabled:opacity-40 hover:bg-gray-100 transition-colors"
-                            >
-                                Anterior
-                            </button>
-                            {Array.from({ length: Math.min(totalPaginas, 7) }, (_, i) => i + 1).map(p => (
-                                <button
-                                    key={p}
-                                    onClick={() => setPage(p)}
-                                    className={`px-3 py-1 text-sm border border-[#f4eee6] rounded transition-colors ${p === page ? 'bg-primary text-white' : 'bg-white dark:bg-[#1a130b] text-[#1d150c] dark:text-white hover:bg-gray-100'}`}
-                                >
-                                    {p}
-                                </button>
-                            ))}
-                            <button
-                                disabled={page >= totalPaginas}
-                                onClick={() => setPage(p => p + 1)}
-                                className="px-3 py-1 text-sm border border-[#f4eee6] rounded bg-white dark:bg-[#1a130b] text-[#a17745] dark:text-orange-300 disabled:opacity-40 hover:bg-gray-100 transition-colors"
-                            >
-                                Próximo
-                            </button>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
 

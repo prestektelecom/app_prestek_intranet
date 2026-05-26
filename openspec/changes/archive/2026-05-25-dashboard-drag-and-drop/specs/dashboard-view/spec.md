@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Carregamento do Conteúdo da Dashboard
 O componente principal da Dashboard SHALL instanciar e gerenciar uma biblioteca de layout em grade (grid layout library) ao invés de usar CSS Grid rígido puro, injetando os componentes filhos dinamicamente com base em um array de configuração.
