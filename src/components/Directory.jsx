@@ -65,7 +65,7 @@ export default function Directory({ user, setCurrentView }) {
   const savedFilter = sessionStorage.getItem('@Stitch:directoryFilter');
   const [deptoFiltro, setDeptoFiltro] = useState(savedFilter || '');
   const [visibleCount, setVisibleCount] = useState(LOTE);
-  const sentinelRef = useRef(null);
+  const observerRef = useRef(null);
 
   useEffect(() => {
     if (savedFilter) sessionStorage.removeItem('@Stitch:directoryFilter');
@@ -154,16 +154,23 @@ export default function Directory({ user, setCurrentView }) {
   const colaboradoresVisiveis = colaboradoresFiltrados.slice(0, visibleCount);
   const temMais = visibleCount < colaboradoresFiltrados.length;
 
-  // IntersectionObserver para scroll infinito
-  useEffect(() => {
-    if (!sentinelRef.current || !temMais) return;
-    const observer = new IntersectionObserver(
-      entries => { if (entries[0].isIntersecting) setVisibleCount(v => v + LOTE); },
-      { threshold: 0.1 }
-    );
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [temMais, colaboradoresFiltrados.length]);
+  const sentinelRef = useCallback(node => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+    if (node && temMais) {
+      observerRef.current = new IntersectionObserver(
+        entries => {
+          if (entries[0].isIntersecting) {
+            setVisibleCount(v => v + LOTE);
+          }
+        },
+        { threshold: 0.1, rootMargin: '0px 0px 200px 0px' }
+      );
+      observerRef.current.observe(node);
+    }
+  }, [temMais]);
 
   return (
     <main style={{ flex: 1, overflowY: 'auto', background: C.bg, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: C.ink }}>
