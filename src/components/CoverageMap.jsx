@@ -9,19 +9,24 @@ const COR_STATUS = {
 };
 const COR_PADRAO = '#64748b';
 
+// Zoom mínimo para exibir rótulos de cidade
+const ZOOM_LABEL = 10;
+
 // ─── Raio do círculo de cobertura (em metros) ────────────────────
 function raioCirculo(totalContratos) {
     const n = parseInt(totalContratos) || 0;
     return Math.min(8000, Math.max(2000, n * 120));
 }
 
-// ─── Ícone SVG: cidade (pino moderno com sombra) ─────────────────
-function criarIconeCidade(L, cor, selecionado) {
-    const tam = selecionado ? 42 : 28;
+// ─── Ícone SVG: cidade (pino + rótulo flutuante) ─────────────────
+function criarIconeCidade(L, cor, selecionado, nome = '', mostrarLabel = false) {
+    const tam   = selecionado ? 42 : 28;
+    const svgH  = Math.round(tam * 1.5);
     const shadow = selecionado
-        ? `filter: drop-shadow(0 4px 8px ${cor}99)`
-        : `filter: drop-shadow(0 2px 4px ${cor}66)`;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 42" width="${tam}" height="${tam * 1.5}" style="${shadow}">
+        ? `filter:drop-shadow(0 4px 8px ${cor}99)`
+        : `filter:drop-shadow(0 2px 4px ${cor}66)`;
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 42" width="${tam}" height="${svgH}" style="${shadow}">
         <defs>
             <radialGradient id="cg${selecionado ? 's' : 'n'}" cx="40%" cy="30%" r="60%">
                 <stop offset="0%" stop-color="${cor}" stop-opacity="1"/>
@@ -33,11 +38,31 @@ function criarIconeCidade(L, cor, selecionado) {
         <circle cx="14" cy="14" r="${selecionado ? 7 : 5}" fill="white" opacity="${selecionado ? 1 : 0.95}"/>
         <circle cx="14" cy="14" r="${selecionado ? 3.5 : 2.5}" fill="${cor}" opacity="0.8"/>
     </svg>`;
+
+    const labelH = 18;
+    const labelCss = mostrarLabel && nome
+        ? `display:inline-block;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;` +
+          `background:rgba(255,255,255,0.93);border-radius:5px;padding:1px 6px;` +
+          `font-size:${selecionado ? 11 : 10}px;font-family:sans-serif;` +
+          `font-weight:${selecionado ? 700 : 600};` +
+          `color:${selecionado ? '#2563eb' : '#1e293b'};` +
+          `box-shadow:0 1px 4px rgba(0,0,0,0.13);border:1px solid rgba(0,0,0,0.07);margin-top:2px;`
+        : 'display:none;';
+
+    const iconW   = Math.max(tam * 2, 110);
+    const totalH  = svgH + (mostrarLabel && nome ? labelH + 2 : 0);
+
+    const html = `<div style="display:flex;flex-direction:column;align-items:center;width:${iconW}px;">
+        ${svg}
+        <span style="${labelCss}">${nome}</span>
+    </div>`;
+
     return L.divIcon({
-        html: svg, className: '',
-        iconSize: [tam, tam * 1.5],
-        iconAnchor: [tam / 2, tam * 1.5],
-        popupAnchor: [0, -(tam * 1.5 + 4)],
+        html,
+        className: '',
+        iconSize:    [iconW, totalH],
+        iconAnchor:  [iconW / 2, svgH],
+        popupAnchor: [0, -(svgH + (mostrarLabel && nome ? labelH : 0) + 4)],
     });
 }
 
@@ -60,8 +85,8 @@ function criarIconeBairro(L, cor, selecionado) {
     </svg>`;
     return L.divIcon({
         html: svg, className: '',
-        iconSize: [tam, tam],
-        iconAnchor: [tam / 2, tam / 2],
+        iconSize:    [tam, tam],
+        iconAnchor:  [tam / 2, tam / 2],
         popupAnchor: [0, -(tam / 2 + 4)],
     });
 }
@@ -112,25 +137,32 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 // ─── Componente Principal ─────────────────────────────────────────
 export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick }) {
-    const containerRef  = useRef(null);
-    const mapRef        = useRef(null);
-    const marcCidadeRef = useRef({});
-    const marcBairroRef = useRef({});
-    const circCidadeRef = useRef({}); // círculos de cobertura — cidades
-    const circBairroRef = useRef({}); // círculos de cobertura — bairros
+    const containerRef          = useRef(null);
+    const mapRef                = useRef(null);
+    const marcCidadeRef         = useRef({});
+    const marcBairroRef         = useRef({});
+    const circCidadeRef         = useRef({});
+    const circBairroRef         = useRef({});
+    const mostrarLabelsRef      = useRef(false);       // controlado pelo zoom
+    const cidadeSelecionadaRef  = useRef(cidadeSelecionada); // sempre atualizado
     const [mapPronto, setMapPronto]   = useState(false);
     const [geocodando, setGeocodando] = useState(false);
+
+    // Mantém a ref de seleção sempre atualizada (usada dentro de closures do Leaflet)
+    useEffect(() => {
+        cidadeSelecionadaRef.current = cidadeSelecionada;
+    }, [cidadeSelecionada]);
 
     // ── Inicializa o mapa uma única vez ──────────────────────────
     useEffect(() => {
         if (!containerRef.current || mapRef.current) return;
         import('leaflet').then(({ default: L }) => {
-            if (!containerRef.current) return; // componente desmontou durante o import
-            // Se o container já foi inicializado por um ciclo anterior (HMR), limpa antes
-            if (containerRef.current._leaflet_id) {
-                try { L.map(containerRef.current).remove(); } catch (_) { /* ignora */ }
+            if (!containerRef.current) return;
+            // Guard HMR: se um mapa anterior ficou preso no container, destrói antes
+            if (containerRef.current.__leafletMapInstance) {
+                try { containerRef.current.__leafletMapInstance.remove(); } catch (_) { /* ignora */ }
+                containerRef.current.__leafletMapInstance = null;
             }
-            // Estilo claro CartoDB Voyager (idêntico ao Google Maps em cores)
             L.Icon.Default.imagePath = 'https://unpkg.com/leaflet@1.9.4/dist/images/';
             const map = L.map(containerRef.current, {
                 center: [-10.5, -36.5], zoom: 8,
@@ -142,10 +174,9 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 maxZoom: 19,
             }).addTo(map);
 
-            // Controles de zoom adaptados ao tema claro
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-            // CSS dos popups: fundo branco, sombra suave, sem bordinha azul padrão
+            // CSS dos popups: fundo branco, sombra suave
             const style = document.createElement('style');
             style.textContent = `
                 .noc-popup .leaflet-popup-content-wrapper {
@@ -161,11 +192,30 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             `;
             document.head.appendChild(style);
 
+            // Controla visibilidade dos rótulos conforme o zoom
+            map.on('zoomend', () => {
+                const zoom   = map.getZoom();
+                const mostrar = zoom >= ZOOM_LABEL;
+                if (mostrar === mostrarLabelsRef.current) return; // sem mudança
+                mostrarLabelsRef.current = mostrar;
+
+                // Atualiza ícones de todos os marcadores de cidade
+                const selAtual = cidadeSelecionadaRef.current;
+                Object.entries(marcCidadeRef.current).forEach(([id, marker]) => {
+                    const sel = id === String(selAtual).split('::')[0] && !String(selAtual).includes('::');
+                    marker.setIcon(criarIconeCidade(L, marker._cor, sel, marker._nome, mostrar));
+                });
+            });
+
+            containerRef.current.__leafletMapInstance = map; // guard HMR
             mapRef.current = { map, L };
             setMapPronto(true);
         });
         return () => {
-            if (mapRef.current) { mapRef.current.map.remove(); mapRef.current = null; }
+            if (mapRef.current) {
+                mapRef.current.map.remove();
+                mapRef.current = null;
+            }
         };
     }, []);
 
@@ -181,7 +231,6 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             const chave = `${d.cidade_ixc_id}::${d.bairro}`;
             const cor   = COR_STATUS[d.status] || COR_PADRAO;
 
-            // Atualiza popup se já existe
             if (marcBairroRef.current[chave]) {
                 marcBairroRef.current[chave].setPopupContent(
                     popupBairroHtml(d.cidade, d.bairro, cor, d.status, d.total_contratos)
@@ -189,26 +238,22 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 return;
             }
 
-            // Círculo de cobertura
             const raio = raioCirculo(d.total_contratos);
             const circle = L.circle([d.latitude, d.longitude], {
-                radius: raio,
-                color: cor, weight: 1.5, opacity: 0.45,
-                fillColor: cor, fillOpacity: 0.12,
-                interactive: false,
+                radius: raio, color: cor, weight: 1.5, opacity: 0.45,
+                fillColor: cor, fillOpacity: 0.12, interactive: false,
             }).addTo(map);
             circBairroRef.current[chave] = circle;
 
-            // Marcador
             const icone  = criarIconeBairro(L, cor, false);
             const marker = L.marker([d.latitude, d.longitude], { icon: icone })
                 .addTo(map)
                 .bindPopup(popupBairroHtml(d.cidade, d.bairro, cor, d.status, d.total_contratos), { className: 'noc-popup', maxWidth: 240 });
             marker.on('click', () => onCidadeClick(`${d.cidade_ixc_id}::${d.bairro}`));
-            marker._cidadeId   = d.cidade_ixc_id;
-            marker._cor        = cor;
-            marker._coords     = { lat: d.latitude, lng: d.longitude };
-            marker._contratos  = d.total_contratos;
+            marker._cidadeId  = d.cidade_ixc_id;
+            marker._cor       = cor;
+            marker._coords    = { lat: d.latitude, lng: d.longitude };
+            marker._contratos = d.total_contratos;
             marcBairroRef.current[chave] = marker;
         });
 
@@ -235,21 +280,18 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 const coords = await geocodificar(cidade.nome, cidade.estado);
                 if (!coords || cancelado) { await sleep(300); continue; }
 
-                const cor   = COR_STATUS[cidade.status] || COR_PADRAO;
-                const raio  = raioCirculo(cidade.contratos);
+                const cor  = COR_STATUS[cidade.status] || COR_PADRAO;
+                const raio = raioCirculo(cidade.contratos);
 
-                // Círculo de cobertura da cidade
                 const circle = L.circle([coords.lat, coords.lng], {
-                    radius: raio,
-                    color: cor, weight: 2, opacity: 0.5,
-                    fillColor: cor, fillOpacity: 0.1,
-                    interactive: false,
+                    radius: raio, color: cor, weight: 2, opacity: 0.5,
+                    fillColor: cor, fillOpacity: 0.1, interactive: false,
                 }).addTo(map);
                 circCidadeRef.current[id] = circle;
 
-                // Marcador
-                const icone  = criarIconeCidade(L, cor, false);
-                const marker = L.marker([coords.lat, coords.lng], { icon: icone })
+                const mostrar = mostrarLabelsRef.current;
+                const icone   = criarIconeCidade(L, cor, false, cidade.nome, mostrar);
+                const marker  = L.marker([coords.lat, coords.lng], { icon: icone })
                     .addTo(map)
                     .bindPopup(popupCidadeHtml(cidade.nome, cidade.contratos, cidade.status, cor), { className: 'noc-popup', maxWidth: 240 });
                 marker.on('click', () => onCidadeClick(id));
@@ -257,6 +299,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 marker._cor       = cor;
                 marker._coords    = coords;
                 marker._contratos = cidade.contratos;
+                marker._nome      = cidade.nome;  // armazena para o listener de zoom
                 marcCidadeRef.current[id] = marker;
                 await sleep(300);
             }
@@ -270,19 +313,18 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     useEffect(() => {
         if (!mapRef.current) return;
         const { map, L } = mapRef.current;
+        const mostrar = mostrarLabelsRef.current;
 
         // Marcadores e círculos de CIDADE
         Object.entries(marcCidadeRef.current).forEach(([id, marker]) => {
             const sel = id === String(cidadeSelecionada).split('::')[0] && !String(cidadeSelecionada).includes('::');
-            marker.setIcon(criarIconeCidade(L, marker._cor, sel));
+            marker.setIcon(criarIconeCidade(L, marker._cor, sel, marker._nome || '', mostrar));
 
             const circle = circCidadeRef.current[id];
             if (circle) {
-                if (sel) {
-                    circle.setStyle({ fillOpacity: 0.22, opacity: 0.8, weight: 2.5 });
-                } else {
-                    circle.setStyle({ fillOpacity: 0.1, opacity: 0.5, weight: 2 });
-                }
+                circle.setStyle(sel
+                    ? { fillOpacity: 0.22, opacity: 0.8,  weight: 2.5 }
+                    : { fillOpacity: 0.1,  opacity: 0.5,  weight: 2   });
             }
 
             if (sel) {
@@ -300,11 +342,9 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
 
             const circle = circBairroRef.current[chave];
             if (circle) {
-                if (sel) {
-                    circle.setStyle({ fillOpacity: 0.22, opacity: 0.75, weight: 2 });
-                } else {
-                    circle.setStyle({ fillOpacity: 0.12, opacity: 0.45, weight: 1.5 });
-                }
+                circle.setStyle(sel
+                    ? { fillOpacity: 0.22, opacity: 0.75, weight: 2   }
+                    : { fillOpacity: 0.12, opacity: 0.45, weight: 1.5 });
             }
 
             if (clicouNoBairro) {
