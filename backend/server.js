@@ -3093,6 +3093,37 @@ app.get('/api/cobertura-ixc', async (req, res) => {
 });
 
 
+// GET /api/geocodificar?cidade=Maceio&estado=AL
+// Proxy server-side para Nominatim com cache de 24h
+app.get('/api/geocodificar', async (req, res) => {
+    const { cidade, estado } = req.query;
+    if (!cidade) return res.status(400).json({ erro: 'cidade é obrigatória' });
+    const chave = `geocodificar:${String(cidade).toLowerCase()}:${String(estado || 'AL').toLowerCase()}`;
+    const cached = cacheGet(chave);
+    if (cached.hit) return res.json(cached.data);
+
+    const query = encodeURIComponent(`${cidade}, ${estado || 'Alagoas'}, Brasil`);
+    const url   = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
+    try {
+        const resp = await fetch(url, {
+            headers: {
+                'Accept-Language': 'pt-BR',
+                'User-Agent': 'Prestek-Intranet/1.0 (internal)',
+            },
+        });
+        const json = await resp.json();
+        if (json.length > 0) {
+            const coords = { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) };
+            cacheSet(chave, coords, TTL.GEOCODIFICAR);
+            return res.json(coords);
+        }
+        return res.json(null);
+    } catch (e) {
+        console.error('Erro geocodificar:', e.message);
+        return res.status(500).json({ erro: e.message });
+    }
+});
+
 // Mapa de IDs numéricos de estado do IXC → siglas UF (para uso nos overrides)
 const IXC_UF_MAP_GLOBAL = { '7': 'AL', '28': 'SE' };
 

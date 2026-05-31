@@ -55,4 +55,5 @@ export const TTL = {
     PLANOS:        parseInt(process.env.CACHE_TTL_PLANOS         || '300')  * 1000, // 5 min
     COBERTURA_IXC: parseInt(process.env.CACHE_TTL_COBERTURA      || '600')  * 1000, // 10 min
     OS_CHAMADOS:   parseInt(process.env.CACHE_TTL_OS             || '60')   * 1000, // 1 min
+    GEOCODIFICAR:  86400 * 1000, // 24 horas — coordenadas de cidades não mudam
 };

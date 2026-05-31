@@ -128,14 +128,33 @@ function popupBairroHtml(cidade, bairro, cor, status, contratos) {
     </div>`;
 }
 
-// ─── Geocodifica cidade via Nominatim ─────────────────────────────
-async function geocodificar(nomeCidade, estado) {
-    const query = encodeURIComponent(`${nomeCidade}, ${estado || 'Alagoas'}, Brasil`);
-    const url   = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
+// ─── Cache localStorage de coordenadas ────────────────────────────
+const GEO_LS_KEY = 'coverage_geocache_v1';
+function lsGeoGet(chave) {
+    try { const c = JSON.parse(localStorage.getItem(GEO_LS_KEY) || '{}'); return c[chave] || null; } catch { return null; }
+}
+function lsGeoSet(chave, coords) {
     try {
-        const resp = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
-        const json = await resp.json();
-        if (json.length > 0) return { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) };
+        const c = JSON.parse(localStorage.getItem(GEO_LS_KEY) || '{}');
+        c[chave] = coords;
+        localStorage.setItem(GEO_LS_KEY, JSON.stringify(c));
+    } catch { /* sem espaço */ }
+}
+
+// ─── Geocodifica cidade via proxy backend (cache 24h no servidor + localStorage) ──
+async function geocodificar(nomeCidade, estado) {
+    const chave = `${String(nomeCidade).toLowerCase()}::${String(estado || 'AL').toLowerCase()}`;
+    const hit = lsGeoGet(chave);
+    if (hit) return hit;
+
+    try {
+        const params = new URLSearchParams({ cidade: nomeCidade, estado: estado || 'AL' });
+        const resp = await fetch(`/api/geocodificar?${params}`);
+        const coords = await resp.json();
+        if (coords && coords.lat) {
+            lsGeoSet(chave, coords);
+            return coords;
+        }
     } catch { /* silencioso */ }
     return null;
 }
