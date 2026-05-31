@@ -1,5 +1,80 @@
 import { toIsoDay } from '../utils/dateHelpers';
 
+export const handleExportarHistoricoCSV = async (filterMonth, filterYear, showToast) => {
+    try {
+        showToast('Gerando CSV do histórico...', 'info');
+        const params = new URLSearchParams({ mes: filterMonth, ano: filterYear });
+        const res = await fetch(`/api/plantoes/historico?${params}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.sucesso) throw new Error(data.erro || 'Erro ao buscar histórico');
+
+        const historico = data.historico || [];
+        if (!historico.length) {
+            showToast('Nenhum registro de histórico no período selecionado.', 'error');
+            return;
+        }
+
+        const escapeCsv = (val) => {
+            const s = val == null ? '' : String(val);
+            if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+                return '"' + s.replace(/"/g, '""') + '"';
+            }
+            return s;
+        };
+
+        const headers = [
+            'Data do Plantão', 'Alterado Por', 'Momento da Alteração',
+            'N1 Anterior', 'N2 Anterior', 'Supervisor Anterior',
+            'N1 Novo', 'N2 Novo', 'Supervisor Novo'
+        ];
+
+        const rows = historico.map(h => {
+            const plantaoData = h.plantao_data
+                ? new Date(h.plantao_data + 'T12:00:00').toLocaleDateString('pt-BR')
+                : '—';
+            const alteradoEm = h.alterado_em
+                ? new Date(h.alterado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+                : '—';
+            return [
+                plantaoData,
+                h.admin_nome || '—',
+                alteradoEm,
+                h.n1_anterior || '—',
+                h.n2_anterior || '—',
+                h.gerente_anterior || '—',
+                h.n1_novo || '—',
+                h.n2_novo || '—',
+                h.gerente_novo || '—',
+            ].map(escapeCsv).join(',');
+        });
+
+        const monthLabel = new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1)
+            .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+        const csvContent = '\uFEFF' + [
+            `# Histórico de Alterações de Plantão — ${monthLabel}`,
+            `# Total de registros: ${historico.length}`,
+            headers.map(escapeCsv).join(','),
+            ...rows
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `historico-plantao-${filterYear}-${String(filterMonth).padStart(2, '0')}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast(`Histórico exportado — ${historico.length} registro(s).`, 'success');
+    } catch (err) {
+        console.error('Erro ao exportar histórico:', err);
+        showToast('Erro ao exportar histórico. Tente novamente.', 'error');
+    }
+};
+
 export const handleImprimir = (filteredPlantoes, filterMonth, filterYear, filterSearch, formatarData, getDiaSemana) => {
     if (!filteredPlantoes.length) {
         alert('Não há plantões no período selecionado para imprimir.');

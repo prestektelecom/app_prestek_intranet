@@ -1433,6 +1433,59 @@ app.post('/api/plantoes', async (req, res) => {
     }
 });
 
+app.get('/api/plantoes/historico', async (req, res) => {
+    const { mes, ano } = req.query;
+    try {
+        const params = [];
+        let where = '';
+        if (mes && ano) {
+            params.push(String(ano), String(mes).padStart(2, '0'));
+            where = `WHERE TO_CHAR(plantao_data, 'YYYY') = $1 AND TO_CHAR(plantao_data, 'MM') = $2`;
+        } else if (ano) {
+            params.push(String(ano));
+            where = `WHERE TO_CHAR(plantao_data, 'YYYY') = $1`;
+        }
+
+        const result = await pool.query(
+            `SELECT id, plantao_data, n1_anterior, n2_anterior, gerente_anterior, n1_novo, n2_novo, gerente_novo, admin_nome, alterado_em
+             FROM plantoes_historico
+             ${where}
+             ORDER BY alterado_em DESC`,
+            params
+        );
+
+        const resolverNomes = async (ids) => {
+            if (!ids) return null;
+            const idList = ids.split(',').filter(Boolean);
+            if (!idList.length) return null;
+            const placeholders = idList.map((_, i) => `$${i + 1}`).join(',');
+            const r = await pool.query(
+                `SELECT funcionario_nome FROM usuarios_perfil WHERE funcionario_id IN (${placeholders})`,
+                idList
+            );
+            return r.rows.map(x => x.funcionario_nome).join(', ') || null;
+        };
+
+        const historico = await Promise.all(result.rows.map(async (h) => ({
+            id: h.id,
+            plantao_data: h.plantao_data,
+            n1_anterior: await resolverNomes(h.n1_anterior),
+            n2_anterior: await resolverNomes(h.n2_anterior),
+            gerente_anterior: await resolverNomes(h.gerente_anterior),
+            n1_novo: await resolverNomes(h.n1_novo),
+            n2_novo: await resolverNomes(h.n2_novo),
+            gerente_novo: await resolverNomes(h.gerente_novo),
+            admin_nome: h.admin_nome,
+            alterado_em: h.alterado_em
+        })));
+
+        return res.json({ sucesso: true, historico });
+    } catch (err) {
+        console.error('Erro ao buscar histórico de plantões:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar histórico.' });
+    }
+});
+
 app.get('/api/plantoes/historico/:data', async (req, res) => {
     const { data } = req.params;
     try {

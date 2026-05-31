@@ -4,7 +4,7 @@ import ScheduleRow from './schedule/ScheduleRow';
 import ManagePlantaoModal from './schedule/ManagePlantaoModal';
 import { useScheduleData } from '../hooks/useScheduleData';
 import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
-import { handleImprimir, handleExportarICal } from '../services/exportService';
+import { handleImprimir, handleExportarICal, handleExportarHistoricoCSV } from '../services/exportService';
 
 // Skeleton row for loading state
 function SkeletonRow() {
@@ -273,7 +273,7 @@ export default function Schedule({ setCurrentView, user }) {
                             <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tighter">Visão Geral da Escala</h1>
                             <p className="text-secondary font-medium mt-1">Visualize e gerencie as atribuições de cobertura mensal.</p>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 flex-wrap">
                             <button
                                 onClick={() => handleImprimir(filteredPlantoes, filterMonth, filterYear, filterSearch, formatarData, getDiaSemana)}
                                 className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-lowest border border-surface-container-high rounded-lg text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors"
@@ -288,6 +288,15 @@ export default function Schedule({ setCurrentView, user }) {
                                 <span className="material-symbols-outlined text-[20px]">ios_share</span>
                                 Exportar iCal
                             </button>
+                            {user?.is_admin && (
+                                <button
+                                    onClick={() => handleExportarHistoricoCSV(filterMonth, filterYear, showToast)}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-surface-container-lowest border border-surface-container-high text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">table_chart</span>
+                                    Exportar Histórico
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
