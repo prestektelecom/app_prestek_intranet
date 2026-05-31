@@ -2,9 +2,10 @@ import React, { useState, useMemo } from 'react';
 import CalendarDay from './schedule/CalendarDay';
 import ScheduleRow from './schedule/ScheduleRow';
 import ManagePlantaoModal from './schedule/ManagePlantaoModal';
+import HistoricoPreviewModal from './schedule/HistoricoPreviewModal';
 import { useScheduleData } from '../hooks/useScheduleData';
 import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
-import { handleImprimir, handleExportarICal, handleExportarHistoricoCSV } from '../services/exportService';
+import { handleImprimir, handleExportarICal } from '../services/exportService';
 
 // Skeleton row for loading state
 function SkeletonRow() {
@@ -27,6 +28,7 @@ export default function Schedule({ setCurrentView, user }) {
     const [filterMeusPlantoes, setFilterMeusPlantoes] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isHistoricoModalOpen, setIsHistoricoModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
     const [formData, setFormData] = useState({ n1_ids: [], n2_ids: [], gerente_ids: [] });
     const [existingPlantao, setExistingPlantao] = useState(null);
@@ -290,11 +292,11 @@ export default function Schedule({ setCurrentView, user }) {
                             </button>
                             {user?.is_admin && (
                                 <button
-                                    onClick={() => handleExportarHistoricoCSV(filterMonth, filterYear, showToast, user?.email)}
+                                    onClick={() => setIsHistoricoModalOpen(true)}
                                     className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-surface-container-lowest border border-surface-container-high text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">table_chart</span>
-                                    Exportar Histórico
+                                    Ver Histórico
                                 </button>
                             )}
                             {user?.is_admin && (
@@ -606,6 +608,16 @@ export default function Schedule({ setCurrentView, user }) {
                         </div>
                     </div>
                 )}
+
+                {/* Histórico Preview Modal */}
+                <HistoricoPreviewModal
+                    isOpen={isHistoricoModalOpen}
+                    onClose={() => setIsHistoricoModalOpen(false)}
+                    filterMonth={filterMonth}
+                    filterYear={filterYear}
+                    user={user}
+                    showToast={showToast}
+                />
 
                 {/* Toast */}
                 {toast.show && (

@@ -3,15 +3,34 @@ import { toIsoDay } from '../utils/dateHelpers';
 export const handleExportarHistoricoCSV = async (filterMonth, filterYear, showToast, adminEmail = '') => {
     try {
         showToast('Gerando CSV do histórico...', 'info');
-        const params = new URLSearchParams({ mes: filterMonth, ano: filterYear });
-        const res = await fetch(`/api/plantoes/historico?${params}`, {
-            headers: adminEmail ? { 'x-admin-email': adminEmail } : {},
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (!data.sucesso) throw new Error(data.erro || 'Erro ao buscar histórico');
+        const requestHeaders = adminEmail ? { 'x-admin-email': adminEmail } : {};
 
-        const historico = data.historico || [];
+        // Fetch all pages (backend hard-caps at 200/request; loop until complete)
+        const PAGE_SIZE = 200;
+        let allRows = [];
+        let pageNum = 1;
+        let totalRecords = null;
+
+        do {
+            const params = new URLSearchParams({
+                mes: filterMonth,
+                ano: filterYear,
+                pagina: pageNum,
+                limite: PAGE_SIZE,
+            });
+            const res = await fetch(`/api/plantoes/historico?${params}`, { headers: requestHeaders });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (!data.sucesso) throw new Error(data.erro || 'Erro ao buscar histórico');
+            const batch = data.historico || [];
+            allRows = allRows.concat(batch);
+            if (totalRecords === null) totalRecords = data.total ?? batch.length;
+            pageNum++;
+            // Stop when we've collected all records or the batch came back empty
+            if (batch.length < PAGE_SIZE || allRows.length >= totalRecords) break;
+        } while (true);
+
+        const historico = allRows;
         if (!historico.length) {
             showToast('Nenhum registro de histórico no período selecionado.', 'error');
             return;
