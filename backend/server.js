@@ -1523,6 +1523,90 @@ app.get('/api/plantoes/historico', adminAuth, async (req, res) => {
     }
 });
 
+app.get('/api/plantoes/historico/export', adminAuth, async (req, res) => {
+    const { data_inicio, data_fim, admin_nome } = req.query;
+    try {
+        const conditions = [];
+        const params = [];
+
+        if (data_inicio) {
+            params.push(data_inicio);
+            conditions.push(`plantao_data >= $${params.length}`);
+        }
+        if (data_fim) {
+            params.push(data_fim);
+            conditions.push(`plantao_data <= $${params.length}`);
+        }
+        if (admin_nome) {
+            params.push(`%${admin_nome}%`);
+            conditions.push(`admin_nome ILIKE $${params.length}`);
+        }
+
+        const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        const result = await pool.query(
+            `SELECT id, plantao_data, n1_anterior, n2_anterior, gerente_anterior, n1_novo, n2_novo, gerente_novo, admin_nome, alterado_em
+             FROM plantoes_historico
+             ${where}
+             ORDER BY alterado_em DESC`,
+            params
+        );
+
+        const resolverNomes = async (ids) => {
+            if (!ids) return '';
+            const idList = ids.split(',').filter(Boolean);
+            if (!idList.length) return '';
+            const placeholders = idList.map((_, i) => `$${i + 1}`).join(',');
+            const r = await pool.query(
+                `SELECT funcionario_nome FROM usuarios_perfil WHERE funcionario_id IN (${placeholders})`,
+                idList
+            );
+            return r.rows.map(x => x.funcionario_nome).join(', ') || '';
+        };
+
+        const rows = await Promise.all(result.rows.map(async (h) => ({
+            plantao_data: h.plantao_data ? new Date(h.plantao_data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '',
+            admin_nome: h.admin_nome || '',
+            alterado_em: h.alterado_em ? new Date(h.alterado_em).toLocaleString('pt-BR') : '',
+            n1_anterior: await resolverNomes(h.n1_anterior),
+            n1_novo: await resolverNomes(h.n1_novo),
+            n2_anterior: await resolverNomes(h.n2_anterior),
+            n2_novo: await resolverNomes(h.n2_novo),
+            gerente_anterior: await resolverNomes(h.gerente_anterior),
+            gerente_novo: await resolverNomes(h.gerente_novo),
+        })));
+
+        const escapeCsv = (val) => {
+            const str = String(val ?? '');
+            if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        };
+
+        const header = ['Data do Plantão', 'Alterado por', 'Quando', 'N1 anterior', 'N1 novo', 'N2 anterior', 'N2 novo', 'Supervisão anterior', 'Supervisão nova'];
+        const csvLines = [
+            header.map(escapeCsv).join(','),
+            ...rows.map(r => [
+                r.plantao_data, r.admin_nome, r.alterado_em,
+                r.n1_anterior, r.n1_novo,
+                r.n2_anterior, r.n2_novo,
+                r.gerente_anterior, r.gerente_novo,
+            ].map(escapeCsv).join(','))
+        ];
+
+        const csv = '\uFEFF' + csvLines.join('\r\n');
+        const filename = `historico_plantoes_${new Date().toISOString().slice(0, 10)}.csv`;
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        return res.send(csv);
+    } catch (err) {
+        console.error('Erro ao exportar histórico de plantões:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao exportar histórico.' });
+    }
+});
+
 app.get('/api/plantoes/historico/:data', async (req, res) => {
     const { data } = req.params;
     try {

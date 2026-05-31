@@ -100,6 +100,37 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
         || filtroDataInicio !== ''
         || filtroDataFim !== '';
 
+    const [exportando, setExportando] = useState(false);
+
+    const exportarCSV = async () => {
+        setExportando(true);
+        try {
+            const params = new URLSearchParams();
+            if (filtroDataInicio) params.set('data_inicio', filtroDataInicio);
+            if (filtroDataFim) params.set('data_fim', filtroDataFim);
+            if (filtroAdminAplicado) params.set('admin_nome', filtroAdminAplicado);
+            const res = await fetch(`/api/plantoes/historico/export?${params}`, {
+                headers: adminEmail ? { 'x-admin-email': adminEmail } : {},
+            });
+            if (!res.ok) throw new Error('Erro ao exportar');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const cd = res.headers.get('Content-Disposition') || '';
+            const match = cd.match(/filename="?([^"]+)"?/);
+            a.download = match ? match[1] : 'historico_plantoes.csv';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setExportando(false);
+        }
+    };
+
     return (
         <div className="flex-1 flex flex-col w-full max-w-[1400px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <main className="flex-1 flex flex-col gap-8">
@@ -186,8 +217,21 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                             </button>
                         )}
                     </div>
-                    <div className="ml-auto self-center text-xs text-secondary font-bold">
-                        {carregando ? 'Carregando...' : `${total} registro${total !== 1 ? 's' : ''}`}
+                    <div className="ml-auto flex items-center gap-3">
+                        <span className="text-xs text-secondary font-bold">
+                            {carregando ? 'Carregando...' : `${total} registro${total !== 1 ? 's' : ''}`}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={exportarCSV}
+                            disabled={exportando || carregando || total === 0}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-emerald-500/60 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">
+                                {exportando ? 'hourglass_empty' : 'download'}
+                            </span>
+                            {exportando ? 'Exportando...' : 'Exportar CSV'}
+                        </button>
                     </div>
                 </form>
 
