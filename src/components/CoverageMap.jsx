@@ -38,20 +38,20 @@ const COR_STATUS = {
 const COR_PADRAO = '#64748b';
 
 // ─── Raio do círculo de cobertura (em metros) ────────────────────
-function raioCirculo(totalContratos) {
+function raioCirculo(totalContratos, raioMax = 8000) {
     const n = parseInt(totalContratos) || 0;
-    return Math.min(8000, Math.max(2000, n * 120));
+    return Math.min(raioMax, Math.max(Math.round(raioMax * 0.25), n * 120));
 }
 
-// ─── Ícone SVG: cidade (pino + rótulo flutuante) ─────────────────
-function criarIconeCidade(cor, selecionado, nome = '') {
-    const tam   = selecionado ? 42 : 28;
-    const svgH  = Math.round(tam * 1.5);
+// ─── Ícone SVG: cidade (apenas pino, sem rótulo) ──────────────────
+function criarIconeCidade(cor, selecionado) {
+    const tam  = selecionado ? 42 : 28;
+    const svgH = Math.round(tam * 1.5);
     const shadow = selecionado
         ? `filter:drop-shadow(0 4px 8px ${cor}99)`
         : `filter:drop-shadow(0 2px 4px ${cor}66)`;
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 42" width="${tam}" height="${svgH}" style="${shadow}">
+    const html = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 42" width="${tam}" height="${svgH}" style="${shadow}">
         <defs>
             <radialGradient id="cg${selecionado ? 's' : 'n'}" cx="40%" cy="30%" r="60%">
                 <stop offset="0%" stop-color="${cor}" stop-opacity="1"/>
@@ -64,30 +64,12 @@ function criarIconeCidade(cor, selecionado, nome = '') {
         <circle cx="14" cy="14" r="${selecionado ? 3.5 : 2.5}" fill="${cor}" opacity="0.8"/>
     </svg>`;
 
-    const labelH = 18;
-    const labelCss = nome
-        ? `display:inline-block;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;` +
-          `background:rgba(255,255,255,0.93);border-radius:5px;padding:1px 6px;` +
-          `font-size:${selecionado ? 11 : 10}px;font-family:sans-serif;` +
-          `font-weight:${selecionado ? 700 : 600};` +
-          `color:${selecionado ? '#2563eb' : '#1e293b'};` +
-          `box-shadow:0 1px 4px rgba(0,0,0,0.13);border:1px solid rgba(0,0,0,0.07);margin-top:2px;`
-        : 'display:none;';
-
-    const iconW  = Math.max(tam * 2, 110);
-    const totalH = svgH + (nome ? labelH + 2 : 0);
-
-    const html = `<div style="display:flex;flex-direction:column;align-items:center;width:${iconW}px;">
-        ${svg}
-        <span style="${labelCss}">${nome}</span>
-    </div>`;
-
     return L.divIcon({
         html,
         className: '',
-        iconSize:    [iconW, totalH],
-        iconAnchor:  [iconW / 2, svgH],
-        popupAnchor: [0, -(svgH + (nome ? labelH : 0) + 4)],
+        iconSize:    [tam, svgH],
+        iconAnchor:  [tam / 2, svgH],
+        popupAnchor: [0, -(svgH + 4)],
     });
 }
 
@@ -170,6 +152,8 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     const circBairroRef = useRef({});
     const [mapPronto, setMapPronto]   = useState(false);
     const [geocodando, setGeocodando] = useState(false);
+    const [raioMax, setRaioMax]       = useState(8000);
+    const raioMaxRef                  = useRef(8000); // valor atual sem causar re-render do effect de markers
 
     // ── Inicializa o mapa (síncrono — sem dynamic import) ────────
     useEffect(() => {
@@ -225,7 +209,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 return;
             }
 
-            const raio = raioCirculo(d.total_contratos);
+            const raio = raioCirculo(d.total_contratos, raioMaxRef.current);
             const circle = L.circle([d.latitude, d.longitude], {
                 radius: raio, color: cor, weight: 1.5, opacity: 0.45,
                 fillColor: cor, fillOpacity: 0.12, interactive: false,
@@ -267,7 +251,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 if (!coords || cancelado) { await sleep(300); continue; }
 
                 const cor  = COR_STATUS[cidade.status] || COR_PADRAO;
-                const raio = raioCirculo(cidade.contratos);
+                const raio = raioCirculo(cidade.contratos, raioMaxRef.current);
 
                 const circle = L.circle([coords.lat, coords.lng], {
                     radius: raio, color: cor, weight: 2, opacity: 0.5,
@@ -275,7 +259,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 }).addTo(map);
                 circCidadeRef.current[id] = circle;
 
-                const marker = L.marker([coords.lat, coords.lng], { icon: criarIconeCidade(cor, false, cidade.nome) })
+                const marker = L.marker([coords.lat, coords.lng], { icon: criarIconeCidade(cor, false) })
                     .addTo(map)
                     .bindPopup(popupCidadeHtml(cidade.nome, cidade.contratos, cidade.status, cor), { className: 'noc-popup', maxWidth: 240 });
                 marker.on('click', () => onCidadeClick(id));
@@ -301,7 +285,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         // Marcadores e círculos de CIDADE
         Object.entries(marcCidadeRef.current).forEach(([id, marker]) => {
             const sel = id === String(cidadeSelecionada).split('::')[0] && !String(cidadeSelecionada).includes('::');
-            marker.setIcon(criarIconeCidade(marker._cor, sel, marker._nome || ''));
+            marker.setIcon(criarIconeCidade(marker._cor, sel));
 
             const circle = circCidadeRef.current[id];
             if (circle) {
@@ -337,14 +321,62 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         });
     }, [cidadeSelecionada]);
 
+    // ── Atualiza raios ao mudar raioMax ───────────────────────────
+    useEffect(() => {
+        raioMaxRef.current = raioMax;
+        // Círculos de cidade
+        Object.entries(circCidadeRef.current).forEach(([id, circle]) => {
+            const marker = marcCidadeRef.current[id];
+            if (marker) circle.setRadius(raioCirculo(marker._contratos, raioMax));
+        });
+        // Círculos de bairro
+        Object.entries(circBairroRef.current).forEach(([chave, circle]) => {
+            const marker = marcBairroRef.current[chave];
+            if (marker) circle.setRadius(raioCirculo(marker._contratos, raioMax));
+        });
+    }, [raioMax]);
+
     return (
         <div className="absolute inset-0 w-full h-full z-0">
+            {/* Indicador de geocodificação */}
             {geocodando && (
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 backdrop-blur-sm text-slate-600 text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-slate-200 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                     Carregando cidades…
                 </div>
             )}
+
+            {/* Controle de raio máximo */}
+            <div className="absolute bottom-10 left-3 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 px-3 py-2 flex flex-col gap-1 min-w-[160px]">
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                    Raio máx. dos círculos
+                </label>
+                <div className="flex items-center gap-2">
+                    <input
+                        type="range"
+                        min={500}
+                        max={50000}
+                        step={500}
+                        value={raioMax}
+                        onChange={e => setRaioMax(Number(e.target.value))}
+                        className="flex-1 accent-blue-600 h-1.5"
+                    />
+                    <input
+                        type="number"
+                        min={500}
+                        max={50000}
+                        step={500}
+                        value={raioMax}
+                        onChange={e => {
+                            const v = Math.max(500, Math.min(50000, Number(e.target.value) || 500));
+                            setRaioMax(v);
+                        }}
+                        className="w-16 text-xs font-semibold text-slate-700 border border-slate-200 rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <span className="text-[10px] text-slate-400 shrink-0">m</span>
+                </div>
+            </div>
+
             <div
                 ref={containerRef}
                 style={{ height: '100%', width: '100%', isolation: 'isolate' }}
