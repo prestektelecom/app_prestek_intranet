@@ -1,0 +1,1 @@
+- [Leaflet HMR fix](leaflet-hmr.md) — static import + _leaflet_id guard eliminates "Map container already initialized" on HMR saves
