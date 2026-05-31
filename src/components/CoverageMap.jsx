@@ -181,6 +181,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         setMapPronto(true);
 
         return () => {
+            setMapPronto(false); // garante re-render ao remontar (StrictMode / HMR)
             map.remove();
             mapRef.current = null;
             marcCidadeRef.current = {};
