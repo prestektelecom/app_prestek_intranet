@@ -291,15 +291,6 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiAtivos, kpiDeptos, isLoading
 
       <div style={{ position: 'relative', maxWidth: 1440, margin: '0 auto' }}>
 
-        {/* Breadcrumb */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, color: 'rgba(255,255,255,0.7)', fontSize: 12.5, fontFamily: '"JetBrains Mono", monospace' }}>
-          <button onClick={() => setCurrentView?.('dashboard')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0 }}>
-            Dashboard
-          </button>
-          <span>/</span>
-          <span style={{ color: 'white', fontWeight: 600 }}>Colaboradores</span>
-        </div>
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {/* Título */}
           <div>
