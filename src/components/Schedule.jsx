@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import CalendarDay from './schedule/CalendarDay';
 import ScheduleRow from './schedule/ScheduleRow';
 import ManagePlantaoModal from './schedule/ManagePlantaoModal';
@@ -36,6 +36,8 @@ export default function Schedule({ setCurrentView, user }) {
     const [salvando, setSalvando] = useState(false);
     const [deletando, setDeletando] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [monthlyChangeCount, setMonthlyChangeCount] = useState(null);
+    const [loadingChangeCount, setLoadingChangeCount] = useState(false);
 
     const {
         plantoes,
@@ -52,6 +54,28 @@ export default function Schedule({ setCurrentView, user }) {
         fetchHistorico,
         setHistorico,
     } = useScheduleData(user);
+
+    useEffect(() => {
+        if (!user?.is_admin) return;
+        let cancelled = false;
+        const fetchCount = async () => {
+            setLoadingChangeCount(true);
+            try {
+                const params = new URLSearchParams({ mes: filterMonth, ano: filterYear, pagina: 1, limite: 1 });
+                const headers = user?.email ? { 'x-admin-email': user.email } : {};
+                const res = await fetch(`/api/plantoes/historico?${params}`, { headers });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (!cancelled) setMonthlyChangeCount(data.sucesso ? (data.total ?? 0) : null);
+            } catch {
+                if (!cancelled) setMonthlyChangeCount(null);
+            } finally {
+                if (!cancelled) setLoadingChangeCount(false);
+            }
+        };
+        fetchCount();
+        return () => { cancelled = true; };
+    }, [filterMonth, filterYear, user]);
 
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
@@ -470,6 +494,37 @@ export default function Schedule({ setCurrentView, user }) {
                                 <span className="material-symbols-outlined">event_available</span>
                             </div>
                         </div>
+
+                        {/* Monthly change count — admin only */}
+                        {user?.is_admin && (
+                            <div className="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-6 shadow-sm border-l-4 border-amber-500 animate-in fade-in slide-in-from-left-4 duration-1000 flex items-center justify-between hover:shadow-md transition-shadow">
+                                <div>
+                                    <div className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                        <span className="material-symbols-outlined text-[14px]">edit_calendar</span>
+                                        Alterações no Mês
+                                    </div>
+                                    <div className="text-3xl font-black text-on-surface">
+                                        {loadingChangeCount ? (
+                                            <span className="inline-block w-12 h-8 bg-surface-container-high rounded-md animate-pulse" />
+                                        ) : monthlyChangeCount === null ? (
+                                            <span className="text-sm font-bold text-secondary">—</span>
+                                        ) : monthlyChangeCount === 0 ? (
+                                            <span className="text-base font-bold text-secondary">Sem alterações</span>
+                                        ) : (
+                                            <>
+                                                {monthlyChangeCount}{' '}
+                                                <span className="text-sm font-bold text-secondary uppercase tracking-widest ml-1">
+                                                    {monthlyChangeCount === 1 ? 'alteração' : 'alterações'}
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="size-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0 transition-transform hover:scale-110 duration-300">
+                                    <span className="material-symbols-outlined">history</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Column: Data Table */}
