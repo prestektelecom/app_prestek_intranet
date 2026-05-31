@@ -283,17 +283,7 @@ export default function Schedule({ setCurrentView, user }) {
     return (
         <div className="flex-1 flex flex-col w-full max-w-[1920px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <main className="flex-1 flex flex-col gap-8">
-                {/* Breadcrumbs */}
                 <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
-                        <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer">
-                            <span className="material-symbols-outlined text-lg">home</span>Início
-                        </button>
-
-                        <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer">Dashboard</button>
-
-                        <span className="text-[#1d150c] dark:text-white text-sm font-bold">Escala de Plantão</span>
-                    </div>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
                             <h1 className="text-4xl md:text-5xl font-black text-on-surface tracking-tighter">Visão Geral da Escala</h1>

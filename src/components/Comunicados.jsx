@@ -129,19 +129,6 @@ export default function Comunicados({ user, setCurrentView }) {
 
     return (
         <main className="flex-1 flex flex-col px-4 md:px-10 py-6 max-w-[1024px] mx-auto w-full overflow-y-auto no-scrollbar relative">
-            {/* Breadcrumbs */}
-            <div className="flex flex-wrap items-center gap-2 mb-4 text-sm mt-4">
-                <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer">
-                    <span className="material-symbols-outlined text-lg">home</span>Início
-                </button>
-
-                <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer">
-                    Dashboard
-                </button>
-
-                <span className="text-[#1d150c] dark:text-white text-sm font-bold">Comunicados</span>
-            </div>
-
             <div className="mb-10 flex justify-between items-end gap-4 flex-wrap">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-black text-[#1d150c] dark:text-white mb-3 leading-tight tracking-[-0.033em]">Comunicados da Empresa</h1>

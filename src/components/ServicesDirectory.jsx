@@ -508,24 +508,6 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
             <div className="flex flex-col w-full max-w-[1200px] mx-auto gap-8">
                 {/* Header Section */}
                 <div className="flex flex-col gap-4">
-                    <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
-                        <button 
-                            onClick={() => setCurrentView('dashboard')}
-                            className="text-[#1F5BA8] dark:text-[#7FD4E8] text-sm font-medium hover:text-[#4A9EF5] dark:hover:text-[#4A9EF5] transition-colors flex items-center gap-1 cursor-pointer"
-                        >
-                            <span className="material-symbols-outlined text-lg">home</span>
-                            Início
-                        </button>
-
-                        <button 
-                            onClick={() => setCurrentView('dashboard')}
-                            className="text-[#1F5BA8] dark:text-[#7FD4E8] text-sm font-medium hover:text-[#4A9EF5] dark:hover:text-[#4A9EF5] transition-colors cursor-pointer"
-                        >
-                            Dashboard
-                        </button>
-
-                        <span className="text-[#0B1B2E] dark:text-[#f5f0eb] text-sm font-bold">Serviços Internos</span>
-                    </div>
 
                     <div className="flex flex-wrap justify-between items-end gap-4">
                         <div className="flex flex-col gap-1">

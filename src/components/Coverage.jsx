@@ -467,25 +467,6 @@ export default function Coverage({ user }) {
         <main className="layout-container flex h-full grow flex-col px-4 md:px-6 py-6 overflow-hidden bg-[#F5F9FF] dark:bg-[#141210] text-[#0B1B2E] dark:text-[#f5f0eb]">
             <div className="layout-content-container flex flex-col h-full w-full max-w-[1400px] mx-auto relative gap-4">
 
-                {/* Breadcrumbs */}
-                <div className="flex flex-wrap items-center gap-2 text-sm shrink-0">
-                    <button 
-                        onClick={() => setCurrentView?.('dashboard')} 
-                        className="text-[#1F5BA8] dark:text-[#7FD4E8] text-sm font-medium hover:text-[#4A9EF5] dark:hover:text-[#4A9EF5] transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                        <span className="material-symbols-outlined text-lg">home</span>
-                        Início
-                    </button>
-
-                    <button 
-                        onClick={() => setCurrentView?.('dashboard')} 
-                        className="text-[#1F5BA8] dark:text-[#7FD4E8] text-sm font-medium hover:text-[#4A9EF5] dark:hover:text-[#4A9EF5] transition-colors cursor-pointer"
-                    >
-                        Dashboard
-                    </button>
-
-                    <span className="text-[#0B1B2E] dark:text-[#f5f0eb] text-sm font-bold">Mapa de Cobertura de Rede</span>
-                </div>
 
                 {/* Card de alerta — contratos sem localização cadastrada no IXC */}
                 {isAdmin && !carregando && metaAuditoria && metaAuditoria.total_sem_localizacao > 0 && (
