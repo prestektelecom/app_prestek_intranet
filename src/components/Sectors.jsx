@@ -1,5 +1,31 @@
 import React, { useState, useEffect } from 'react';
 
+// ── Paleta compartilhada (mesma do Dashboard / Colaboradores / Serviços) ──────
+const C = {
+    bg: '#F5F9FF',
+    surface: '#FFFFFF',
+    surfaceSoft: '#F7FAFD',
+    accent: '#4A9EF5',
+    accentDark: '#2D7BD4',
+    accentDeep: '#1F5BA8',
+    accentSoft: '#EAF4FF',
+    cyan: '#7FD4E8',
+    ink: '#0B1B2E',
+    ink2: '#475467',
+    muted: '#8896A8',
+    line: '#E4ECF5',
+    danger: '#E84545',
+};
+
+function tone(hex, a) {
+    const h = hex.replace('#', '');
+    const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+    return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
+}
+
+const FONT = '"Plus Jakarta Sans", system-ui, sans-serif';
+const MONO = '"JetBrains Mono", monospace';
+
 // Mapa de descrições por nome exato do setor (uppercase)
 const DESCRICAO_MAP = {
     'ANÁLISE ESPACIAL E PROJETOS DE REDE FTTH': 'Responsável pelo planejamento, mapeamento geoespacial e projetos de expansão da rede de fibra óptica FTTH.',
@@ -70,6 +96,7 @@ export default function Sectors({ user, setCurrentView }) {
     const [setores, setSetores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState(null);
+    const [viewMode, setViewMode] = useState('grid');
 
     const isAdmin = user?.is_admin;
 
@@ -86,7 +113,7 @@ export default function Sectors({ user, setCurrentView }) {
             });
             const data = await res.json();
             if (data.sucesso) {
-                setSetores(prev => prev.map(s => 
+                setSetores(prev => prev.map(s =>
                     s.id === id_setor ? { ...s, descricao_customizada: descricao } : s
                 ));
             } else {
@@ -119,119 +146,144 @@ export default function Sectors({ user, setCurrentView }) {
         fetchSetores();
     }, []);
 
-    return (
-        <main className="layout-container flex h-full grow flex-col px-4 md:px-10 lg:px-40 py-8 overflow-y-auto w-full">
-            <div className="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
+    const totalColaboradores = setores.reduce((acc, s) => acc + (Number(s.totalMembros) || 0), 0);
+    const comResponsavel = setores.filter(s => s.responsavel?.nome).length;
 
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between gap-6 md:items-end mb-10">
-                    <div className="space-y-2 max-w-2xl">
-                        <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Setores e Departamentos</h1>
-                        <p className="text-[#a17745] dark:text-orange-300 text-lg font-medium">Visão geral da hierarquia organizacional da Prestek, contatos principais e setores de serviços internos.</p>
-                    </div>
-                    <div className="flex gap-3">
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-[#1d150c] dark:text-white font-bold shadow-sm hover:bg-[#fcfaf8] dark:bg-[#2c2217] hover:border-primary transition-colors">
-                            <span className="material-symbols-outlined text-[20px]">download</span>
+    return (
+        <main style={{ flex: 1, overflowY: 'auto', width: '100%', background: C.bg, fontFamily: FONT, padding: '32px 16px 48px' }}>
+            <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+                {/* ── Hero Banner ─────────────────────────────────────────── */}
+                <div style={{
+                    background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
+                    borderRadius: 24, padding: '32px 36px', color: 'white',
+                    position: 'relative', overflow: 'hidden',
+                    boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
+                }}>
+                    <svg style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none' }} width="100%" height="100%">
+                        <defs><pattern id="sec-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" /></pattern></defs>
+                        <rect width="100%" height="100%" fill="url(#sec-grid)" />
+                    </svg>
+                    <div style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', bottom: -100, right: 120, width: 220, height: 220, borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)', pointerEvents: 'none' }} />
+
+                    <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
+                        <div style={{ maxWidth: 640 }}>
+                            <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, color: 'white', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                                🏢 Setores e Departamentos
+                            </h1>
+                            <p style={{ margin: '8px 0 0', fontSize: 15, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>
+                                Visão geral da hierarquia organizacional da Prestek, contatos principais e setores de serviços internos.
+                            </p>
+
+                            {/* KPI Pills */}
+                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 22 }}>
+                                {[
+                                    { label: 'Setores', value: loading ? '···' : setores.length, icon: 'corporate_fare' },
+                                    { label: 'Colaboradores', value: loading ? '···' : totalColaboradores, icon: 'groups' },
+                                    { label: 'Com responsável', value: loading ? '···' : comResponsavel, icon: 'badge' },
+                                ].map(kpi => (
+                                    <div key={kpi.label} style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 8,
+                                        padding: '8px 16px', borderRadius: 999,
+                                        background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
+                                        WebkitBackdropFilter: 'blur(6px)',
+                                        border: '1px solid rgba(255,255,255,0.25)', color: 'white',
+                                    }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 18, lineHeight: 1 }}>{kpi.icon}</span>
+                                        <span style={{ fontWeight: 700, fontSize: 16 }}>{kpi.value}</span>
+                                        <span style={{ fontSize: 12.5, opacity: 0.8, fontFamily: MONO, letterSpacing: '0.06em' }}>{kpi.label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.22)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 8,
+                                padding: '11px 18px', borderRadius: 11, border: '1px solid rgba(255,255,255,0.3)',
+                                background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)',
+                                color: 'white', fontFamily: 'inherit', fontWeight: 600, fontSize: 13.5, cursor: 'pointer',
+                                transition: 'background 0.2s',
+                            }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>download</span>
                             Exportar Organograma
                         </button>
                     </div>
                 </div>
 
-                {/* Bloco de Organograma Hierárquico */}
-                <div className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 p-6 md:p-8 overflow-hidden relative mb-12 shadow-sm">
-                    <div className="flex flex-wrap gap-4 justify-between items-start mb-8">
-                        <div>
-                            <p className="text-primary text-sm font-black uppercase tracking-wider mb-1">Hierarquia Organizacional</p>
-                            <h3 className="text-[#1d150c] dark:text-white text-2xl font-bold">Estrutura Prestek</h3>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-[#1d150c] dark:text-white font-bold bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 px-4 py-1.5 rounded-full">
-                            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-                            Trimestre Atual
-                        </div>
-                    </div>
+                {/* ── Organograma ─────────────────────────────────────────── */}
+                <OrgChart />
 
-                    {/* Visualização de Árvore */}
-                    <div className="flex flex-col items-center justify-center gap-8 w-full overflow-x-auto py-4">
-                        <div className="flex flex-col items-center gap-6 min-w-[600px]">
-                            {/* CEO - Topo da árvore */}
-                            <div className="flex flex-col items-center">
-                                <div className="w-56 bg-white dark:bg-[#1a130b] border-2 border-primary rounded-xl p-4 shadow-md text-center relative z-10 transition-transform hover:-translate-y-1 cursor-pointer">
-                                    <div className="w-16 h-16 rounded-full bg-gray-200 mx-auto mb-3 bg-cover bg-center border-2 border-white shadow-sm" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCaXDL9-IKCovbonIRkZxmOQtVMGSq9hyfkzfGLuREdVts0S_TaHxPdDnq3Q0ZJQjUV4h3rsQYIqn8IcxS_XYiTsGl7VZSibnFKenb1YcQ0cRTa6H2PBFYkAI08QxDVYEakee_SSZNVmDgKUZKNBbH83yobUivT_QlJR9MXzzJSQqZiUM-DhViuKy72fSO78t2--RJlAX_T4wZe--SQJQK8UqaFsgnKqB24Y4bEsxXAfaVVzxQ5ICzm6VI9t9ELNXIsqly0dkdybeQ')" }}></div>
-                                    <p className="font-bold text-[#1d150c] dark:text-white text-lg">Jonathan Prestek</p>
-                                    <p className="text-xs text-primary font-black uppercase tracking-wider">CEO</p>
-                                </div>
-                                {/* Linhas de conexão */}
-                                <div className="h-8 w-0.5 bg-[#eaddcd]"></div>
-                                <div className="h-0.5 w-[80%] bg-[#eaddcd]"></div>
-                                <div className="flex justify-between w-[80%] -mt-0.5">
-                                    <div className="h-6 w-0.5 bg-[#eaddcd]"></div>
-                                    <div className="h-6 w-0.5 bg-[#eaddcd]"></div>
-                                    <div className="h-6 w-0.5 bg-[#eaddcd]"></div>
-                                    <div className="h-6 w-0.5 bg-[#eaddcd]"></div>
-                                </div>
-                            </div>
-
-                            {/* Diretorias */}
-                            <div className="grid grid-cols-4 gap-6 w-full">
-                                <OrgNode icon="terminal" title="Tecnologia (TI)" name="Sarah Lin" />
-                                <OrgNode icon="settings_suggest" title="Operações" name="Marcus Cole" />
-                                <OrgNode icon="trending_up" title="Vendas & MKT" name="Elena Rodriguez" />
-                                <OrgNode icon="support_agent" title="Suporte" name="David Kim" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Diretório de Setores (Grid) - Dados reais do IXC */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between border-b border-[#eaddcd] dark:border-gray-800 pb-4">
-                        <div className="flex items-center gap-3">
-                            <h2 className="text-[#1d150c] dark:text-white text-2xl font-black leading-tight">Diretório de Setores</h2>
+                {/* ── Diretório de Setores ────────────────────────────────── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, paddingBottom: 16, borderBottom: `1px solid ${C.line}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.ink, letterSpacing: '-0.02em' }}>Diretório de Setores</h2>
                             {!loading && (
-                                <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-black rounded-full">
+                                <span style={{ padding: '4px 12px', background: C.accentSoft, color: C.accentDeep, fontSize: 12, fontWeight: 800, borderRadius: 999, fontFamily: MONO }}>
                                     {setores.length} setores
                                 </span>
                             )}
                         </div>
-                        <div className="flex gap-2">
-                            <button className="p-2 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-primary shadow-sm" title="Visualização em Grade">
-                                <span className="material-symbols-outlined">grid_view</span>
-                            </button>
-                            <button className="p-2 hover:bg-[#fcfaf8] dark:bg-[#2c2217] rounded-lg text-[#a17745] dark:text-orange-300 transition-colors" title="Visualização em Lista">
-                                <span className="material-symbols-outlined">view_list</span>
-                            </button>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            {[
+                                { mode: 'grid', icon: 'grid_view', title: 'Visualização em Grade' },
+                                { mode: 'list', icon: 'view_list', title: 'Visualização em Lista' },
+                            ].map(v => (
+                                <button
+                                    key={v.mode}
+                                    onClick={() => setViewMode(v.mode)}
+                                    title={v.title}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        width: 40, height: 40, borderRadius: 10, cursor: 'pointer',
+                                        border: `1px solid ${viewMode === v.mode ? tone(C.accent, 0.4) : C.line}`,
+                                        background: viewMode === v.mode ? C.accentSoft : C.surface,
+                                        color: viewMode === v.mode ? C.accentDeep : C.muted,
+                                        transition: 'all 0.2s',
+                                    }}>
+                                    <span className="material-symbols-outlined">{v.icon}</span>
+                                </button>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Estado de carregamento */}
+                    {/* Loading */}
                     {loading && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
                             {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 p-6 animate-pulse">
-                                    <div className="flex justify-between mb-5">
-                                        <div className="size-12 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
-                                        <div className="w-20 h-6 rounded bg-gray-200 dark:bg-gray-700"></div>
+                                <div key={i} style={{ background: C.surface, borderRadius: 18, border: `1px solid ${C.line}`, padding: 24 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                                        <div style={{ width: 48, height: 48, borderRadius: 12, background: C.surfaceSoft }} />
+                                        <div style={{ width: 80, height: 24, borderRadius: 6, background: C.surfaceSoft }} />
                                     </div>
-                                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-full mb-1"></div>
-                                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-5/6"></div>
+                                    <div style={{ height: 20, background: C.surfaceSoft, borderRadius: 6, width: '70%', marginBottom: 10 }} />
+                                    <div style={{ height: 12, background: C.surfaceSoft, borderRadius: 6, width: '100%', marginBottom: 6 }} />
+                                    <div style={{ height: 12, background: C.surfaceSoft, borderRadius: 6, width: '85%' }} />
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    {/* Estado de erro */}
+                    {/* Erro */}
                     {!loading && erro && (
-                        <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <span className="material-symbols-outlined text-5xl text-red-400 mb-4">error_outline</span>
-                            <p className="text-[#1d150c] dark:text-white font-bold text-lg mb-1">Não foi possível carregar os setores</p>
-                            <p className="text-[#a17745] dark:text-orange-300 text-sm">{erro}</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', textAlign: 'center' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 56, color: C.danger, marginBottom: 16 }}>error_outline</span>
+                            <p style={{ margin: 0, color: C.ink, fontWeight: 700, fontSize: 18, marginBottom: 4 }}>Não foi possível carregar os setores</p>
+                            <p style={{ margin: 0, color: C.muted, fontSize: 14 }}>{erro}</p>
                         </div>
                     )}
 
                     {/* Grid de setores */}
                     {!loading && !erro && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: viewMode === 'list' ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))',
+                            gap: 20,
+                        }}>
                             {setores.map(setor => (
                                 <SectorCard
                                     key={setor.id}
@@ -249,22 +301,22 @@ export default function Sectors({ user, setCurrentView }) {
                                 />
                             ))}
                             {setores.length === 0 && (
-                                <div className="col-span-3 flex flex-col items-center justify-center py-16 text-center">
-                                    <span className="material-symbols-outlined text-5xl text-[#eaddcd] mb-4">domain_disabled</span>
-                                    <p className="text-[#a17745] dark:text-orange-300 font-semibold">Nenhum setor encontrado.</p>
+                                <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 20px', textAlign: 'center' }}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: 56, color: C.line, marginBottom: 16 }}>domain_disabled</span>
+                                    <p style={{ margin: 0, color: C.muted, fontWeight: 600 }}>Nenhum setor encontrado.</p>
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
 
-                {/* Footer contextualizado */}
-                <div className="mt-12 pt-8 border-t border-[#eaddcd] dark:border-gray-800 flex flex-col md:flex-row justify-between items-center text-sm text-[#a17745] dark:text-orange-300 gap-4">
-                    <p className="font-semibold">© 2024 Prestek Intranet. Apenas para uso interno.</p>
-                    <div className="flex gap-6 font-bold">
-                        <a className="hover:text-primary transition-colors" href="#">Política</a>
-                        <a className="hover:text-primary transition-colors" href="#">Central de Ajuda</a>
-                        <a className="hover:text-primary transition-colors" href="#">Reportar Problema</a>
+                {/* ── Footer ──────────────────────────────────────────────── */}
+                <div style={{ marginTop: 16, paddingTop: 28, borderTop: `1px solid ${C.line}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16, color: C.muted, fontSize: 13 }}>
+                    <p style={{ margin: 0, fontWeight: 600 }}>© 2024 Prestek Intranet. Apenas para uso interno.</p>
+                    <div style={{ display: 'flex', gap: 24, fontWeight: 700 }}>
+                        <a style={{ color: C.ink2, textDecoration: 'none' }} href="#">Política</a>
+                        <a style={{ color: C.ink2, textDecoration: 'none' }} href="#">Central de Ajuda</a>
+                        <a style={{ color: C.ink2, textDecoration: 'none' }} href="#">Reportar Problema</a>
                     </div>
                 </div>
             </div>
@@ -272,30 +324,102 @@ export default function Sectors({ user, setCurrentView }) {
     );
 }
 
-// Subcomponente Node do Organograma
-function OrgNode({ icon, title, name }) {
+// ── Organograma ───────────────────────────────────────────────────────────────
+function OrgChart() {
+    const directors = [
+        { icon: 'terminal', title: 'Tecnologia (TI)', name: 'Sarah Lin' },
+        { icon: 'settings_suggest', title: 'Operações', name: 'Marcus Cole' },
+        { icon: 'trending_up', title: 'Vendas & MKT', name: 'Elena Rodriguez' },
+        { icon: 'support_agent', title: 'Suporte', name: 'David Kim' },
+    ];
+
     return (
-        <div className="flex flex-col items-center">
-            <div className="w-full bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-xl p-4 shadow-sm text-center hover:shadow-md hover:border-[#ff8c00]/50 transition-all cursor-pointer group flex flex-col items-center justify-center">
-                <div className="size-10 bg-[#fcfaf8] dark:bg-[#2c2217] rounded-full flex items-center justify-center mb-2 group-hover:bg-primary/10 transition-colors">
-                    <span className="material-symbols-outlined text-primary text-[22px] group-hover:scale-110 transition-transform">{icon}</span>
+        <div style={{
+            background: C.surface, borderRadius: 24, border: `1px solid ${C.line}`,
+            padding: '28px 32px', position: 'relative', overflow: 'hidden',
+            boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
+        }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <div>
+                    <p style={{ margin: 0, color: C.accent, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: MONO }}>Hierarquia Organizacional</p>
+                    <h3 style={{ margin: '4px 0 0', color: C.ink, fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em' }}>Estrutura Prestek</h3>
                 </div>
-                <p className="font-bold text-sm text-[#1d150c] dark:text-white mb-1">{title}</p>
-                <p className="text-[11px] font-black text-[#a17745] dark:text-orange-300 uppercase tracking-wider">{name}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: C.accentDeep, background: C.accentSoft, border: `1px solid ${tone(C.accent, 0.25)}`, padding: '8px 14px', borderRadius: 999 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>calendar_today</span>
+                    Trimestre Atual
+                </div>
+            </div>
+
+            <div style={{ width: '100%', overflowX: 'auto', padding: '24px 4px 8px' }}>
+                <div style={{ minWidth: 640, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    {/* CEO */}
+                    <div
+                        style={{
+                            width: 240, borderRadius: 18, padding: '20px 16px', textAlign: 'center',
+                            background: `linear-gradient(135deg, ${C.accentDeep} 0%, ${C.accent} 100%)`,
+                            color: 'white', boxShadow: `0 16px 36px -16px ${tone(C.accentDeep, 0.55)}`,
+                            position: 'relative', zIndex: 2,
+                        }}>
+                        <div style={{
+                            width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px',
+                            backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCaXDL9-IKCovbonIRkZxmOQtVMGSq9hyfkzfGLuREdVts0S_TaHxPdDnq3Q0ZJQjUV4h3rsQYIqn8IcxS_XYiTsGl7VZSibnFKenb1YcQ0cRTa6H2PBFYkAI08QxDVYEakee_SSZNVmDgKUZKNBbH83yobUivT_QlJR9MXzzJSQqZiUM-DhViuKy72fSO78t2--RJlAX_T4wZe--SQJQK8UqaFsgnKqB24Y4bEsxXAfaVVzxQ5ICzm6VI9t9ELNXIsqly0dkdybeQ')",
+                            backgroundSize: 'cover', backgroundPosition: 'center',
+                            border: '3px solid rgba(255,255,255,0.6)',
+                        }} />
+                        <p style={{ margin: 0, fontWeight: 800, fontSize: 17 }}>Jonathan Prestek</p>
+                        <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)', fontFamily: MONO }}>CEO</p>
+                    </div>
+
+                    {/* Conectores */}
+                    <div style={{ width: 2, height: 28, background: tone(C.accent, 0.35) }} />
+                    <div style={{ width: '76%', height: 2, background: tone(C.accent, 0.35) }} />
+                    <div style={{ width: '76%', display: 'flex', justifyContent: 'space-around', marginTop: -1 }}>
+                        {directors.map((_, i) => (
+                            <div key={i} style={{ width: 2, height: 24, background: tone(C.accent, 0.35) }} />
+                        ))}
+                    </div>
+
+                    {/* Diretorias */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, width: '100%', marginTop: 4 }}>
+                        {directors.map(d => <OrgNode key={d.title} {...d} />)}
+                    </div>
+                </div>
             </div>
         </div>
     );
 }
 
-// Subcomponente Card de Setor
+// Nó do organograma (diretoria)
+function OrgNode({ icon, title, name }) {
+    const [hover, setHover] = useState(false);
+    return (
+        <div
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            style={{
+                background: C.surface, border: `1px solid ${hover ? tone(C.accent, 0.4) : C.line}`,
+                borderRadius: 16, padding: '18px 12px', textAlign: 'center', cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                boxShadow: hover ? `0 14px 30px -16px ${tone(C.accentDeep, 0.4)}` : `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
+                transform: hover ? 'translateY(-3px)' : 'none', transition: 'all 0.2s',
+            }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                <span className="material-symbols-outlined" style={{ color: C.accent, fontSize: 24 }}>{icon}</span>
+            </div>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: C.ink }}>{title}</p>
+            <p style={{ margin: '4px 0 0', fontSize: 11, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: MONO }}>{name}</p>
+        </div>
+    );
+}
+
+// ── Card de Setor ─────────────────────────────────────────────────────────────
 function SectorCard({ id, icon, ramal, title, description, managerName, managerImg, teamCount, isAdmin, onSaveDescription, setCurrentView }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editDesc, setEditDesc] = useState(description || '');
+    const [hover, setHover] = useState(false);
 
     const handleSave = () => {
-        if (onSaveDescription) {
-            onSaveDescription(id, editDesc);
-        }
+        if (onSaveDescription) onSaveDescription(id, editDesc);
         setIsEditing(false);
     };
 
@@ -305,106 +429,118 @@ function SectorCard({ id, icon, ramal, title, description, managerName, managerI
     };
 
     return (
-        <div className="bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 p-6 flex flex-col gap-5 hover:border-[#ff8c00]/50 hover:shadow-md transition-all group relative">
-            {/* Linha colorida de destaque no hover */}
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity rounded-l-xl"></div>
+        <div
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            style={{
+                background: C.surface, borderRadius: 18, border: `1px solid ${hover ? tone(C.accent, 0.4) : C.line}`,
+                padding: 24, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden',
+                boxShadow: hover ? `0 16px 36px -18px ${tone(C.accentDeep, 0.4)}` : `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
+                transform: hover ? 'translateY(-3px)' : 'none', transition: 'all 0.2s',
+            }}>
+            {/* Faixa de destaque */}
+            <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: `linear-gradient(${C.accent}, ${C.accentDeep})`, opacity: hover ? 1 : 0, transition: 'opacity 0.2s' }} />
 
-            <div className="flex justify-between items-start">
-                <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-[28px]">{icon}</span>
+            {/* Topo: ícone + ramal */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="material-symbols-outlined" style={{ color: C.accent, fontSize: 28 }}>{icon}</span>
                 </div>
                 {ramal && (
-                    <span className="px-2.5 py-1 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded font-black text-[11px] text-[#a17745] dark:text-orange-300 tracking-widest uppercase">
+                    <span style={{ padding: '5px 10px', background: C.surfaceSoft, border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 11, fontWeight: 800, color: C.ink2, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: MONO }}>
                         Ramal {ramal}
                     </span>
                 )}
             </div>
 
+            {/* Título + descrição */}
             <div>
-                <h3 className="text-xl font-bold text-[#1d150c] dark:text-white mb-2">{title}</h3>
+                <h3 style={{ margin: '0 0 8px', fontSize: 19, fontWeight: 800, color: C.ink, letterSpacing: '-0.01em' }}>{title}</h3>
                 {isEditing ? (
-                    <div className="flex flex-col gap-2 relative z-20">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <textarea
-                            className="w-full text-sm p-3 border border-[#eaddcd] dark:border-gray-800 rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all resize-none"
                             rows={3}
                             value={editDesc}
                             onChange={e => setEditDesc(e.target.value)}
                             placeholder="Digite a descrição do setor..."
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={e => e.stopPropagation()}
+                            style={{
+                                width: '100%', boxSizing: 'border-box', resize: 'none',
+                                fontSize: 13.5, padding: 12, borderRadius: 10, border: `1px solid ${C.line}`,
+                                background: C.surfaceSoft, color: C.ink, fontFamily: FONT, outline: 'none',
+                            }}
                         />
-                        <div className="flex gap-2 justify-end">
-                            <button onClick={(e) => { e.stopPropagation(); setIsEditing(false); }} className="text-xs px-3 py-1.5 font-bold text-gray-500 hover:text-[#1d150c] dark:hover:text-white transition-colors">Cancelar</button>
-                            <button onClick={(e) => { e.stopPropagation(); handleSave(); }} className="text-xs px-4 py-1.5 font-bold bg-primary text-white rounded shadow-sm hover:shadow-md hover:bg-primary/90 transition-all">Salvar</button>
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                            <button onClick={e => { e.stopPropagation(); setIsEditing(false); }} style={{ fontSize: 12.5, padding: '6px 12px', fontWeight: 700, color: C.muted, background: 'none', border: 'none', cursor: 'pointer' }}>Cancelar</button>
+                            <button onClick={e => { e.stopPropagation(); handleSave(); }} style={{ fontSize: 12.5, padding: '7px 16px', fontWeight: 700, color: 'white', background: C.accent, borderRadius: 8, border: 'none', cursor: 'pointer' }}>Salvar</button>
                         </div>
                     </div>
                 ) : (
-                    <div className="relative group/desc">
+                    <div style={{ position: 'relative' }}>
                         {description && (
-                            <>
-                                <p className="text-sm text-[#a17745] dark:text-orange-300 leading-relaxed line-clamp-2 pr-8 relative z-10">{description}</p>
-                                
-                                {/* Tooltip Customizado Tailwind */}
-                                <div className="absolute left-0 bottom-full mb-2 w-[calc(100%+20px)] -ml-[10px] pointer-events-none opacity-0 group-hover/desc:opacity-100 transition-all duration-300 translate-y-2 group-hover/desc:translate-y-0 z-50">
-                                    <div className="bg-[#1d150c] dark:bg-[#f8f7f5] text-[#f8f7f5] dark:text-[#1d150c] text-[13px] font-medium leading-relaxed p-3.5 rounded-xl shadow-2xl relative">
-                                        {description}
-                                        {/* Setinha apontando para baixo */}
-                                        <div className="absolute -bottom-1.5 left-6 w-3 h-3 bg-[#1d150c] dark:bg-[#f8f7f5] rotate-45"></div>
-                                    </div>
-                                </div>
-                            </>
+                            <p title={description} style={{
+                                margin: 0, fontSize: 13.5, color: C.ink2, lineHeight: 1.55,
+                                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                                paddingRight: isAdmin ? 28 : 0,
+                            }}>{description}</p>
                         )}
                         {isAdmin && (
-                            <button 
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setEditDesc(description || '');
-                                    setIsEditing(true);
-                                }} 
-                                className="absolute -top-1 -right-1 p-1.5 bg-white dark:bg-[#1a130b] text-primary opacity-0 group-hover/desc:opacity-100 transition-opacity rounded-md shadow-sm border border-[#eaddcd] dark:border-gray-800 hover:bg-[#fcfaf8] dark:hover:bg-[#2c2217] z-20"
+                            <button
+                                onClick={e => { e.preventDefault(); e.stopPropagation(); setEditDesc(description || ''); setIsEditing(true); }}
                                 title="Editar descrição"
-                            >
-                                <span className="material-symbols-outlined text-[16px]">edit</span>
+                                style={{
+                                    position: 'absolute', top: -2, right: -4, padding: 5, borderRadius: 8,
+                                    background: C.surface, border: `1px solid ${C.line}`, color: C.accent, cursor: 'pointer',
+                                    opacity: hover ? 1 : 0, transition: 'opacity 0.2s',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>edit</span>
                             </button>
                         )}
                     </div>
                 )}
             </div>
 
-            <div className="flex items-center gap-3 py-4 border-y border-[#f4eee6] dark:border-gray-800">
+            {/* Responsável + Equipe */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 0', borderTop: `1px solid ${C.line}`, borderBottom: `1px solid ${C.line}` }}>
                 {managerName ? (
                     <>
                         {managerImg ? (
-                            <div
-                                className="size-10 rounded-full bg-gray-200 bg-cover bg-center border border-[#eaddcd] dark:border-gray-800 shrink-0"
-                                style={{ backgroundImage: `url('${managerImg}')` }}
-                                title={`Responsável: ${managerName}`}
-                            ></div>
+                            <div title={`Responsável: ${managerName}`} style={{ width: 40, height: 40, borderRadius: '50%', backgroundImage: `url('${managerImg}')`, backgroundSize: 'cover', backgroundPosition: 'center', border: `1px solid ${C.line}`, flexShrink: 0 }} />
                         ) : (
-                            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border border-[#eaddcd] dark:border-gray-800 shrink-0">
-                                <span className="material-symbols-outlined text-primary text-[20px]">person</span>
+                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${C.line}`, flexShrink: 0 }}>
+                                <span className="material-symbols-outlined" style={{ color: C.accent, fontSize: 20 }}>person</span>
                             </div>
                         )}
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[10px] text-[#a17745] dark:text-orange-300 font-black uppercase tracking-wider mb-0.5">Responsável</p>
-                            <p className="text-sm font-bold text-[#1d150c] dark:text-white truncate">{managerName}</p>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ margin: 0, fontSize: 10, color: C.muted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: MONO }}>Responsável</p>
+                            <p style={{ margin: '2px 0 0', fontSize: 13.5, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{managerName}</p>
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 min-w-0" />
+                    <div style={{ flex: 1, minWidth: 0 }} />
                 )}
-                <div className="text-right pl-3 border-l border-[#f4eee6] dark:border-gray-800 shrink-0">
-                    <p className="text-[10px] text-[#a17745] dark:text-orange-300 font-black uppercase tracking-wider mb-0.5">Equipe</p>
-                    <p className="text-sm font-bold text-[#1d150c] dark:text-white">{teamCount}</p>
+                <div style={{ textAlign: 'right', paddingLeft: 12, borderLeft: `1px solid ${C.line}`, flexShrink: 0 }}>
+                    <p style={{ margin: 0, fontSize: 10, color: C.muted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: MONO }}>Equipe</p>
+                    <p style={{ margin: '2px 0 0', fontSize: 13.5, fontWeight: 700, color: C.ink }}>{teamCount}</p>
                 </div>
             </div>
 
-            <div className="flex gap-3 mt-auto pt-1">
-                <button onClick={handleVerEquipe} className="flex-1 py-2.5 px-3 rounded-lg border-2 border-[#eaddcd] dark:border-gray-800 text-[#1d150c] dark:text-white font-bold text-sm hover:border-primary hover:text-primary transition-colors focus:outline-none cursor-pointer">
+            {/* Ações */}
+            <div style={{ display: 'flex', gap: 12, marginTop: 'auto' }}>
+                <button
+                    onClick={handleVerEquipe}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accentDeep; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.ink; }}
+                    style={{ flex: 1, padding: '11px 12px', borderRadius: 10, border: `1.5px solid ${C.line}`, background: C.surface, color: C.ink, fontWeight: 700, fontSize: 13.5, cursor: 'pointer', fontFamily: FONT, transition: 'all 0.2s' }}>
                     Ver Equipe
                 </button>
-                <button className="flex items-center justify-center size-11 rounded-lg bg-[#fcfaf8] dark:bg-[#2c2217] border-2 border-transparent hover:border-primary/30 text-primary hover:bg-primary/5 transition-colors cursor-pointer" title="Contatar Setor">
-                    <span className="material-symbols-outlined text-[22px]">mail</span>
+                <button
+                    title="Contatar Setor"
+                    onMouseEnter={e => { e.currentTarget.style.background = C.accent; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = C.accentSoft; e.currentTarget.style.color = C.accent; }}
+                    style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: C.accentSoft, color: C.accent, border: 'none', cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 22 }}>mail</span>
                 </button>
             </div>
         </div>
