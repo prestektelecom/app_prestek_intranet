@@ -5,6 +5,19 @@ import StreamingBentoCard from './services/StreamingBentoCard';
 import PlanoComparador from './services/PlanoComparador';
 import { AVATAR_PNGS, resolveAvatarUrl } from '../utils/avatarPngs';
 
+const C = {
+    accent: '#4A9EF5',
+    accentDark: '#2D7BD4',
+    accentDeep: '#1F5BA8',
+    cyan: '#7FD4E8',
+};
+
+function tone(hex, a) {
+    const h = hex.replace('#', '');
+    const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+    return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
+}
+
 export default function ServicesDirectory({ setCurrentView, user, searchQuery }) {
     const isAdmin = user?.is_admin;
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '', type: '' });
@@ -506,80 +519,51 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
     return (
         <main className="flex-1 overflow-y-auto bg-[#F5F9FF] dark:bg-[#141210] py-8 px-4 md:px-10">
             <div className="flex flex-col w-full max-w-[1200px] mx-auto gap-8">
-                {/* Header Section */}
-                <div className="flex flex-col gap-4">
+                {/* Hero Banner */}
+                <div style={{
+                    background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
+                    borderRadius: 24, padding: '32px 36px', color: 'white',
+                    position: 'relative', overflow: 'hidden',
+                    boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
+                }}>
+                    <svg style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none' }} width="100%" height="100%">
+                        <defs><pattern id="svc-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" /></pattern></defs>
+                        <rect width="100%" height="100%" fill="url(#svc-grid)" />
+                    </svg>
+                    <div style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', bottom: -100, right: 120, width: 220, height: 220, borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)', pointerEvents: 'none' }} />
 
-                    <div className="flex flex-wrap justify-between items-end gap-4">
-                        <div className="flex flex-col gap-1">
-                            <h1 className="text-3xl font-extrabold tracking-tight text-[#0B1B2E] dark:text-[#f5f0eb] md:text-4xl">Diretório de Serviços Internos</h1>
-                            <p className="text-base text-slate-500 dark:text-slate-400">Gerencie planos de internet, detalhes de serviços e prazos de instalação.</p>
+                    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 24 }}>
+                        <div>
+                            <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, color: 'white', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                                Diretório de Serviços Internos
+                            </h1>
+                            <p style={{ margin: '8px 0 0', fontSize: 15, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5 }}>
+                                Gerencie planos de internet, detalhes de serviços e prazos de instalação.
+                            </p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3">
-                            {/* Ativo */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-[#1c1917] px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)]">
-                                <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-md flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">check_circle</span>
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-[#a09080] uppercase tracking-wider">Ativo</p>
-                                    <p className="text-lg font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight">{countAtivo}</p>
-                                </div>
-                            </div>
-                            
-                            {/* Inativo */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-[#1c1917] px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)]">
-                                <div className="p-1.5 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 rounded-md flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">power_off</span>
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-[#a09080] uppercase tracking-wider">Inativo</p>
-                                    <p className="text-lg font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight">{countInativo}</p>
-                                </div>
-                            </div>
 
-                            {/* Pré-contratos */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-[#1c1917] px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)]">
-                                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">schedule</span>
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                            {[
+                                { label: 'Ativo', value: countAtivo, icon: 'check_circle' },
+                                { label: 'Inativo', value: countInativo, icon: 'power_off' },
+                                { label: 'Pré-contratos', value: countPre, icon: 'schedule' },
+                                { label: 'Negativados', value: countNegativado, icon: 'gpp_maybe' },
+                                { label: 'Desistiu', value: countDesistiu, icon: 'cancel' },
+                                { label: 'Total no Mês', value: totalVendasMes, icon: 'trending_up' },
+                            ].map(kpi => (
+                                <div key={kpi.label} style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                                    padding: '8px 16px', borderRadius: 999,
+                                    background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
+                                    WebkitBackdropFilter: 'blur(6px)',
+                                    border: '1px solid rgba(255,255,255,0.25)', color: 'white',
+                                }}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: 18, lineHeight: 1 }}>{kpi.icon}</span>
+                                    <span style={{ fontWeight: 700, fontSize: 16 }}>{kpi.value}</span>
+                                    <span style={{ fontSize: 12.5, opacity: 0.8, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>{kpi.label}</span>
                                 </div>
-                                <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-[#a09080] uppercase tracking-wider">Pré-contratos</p>
-                                    <p className="text-lg font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight">{countPre}</p>
-                                </div>
-                            </div>
-                            
-                            {/* Negativados */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-[#1c1917] px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)]">
-                                <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-md flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">gpp_maybe</span>
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-[#a09080] uppercase tracking-wider">Negativados</p>
-                                    <p className="text-lg font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight">{countNegativado}</p>
-                                </div>
-                            </div>
-                            
-                            {/* Desistiu */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-[#1c1917] px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)]">
-                                <div className="p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-md flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">cancel</span>
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-[#a09080] uppercase tracking-wider">Desistiu</p>
-                                    <p className="text-lg font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight">{countDesistiu}</p>
-                                </div>
-                            </div>
-                            
-                            {/* Total no Mês */}
-                            <div className="flex items-center gap-3 bg-white dark:bg-[#1c1917] px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)]">
-                                <div className="p-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">trending_up</span>
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-[#a09080] uppercase tracking-wider">Total no Mês</p>
-                                    <p className="text-lg font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight">{totalVendasMes}</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
