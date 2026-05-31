@@ -152,8 +152,8 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     const circBairroRef = useRef({});
     const [mapPronto, setMapPronto]   = useState(false);
     const [geocodando, setGeocodando] = useState(false);
-    const [raioMax, setRaioMax]       = useState(8000);
-    const raioMaxRef                  = useRef(8000); // valor atual sem causar re-render do effect de markers
+    const [raioMax, setRaioMax]       = useState(() => parseInt(localStorage.getItem('coverageRaioMax')) || 8000);
+    const raioMaxRef                  = useRef(parseInt(localStorage.getItem('coverageRaioMax')) || 8000);
 
     // ── Inicializa o mapa (síncrono — sem dynamic import) ────────
     useEffect(() => {
@@ -324,6 +324,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     // ── Atualiza raios ao mudar raioMax ───────────────────────────
     useEffect(() => {
         raioMaxRef.current = raioMax;
+        localStorage.setItem('coverageRaioMax', raioMax);
         // Círculos de cidade
         Object.entries(circCidadeRef.current).forEach(([id, circle]) => {
             const marker = marcCidadeRef.current[id];

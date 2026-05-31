@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import CoverageMap from './CoverageMap';
 
 // ─── Constantes ───────────────────────────────────────────────────
@@ -25,7 +27,9 @@ function MapaPicker({ lat, lng, onChange }) {
 
     useEffect(() => {
         if (!containerRef.current || mapRef.current) return;
-        import('leaflet').then(({ default: L }) => {
+        // HMR: limpa _leaflet_id preso de versão anterior
+        if (containerRef.current._leaflet_id) containerRef.current._leaflet_id = undefined;
+        {
             const center = (lat && lng) ? [lat, lng] : [-10.5, -36.5];
             const zoom   = (lat && lng) ? 14 : 9;
             const map = L.map(containerRef.current, { center, zoom, zoomControl: true });
@@ -60,7 +64,7 @@ function MapaPicker({ lat, lng, onChange }) {
             });
 
             mapRef.current = { map, getMarker: () => marker, setMarker: (m) => { marker = m; }, L };
-        });
+        }
         return () => {
             if (mapRef.current) { mapRef.current.map.remove(); mapRef.current = null; }
         };
