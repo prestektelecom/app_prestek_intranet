@@ -1433,7 +1433,7 @@ app.post('/api/plantoes', async (req, res) => {
     }
 });
 
-app.get('/api/plantoes/historico', adminAuth, async (req, res) => {
+app.get('/api/plantoes/historico', async (req, res) => {
     const { mes, ano, data_inicio, data_fim, admin_nome, pagina, limite } = req.query;
     try {
         const conditions = [];

@@ -3,6 +3,7 @@ import CalendarDay from './schedule/CalendarDay';
 import ScheduleRow from './schedule/ScheduleRow';
 import ManagePlantaoModal from './schedule/ManagePlantaoModal';
 import HistoricoPreviewModal from './schedule/HistoricoPreviewModal';
+import ScheduleHistoricoTab from './schedule/ScheduleHistoricoTab';
 import { useScheduleData } from '../hooks/useScheduleData';
 import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
 import { handleImprimir, handleExportarICal } from '../services/exportService';
@@ -22,6 +23,7 @@ function SkeletonRow() {
 
 export default function Schedule({ setCurrentView, user }) {
     const d = new Date();
+    const [activeTab, setActiveTab] = useState('escala');
     const [filterMonth, setFilterMonth] = useState((d.getMonth() + 1).toString());
     const [filterYear, setFilterYear] = useState(d.getFullYear().toString());
     const [filterSearch, setFilterSearch] = useState('');
@@ -333,6 +335,34 @@ export default function Schedule({ setCurrentView, user }) {
                     </div>
                 )}
 
+                {/* Tab switcher */}
+                <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl border border-surface-container-high/50 self-start">
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('escala')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'escala' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-secondary hover:text-on-surface'}`}
+                    >
+                        <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+                        Escala
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('historico')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'historico' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-secondary hover:text-on-surface'}`}
+                    >
+                        <span className="material-symbols-outlined text-[18px]">history</span>
+                        Histórico
+                    </button>
+                </div>
+
+                {activeTab === 'historico' ? (
+                    <ScheduleHistoricoTab
+                        filterMonth={filterMonth}
+                        filterYear={filterYear}
+                        user={user}
+                        onViewFullAudit={user?.is_admin ? () => setCurrentView?.('plantao-historico') : null}
+                    />
+                ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Column: Filters & Context */}
                     <div className="lg:col-span-3 flex flex-col gap-6">
@@ -591,6 +621,7 @@ export default function Schedule({ setCurrentView, user }) {
                         </div>
                     </div>
                 </div>
+                )}
 
                 {/* Modal de Gestão */}
                 {user?.is_admin && (
