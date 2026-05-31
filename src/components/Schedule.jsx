@@ -290,11 +290,20 @@ export default function Schedule({ setCurrentView, user }) {
                             </button>
                             {user?.is_admin && (
                                 <button
-                                    onClick={() => handleExportarHistoricoCSV(filterMonth, filterYear, showToast)}
+                                    onClick={() => handleExportarHistoricoCSV(filterMonth, filterYear, showToast, user?.email)}
                                     className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-surface-container-lowest border border-surface-container-high text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">table_chart</span>
                                     Exportar Histórico
+                                </button>
+                            )}
+                            {user?.is_admin && (
+                                <button
+                                    onClick={() => setCurrentView?.('plantao-historico')}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-surface-container-lowest border border-surface-container-high text-on-surface font-bold shadow-sm hover:bg-surface-container-low transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">manage_history</span>
+                                    Auditoria Completa
                                 </button>
                             )}
                         </div>

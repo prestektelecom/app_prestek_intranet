@@ -3,6 +3,7 @@ import ResponsaveisManual from './ResponsaveisManual';
 import AdminUsuarios from './admin/AdminUsuarios';
 import AdminComunicados from './admin/AdminComunicados';
 import AdminAuditoria from './admin/AdminAuditoria';
+import PlantaoHistorico from './schedule/PlantaoHistorico';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -52,6 +53,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
         { id: 'grupos-supervisores',label: 'Responsáveis de Setor',icon: 'manage_accounts' },
         { id: 'comunicados',        label: 'Gerenciar Comunicados',icon: 'campaign' },
         { id: 'auditoria',          label: 'Logs de Auditoria',    icon: 'description' },
+        { id: 'plantao-historico',  label: 'Histórico de Plantões',icon: 'manage_history' },
     ];
 
     return (
@@ -241,6 +243,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                         {abaAtiva === 'grupos-supervisores' && <ResponsaveisManual />}
                         {abaAtiva === 'comunicados'         && <AdminComunicados adminEmail={adminEmail} />}
                         {abaAtiva === 'auditoria'           && <AdminAuditoria   adminEmail={adminEmail} />}
+                        {abaAtiva === 'plantao-historico'   && <PlantaoHistorico user={user} setCurrentView={(v) => { if (v === 'schedule') setAbaAtiva('painel'); else setCurrentView(v); }} />}
                     </div>
                 </main>
             </div>

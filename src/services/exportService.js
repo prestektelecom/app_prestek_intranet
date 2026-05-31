@@ -1,10 +1,12 @@
 import { toIsoDay } from '../utils/dateHelpers';
 
-export const handleExportarHistoricoCSV = async (filterMonth, filterYear, showToast) => {
+export const handleExportarHistoricoCSV = async (filterMonth, filterYear, showToast, adminEmail = '') => {
     try {
         showToast('Gerando CSV do histórico...', 'info');
         const params = new URLSearchParams({ mes: filterMonth, ano: filterYear });
-        const res = await fetch(`/api/plantoes/historico?${params}`);
+        const res = await fetch(`/api/plantoes/historico?${params}`, {
+            headers: adminEmail ? { 'x-admin-email': adminEmail } : {},
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!data.sucesso) throw new Error(data.erro || 'Erro ao buscar histórico');

@@ -1433,24 +1433,61 @@ app.post('/api/plantoes', async (req, res) => {
     }
 });
 
-app.get('/api/plantoes/historico', async (req, res) => {
-    const { mes, ano } = req.query;
+app.get('/api/plantoes/historico', adminAuth, async (req, res) => {
+    const { mes, ano, data_inicio, data_fim, admin_nome, pagina, limite } = req.query;
     try {
+        const conditions = [];
         const params = [];
-        let where = '';
-        if (mes && ano) {
-            params.push(String(ano), String(mes).padStart(2, '0'));
-            where = `WHERE TO_CHAR(plantao_data, 'YYYY') = $1 AND TO_CHAR(plantao_data, 'MM') = $2`;
-        } else if (ano) {
-            params.push(String(ano));
-            where = `WHERE TO_CHAR(plantao_data, 'YYYY') = $1`;
+
+        // Date range filtering: data_inicio / data_fim take priority over mes/ano
+        if (data_inicio) {
+            params.push(data_inicio);
+            conditions.push(`plantao_data >= $${params.length}`);
+        }
+        if (data_fim) {
+            params.push(data_fim);
+            conditions.push(`plantao_data <= $${params.length}`);
         }
 
+        // Legacy mes/ano filtering (only when no date range given)
+        if (!data_inicio && !data_fim) {
+            if (mes && ano) {
+                params.push(String(ano), String(mes).padStart(2, '0'));
+                conditions.push(`TO_CHAR(plantao_data, 'YYYY') = $${params.length - 1}`);
+                conditions.push(`TO_CHAR(plantao_data, 'MM') = $${params.length}`);
+            } else if (ano) {
+                params.push(String(ano));
+                conditions.push(`TO_CHAR(plantao_data, 'YYYY') = $${params.length}`);
+            }
+        }
+
+        // Admin name filter (case-insensitive partial match)
+        if (admin_nome) {
+            params.push(`%${admin_nome}%`);
+            conditions.push(`admin_nome ILIKE $${params.length}`);
+        }
+
+        const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        // Count total for pagination
+        const countResult = await pool.query(
+            `SELECT COUNT(*) AS total FROM plantoes_historico ${where}`,
+            params
+        );
+        const total = parseInt(countResult.rows[0].total, 10);
+
+        // Pagination
+        const lim = Math.min(parseInt(limite, 10) || 50, 200);
+        const pag = Math.max(parseInt(pagina, 10) || 1, 1);
+        const offset = (pag - 1) * lim;
+
+        params.push(lim, offset);
         const result = await pool.query(
             `SELECT id, plantao_data, n1_anterior, n2_anterior, gerente_anterior, n1_novo, n2_novo, gerente_novo, admin_nome, alterado_em
              FROM plantoes_historico
              ${where}
-             ORDER BY alterado_em DESC`,
+             ORDER BY alterado_em DESC
+             LIMIT $${params.length - 1} OFFSET $${params.length}`,
             params
         );
 
@@ -1479,7 +1516,7 @@ app.get('/api/plantoes/historico', async (req, res) => {
             alterado_em: h.alterado_em
         })));
 
-        return res.json({ sucesso: true, historico });
+        return res.json({ sucesso: true, historico, total, pagina: pag, limite: lim });
     } catch (err) {
         console.error('Erro ao buscar histórico de plantões:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar histórico.' });

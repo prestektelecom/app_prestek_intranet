@@ -7,6 +7,7 @@ import Coverage from './components/Coverage'
 import Directory from './components/Directory'
 import Sectors from './components/Sectors'
 import Schedule from './components/Schedule'
+import PlantaoHistorico from './components/schedule/PlantaoHistorico'
 import Processos from './components/Processos'
 import Comunicados from './components/Comunicados'
 import Configuracoes from './components/Configuracoes'
@@ -158,13 +159,15 @@ export default function App() {
                     {currentView === 'directory' && <Directory user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'sectors' && <Sectors user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'schedule' && <Schedule user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'plantao-historico' && user?.is_admin && <PlantaoHistorico user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'plantao-historico' && !user?.is_admin && <NotFound setCurrentView={setCurrentView} user={user} />}
                     {currentView === 'processes' && <Processos setCurrentView={setCurrentView} />}
                     {currentView === 'announcements' && <Comunicados user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'tickets' && <TicketsList user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'offices' && <Offices user={user} setCurrentView={setCurrentView} />}
                     {/* Fallback para outros menus não implementados ou páginas inexistentes */}
-                    {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'processes', 'announcements', 'settings', 'tickets', 'offices'].includes(currentView) && (
+                    {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'plantao-historico', 'processes', 'announcements', 'settings', 'tickets', 'offices'].includes(currentView) && (
                         <NotFound setCurrentView={setCurrentView} user={user} />
                     )}
                 </div>
