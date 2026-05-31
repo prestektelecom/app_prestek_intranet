@@ -295,11 +295,11 @@ export default function Configuracoes({ user, setCurrentView }) {
                     <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors flex items-center gap-1 cursor-pointer">
                         <span className="material-symbols-outlined text-lg">home</span>Início
                     </button>
-                    <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+
                     <button onClick={() => setCurrentView?.('dashboard')} className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer">
                         Dashboard
                     </button>
-                    <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+
                     <span className="text-[#1d150c] dark:text-white text-sm font-bold">Configurações de Perfil</span>
                 </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 mb-10">

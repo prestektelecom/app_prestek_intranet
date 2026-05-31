@@ -51,14 +51,14 @@ export default function TicketsList({ user, setCurrentView }) {
                             <span className="material-symbols-outlined text-lg">home</span>
                             Início
                         </button>
-                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+
                         <button 
                             onClick={() => setCurrentView('dashboard')}
                             className="text-[#a17745] dark:text-orange-300 text-sm font-medium hover:text-primary transition-colors cursor-pointer"
                         >
                             Dashboard
                         </button>
-                        <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-sm">chevron_right</span>
+
                         <span className="text-[#1d150c] dark:text-white text-sm font-bold">Meus Chamados</span>
                     </div>
                     <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Meus Chamados</h1>

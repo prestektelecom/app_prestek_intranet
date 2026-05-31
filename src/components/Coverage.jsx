@@ -476,14 +476,14 @@ export default function Coverage({ user }) {
                         <span className="material-symbols-outlined text-lg">home</span>
                         Início
                     </button>
-                    <span className="material-symbols-outlined text-[#1F5BA8]/50 dark:text-[#7FD4E8]/50 text-sm">chevron_right</span>
+
                     <button 
                         onClick={() => setCurrentView?.('dashboard')} 
                         className="text-[#1F5BA8] dark:text-[#7FD4E8] text-sm font-medium hover:text-[#4A9EF5] dark:hover:text-[#4A9EF5] transition-colors cursor-pointer"
                     >
                         Dashboard
                     </button>
-                    <span className="material-symbols-outlined text-[#1F5BA8]/50 dark:text-[#7FD4E8]/50 text-sm">chevron_right</span>
+
                     <span className="text-[#0B1B2E] dark:text-[#f5f0eb] text-sm font-bold">Mapa de Cobertura de Rede</span>
                 </div>
 
