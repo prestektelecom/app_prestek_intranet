@@ -288,262 +288,262 @@ export default function Configuracoes({ user, setCurrentView }) {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // ── Paleta Bento Blue ──────────────────────────────────────────────
+    const C = {
+        bg: '#F5F9FF', surface: '#FFFFFF', surfaceSoft: '#F7FAFD',
+        accent: '#4A9EF5', accentDark: '#2D7BD4', accentDeep: '#1F5BA8',
+        accentSoft: '#EAF4FF', ink: '#0B1B2E', ink2: '#475467',
+        muted: '#8896A8', line: '#E4ECF5', lineSoft: '#EFF4FA',
+        success: '#1F8A5B', successSoft: '#E6F4EC',
+        danger: '#E84545', dangerSoft: '#FDEDED',
+    };
+    const tone = (hex, a) => { const h = hex.replace('#', ''); const x = h.length === 3 ? h.replace(/./g, c => c + c) : h; return `rgba(${parseInt(x.slice(0,2),16)},${parseInt(x.slice(2,4),16)},${parseInt(x.slice(4,6),16)},${a})`; };
+
+    // ── Estilos reutilizáveis ────────────────────────────────────────
+    const sCard = { background: C.surface, borderRadius: 18, border: `1px solid ${C.line}`, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}`, overflow: 'hidden' };
+    const sSection = { padding: '28px 32px' };
+    const sSectionHead = { display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 16, marginBottom: 20, borderBottom: `1px solid ${C.lineSoft}` };
+    const sIconBox = (color, bg) => ({ width: 36, height: 36, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color });
+    const sLabel = { fontSize: 10.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, fontFamily: '"JetBrains Mono", monospace', display: 'block', marginBottom: 6 };
+    const sInput = { width: '100%', borderRadius: 10, border: `1.5px solid ${C.line}`, background: C.surfaceSoft, color: C.ink, fontSize: 14, padding: '9px 14px', outline: 'none', transition: 'border-color .18s, box-shadow .18s', fontFamily: 'inherit' };
+    const sInputRO = { ...sInput, background: C.lineSoft, color: C.muted, cursor: 'not-allowed', border: `1.5px solid ${C.lineSoft}` };
+    const sH3 = { fontSize: 15, fontWeight: 700, color: C.ink, margin: 0 };
+
     return (
-        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-8 flex justify-center overflow-y-auto no-scrollbar">
-            <div className="max-w-[1024px] w-full flex flex-col mt-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 mb-10">
-                    <div className="flex flex-col gap-2">
-                        <h1 className="text-[#1d150c] dark:text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight">Perfil do Usuário e Configurações</h1>
-                        <p className="text-[#a17745] dark:text-orange-300 text-base font-normal">Gerencie suas informações pessoais, preferências de segurança e configurações de conta.</p>
-                    </div>
+        <main style={{ flex: 1, width: '100%', background: C.bg, overflowY: 'auto', padding: '0 0 48px' }}>
 
-                    <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
-                        <button
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className={`w-full sm:w-auto px-8 py-3 rounded-lg text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 ${isSaving ? 'bg-primary/70 cursor-not-allowed' : saveSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-primary hover:bg-[#e67e00]'}`}>
-                            {isSaving ? (
-                                <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                            ) : saveSuccess ? (
-                                <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                            ) : (
-                                <span className="material-symbols-outlined text-[18px]">save</span>
-                            )}
-                            {isSaving ? 'Salvando...' : saveSuccess ? 'Atualizado!' : 'Salvar Alterações'}
-                        </button>
-                    </div>
-
-                    {/* Toast flutuante de confirmação */}
-                    {saveSuccess && (
-                        <div className="fixed bottom-8 left-1/2 z-50" style={{ transform: 'translateX(-50%)', animation: 'toastSlideUp 0.4s ease-out' }}>
-                            <div className="flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border border-green-200 dark:border-green-800 bg-card"
-                                style={{ boxShadow: '0 8px 32px rgba(34,197,94,0.2)' }}>
-                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40">
-                                    <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-[24px]">check_circle</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-foreground">Perfil atualizado</span>
-                                    <span className="text-xs text-muted">Suas configurações foram sincronizadas com sucesso.</span>
-                                </div>
-                            </div>
-                            <style>{`
-                                @keyframes toastSlideUp {
-                                    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-                                    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-                                }
-                            `}</style>
+            {/* ── Hero Banner ─────────────────────────────────────────────── */}
+            <div style={{
+                background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 55%, ${C.accent} 100%)`,
+                padding: '40px 40px 80px', position: 'relative', overflow: 'hidden',
+                boxShadow: `0 8px 32px ${tone(C.accentDeep, 0.3)}`,
+            }}>
+                <svg style={{ position: 'absolute', inset: 0, opacity: 0.12 }} width="100%" height="100%">
+                    <defs><pattern id="cfg-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" /></pattern></defs>
+                    <rect width="100%" height="100%" fill="url(#cfg-grid)" />
+                </svg>
+                <div style={{ position: 'relative', maxWidth: 1024, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                            <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 18 }}>manage_accounts</span>
+                            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11.5, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase' }}>Minha Conta</span>
                         </div>
-                    )}
+                        <h1 style={{ color: 'white', fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>Perfil &amp; Configurações</h1>
+                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: '6px 0 0', fontWeight: 400 }}>Gerencie suas informações pessoais, preferências e configurações de conta.</p>
+                    </div>
+                    {/* Botão Salvar no hero */}
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 8,
+                            padding: '11px 26px', borderRadius: 12, border: 'none', cursor: isSaving ? 'not-allowed' : 'pointer',
+                            background: saveSuccess ? C.success : 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)',
+                            color: 'white', fontWeight: 700, fontSize: 14,
+                            boxShadow: '0 2px 12px rgba(0,0,0,0.15)', transition: 'all .18s',
+                            opacity: isSaving ? 0.7 : 1,
+                        }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18, ...(isSaving ? { animation: 'spin 1s linear infinite' } : {}) }}>
+                            {isSaving ? 'progress_activity' : saveSuccess ? 'check_circle' : 'save'}
+                        </span>
+                        {isSaving ? 'Salvando...' : saveSuccess ? 'Salvo!' : 'Salvar Alterações'}
+                    </button>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4">
-                    <div className="lg:col-span-4 xl:col-span-3">
-                        <div className="sticky top-24 bg-card rounded-xl p-6 shadow-sm border border-border flex flex-col items-center gap-6">
-                            <div className="relative group avatar-container flex flex-col items-center">
+            </div>
+
+            {/* ── Conteúdo principal ─────────────────────────────────────── */}
+            <div style={{ maxWidth: 1024, margin: '-48px auto 0', padding: '0 24px', display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 24, position: 'relative' }}>
+
+                {/* ── Card lateral — Perfil ──────────────────────────────── */}
+                <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* Avatar card */}
+                    <div style={{ ...sCard, position: 'sticky', top: 88 }}>
+                        {/* Stripe accent */}
+                        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.accent}, ${tone(C.accent, 0.3)})` }} />
+                        <div style={{ padding: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                            {/* Avatar */}
+                            <div className="avatar-container" style={{ position: 'relative' }}>
                                 {avatarUrl ? (
-                                    <img
-                                        src={avatarUrl}
-                                        alt="Avatar"
-                                        className="aspect-square rounded-full w-32 h-32 border-2 border-transparent group-hover:border-primary shrink-0 transition-all bg-surface-raised object-cover"
-                                    />
+                                    <img src={avatarUrl} alt="Avatar"
+                                        style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${C.accentSoft}`, display: 'block' }} />
                                 ) : (
-                                    <div className="aspect-square rounded-full w-32 h-32 border-2 border-transparent bg-surface-raised flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-[48px] text-muted">person</span>
+                                    <div style={{ width: 100, height: 100, borderRadius: '50%', background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 44, color: C.accent }}>person</span>
                                     </div>
                                 )}
-                                <button
-                                    onClick={() => setShowAvatarMenu(!showAvatarMenu)}
-                                    className="absolute bottom-0 right-0 bg-primary hover:bg-[#e67e00] text-white p-2 text-sm rounded-full shadow-lg transition-transform transform hover:scale-105"
+                                <button onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+                                    style={{ position: 'absolute', bottom: 2, right: 2, width: 28, height: 28, borderRadius: '50%', background: C.accent, border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 2px 8px ${tone(C.accentDeep, 0.3)}` }}
                                     title="Alterar Foto">
-                                    <span className="material-symbols-outlined text-[20px]">photo_camera</span>
+                                    <span className="material-symbols-outlined" style={{ fontSize: 15, color: 'white' }}>photo_camera</span>
                                 </button>
+                                <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/png, image/jpeg, image/webp" style={{ display: 'none' }} />
 
-                                {/* Input Hidden de Arquivo */}
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileUpload}
-                                    accept="image/png, image/jpeg, image/webp"
-                                    className="hidden"
-                                />
-
-                                {/* Menu de Opções de Avatar */}
+                                {/* Menu Avatar */}
                                 {showAvatarMenu && (
-                                    <div className="absolute top-[140px] z-20 w-48 bg-card rounded-lg shadow-xl border border-border py-1 flex flex-col animate-in fade-in zoom-in-95 duration-200">
-                                        <button
-                                            onClick={() => { fileInputRef.current?.click(); setShowAvatarGrid(false); }}
-                                            className="px-4 py-2 text-sm text-left text-foreground hover:bg-surface-raised transition-colors flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-[18px]">upload</span> Fazer Upload
-                                        </button>
-                                        <button
-                                            onClick={() => { setShowAvatarGrid(!showAvatarGrid); }}
-                                            className="px-4 py-2 text-sm text-left text-foreground hover:bg-surface-raised transition-colors flex items-center gap-2 border-b border-border">
-                                            <span className="material-symbols-outlined text-[18px]">sentiment_satisfied</span> Escolher Avatar
-                                        </button>
+                                    <div style={{ position: 'absolute', top: 108, left: '50%', transform: 'translateX(-50%)', zIndex: 20, minWidth: 180, background: C.surface, borderRadius: 12, border: `1px solid ${C.line}`, boxShadow: `0 8px 24px ${tone(C.accentDeep, 0.12)}`, overflow: 'hidden' }}>
+                                        {[
+                                            { icon: 'upload', label: 'Fazer Upload', action: () => { fileInputRef.current?.click(); setShowAvatarGrid(false); } },
+                                            { icon: 'sentiment_satisfied', label: 'Escolher Avatar', action: () => setShowAvatarGrid(v => !v) },
+                                        ].map(({ icon, label, action }) => (
+                                            <button key={label} onClick={action} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', color: C.ink, fontSize: 13, textAlign: 'left', borderBottom: `1px solid ${C.lineSoft}` }}>
+                                                <span className="material-symbols-outlined" style={{ fontSize: 16, color: C.muted }}>{icon}</span>{label}
+                                            </button>
+                                        ))}
                                         {avatarUrl && (
-                                            <button
-                                                onClick={() => {
-                                                    setAvatarUrl(null);
-                                                    setShowAvatarMenu(false);
-                                                    setShowAvatarGrid(false);
-                                                    setFormData(prev => ({ ...prev, avatarUrl: '' }));
-                                                }}
-                                                className="px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2">
-                                                <span className="material-symbols-outlined text-[18px]">delete</span> Remover Foto
+                                            <button onClick={() => { setAvatarUrl(null); setShowAvatarMenu(false); setShowAvatarGrid(false); setFormData(prev => ({ ...prev, avatarUrl: '' })); }}
+                                                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', color: C.danger, fontSize: 13, textAlign: 'left' }}>
+                                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>Remover Foto
                                             </button>
                                         )}
                                     </div>
                                 )}
-
-                                {/* Grid de Seleção de Avatares */}
+                                {/* Grid Avatares */}
                                 {showAvatarGrid && (
-                                    <div className="absolute top-[230px] z-30 w-72 bg-card rounded-lg shadow-xl border border-border p-3 pt-4 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[420px] overflow-y-auto">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted mb-3 text-center">Avatares 3D</h4>
-                                        <div className="grid grid-cols-4 gap-2">
+                                    <div style={{ position: 'absolute', top: 224, left: '50%', transform: 'translateX(-50%)', zIndex: 30, width: 288, background: C.surface, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 12px 32px ${tone(C.accentDeep, 0.14)}`, padding: 12, maxHeight: 380, overflowY: 'auto' }}>
+                                        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, textAlign: 'center', marginBottom: 10, fontFamily: '"JetBrains Mono", monospace' }}>Avatares 3D</p>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                                             {PREDEFINED_PNG_AVATARS.map((url, idx) => (
-                                                <button
-                                                    key={`png-${idx}`}
-                                                    onClick={() => handleChangeAvatar(url)}
-                                                    className="aspect-square rounded-lg border border-border hover:border-primary focus:ring-2 ring-primary/30 transition-all bg-surface-raised overflow-hidden">
-                                                    <img src={url} alt={`Avatar ${idx + 1}`} className="w-full h-full object-cover" />
+                                                <button key={idx} onClick={() => handleChangeAvatar(url)}
+                                                    style={{ aspectRatio: '1', borderRadius: 8, border: `1.5px solid ${C.line}`, overflow: 'hidden', cursor: 'pointer', padding: 0, background: C.surfaceSoft, transition: 'border-color .15s' }}>
+                                                    <img src={url} alt={`Avatar ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
                                 )}
                             </div>
-                            <div className="text-center w-full">
-                                <h2 className="text-foreground text-xl font-bold mb-1">{safeName}</h2>
-                                <p className="text-primary font-medium text-sm mb-4">{cargoName}</p>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+
+                            {/* Nome e cargo */}
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: 18, fontWeight: 800, color: C.ink, letterSpacing: '-0.01em' }}>{safeName}</div>
+                                <div style={{ fontSize: 12.5, color: C.accent, fontWeight: 600, marginTop: 3 }}>{cargoName}</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 10, padding: '3px 10px', borderRadius: 999, background: isActive ? C.successSoft : C.dangerSoft, color: isActive ? C.success : C.danger, fontSize: 11, fontWeight: 700 }}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: 13 }}>{isActive ? 'check_circle' : 'cancel'}</span>
                                     {isActive ? 'Colaborador Ativo' : 'Inativo'}
-                                </span>
-                            </div>
-                            <div className="w-full border-t border-[#eaddcd] dark:border-gray-800 pt-4 mt-2">
-                                <div className="flex items-center gap-3 mb-3 text-sm text-[#a17745] dark:text-orange-300">
-                                    <span className="material-symbols-outlined text-[18px]">badge</span>
-                                    <span>ID: <span className="text-[#1d150c] dark:text-white font-medium">EMP-{safeId}</span></span>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm text-[#a17745] dark:text-orange-300">
-                                    <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                                    <span>Admitido em: <span className="text-[#1d150c] dark:text-white font-medium">
-                                        {safeAdmission !== 'N/D'
-                                            ? new Date(safeAdmission.includes('T') ? safeAdmission : safeAdmission + 'T00:00:00')
-                                                .toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-                                            : 'N/D'}
-                                    </span></span>
+                            </div>
+
+                            {/* Dados fixos */}
+                            <div style={{ width: '100%', borderTop: `1px solid ${C.lineSoft}`, paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {[
+                                    { icon: 'badge', label: `ID: EMP-${safeId}` },
+                                    { icon: 'calendar_month', label: `Admissão: ${safeAdmission !== 'N/D' ? new Date(safeAdmission.includes('T') ? safeAdmission : safeAdmission + 'T00:00:00').toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : 'N/D'}` },
+                                ].map(({ icon, label }) => (
+                                    <div key={icon} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 16, color: C.accent }}>{icon}</span>
+                                        <span style={{ fontSize: 12.5, color: C.ink2 }}>{label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Formulários lado direito ───────────────────────────── */}
+                <div style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+                    {/* Informações Pessoais */}
+                    <div style={sCard}>
+                        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.accent}, ${tone(C.accent, 0.3)})` }} />
+                        <div style={sSection}>
+                            <div style={sSectionHead}>
+                                <div style={sIconBox(C.accent, C.accentSoft)}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>person</span></div>
+                                <h3 style={sH3}>Informações Pessoais</h3>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+                                {[
+                                    { label: 'NOME', name: 'nome', value: displayNome, type: 'text', span: 1 },
+                                    { label: 'SOBRENOME', name: 'sobrenome', value: displaySobrenome, type: 'text', span: 1 },
+                                    { label: 'ENDEREÇO DE E-MAIL', name: 'email', value: displayEmail, type: 'email', span: 2 },
+                                    { label: 'NÚMERO DE TELEFONE', name: 'telefone_celular', value: displayPhone, type: 'tel', span: 1 },
+                                    { label: 'DATA DE NASCIMENTO', name: 'data_nascimento', value: displayBirthDate, type: 'date', span: 1 },
+                                ].map(({ label, name, value, type, span }) => (
+                                    <div key={name} style={{ gridColumn: `span ${span}` }}>
+                                        <label style={sLabel}>{label}</label>
+                                        <input name={name} type={type} value={value} onChange={handleInputChange}
+                                            style={sInput}
+                                            onFocus={e => { e.target.style.borderColor = C.accent; e.target.style.boxShadow = `0 0 0 3px ${tone(C.accent, 0.15)}`; }}
+                                            onBlur={e => { e.target.style.borderColor = C.line; e.target.style.boxShadow = 'none'; }} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Setor e Função */}
+                    <div style={sCard}>
+                        <div style={{ height: 4, background: `linear-gradient(90deg, #7FD4E8, ${tone('#7FD4E8', 0.3)})` }} />
+                        <div style={sSection}>
+                            <div style={sSectionHead}>
+                                <div style={sIconBox('#7FD4E8', '#EEF9FC')}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>work</span></div>
+                                <h3 style={sH3}>Setor e Função</h3>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+                                <div>
+                                    <label style={sLabel}>SETOR</label>
+                                    <input readOnly value={deptoName} style={sInputRO} />
+                                </div>
+                                <div>
+                                    <label style={sLabel}>LOCALIZAÇÃO DO ESCRITÓRIO</label>
+                                    <input readOnly value={filialName} style={sInputRO} />
+                                </div>
+                                <div>
+                                    <label style={sLabel}>TELEFONE IP / RAMAL</label>
+                                    <input name="ramal" type="text" value={displayRamal} onChange={handleInputChange} style={sInput}
+                                        onFocus={e => { e.target.style.borderColor = C.accent; e.target.style.boxShadow = `0 0 0 3px ${tone(C.accent, 0.15)}`; }}
+                                        onBlur={e => { e.target.style.borderColor = C.line; e.target.style.boxShadow = 'none'; }} />
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="lg:col-span-8 xl:col-span-9 flex flex-col gap-6">
-                        <section className="bg-white dark:bg-[#1a130b] rounded-xl p-6 md:p-8 shadow-sm border border-[#eaddcd] dark:border-gray-800">
-                            <div className="flex items-center gap-3 mb-6 border-b border-[#eaddcd] dark:border-gray-800 pb-4">
-                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                                    <span className="material-symbols-outlined">person</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-[#1d150c] dark:text-white">Informações Pessoais</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">NOME</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="nome" type="text" value={displayNome} onChange={handleInputChange} />
-                                </div>
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">SOBRENOME</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="sobrenome" type="text" value={displaySobrenome} onChange={handleInputChange} />
-                                </div>
-                                <div className="flex flex-col gap-1.5 md:col-span-2">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">ENDEREÇO DE E-MAIL</label>
-                                    <div className="relative">
-                                        <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#a17745] dark:text-orange-300 text-[20px]">mail</span>
-                                        <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary pl-10 pr-4 py-2.5 transition-shadow"
-                                            name="email" type="email" value={displayEmail} onChange={handleInputChange} />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">NÚMERO DE TELEFONE</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="telefone_celular" type="tel" value={displayPhone} onChange={handleInputChange} />
-                                </div>
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">DATA DE NASCIMENTO</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="data_nascimento" type="date" value={displayBirthDate} onChange={handleInputChange} />
-                                </div>
-                            </div>
-                        </section>
-                        <section className="bg-white dark:bg-[#1a130b] rounded-xl p-6 md:p-8 shadow-sm border border-[#eaddcd] dark:border-gray-800">
-                            <div className="flex items-center gap-3 mb-6 border-b border-[#eaddcd] dark:border-gray-800 pb-4">
-                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                                    <span className="material-symbols-outlined">work</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-[#1d150c] dark:text-white">Setor e Função</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">SETOR</label>
-                                    <div className="relative">
-                                        <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
-                                            readOnly name="id_departamento" type="text"
-                                            value={deptoName} />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">LOCALIZAÇÃO DO ESCRITÓRIO</label>
-                                    <input className="form-input w-full rounded-lg border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 cursor-not-allowed px-4 py-2.5"
-                                        readOnly name="filial_id" type="text" value={filialName} />
-                                </div>
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-[#a17745] dark:text-orange-300">Telefone IP / Ramal</label>
-                                    <input className="form-input w-full rounded-lg border-[#eaddcd] dark:border-gray-800 bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white focus:border-primary focus:ring-primary px-4 py-2.5 transition-shadow"
-                                        name="ramal" type="text" value={displayRamal} onChange={handleInputChange} />
-                                </div>
-                            </div>
-                        </section>
 
-                        <section className="bg-white dark:bg-[#1a130b] rounded-xl p-6 md:p-8 shadow-sm border border-[#eaddcd] dark:border-gray-800">
-                            <div className="flex items-center gap-3 mb-6 border-b border-[#eaddcd] dark:border-gray-800 pb-4">
-                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                                    <span className="material-symbols-outlined">tune</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-[#1d150c] dark:text-white">Preferências</h3>
+                    {/* Preferências */}
+                    <div style={sCard}>
+                        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.success}, ${tone(C.success, 0.3)})` }} />
+                        <div style={sSection}>
+                            <div style={sSectionHead}>
+                                <div style={sIconBox(C.success, C.successSoft)}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>tune</span></div>
+                                <h3 style={sH3}>Preferências</h3>
                             </div>
-                            <div className="space-y-6">
-                                <ThemeSwitcher />
-                                <div className="border-t border-[#eaddcd] dark:border-gray-800 pt-6">
-                                    <h4 className="text-sm font-bold text-[#1d150c] dark:text-white mb-4">Notificações por E-mail</h4>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-[#1d150c] dark:text-white">Comunicados do Departamento</span>
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input defaultChecked className="sr-only peer" type="checkbox" value="" />
-                                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-[#1a130b] after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                                            </label>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-[#1d150c] dark:text-white">Manutenção do Sistema</span>
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input defaultChecked className="sr-only peer" type="checkbox" value="" />
-                                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-[#1a130b] after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                                            </label>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-[#1d150c] dark:text-white">Atualizações de Colaboradores</span>
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input className="sr-only peer" type="checkbox" value="" />
-                                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-[#1a130b] after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                                            </label>
-                                        </div>
+                            <ThemeSwitcher />
+                            <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${C.lineSoft}` }}>
+                                <p style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 14 }}>Notificações por E-mail</p>
+                                {[
+                                    { label: 'Comunicados do Departamento', defaultChecked: true },
+                                    { label: 'Manutenção do Sistema', defaultChecked: true },
+                                    { label: 'Atualizações de Colaboradores', defaultChecked: false },
+                                ].map(({ label, defaultChecked }) => (
+                                    <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                                        <span style={{ fontSize: 13.5, color: C.ink2 }}>{label}</span>
+                                        <label style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                                            <input type="checkbox" defaultChecked={defaultChecked} className="sr-only peer" />
+                                            <div style={{ width: 36, height: 20, borderRadius: 999, background: '#D0D7E1', position: 'relative', transition: 'background .2s' }}
+                                                className="peer-checked:!bg-[#4A9EF5] after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-[2px] after:left-[2px] peer-checked:after:translate-x-4 after:transition-all after:shadow-sm" />
+                                        </label>
                                     </div>
-                                </div>
+                                ))}
                             </div>
-                        </section>
-
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Toast de sucesso */}
+            {saveSuccess && (
+                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 99, animation: 'toastUp .35s ease-out' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.successSoft}`, boxShadow: `0 8px 32px ${tone(C.success, 0.2)}` }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.successSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 20, color: C.success }}>check_circle</span>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>Perfil atualizado</div>
+                            <div style={{ fontSize: 12, color: C.muted }}>Configurações sincronizadas com sucesso.</div>
+                        </div>
+                    </div>
+                    <style>{`@keyframes toastUp { from { opacity:0; transform:translateX(-50%) translateY(16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
+                </div>
+            )}
         </main>
-    )
+    );
 }
