@@ -1,4 +1,75 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+
+// ── Paleta Bento Blue ────────────────────────────────────────────────────────
+const C = {
+  bg:          '#F5F9FF',
+  surface:     '#FFFFFF',
+  surfaceSoft: '#F7FAFD',
+  accent:      '#4A9EF5',
+  accentDark:  '#2D7BD4',
+  accentDeep:  '#1F5BA8',
+  accentSoft:  '#EAF4FF',
+  cyan:        '#7FD4E8',
+  ink:         '#0B1B2E',
+  ink2:        '#475467',
+  muted:       '#8896A8',
+  line:        '#E4ECF5',
+  success:     '#1F8A5B',
+  successSoft: '#E6F4EC',
+  warning:     '#D97706',
+  warningSoft: '#FEF3E2',
+  danger:      '#E84545',
+  dangerSoft:  '#FDEDED',
+};
+
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+  return `${parseInt(x.slice(0,2),16)}, ${parseInt(x.slice(2,4),16)}, ${parseInt(x.slice(4,6),16)}`;
+}
+
+function tone(hex, a) {
+  return `rgba(${hexToRgb(hex)}, ${a})`;
+}
+
+function relativeTime(dataStr) {
+  if (!dataStr) return '';
+  const now = new Date();
+  const date = new Date(dataStr);
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHr / 24);
+
+  if (diffSec < 60) return 'agora';
+  if (diffMin < 60) return `há ${diffMin}min`;
+  if (diffHr < 24) return `há ${diffHr}h`;
+  if (diffDays < 7) return `há ${diffDays}d`;
+  
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').replace(' de ', ' ');
+}
+
+const TYPE_META = {
+  Urgente: {
+    color: C.danger,
+    soft: C.dangerSoft,
+    icon: 'priority_high',
+    label: 'URGENTE'
+  },
+  Importante: {
+    color: C.warning,
+    soft: C.warningSoft,
+    icon: 'notification_important',
+    label: 'IMPORTANTE'
+  },
+  Geral: {
+    color: C.success,
+    soft: C.successSoft,
+    icon: 'article',
+    label: 'GERAL'
+  }
+};
 
 export default function Comunicados({ user, setCurrentView }) {
     const [comunicados, setComunicados] = useState([]);
@@ -9,6 +80,7 @@ export default function Comunicados({ user, setCurrentView }) {
     const [filtro, setFiltro] = useState('Todas');
     const [ordenacao, setOrdenacao] = useState('recentes');
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [busca, setBusca] = useState('');
     const [formData, setFormData] = useState({
         titulo: '',
         descricao: '',
@@ -112,253 +184,1007 @@ export default function Comunicados({ user, setCurrentView }) {
         }
     };
 
-    const formatarData = (dataStr) => {
-        if (!dataStr) return '';
-        const data = new Date(dataStr);
-        return data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace(' de ', ' ');
-    };
+    // Lógica de filtragem com busca textual
+    const comunicadosPorBusca = useMemo(() => {
+        const termo = busca.toLowerCase().trim();
+        return comunicados.filter(item =>
+            !termo ||
+            (item.titulo || '').toLowerCase().includes(termo) ||
+            (item.descricao || '').toLowerCase().includes(termo)
+        );
+    }, [comunicados, busca]);
 
-    const comunicadosFiltrados = comunicados
-        .filter(item => filtro === 'Todas' ? true : item.tipo === filtro)
-        .sort((a, b) => {
-            if (ordenacao === 'recentes') return new Date(b.criado_em) - new Date(a.criado_em);
-            if (ordenacao === 'antigos') return new Date(a.criado_em) - new Date(b.criado_em);
-            if (ordenacao === 'autor') return a.departamento_autor.localeCompare(b.departamento_autor);
-            return 0;
-        });
+    // Filtro por tipo e ordenação
+    const comunicadosFiltrados = useMemo(() => {
+        return comunicadosPorBusca
+            .filter(item => filtro === 'Todas' ? true : item.tipo === filtro)
+            .sort((a, b) => {
+                if (ordenacao === 'recentes') return new Date(b.criado_em) - new Date(a.criado_em);
+                if (ordenacao === 'antigos') return new Date(a.criado_em) - new Date(b.criado_em);
+                if (ordenacao === 'autor') return (a.departamento_autor || '').localeCompare(b.departamento_autor || '');
+                return 0;
+            });
+    }, [comunicadosPorBusca, filtro, ordenacao]);
+
+    // Contagens por tipo baseadas no resultado da busca
+    const countTotal = comunicadosPorBusca.length;
+    const countUrgente = useMemo(() => comunicadosPorBusca.filter(c => c.tipo === 'Urgente').length, [comunicadosPorBusca]);
+    const countImportante = useMemo(() => comunicadosPorBusca.filter(c => c.tipo === 'Importante').length, [comunicadosPorBusca]);
+    const countGeral = useMemo(() => comunicadosPorBusca.filter(c => c.tipo === 'Geral').length, [comunicadosPorBusca]);
+
+    // KPIs do Hero (totais absolutos da API)
+    const kpiTotal = comunicados.length;
+    const kpiUrgentes = useMemo(() => comunicados.filter(c => c.tipo === 'Urgente').length, [comunicados]);
+    const kpiImportantes = useMemo(() => comunicados.filter(c => c.tipo === 'Importante').length, [comunicados]);
+    const kpiGerais = useMemo(() => comunicados.filter(c => c.tipo === 'Geral').length, [comunicados]);
 
     return (
-        <main className="flex-1 flex flex-col px-4 md:px-10 py-6 max-w-[1024px] mx-auto w-full overflow-y-auto no-scrollbar relative">
-            <div className="mb-10 flex justify-between items-end gap-4 flex-wrap">
-                <div>
-                    <h1 className="text-3xl sm:text-4xl font-black text-[#1d150c] dark:text-white mb-3 leading-tight tracking-[-0.033em]">Comunicados da Empresa</h1>
-                    <p className="text-[#a17745] dark:text-orange-300 text-lg max-w-2xl leading-relaxed">Fique atualizado com as últimas notícias, alertas urgentes e diretrizes importantes da diretoria da Prestek.</p>
-                </div>
-                {user?.is_admin && (
-                    <button
-                        onClick={() => handleOpenModal()}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-[#e67e00] text-white font-bold transition-colors shadow-md shadow-primary/20">
-                        <span className="material-symbols-outlined">add_circle</span>
-                        Novo Comunicado
-                    </button>
-                )}
-            </div>
+        <main style={{ flex: 1, overflowY: 'auto', background: C.bg, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: C.ink }}>
+            {/* ── Hero Banner ──────────────────────────────────────────────── */}
+            <HeroBanner
+                busca={busca}
+                setBusca={setBusca}
+                kpiTotal={kpiTotal}
+                kpiUrgentes={kpiUrgentes}
+                kpiImportantes={kpiImportantes}
+                kpiGerais={kpiGerais}
+                isLoading={loading}
+                isAdmin={user?.is_admin}
+                onNewComunicado={() => handleOpenModal()}
+            />
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white dark:bg-[#1a130b] p-4 rounded-xl shadow-sm border border-[#eaddcd] dark:border-gray-800">
-                <div className="flex flex-wrap gap-2">
-                    <button
-                        onClick={() => setFiltro('Todas')}
-                        className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${filtro === 'Todas' ? 'bg-primary text-white shadow-md shadow-primary/20 hover:bg-[#e67e00]' : 'bg-[#fcfaf8] dark:bg-[#2c2217] text-[#635c55] dark:text-gray-300 border border-[#eaddcd] dark:border-gray-800 hover:bg-primary/10 hover:text-primary hover:border-primary/30'}`}>
-                        Todas as Atualizações
-                    </button>
-                    <button
-                        onClick={() => setFiltro('Urgente')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filtro === 'Urgente' ? 'bg-red-500 text-white shadow-md shadow-red-500/20 hover:bg-red-600' : 'bg-[#fcfaf8] dark:bg-[#2c2217] text-[#635c55] dark:text-gray-300 border border-[#eaddcd] dark:border-gray-800 hover:bg-red-50 hover:text-red-600 hover:border-red-200'}`}>
-                        Urgente
-                    </button>
-                    <button
-                        onClick={() => setFiltro('Importante')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filtro === 'Importante' ? 'bg-yellow-500 text-white shadow-md shadow-yellow-500/20 hover:bg-yellow-600' : 'bg-[#fcfaf8] dark:bg-[#2c2217] text-[#635c55] dark:text-gray-300 border border-[#eaddcd] dark:border-gray-800 hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-200'}`}>
-                        Importante
-                    </button>
-                    <button
-                        onClick={() => setFiltro('Geral')}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filtro === 'Geral' ? 'bg-green-500 text-white shadow-md shadow-green-500/20 hover:bg-green-600' : 'bg-[#fcfaf8] dark:bg-[#2c2217] text-[#635c55] dark:text-gray-300 border border-[#eaddcd] dark:border-gray-800 hover:bg-green-50 hover:text-green-600 hover:border-green-200'}`}>
-                        Geral
-                    </button>
-                </div>
-                <div className="w-full md:w-auto relative">
-                    <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#a17745] dark:text-orange-300 text-xl">filter_list</span>
-                    <select value={ordenacao} onChange={(e) => setOrdenacao(e.target.value)} className="pl-10 pr-8 py-2 w-full md:w-48 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-sm text-[#1d150c] dark:text-white focus:ring-2 focus:ring-primary/50 cursor-pointer outline-none transition-all">
-                        <option value="recentes">Mais recentes primeiro</option>
-                        <option value="antigos">Mais antigos primeiro</option>
-                        <option value="autor">Ordenar por Autor</option>
-                    </select>
-                </div>
-            </div>
+            <div style={{ padding: '0 32px 48px', maxWidth: 1200, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+                
+                {/* ── Filter Bar ────────────────────────────────────────────── */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 16,
+                    flexWrap: 'wrap',
+                    marginBottom: 24
+                }}>
+                    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, paddingTop: 4, flexWrap: 'wrap' }}>
+                        <ChipButton
+                            label="Todas as Atualizações"
+                            count={countTotal}
+                            active={filtro === 'Todas'}
+                            onClick={() => setFiltro('Todas')}
+                            color={C.accent}
+                        />
+                        <ChipButton
+                            label="Urgente"
+                            count={countUrgente}
+                            active={filtro === 'Urgente'}
+                            onClick={() => setFiltro('Urgente')}
+                            color={C.danger}
+                        />
+                        <ChipButton
+                            label="Importante"
+                            count={countImportante}
+                            active={filtro === 'Importante'}
+                            onClick={() => setFiltro('Importante')}
+                            color={C.warning}
+                        />
+                        <ChipButton
+                            label="Geral"
+                            count={countGeral}
+                            active={filtro === 'Geral'}
+                            onClick={() => setFiltro('Geral')}
+                            color={C.success}
+                        />
+                    </div>
 
-            <div className="relative pl-4 sm:pl-8 space-y-8 before:absolute before:inset-0 before:ml-4 sm:before:ml-8 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-[#eaddcd] before:to-transparent">
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <span style={{
+                            position: 'absolute',
+                            left: 12,
+                            color: C.accent,
+                            fontSize: 20,
+                            fontFamily: '"Material Symbols Outlined"',
+                            pointerEvents: 'none'
+                        }}>filter_list</span>
+                        <select
+                            value={ordenacao}
+                            onChange={(e) => setOrdenacao(e.target.value)}
+                            style={{
+                                padding: '8px 32px 8px 38px',
+                                background: C.surface,
+                                border: `1px solid ${C.line}`,
+                                borderRadius: 10,
+                                fontSize: 13.5,
+                                color: C.ink,
+                                fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                                cursor: 'pointer',
+                                outline: 'none',
+                                transition: 'all 0.15s',
+                                appearance: 'none',
+                                WebkitAppearance: 'none'
+                            }}
+                        >
+                            <option value="recentes">Mais recentes primeiro</option>
+                            <option value="antigos">Mais antigos primeiro</option>
+                            <option value="autor">Ordenar por Autor</option>
+                        </select>
+                        <span style={{
+                            position: 'absolute',
+                            right: 12,
+                            color: C.muted,
+                            fontSize: 16,
+                            fontFamily: '"Material Symbols Outlined"',
+                            pointerEvents: 'none'
+                        }}>keyboard_arrow_down</span>
+                    </div>
+                </div>
 
-                {loading && (
-                    <div className="flex items-center justify-center p-8 bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 shadow-sm">
-                        <span className="material-symbols-outlined animate-spin text-primary text-3xl">autorenew</span>
-                        <span className="ml-3 text-[#635c55] dark:text-gray-300">Carregando avisos...</span>
+                {/* ── Feed de Cards / Loading / Vazio ─────────────────────────── */}
+                {loading ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
+                        {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+                    </div>
+                ) : comunicadosFiltrados.length === 0 ? (
+                    <EmptyState busca={busca} filtro={filtro} onClear={() => { setBusca(''); setFiltro('Todas'); }} />
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
+                        {comunicadosFiltrados.map((item, idx) => (
+                            <ComunicadoCard
+                                key={item.id}
+                                item={item}
+                                isAdmin={user?.is_admin}
+                                onEdit={() => handleOpenModal(item)}
+                                onDelete={() => confirmDelete(item.id)}
+                                animDelay={idx * 30}
+                            />
+                        ))}
                     </div>
                 )}
-
-                {!loading && comunicadosFiltrados.length === 0 && (
-                    <div className="flex flex-col items-center justify-center p-10 bg-white dark:bg-[#1a130b] rounded-xl border border-[#eaddcd] dark:border-gray-800 shadow-sm text-center">
-                        <span className="material-symbols-outlined text-gray-400 text-5xl mb-3">search_off</span>
-                        <h3 className="text-lg font-bold text-[#1d150c] dark:text-white">Nenhum aviso encontrado</h3>
-                        <p className="text-[#635c55] dark:text-gray-400 max-w-sm mt-1">Nenhum comunicado corresponde aos filtros selecionados.</p>
-                    </div>
-                )}
-
-                {!loading && comunicadosFiltrados.map((item) => {
-                    const isUrgente = item.tipo === 'Urgente';
-                    const isImportante = item.tipo === 'Importante';
-                    const isGeral = item.tipo === 'Geral';
-
-                    let icon = 'article';
-                    let badgeBg = 'bg-gray-500';
-                    let borderLeft = 'border-l-gray-500';
-                    let badgeText = 'text-gray-700';
-                    let badgeBgLight = 'bg-gray-100';
-                    let badgeBorderLight = 'border-gray-200';
-
-                    if (isUrgente) {
-                        icon = 'priority_high';
-                        badgeBg = 'bg-red-500';
-                        borderLeft = 'border-l-red-500';
-                        badgeText = 'text-red-700';
-                        badgeBgLight = 'bg-red-100';
-                        badgeBorderLight = 'border-red-200';
-                    } else if (isImportante) {
-                        icon = 'notification_important';
-                        badgeBg = 'bg-yellow-500';
-                        borderLeft = 'border-l-yellow-500';
-                        badgeText = 'text-yellow-800';
-                        badgeBgLight = 'bg-yellow-100';
-                        badgeBorderLight = 'border-yellow-200';
-                    } else if (isGeral) {
-                        icon = 'article';
-                        badgeBg = 'bg-green-500';
-                        borderLeft = 'border-l-green-500';
-                        badgeText = 'text-green-800';
-                        badgeBgLight = 'bg-green-100';
-                        badgeBorderLight = 'border-green-200';
-                    }
-
-                    return (
-                        <div key={item.id} className="relative group">
-                            <div className={`absolute -left-4 sm:-left-8 mt-1.5 h-8 w-8 rounded-full border-4 border-[#fcfaf8] ${badgeBg} flex items-center justify-center shadow-sm z-10 transition-transform group-hover:scale-110`}>
-                                <span className="material-symbols-outlined text-white text-[16px]">{icon}</span>
-                            </div>
-                            <div className={`bg-white dark:bg-[#1a130b] rounded-xl p-6 border border-l-4 ${borderLeft} border-[#eaddcd] dark:border-gray-800 shadow-sm hover:shadow-md transition-all`}>
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${badgeBgLight} ${badgeText} border ${badgeBorderLight}`}>{item.tipo}</span>
-                                        <span className="text-xs text-[#a17745] dark:text-orange-300 flex items-center gap-1 font-medium">
-                                            <span className="material-symbols-outlined text-[14px]">calendar_today</span> {formatarData(item.criado_em)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xs font-bold text-[#635c55] dark:text-gray-300 uppercase tracking-wider">Pelo Departamento de {item.departamento_autor}</span>
-                                        {user?.is_admin && (
-                                            <div className="flex items-center gap-1 border-l border-[#eaddcd] dark:border-gray-800 pl-3">
-                                                <button onClick={() => handleOpenModal(item)} className="p-1 rounded text-[#a17745] hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" title="Editar">
-                                                    <span className="material-symbols-outlined text-[18px]">edit</span>
-                                                </button>
-                                                <button onClick={() => confirmDelete(item.id)} className="p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Excluir">
-                                                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <h3 className="text-xl font-bold text-[#1d150c] dark:text-white mb-2 group-hover:text-primary transition-colors">{item.titulo}</h3>
-                                <p className="text-[#635c55] dark:text-gray-300 text-sm leading-relaxed mb-4 whitespace-pre-wrap">{item.descricao}</p>
-
-                                {item.link_opcional && (
-                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#eaddcd] dark:border-gray-800">
-                                        <div className="flex -space-x-2"></div>
-                                        <a href={item.link_opcional} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm font-bold text-primary hover:text-[#e67e00] transition-colors group/btn">
-                                            Link adicional <span className="material-symbols-outlined text-lg ml-1 group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
             </div>
 
-            {/* Modal de Adicionar/Editar Comunicado */}
+            {/* ── Modal CRUD (Criar/Editar) ─────────────────────────────────── */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-                        <div className="p-6 border-b border-[#eaddcd] dark:border-gray-800 flex justify-between items-center bg-[#fcfaf8] dark:bg-[#150f08]">
-                            <h2 className="text-xl font-bold text-[#1d150c] dark:text-white flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">{editingId ? 'edit' : 'campaign'}</span>
-                                {editingId ? 'Editar Comunicado' : 'Novo Comunicado'}
-                            </h2>
-                            <button onClick={handleCloseModal} className="text-[#a17745] hover:text-red-500 transition-colors rounded-lg p-1 hover:bg-red-50 dark:hover:bg-red-900/20">
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-[#1d150c] dark:text-white mb-1.5">Título do Aviso *</label>
-                                <input required type="text" value={formData.titulo} onChange={e => setFormData({ ...formData, titulo: e.target.value })} className="w-full p-2.5 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 outline-none text-[#1d150c] dark:text-white" placeholder="Ex: Atualização do Sistema" />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-[#1d150c] dark:text-white mb-1.5">Tipo *</label>
-                                    <select required value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value })} className="w-full p-2.5 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 outline-none text-[#1d150c] dark:text-white">
-                                        <option value="Geral">Geral (Verde)</option>
-                                        <option value="Importante">Importante (Amarelo)</option>
-                                        <option value="Urgente">Urgente (Vermelho)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-[#1d150c] dark:text-white mb-1.5">Depto. Autor *</label>
-                                    <input required type="text" value={formData.departamento_autor} onChange={e => setFormData({ ...formData, departamento_autor: e.target.value })} className="w-full p-2.5 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 outline-none text-[#1d150c] dark:text-white" placeholder="Ex: Diretoria" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-[#1d150c] dark:text-white mb-1.5">Mensagem/Descrição *</label>
-                                <textarea required rows="4" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value })} className="w-full p-2.5 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 outline-none text-[#1d150c] dark:text-white resize-none" placeholder="Detalhes completos do comunicado..."></textarea>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-[#1d150c] dark:text-white mb-1.5">Link Adicional (Opcional)</label>
-                                <input type="url" value={formData.link_opcional} onChange={e => setFormData({ ...formData, link_opcional: e.target.value })} className="w-full p-2.5 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 outline-none text-[#1d150c] dark:text-white" placeholder="https://..." />
-                            </div>
-
-                            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[#eaddcd] dark:border-gray-800">
-                                <button type="button" onClick={handleCloseModal} className="px-4 py-2 rounded-xl text-sm font-bold text-[#635c55] hover:text-red-500 hover:bg-red-50 transition-colors">
-                                    Cancelar
-                                </button>
-                                <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-xl text-sm font-bold text-white bg-primary hover:bg-[#e67e00] shadow-md transition-colors disabled:opacity-50 flex items-center gap-2">
-                                    {isSubmitting ? (
-                                        <><span className="material-symbols-outlined animate-spin text-[18px]">sync</span> Salvando...</>
-                                    ) : (
-                                        <><span className="material-symbols-outlined text-[18px]">send</span> {editingId ? 'Salvar Aviso' : 'Publicar Aviso'}</>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                <CrudModal
+                    editingId={editingId}
+                    formData={formData}
+                    setFormData={setFormData}
+                    isSubmitting={isSubmitting}
+                    onClose={handleCloseModal}
+                    onSubmit={handleSubmit}
+                />
             )}
 
-            {/* Modal de Confirmação de Exclusão */}
+            {/* ── Modal de Confirmação de Exclusão ───────────────────────────── */}
             {itemToDelete && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1a130b] border border-red-200 dark:border-red-900/30 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-6">
-                        <div className="mx-auto w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mb-4">
-                            <span className="material-symbols-outlined text-red-500 text-3xl">warning</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-[#1d150c] dark:text-white mb-2">Excluir Comunicado?</h3>
-                        <p className="text-[#635c55] dark:text-gray-300 text-sm mb-6">Esta ação não pode ser desfeita. O comunicado será removido permanentemente.</p>
+                <DeleteModal
+                    onClose={() => setItemToDelete(null)}
+                    onConfirm={handleDelete}
+                />
+            )}
 
-                        <div className="flex gap-3 justify-center">
+            <style>{`
+                @keyframes card-in {
+                    from { opacity: 0; transform: translateY(12px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+            `}</style>
+        </main>
+    );
+}
+
+// ── Subcomponentes ───────────────────────────────────────────────────────────
+
+function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kpiGerais, isLoading, isAdmin, onNewComunicado }) {
+    return (
+        <div style={{
+            background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
+            padding: '40px 32px 36px',
+            position: 'relative',
+            overflow: 'hidden',
+            marginBottom: 28,
+        }}>
+            {/* Grid pattern SVG */}
+            <svg style={{ position: 'absolute', inset: 0, opacity: 0.12, pointerEvents: 'none' }} width="100%" height="100%">
+                <defs>
+                    <pattern id="com-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#com-grid)" />
+            </svg>
+            {/* Blur orbs */}
+            <div style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: -100, right: 160, width: 220, height: 220, borderRadius: '50%', background: `rgba(${hexToRgb(C.cyan)}, 0.25)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
+
+            <div style={{ position: 'relative', maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+                
+                {/* Cabeçalho do Hero */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 20, flexWrap: 'wrap' }}>
+                    <div>
+                        <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, color: 'white', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                            📢 Comunicados da Empresa
+                        </h1>
+                        <p style={{ margin: '8px 0 0', fontSize: 15, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5, maxWidth: 640 }}>
+                            Fique atualizado com as últimas notícias, alertas urgentes e diretrizes importantes da Prestek.
+                        </p>
+                    </div>
+
+                    {isAdmin && (
+                        <button
+                            onClick={onNewComunicado}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                padding: '10px 20px',
+                                borderRadius: 12,
+                                background: 'rgba(255, 255, 255, 0.18)',
+                                border: '1px solid rgba(255, 255, 255, 0.3)',
+                                backdropFilter: 'blur(8px)',
+                                color: 'white',
+                                fontWeight: 700,
+                                fontSize: 14,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                outline: 'none'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.28)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'none'; }}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add_circle</span>
+                            Novo Comunicado
+                        </button>
+                    )}
+                </div>
+
+                {/* Busca inline glassmorphism */}
+                <div style={{ position: 'relative', maxWidth: 560, width: '100%' }}>
+                    <span style={{
+                        position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
+                        color: 'rgba(255,255,255,0.7)', fontSize: 20, fontFamily: '"Material Symbols Outlined"',
+                        pointerEvents: 'none', lineHeight: 1,
+                    }}>search</span>
+                    <input
+                        type="text"
+                        value={busca}
+                        onChange={e => setBusca(e.target.value)}
+                        placeholder="Buscar por título ou conteúdo..."
+                        style={{
+                            width: '100%', boxSizing: 'border-box',
+                            padding: '14px 48px 14px 50px',
+                            background: 'rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(255,255,255,0.3)',
+                            borderRadius: 14,
+                            color: 'white',
+                            fontSize: 15, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                            outline: 'none',
+                            transition: 'border-color 0.2s, background 0.2s',
+                        }}
+                        onFocus={e => { e.target.style.background = 'rgba(255,255,255,0.22)'; e.target.style.borderColor = 'rgba(255,255,255,0.6)'; }}
+                        onBlur={e => { e.target.style.background = 'rgba(255,255,255,0.15)'; e.target.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                    />
+                    {busca && (
+                        <button
+                            onClick={() => setBusca('')}
+                            style={{
+                                position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                                background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6,
+                                color: 'white', cursor: 'pointer', padding: '2px 6px', fontSize: 12, lineHeight: 1.5,
+                            }}
+                        >✕</button>
+                    )}
+                </div>
+
+                {/* KPI Pills */}
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    {[
+                        { label: 'Total', value: isLoading ? '···' : kpiTotal, icon: 'campaign', color: 'white' },
+                        { label: 'Urgentes', value: isLoading ? '···' : kpiUrgentes, icon: 'priority_high', color: C.danger },
+                        { label: 'Importantes', value: isLoading ? '···' : kpiImportantes, icon: 'notification_important', color: C.warning },
+                        { label: 'Gerais', value: isLoading ? '···' : kpiGerais, icon: 'article', color: C.success },
+                    ].map(kpi => (
+                        <div key={kpi.label} style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 8,
+                            padding: '8px 16px', borderRadius: 999,
+                            background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
+                            border: '1px solid rgba(255,255,255,0.25)', color: 'white',
+                        }}>
+                            <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 18, lineHeight: 1, color: kpi.color === 'white' ? 'white' : kpi.color }}>{kpi.icon}</span>
+                            <span style={{ fontWeight: 700, fontSize: 16 }}>{kpi.value}</span>
+                            <span style={{ fontSize: 12, opacity: 0.8, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>{kpi.label.toUpperCase()}</span>
+                        </div>
+                    ))}
+                </div>
+
+            </div>
+        </div>
+    );
+}
+
+function ChipButton({ label, count, active, onClick, color }) {
+    const [hover, setHover] = useState(false);
+    const rgb = hexToRgb(color);
+
+    return (
+        <button
+            onClick={onClick}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            style={{
+                flexShrink: 0,
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
+                border: active ? `1.5px solid ${color}` : `1.5px solid ${C.line}`,
+                background: active ? `rgba(${rgb}, 0.12)` : (hover ? C.surfaceSoft : C.surface),
+                color: active ? color : (hover ? C.ink : C.ink2),
+                fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                fontWeight: active ? 700 : 500, fontSize: 13,
+                transition: 'all 0.15s',
+                boxShadow: active ? `0 0 0 3px rgba(${rgb}, 0.12)` : 'none',
+                outline: 'none'
+            }}
+        >
+            <span>{label}</span>
+            <span style={{
+                background: active ? color : C.surfaceSoft,
+                color: active ? 'white' : C.muted,
+                fontSize: 11, fontWeight: 700,
+                padding: '1px 7px', borderRadius: 999,
+                fontFamily: '"JetBrains Mono", monospace',
+                transition: 'all 0.15s',
+            }}>{count}</span>
+        </button>
+    );
+}
+
+function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
+    const [hover, setHover] = useState(false);
+    const meta = TYPE_META[item.tipo] || TYPE_META.Geral;
+    const rgb = hexToRgb(meta.color);
+
+    return (
+        <div
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            style={{
+                background: C.surface,
+                borderRadius: 18,
+                border: `1px solid ${hover ? tone(meta.color, 0.4) : C.line}`,
+                borderLeftWidth: 4,
+                borderLeftStyle: 'solid',
+                borderLeftColor: meta.color,
+                boxShadow: hover
+                    ? `0 12px 32px rgba(${rgb}, 0.15), 0 2px 8px rgba(0,0,0,0.06)`
+                    : `0 1px 3px rgba(0,0,0,0.06)`,
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: hover ? 'translateY(-4px)' : 'none',
+                animation: `card-in 0.35s ease both`,
+                animationDelay: `${animDelay}ms`,
+                position: 'relative',
+                overflow: 'hidden'
+            }}
+        >
+            <div style={{ padding: '24px 24px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                
+                {/* Header do Card (Tipo + Metadata + Ações) */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                        <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: '3px 9px',
+                            borderRadius: 999,
+                            background: meta.soft,
+                            color: meta.color,
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            fontFamily: '"JetBrains Mono", monospace',
+                            letterSpacing: '0.06em',
+                            border: `1px solid rgba(${rgb}, 0.2)`
+                        }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 12 }}>{meta.icon}</span>
+                            {meta.label}
+                        </span>
+
+                        <span style={{
+                            fontSize: 11.5,
+                            color: C.muted,
+                            fontFamily: '"JetBrains Mono", monospace',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4
+                        }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 13 }}>calendar_today</span>
+                            {relativeTime(item.criado_em)}
+                        </span>
+                    </div>
+
+                    {isAdmin && (
+                        <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
                             <button
-                                onClick={() => setItemToDelete(null)}
-                                className="px-5 py-2.5 rounded-xl font-bold text-[#635c55] dark:text-gray-300 bg-[#fcfaf8] dark:bg-[#2c2217] border border-[#eaddcd] dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                Cancelar
+                                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                                style={{
+                                    border: 'none',
+                                    background: 'none',
+                                    padding: 4,
+                                    borderRadius: 6,
+                                    color: C.muted,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.15s'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.color = C.accent; e.currentTarget.style.background = C.accentSoft; }}
+                                onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.background = 'none'; }}
+                                title="Editar"
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>edit</span>
                             </button>
                             <button
-                                onClick={handleDelete}
-                                className="px-5 py-2.5 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-md transition-colors">
-                                Sim, excluir!
+                                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                                style={{
+                                    border: 'none',
+                                    background: 'none',
+                                    padding: 4,
+                                    borderRadius: 6,
+                                    color: C.muted,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.15s'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.color = C.danger; e.currentTarget.style.background = C.dangerSoft; }}
+                                onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.background = 'none'; }}
+                                title="Excluir"
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>delete</span>
                             </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Título */}
+                <h3 style={{
+                    margin: '0 0 10px 0',
+                    fontSize: 17,
+                    fontWeight: 800,
+                    color: C.ink,
+                    letterSpacing: '-0.015em',
+                    lineHeight: 1.4
+                }}>
+                    {item.titulo}
+                </h3>
+
+                {/* Descrição / Conteúdo */}
+                <p style={{
+                    margin: '0 0 20px 0',
+                    fontSize: 14,
+                    color: C.ink2,
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-wrap',
+                    flex: 1
+                }}>
+                    {item.descricao}
+                </p>
+
+                {/* Footer (Departamento + Link Adicional) */}
+                <div style={{
+                    marginTop: 'auto',
+                    paddingTop: 16,
+                    borderTop: `1px solid ${C.line}`,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 12,
+                    flexWrap: 'wrap'
+                }}>
+                    <span style={{
+                        fontSize: 11.5,
+                        fontWeight: 700,
+                        color: C.muted,
+                        fontFamily: '"JetBrains Mono", monospace',
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase'
+                    }}>
+                        DEPTO. {item.departamento_autor}
+                    </span>
+
+                    {item.link_opcional && (
+                        <a
+                            href={item.link_opcional}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color: C.accent,
+                                textDecoration: 'none',
+                                transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.querySelector('.arrow-ico').style.transform = 'translateX(3px)'; }}
+                            onMouseLeave={e => { e.currentTarget.querySelector('.arrow-ico').style.transform = 'none'; }}
+                        >
+                            Link adicional
+                            <span className="material-symbols-outlined arrow-ico" style={{ fontSize: 16, transition: 'transform 0.15s' }}>arrow_forward</span>
+                        </a>
+                    )}
+                </div>
+
+            </div>
+        </div>
+    );
+}
+
+function SkeletonCard() {
+    return (
+        <div style={{
+            background: C.surface,
+            borderRadius: 18,
+            border: `1px solid ${C.line}`,
+            borderLeft: `4px solid ${C.line}`,
+            overflow: 'hidden',
+            animation: 'pulse 1.5s ease-in-out infinite',
+            height: 220
+        }}>
+            <div style={{ height: 4, background: C.line }} />
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                    <div style={{ height: 22, width: 80, borderRadius: 12, background: C.line }} />
+                    <div style={{ height: 16, width: 60, borderRadius: 6, background: C.line, marginTop: 3 }} />
+                </div>
+                <div style={{ height: 18, width: '75%', borderRadius: 6, background: C.line, marginBottom: 12 }} />
+                <div style={{ height: 12, width: '90%', borderRadius: 6, background: C.surfaceSoft, marginBottom: 8 }} />
+                <div style={{ height: 12, width: '60%', borderRadius: 6, background: C.surfaceSoft, marginBottom: 'auto' }} />
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: `1px solid ${C.line}`, paddingTop: 16 }}>
+                    <div style={{ height: 12, width: 100, borderRadius: 6, background: C.line }} />
+                    <div style={{ height: 12, width: 80, borderRadius: 6, background: C.line }} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function EmptyState({ busca, filtro, onClear }) {
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '80px 24px',
+            gap: 16,
+            textAlign: 'center',
+            background: C.surface,
+            borderRadius: 18,
+            border: `1px solid ${C.line}`,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            width: '100%',
+            boxSizing: 'border-box'
+        }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 36, color: C.accent, lineHeight: 1 }}>search_off</span>
+            </div>
+            <div>
+                <p style={{ margin: '0 0 6px 0', fontSize: 17, fontWeight: 700, color: C.ink }}>Nenhum comunicado encontrado</p>
+                <p style={{ margin: 0, fontSize: 13.5, color: C.ink2, maxWidth: 360, lineHeight: 1.5 }}>
+                    {busca ? `Nenhum aviso corresponde à busca "${busca}".` : 'Nenhum aviso corresponde ao tipo selecionado.'}
+                </p>
+            </div>
+            {(busca || filtro !== 'Todas') && (
+                <button
+                    onClick={onClear}
+                    style={{
+                        padding: '9px 20px',
+                        borderRadius: 10,
+                        border: `1px solid ${C.line}`,
+                        background: C.surface,
+                        color: C.ink2,
+                        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                        fontWeight: 600,
+                        fontSize: 13.5,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        outline: 'none',
+                        transition: 'all 0.15s'
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = C.surface; }}
+                >
+                    <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 18, lineHeight: 1 }}>close</span>
+                    Limpar filtros
+                </button>
+            )}
+        </div>
+    );
+}
+
+function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, onSubmit }) {
+    const [focusedInput, setFocusedInput] = useState(null);
+
+    const getInputStyle = (name) => ({
+        width: '100%',
+        boxSizing: 'border-box',
+        padding: '11px 14px',
+        background: C.surfaceSoft,
+        border: `1.5px solid ${focusedInput === name ? C.accent : C.line}`,
+        borderRadius: 10,
+        fontSize: 14,
+        color: C.ink,
+        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+        outline: 'none',
+        transition: 'all 0.15s',
+        boxShadow: focusedInput === name ? `0 0 0 3px rgba(${hexToRgb(C.accent)}, 0.15)` : 'none'
+    });
+
+    return (
+        <div style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            background: 'rgba(11, 27, 46, 0.60)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+        }}>
+            <div style={{
+                background: C.surface,
+                borderRadius: 20,
+                boxShadow: '0 24px 64px rgba(11, 27, 46, 0.25)',
+                width: '100%',
+                maxWidth: 520,
+                overflow: 'hidden',
+                border: `1px solid ${C.line}`,
+                animation: 'card-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both'
+            }}>
+                {/* Header do Modal com Gradiente */}
+                <div style={{
+                    background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accent})`,
+                    padding: '20px 24px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <h2 style={{
+                        margin: 0,
+                        fontSize: 18,
+                        fontWeight: 800,
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        letterSpacing: '-0.02em'
+                    }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 22 }}>
+                            {editingId ? 'edit' : 'campaign'}
+                        </span>
+                        {editingId ? 'Editar Comunicado' : 'Novo Comunicado'}
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            border: 'none',
+                            color: 'white',
+                            borderRadius: 8,
+                            padding: 6,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.15s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
+                    >
+                        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
+                    </button>
+                </div>
+
+                {/* Form do Modal */}
+                <form onSubmit={onSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div>
+                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            Título do Aviso *
+                        </label>
+                        <input
+                            required
+                            type="text"
+                            value={formData.titulo}
+                            onChange={e => setFormData({ ...formData, titulo: e.target.value })}
+                            onFocus={() => setFocusedInput('titulo')}
+                            onBlur={() => setFocusedInput(null)}
+                            style={getInputStyle('titulo')}
+                            placeholder="Ex: Atualização do Sistema"
+                        />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div>
+                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                                Tipo *
+                            </label>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <select
+                                    required
+                                    value={formData.tipo}
+                                    onChange={e => setFormData({ ...formData, tipo: e.target.value })}
+                                    onFocus={() => setFocusedInput('tipo')}
+                                    onBlur={() => setFocusedInput(null)}
+                                    style={{
+                                        ...getInputStyle('tipo'),
+                                        appearance: 'none',
+                                        WebkitAppearance: 'none',
+                                        paddingRight: 32
+                                    }}
+                                >
+                                    <option value="Geral">Geral — Verde</option>
+                                    <option value="Importante">Importante — Amarelo</option>
+                                    <option value="Urgente">Urgente — Vermelho</option>
+                                </select>
+                                <span style={{
+                                    position: 'absolute',
+                                    right: 12,
+                                    color: C.muted,
+                                    fontSize: 18,
+                                    fontFamily: '"Material Symbols Outlined"',
+                                    pointerEvents: 'none'
+                                }}>keyboard_arrow_down</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                                Depto. Autor *
+                            </label>
+                            <input
+                                required
+                                type="text"
+                                value={formData.departamento_autor}
+                                onChange={e => setFormData({ ...formData, departamento_autor: e.target.value })}
+                                onFocus={() => setFocusedInput('depto')}
+                                onBlur={() => setFocusedInput(null)}
+                                style={getInputStyle('depto')}
+                                placeholder="Ex: Diretoria"
+                            />
                         </div>
                     </div>
+
+                    <div>
+                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            Mensagem/Descrição *
+                        </label>
+                        <textarea
+                            required
+                            rows="4"
+                            value={formData.descricao}
+                            onChange={e => setFormData({ ...formData, descricao: e.target.value })}
+                            onFocus={() => setFocusedInput('descricao')}
+                            onBlur={() => setFocusedInput(null)}
+                            style={{
+                                ...getInputStyle('descricao'),
+                                resize: 'none',
+                                lineHeight: 1.5
+                            }}
+                            placeholder="Detalhes completos do comunicado..."
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            Link Adicional (Opcional)
+                        </label>
+                        <input
+                            type="url"
+                            value={formData.link_opcional}
+                            onChange={e => setFormData({ ...formData, link_opcional: e.target.value })}
+                            onFocus={() => setFocusedInput('link')}
+                            onBlur={() => setFocusedInput(null)}
+                            style={getInputStyle('link')}
+                            placeholder="https://exemplo.com"
+                        />
+                    </div>
+
+                    {/* Botões do Rodapé */}
+                    <div style={{
+                        marginTop: 8,
+                        paddingTop: 16,
+                        borderTop: `1px solid ${C.line}`,
+                        display: 'flex',
+                        justifyContent: 'end',
+                        gap: 12
+                    }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            style={{
+                                padding: '9px 18px',
+                                borderRadius: 10,
+                                border: `1.5px solid ${C.line}`,
+                                background: C.surface,
+                                color: C.ink2,
+                                fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                                fontWeight: 700,
+                                fontSize: 13.5,
+                                cursor: 'pointer',
+                                transition: 'all 0.15s',
+                                outline: 'none'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = C.surface; }}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            style={{
+                                padding: '9px 22px',
+                                borderRadius: 10,
+                                border: 'none',
+                                background: C.accent,
+                                color: 'white',
+                                fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                                fontWeight: 700,
+                                fontSize: 13.5,
+                                cursor: 'pointer',
+                                transition: 'all 0.15s',
+                                opacity: isSubmitting ? 0.7 : 1,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                outline: 'none',
+                                boxShadow: `0 4px 12px rgba(${hexToRgb(C.accent)}, 0.2)`
+                            }}
+                            onMouseEnter={e => { if (!isSubmitting) { e.currentTarget.style.background = C.accentDark; } }}
+                            onMouseLeave={e => { if (!isSubmitting) { e.currentTarget.style.background = C.accent; } }}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <span className="material-symbols-outlined animate-spin" style={{ fontSize: 18 }}>sync</span>
+                                    Salvando...
+                                </>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>send</span>
+                                    {editingId ? 'Salvar Aviso' : 'Publicar Aviso'}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <style>{`
+                .animate-spin {
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
+        </div>
+    );
+}
+
+function DeleteModal({ onClose, onConfirm }) {
+    return (
+        <div style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 110,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            background: 'rgba(11, 27, 46, 0.60)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+        }}>
+            <div style={{
+                background: C.surface,
+                borderRadius: 20,
+                boxShadow: '0 24px 64px rgba(11, 27, 46, 0.25)',
+                width: '100%',
+                maxWidth: 400,
+                overflow: 'hidden',
+                border: `1px solid rgba(${hexToRgb(C.danger)}, 0.3)`,
+                padding: '24px',
+                textAlign: 'center',
+                animation: 'card-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both'
+            }}>
+                <div style={{
+                    margin: '0 auto 16px',
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    background: C.dangerSoft,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 32, color: C.danger }}>warning</span>
                 </div>
-            )}
-        </main>
+
+                <h3 style={{
+                    margin: '0 0 8px 0',
+                    fontSize: 20,
+                    fontWeight: 800,
+                    color: C.ink,
+                    letterSpacing: '-0.02em'
+                }}>
+                    Excluir Comunicado?
+                </h3>
+
+                <p style={{
+                    margin: '0 0 24px 0',
+                    fontSize: 14,
+                    color: C.ink2,
+                    lineHeight: 1.5
+                }}>
+                    Esta ação não pode ser desfeita. O comunicado será removido permanentemente do feed da intranet.
+                </p>
+
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            padding: '10px 20px',
+                            borderRadius: 10,
+                            border: `1.5px solid ${C.line}`,
+                            background: C.surface,
+                            color: C.ink2,
+                            fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                            fontWeight: 700,
+                            fontSize: 13.5,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                            outline: 'none'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = C.surface; }}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        style={{
+                            padding: '10px 22px',
+                            borderRadius: 10,
+                            border: 'none',
+                            background: C.danger,
+                            color: 'white',
+                            fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                            fontWeight: 700,
+                            fontSize: 13.5,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                            outline: 'none',
+                            boxShadow: `0 4px 12px rgba(${hexToRgb(C.danger)}, 0.2)`
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232, 69, 69, 0.85)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = C.danger; }}
+                    >
+                        Sim, excluir!
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
