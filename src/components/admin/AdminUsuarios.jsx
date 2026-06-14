@@ -1,6 +1,44 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import BentoAvatar from '../common/Avatar';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+// ── Paleta Bento Blue ─────────────────────────────────────────────────────
+const C = {
+    bg: '#F5F9FF',
+    surface: '#FFFFFF',
+    surfaceSoft: '#F7FAFD',
+    accent: '#4A9EF5',
+    accentDark: '#2D7BD4',
+    accentDeep: '#1F5BA8',
+    accentSoft: '#EAF4FF',
+    ink: '#0B1B2E',
+    ink2: '#475467',
+    muted: '#8896A8',
+    line: '#E4ECF5',
+    lineSoft: '#EFF4FA',
+    success: '#1F8A5B',
+    successSoft: '#E6F4EC',
+    danger: '#E84545',
+    dangerSoft: '#FDEDED',
+};
+
+const tone = (hex, a) => {
+    const h = hex.replace('#', '');
+    const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+    return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
+};
+
+const sIconBox = (color, bg) => ({
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    background: bg,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color,
+});
 
 export default function AdminUsuarios({ adminEmail }) {
     const [usuarios, setUsuarios] = useState([]);
@@ -49,86 +87,199 @@ export default function AdminUsuarios({ adminEmail }) {
 
     const handleBusca = (e) => { e.preventDefault(); carregar(busca); };
 
+    const totalUsuarios = usuarios.length;
+    const totalAdmins = useMemo(() => usuarios.filter(u => u.is_admin).length, [usuarios]);
+    const totalUsuariosComuns = totalUsuarios - totalAdmins;
+
+    const stats = [
+        { label: 'Total de Usuários', valor: totalUsuarios, icon: 'group', cor: C.accent, bg: C.accentSoft },
+        { label: 'Administradores', valor: totalAdmins, icon: 'verified_user', cor: C.success, bg: C.successSoft },
+        { label: 'Usuários Comuns', valor: totalUsuariosComuns, icon: 'person', cor: C.accentDeep, bg: C.accentSoft },
+    ];
+
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap justify-between items-end gap-4">
+            {/* Header + Busca */}
+            <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-foreground text-3xl font-extrabold tracking-tight">Gerenciar Usuários</h1>
-                    <p className="text-muted text-sm mt-1">Gerencie permissões e visualize todos os colaboradores sincronizados.</p>
+                    <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Gerenciar Usuários</h1>
+                    <p className="mt-1 text-sm" style={{ color: C.muted }}>Gerencie permissões e visualize todos os colaboradores sincronizados.</p>
                 </div>
                 <form onSubmit={handleBusca} className="flex gap-2">
-                    <input
-                        type="text"
-                        placeholder="Buscar por nome ou e-mail..."
-                        value={busca}
-                        onChange={e => setBusca(e.target.value)}
-                        className="border border-border rounded-lg px-3 py-2 text-sm bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-64"
-                    />
-                    <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                    <div
+                        className="flex items-center gap-2 rounded-xl border px-3 py-2 text-sm"
+                        style={{ background: C.surface, borderColor: C.line, width: 280 }}
+                    >
+                        <span className="material-symbols-outlined" style={{ color: C.muted }}>search</span>
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome ou e-mail..."
+                            value={busca}
+                            onChange={e => setBusca(e.target.value)}
+                            className="w-full bg-transparent text-sm outline-none"
+                            style={{ color: C.ink }}
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        className="rounded-xl px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
+                        style={{ background: C.accent }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = C.accentDark; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = C.accent; }}
+                    >
                         Buscar
                     </button>
                     {busca && (
-                        <button type="button" onClick={() => { setBusca(''); carregar(''); }} className="px-3 py-2 border border-border rounded-lg text-sm hover:bg-surface-raised transition-colors">
+                        <button
+                            type="button"
+                            onClick={() => { setBusca(''); carregar(''); }}
+                            className="rounded-xl border px-3 py-2 text-sm font-semibold transition-colors"
+                            style={{ borderColor: C.line, color: C.ink2, background: C.surface }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = C.surfaceSoft; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = C.surface; }}
+                        >
                             Limpar
                         </button>
                     )}
                 </form>
             </div>
 
+            {/* Stats Bento */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {stats.map(s => (
+                    <div
+                        key={s.label}
+                        className="flex items-center gap-4 rounded-2xl border p-4"
+                        style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
+                    >
+                        <div style={sIconBox(s.cor, s.bg)}>
+                            <span className="material-symbols-outlined">{s.icon}</span>
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>{s.label}</p>
+                            <p className="text-2xl font-extrabold" style={{ color: C.ink }}>{carregando ? '—' : s.valor}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Erro */}
             {erro && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-300 text-sm">
+                <div
+                    className="rounded-xl border p-4 text-sm"
+                    style={{ background: C.dangerSoft, borderColor: '#F5B0B0', color: C.danger }}
+                >
                     {erro}
                 </div>
             )}
 
-            <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden card-elevated">
+            {/* Tabela */}
+            <div
+                className="overflow-hidden rounded-2xl border shadow-sm"
+                style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
+            >
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="border-b border-border bg-surface">
-                            <th className="text-left px-5 py-3 text-xs font-bold text-faint uppercase tracking-wider">Colaborador</th>
-                            <th className="text-left px-5 py-3 text-xs font-bold text-faint uppercase tracking-wider hidden md:table-cell">E-mail</th>
-                            <th className="text-left px-5 py-3 text-xs font-bold text-faint uppercase tracking-wider hidden lg:table-cell">Última Atividade</th>
-                            <th className="text-center px-5 py-3 text-xs font-bold text-faint uppercase tracking-wider">Perfil</th>
+                        <tr style={{ background: C.surfaceSoft, borderBottom: `1px solid ${C.line}` }}>
+                            <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>Colaborador</th>
+                            <th className="hidden px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider md:table-cell" style={{ color: C.muted }}>E-mail</th>
+                            <th className="hidden px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider lg:table-cell" style={{ color: C.muted }}>Última Atividade</th>
+                            <th className="px-5 py-3.5 text-center text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>Perfil</th>
                         </tr>
                     </thead>
                     <tbody>
                         {carregando ? (
-                            <tr><td colSpan={4} className="text-center py-12 text-muted">Carregando...</td></tr>
-                        ) : usuarios.length === 0 ? (
-                            <tr><td colSpan={4} className="text-center py-12 text-muted">Nenhum usuário encontrado.</td></tr>
-                        ) : usuarios.map(u => (
-                            <tr key={u.usuario_id} className="border-b border-border/60 hover:bg-surface transition-colors">
-                                <td className="px-5 py-3">
-                                    <div className="font-medium text-foreground">{u.funcionario_nome || u.usuario_nome}</div>
-                                    <div className="text-xs text-muted md:hidden">{u.usuario_email}</div>
-                                </td>
-                                <td className="px-5 py-3 text-foreground hidden md:table-cell">{u.usuario_email}</td>
-                                <td className="px-5 py-3 text-muted hidden lg:table-cell">
-                                    {u.ultima_atividade ? new Date(u.ultima_atividade).toLocaleString('pt-BR') : '—'}
-                                </td>
-                                <td className="px-5 py-3 text-center">
-                                    <button
-                                        onClick={() => toggleAdmin(u)}
-                                        disabled={salvando === u.usuario_id}
-                                        title={u.is_admin ? 'Revogar acesso admin' : 'Conceder acesso admin'}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-colors disabled:opacity-50 ${
-                                            u.is_admin
-                                                ? 'bg-primary/10 text-primary hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400'
-                                                : 'bg-surface-raised text-muted hover:bg-primary/10 hover:text-primary'
-                                        }`}
-                                    >
-                                        <span className="material-symbols-outlined text-base">
-                                            {salvando === u.usuario_id ? 'sync' : u.is_admin ? 'verified_user' : 'person'}
-                                        </span>
-                                        {u.is_admin ? 'Admin' : 'Usuário'}
-                                    </button>
+                            <tr>
+                                <td colSpan={4} className="py-14 text-center" style={{ color: C.muted }}>
+                                    <div className="flex flex-col items-center gap-3">
+                                        <span className="material-symbols-outlined animate-spin text-3xl" style={{ color: C.accent }}>progress_activity</span>
+                                        Carregando usuários...
+                                    </div>
                                 </td>
                             </tr>
-                        ))}
+                        ) : usuarios.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} className="py-14 text-center" style={{ color: C.muted }}>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div
+                                            className="flex h-12 w-12 items-center justify-center rounded-full"
+                                            style={{ background: C.accentSoft, color: C.accent }}
+                                        >
+                                            <span className="material-symbols-outlined text-2xl">search_off</span>
+                                        </div>
+                                        Nenhum usuário encontrado.
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : (
+                            usuarios.map(u => {
+                                const displayName = u.funcionario_nome || u.usuario_nome || '—';
+                                return (
+                                    <tr
+                                        key={u.usuario_id}
+                                        className="transition-colors"
+                                        style={{ borderBottom: `1px solid ${C.lineSoft}` }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = C.surfaceSoft; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                    >
+                                        <td className="px-5 py-3.5">
+                                            <div className="flex items-center gap-3">
+                                                <BentoAvatar name={displayName} size={36} color={[C.accent, '#fff']} />
+                                                <div>
+                                                    <div className="font-semibold" style={{ color: C.ink }}>{displayName}</div>
+                                                    <div className="text-xs md:hidden" style={{ color: C.muted }}>{u.usuario_email}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="hidden px-5 py-3.5 md:table-cell" style={{ color: C.ink2 }}>{u.usuario_email}</td>
+                                        <td className="hidden px-5 py-3.5 lg:table-cell" style={{ color: C.muted }}>
+                                            {u.ultima_atividade ? new Date(u.ultima_atividade).toLocaleString('pt-BR') : '—'}
+                                        </td>
+                                        <td className="px-5 py-3.5 text-center">
+                                            <button
+                                                onClick={() => toggleAdmin(u)}
+                                                disabled={salvando === u.usuario_id}
+                                                title={u.is_admin ? 'Revogar acesso admin' : 'Conceder acesso admin'}
+                                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60"
+                                                style={{
+                                                    background: u.is_admin ? C.accentSoft : C.surfaceSoft,
+                                                    color: u.is_admin ? C.accentDeep : C.muted,
+                                                    border: `1px solid ${u.is_admin ? C.accent : C.line}`,
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    if (u.is_admin) {
+                                                        e.currentTarget.style.background = C.dangerSoft;
+                                                        e.currentTarget.style.color = C.danger;
+                                                        e.currentTarget.style.borderColor = C.danger;
+                                                    } else {
+                                                        e.currentTarget.style.background = C.accentSoft;
+                                                        e.currentTarget.style.color = C.accentDeep;
+                                                        e.currentTarget.style.borderColor = C.accent;
+                                                    }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.background = u.is_admin ? C.accentSoft : C.surfaceSoft;
+                                                    e.currentTarget.style.color = u.is_admin ? C.accentDeep : C.muted;
+                                                    e.currentTarget.style.borderColor = u.is_admin ? C.accent : C.line;
+                                                }}
+                                            >
+                                                <span className="material-symbols-outlined text-base">
+                                                    {salvando === u.usuario_id ? 'sync' : u.is_admin ? 'verified_user' : 'person'}
+                                                </span>
+                                                {u.is_admin ? 'Admin' : 'Usuário'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
                     </tbody>
                 </table>
                 {!carregando && usuarios.length > 0 && (
-                    <div className="px-5 py-3 text-xs text-muted border-t border-border">
+                    <div
+                        className="border-t px-5 py-3 text-xs font-medium"
+                        style={{ borderColor: C.line, color: C.muted }}
+                    >
                         {usuarios.length} colaborador(es) listado(s)
                     </div>
                 )}
