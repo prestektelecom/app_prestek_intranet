@@ -1,6 +1,34 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import 'leaflet/dist/leaflet.css';
 
+// Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Escala/Cobertura)
+const C = {
+  bg: '#F5F9FF',
+  surface: '#FFFFFF',
+  surfaceSoft: '#F7FAFD',
+  accent: '#4A9EF5',
+  accentDark: '#2D7BD4',
+  accentDeep: '#1F5BA8',
+  accentSoft: '#EAF4FF',
+  cyan: '#7FD4E8',
+  ink: '#0B1B2E',
+  ink2: '#475467',
+  muted: '#8896A8',
+  line: '#E4ECF5',
+  success: '#1F8A5B',
+  successSoft: '#E6F4EC',
+  warning: '#D97706',
+  warningSoft: '#FEF3E2',
+  danger: '#E84545',
+  dangerSoft: '#FDEDED',
+};
+
+function tone(hex, a) {
+  const h = hex.replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+  return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
+}
+
 // ─── Helpers de mapa ────────────────────────────────────────────────────────
 
 function criarIcone(L, cor, selecionado, isMatriz) {
@@ -21,25 +49,25 @@ function popupHTML(office) {
     const streetViewUrl = `https://www.google.com/maps?q=&layer=c&cbll=${office.lat},${office.lng}`;
     const mapsUrl = `https://www.google.com/maps?q=${office.lat},${office.lng}`;
     return `
-        <div style="font-family:sans-serif;min-width:180px;max-width:220px">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:180px;max-width:220px">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-                <strong style="font-size:13px;color:#1d150c">${office.nome}</strong>
+                <strong style="font-size:13px;color:#0B1B2E">${office.nome}</strong>
             </div>
             <span style="display:inline-block;background:${badgeColor};color:white;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;margin-bottom:6px">
                 ${office.tipo.toUpperCase()}
             </span>
-            <div style="font-size:11px;color:#6b7280;line-height:1.5">
+            <div style="font-size:11px;color:#475467;line-height:1.5">
                 <div>📍 ${office.endereco}</div>
-                ${office.cep ? `<div style="color:#a17745">CEP: ${office.cep}</div>` : ''}
-                <div style="margin-top:2px;color:#9ca3af">${office.cidade} — ${office.estado}</div>
+                ${office.cep ? `<div style="color:#1F5BA8;font-weight:600">CEP: ${office.cep}</div>` : ''}
+                <div style="margin-top:2px;color:#8896A8">${office.cidade} — ${office.estado}</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:10px">
                 <a href="${streetViewUrl}" target="_blank" rel="noopener noreferrer"
-                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#1a73e8;color:white;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#1F5BA8;color:white;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
                     🔭 Street View
                 </a>
                 <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"
-                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#f4eee6;color:#a17745;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#EAF4FF;color:#1F5BA8;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
                     🗺️ Ver no Maps
                 </a>
             </div>
@@ -55,6 +83,87 @@ const FORM_VAZIO = {
 };
 
 const ESTADOS_BR = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+
+function OfficesHero({ total, contAL, contSE, matriz, onAdd, isAdmin }) {
+    const kpis = [
+        { label: 'Unidades', value: total, icon: 'apartment' },
+        { label: 'Alagoas', value: contAL, icon: 'location_on' },
+        { label: 'Sergipe', value: contSE, icon: 'location_on' },
+        { label: 'Matriz', value: matriz, icon: 'star' },
+    ];
+
+    return (
+        <div style={{
+            background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
+            borderRadius: 24, padding: '28px 32px', color: 'white',
+            position: 'relative', overflow: 'hidden',
+            boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
+        }}>
+            <svg style={{ position: 'absolute', inset: 0, opacity: 0.12 }} width="100%" height="100%">
+                <defs><pattern id="offices-hero-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" /></pattern></defs>
+                <rect width="100%" height="100%" fill="url(#offices-hero-grid)" />
+            </svg>
+            <div style={{ position: 'absolute', top: -100, right: -60, width: 320, height: 320, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)' }} />
+            <div style={{ position: 'absolute', bottom: -80, right: 60, width: 180, height: 180, borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)' }} />
+
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
+                <div style={{ maxWidth: 520 }}>
+                    <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '5px 11px', borderRadius: 999,
+                        background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
+                        fontSize: 11.5, fontWeight: 600, fontFamily: '"JetBrains Mono", monospace',
+                        letterSpacing: '0.12em', textTransform: 'uppercase',
+                    }}>
+                        <span style={{ width: 6, height: 6, borderRadius: 3, background: '#7FD8B8' }} />
+                        Rede de Atendimento
+                    </div>
+                    <h1 style={{ margin: '14px 0 6px', fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08 }}>
+                        Escritórios Prestek
+                    </h1>
+                    <p style={{ margin: 0, fontSize: 15, opacity: 0.85, lineHeight: 1.5 }}>
+                        Visualize no mapa e gerencie as unidades da empresa.
+                    </p>
+                </div>
+
+                {isAdmin && (
+                    <button onClick={onAdd} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '10px 16px', borderRadius: 10,
+                        background: 'white', color: C.accentDeep,
+                        fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.12)', border: 'none',
+                    }}>
+                        <span className="material-symbols-outlined text-[18px]">add_location</span>
+                        Adicionar Escritório
+                    </button>
+                )}
+            </div>
+
+            <div style={{ position: 'relative', display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 22 }}>
+                {kpis.map((kpi, idx) => (
+                    <div key={idx} style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '10px 14px', borderRadius: 14,
+                        background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(6px)',
+                        border: '1px solid rgba(255,255,255,0.22)',
+                    }}>
+                        <div style={{
+                            width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.22)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <span className="material-symbols-outlined text-[18px]">{kpi.icon}</span>
+                        </div>
+                        <div>
+                            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9.5, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.8 }}>{kpi.label}</div>
+                            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{kpi.value}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 function EscritorioModal({ escritorio, onSalvar, onFechar }) {
     const isEdicao = Boolean(escritorio?.id);
@@ -127,29 +236,29 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
         }
     }
 
-    const inputCls = "w-full px-3 py-2 border border-[#eaddcd] dark:border-gray-700 rounded bg-[#fcfaf8] dark:bg-[#2c2217] text-[#1d150c] dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-primary";
-    const labelCls = "block text-xs font-semibold text-[#a17745] dark:text-orange-300 uppercase tracking-wide mb-1";
+    const inputCls = "w-full px-3 py-2 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all";
+    const labelCls = "block text-[10px] font-black text-[#475467] uppercase tracking-widest mb-1.5";
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50" onClick={onFechar} />
-            <div className="relative bg-white dark:bg-[#1a130b] rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-[#eaddcd] dark:border-gray-700">
+            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-[#E4ECF5]">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#eaddcd] dark:border-gray-800">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] bg-[#F7FAFD]">
                     <div className="flex items-center gap-3">
-                        <div className="bg-primary/10 p-2 rounded-lg">
-                            <span className="material-symbols-outlined text-primary text-xl">
+                        <div className="bg-[#EAF4FF] p-2 rounded-lg">
+                            <span className="material-symbols-outlined text-[#4A9EF5] text-xl">
                                 {isEdicao ? 'edit_location' : 'add_location'}
                             </span>
                         </div>
                         <div>
-                            <h2 className="text-[#1d150c] dark:text-white font-bold text-lg">
+                            <h2 className="text-[#0B1B2E] font-black text-lg">
                                 {isEdicao ? 'Editar Escritório' : 'Novo Escritório'}
                             </h2>
-                            {isEdicao && <p className="text-xs text-[#a17745] font-mono">ID {escritorio.id}</p>}
+                            {isEdicao && <p className="text-xs text-[#8896A8] font-mono">ID {escritorio.id}</p>}
                         </div>
                     </div>
-                    <button onClick={onFechar} className="text-[#a17745] hover:text-[#1d150c] dark:hover:text-white p-1 rounded transition-colors">
+                    <button onClick={onFechar} className="text-[#8896A8] hover:text-[#E84545] p-1 rounded-full hover:bg-[#FDEDED] transition-colors">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -189,7 +298,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                         <div>
                             <label className={labelCls}>Cor do Marcador</label>
                             <div className="flex items-center gap-2">
-                                <input type="color" value={form.cor} onChange={e => set('cor', e.target.value)} className="h-9 w-12 cursor-pointer rounded border border-[#eaddcd] dark:border-gray-700 bg-transparent p-0.5" />
+                                <input type="color" value={form.cor} onChange={e => set('cor', e.target.value)} className="h-9 w-12 cursor-pointer rounded-lg border border-[#E4ECF5] bg-transparent p-0.5" />
                                 <input className={`${inputCls} flex-1`} value={form.cor} onChange={e => set('cor', e.target.value)} placeholder="#3B82F6" />
                             </div>
                         </div>
@@ -209,7 +318,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                                     onClick={extrairCoordenadas}
                                     disabled={!linkMaps.trim() || extraindo}
                                     title="Extrair latitude e longitude do link"
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded bg-primary hover:bg-[#e67e00] disabled:opacity-50 text-white text-sm font-semibold whitespace-nowrap transition-colors"
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:brightness-110 disabled:opacity-50 text-white text-sm font-bold whitespace-nowrap transition-colors shadow-md shadow-[#4A9EF5]/20"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">
                                         {extraindo ? 'sync' : 'my_location'}
@@ -218,12 +327,12 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                                 </button>
                             </div>
                             {erroLink && (
-                                <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center gap-1">
+                                <p className="text-[#E84545] text-xs mt-1 flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">error</span>{erroLink}
                                 </p>
                             )}
                             {!erroLink && form.lat && form.lng && (
-                                <p className="text-green-600 dark:text-green-400 text-xs mt-1 flex items-center gap-1">
+                                <p className="text-[#1F8A5B] text-xs mt-1 flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">check_circle</span>
                                     Coordenadas preenchidas automaticamente
                                 </p>
@@ -239,21 +348,21 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                         </div>
                     </div>
                     {erro && (
-                        <p className="text-red-600 dark:text-red-400 text-sm flex items-center gap-1">
+                        <p className="text-[#E84545] text-sm flex items-center gap-1">
                             <span className="material-symbols-outlined text-base">error</span>{erro}
                         </p>
                     )}
                 </form>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-[#eaddcd] dark:border-gray-800 flex justify-end gap-3">
-                    <button type="button" onClick={onFechar} className="px-4 py-2 text-sm font-medium text-[#1d150c] dark:text-white border border-[#eaddcd] dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-[#2c2217] transition-colors">
+                <div className="px-6 py-4 border-t border-[#E4ECF5] bg-white flex justify-end gap-3">
+                    <button type="button" onClick={onFechar} className="px-4 py-2 text-sm font-bold text-[#0B1B2E] border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] transition-colors">
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={salvando}
-                        className="px-5 py-2 text-sm font-bold bg-primary hover:bg-[#e67e00] disabled:opacity-60 text-white rounded shadow transition-colors flex items-center gap-2"
+                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:brightness-110 disabled:opacity-60 text-white rounded-lg shadow-md shadow-[#4A9EF5]/30 transition-colors flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[18px]">{isEdicao ? 'save' : 'add_location'}</span>
                         {salvando ? 'Salvando…' : isEdicao ? 'Salvar Alterações' : 'Criar Escritório'}
@@ -449,8 +558,10 @@ export default function Offices({ user, setCurrentView }) {
     const contAL = offices.filter(o => o.estado === 'AL').length;
     const contSE = offices.filter(o => o.estado === 'SE').length;
 
+    const contMatriz = offices.filter(o => o.tipo === 'Matriz').length;
+
     return (
-        <div className="flex flex-col flex-1 overflow-hidden bg-[#fdf8f3] dark:bg-[#120d08]">
+        <div className="flex flex-col flex-1 overflow-hidden" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: C.bg }}>
             {modal && (
                 <EscritorioModal
                     escritorio={modal.modo === 'editar' ? modal.escritorio : null}
@@ -462,39 +573,38 @@ export default function Offices({ user, setCurrentView }) {
             {/* Diálogo de confirmação de exclusão */}
             {confirmandoExclusao !== null && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmandoExclusao(null)} />
-                    <div className="relative bg-white dark:bg-[#1a130b] rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-[#eaddcd] dark:border-gray-700">
+                    <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={() => setConfirmandoExclusao(null)} />
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-[#E4ECF5]">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-lg">
-                                <span className="material-symbols-outlined text-red-600 text-xl">delete</span>
+                            <div className="bg-[#FDEDED] p-2 rounded-lg">
+                                <span className="material-symbols-outlined text-[#E84545] text-xl">delete</span>
                             </div>
-                            <h3 className="font-bold text-[#1d150c] dark:text-white">Excluir Escritório</h3>
+                            <h3 className="font-black text-[#0B1B2E]">Excluir Escritório</h3>
                         </div>
-                        <p className="text-sm text-[#a17745] dark:text-orange-300 mb-6">
+                        <p className="text-sm text-[#475467] mb-6">
                             Esta ação é irreversível. O escritório será removido do mapa e da lista.
                         </p>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setConfirmandoExclusao(null)} className="px-4 py-2 text-sm font-medium border border-[#eaddcd] dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-[#2c2217] text-[#1d150c] dark:text-white transition-colors">Cancelar</button>
-                            <button onClick={() => excluirEscritorio(confirmandoExclusao)} className="px-4 py-2 text-sm font-bold bg-red-600 hover:bg-red-700 text-white rounded shadow transition-colors">Excluir</button>
+                            <button onClick={() => setConfirmandoExclusao(null)} className="px-4 py-2 text-sm font-bold border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] text-[#0B1B2E] transition-colors">Cancelar</button>
+                            <button onClick={() => excluirEscritorio(confirmandoExclusao)} className="px-4 py-2 text-sm font-bold bg-[#E84545] hover:bg-[#d13a3a] text-white rounded-lg shadow transition-colors">Excluir</button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-[#f4eee6] dark:border-[#2c2217] bg-white dark:bg-[#1a130b] flex-shrink-0">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-[#a17745] text-[24px]">apartment</span>
-                        <div>
-                            <h1 className="text-[#1d150c] dark:text-white font-bold text-lg leading-tight">
-                                Escritórios Prestek
-                            </h1>
-                            <span className="text-xs text-[#a17745] dark:text-orange-300">
-                                {carregando ? 'Carregando…' : `${offices.length} unidades em 2 estados`}
-                            </span>
-                        </div>
-                    </div>
+            {/* Hero */}
+            <div className="px-6 py-6 flex-shrink-0">
+                <OfficesHero
+                    total={offices.length}
+                    contAL={contAL}
+                    contSE={contSE}
+                    matriz={contMatriz}
+                    onAdd={() => setModal({ modo: 'novo' })}
+                    isAdmin={isAdmin}
+                />
+
+                {/* Barra de filtros e busca */}
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2 flex-wrap">
                         {/* Filtros */}
                         {[
@@ -505,50 +615,42 @@ export default function Offices({ user, setCurrentView }) {
                             <button
                                 key={label}
                                 onClick={() => setFiltro(label === 'AL' ? 'AL' : label === 'SE' ? 'SE' : 'Todos')}
-                                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                                     filtro === (label === 'Todos' ? 'Todos' : label)
-                                        ? 'bg-[#a17745] text-white'
-                                        : 'bg-[#f4eee6] dark:bg-[#2c2217] text-[#a17745] dark:text-orange-300 hover:bg-[#e8ddd0] dark:hover:bg-[#3a2d20]'
+                                        ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-md shadow-[#4A9EF5]/20'
+                                        : 'bg-white border border-[#E4ECF5] text-[#475467] hover:border-[#4A9EF5] hover:text-[#4A9EF5]'
                                 }`}
                             >
                                 {label} <span className="opacity-70">({count})</span>
                             </button>
                         ))}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
                         {/* Busca */}
                         <div className="relative">
-                            <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-[#a17745] text-[16px]">search</span>
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#8896A8] text-[16px]">search</span>
                             <input
                                 type="text"
                                 value={busca}
                                 onChange={e => setBusca(e.target.value)}
                                 placeholder="Buscar unidade..."
-                                className="pl-8 pr-3 py-1.5 text-xs rounded-full border border-[#f4eee6] dark:border-[#2c2217] bg-[#fdf8f3] dark:bg-[#120d08] text-[#1d150c] dark:text-white placeholder-[#c4a882] focus:outline-none focus:border-[#a17745] w-44"
+                                className="pl-9 pr-3 py-1.5 text-xs rounded-full border border-[#E4ECF5] bg-white text-[#0B1B2E] placeholder-[#8896A8] focus:outline-none focus:border-[#4A9EF5] focus:ring-2 focus:ring-[#4A9EF5]/20 w-44 transition-all"
                             />
                         </div>
-                        {/* Botão Adicionar (apenas admin) */}
-                        {isAdmin && (
-                            <button
-                                onClick={() => setModal({ modo: 'novo' })}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-primary hover:bg-[#e67e00] text-white shadow transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-[16px]">add_location</span>
-                                Adicionar
-                            </button>
-                        )}
                     </div>
                 </div>
             </div>
 
             {/* Corpo: lista + mapa */}
-            <div ref={corpoRef} className="flex flex-1 min-h-0">
+            <div ref={corpoRef} className="flex flex-1 min-h-0 px-6 pb-6">
                 {/* Lista lateral — largura controlada por drag */}
-                <div style={{ width: `${listWidth}%`, minWidth: `${LIST_MIN_PX}px` }} className="flex flex-col min-h-0 border-r border-[#f4eee6] dark:border-[#2c2217]">
+                <div style={{ width: `${listWidth}%`, minWidth: `${LIST_MIN_PX}px` }} className="flex flex-col min-h-0 bg-white rounded-l-2xl border border-[#E4ECF5] border-r-0 overflow-hidden shadow-sm">
                     <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 min-h-0">
                         {carregando && (
-                            <div className="text-center text-sm text-[#a17745] py-8">Carregando escritórios…</div>
+                            <div className="text-center text-sm text-[#8896A8] py-8">Carregando escritórios…</div>
                         )}
                         {!carregando && filtrados.length === 0 && (
-                            <div className="text-center text-sm text-[#a17745] py-8">Nenhuma unidade encontrada.</div>
+                            <div className="text-center text-sm text-[#8896A8] py-8">Nenhuma unidade encontrada.</div>
                         )}
                         {filtrados.map(office => {
                             const isSel = selecionado === office.id;
@@ -558,27 +660,27 @@ export default function Offices({ user, setCurrentView }) {
                                         onClick={() => flyToOffice(office)}
                                         className={`w-full text-left rounded-xl p-3 border transition-all duration-150 ${
                                             isSel
-                                                ? 'border-[#a17745] bg-[#fdf1e4] dark:bg-[#2c2010] shadow-sm'
-                                                : 'border-[#f4eee6] dark:border-[#2c2217] bg-white dark:bg-[#1a130b] hover:border-[#c4a882] dark:hover:border-[#a17745] hover:bg-[#fdf8f3] dark:hover:bg-[#221810]'
+                                                ? 'border-[#4A9EF5] bg-[#EAF4FF] shadow-sm'
+                                                : 'border-[#E4ECF5] bg-white hover:border-[#4A9EF5]/50 hover:bg-[#F7FAFD]'
                                         } ${isAdmin ? 'pr-16' : ''}`}
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className="flex-shrink-0 w-3 h-3 rounded-full mt-0.5" style={{ background: office.cor }} />
-                                                <span className="text-xs font-semibold text-[#1d150c] dark:text-white truncate leading-tight">
+                                                <span className="text-xs font-bold text-[#0B1B2E] truncate leading-tight">
                                                     {office.nome}
                                                 </span>
                                             </div>
                                             {office.tipo === 'Matriz' && (
-                                                <span className="flex-shrink-0 text-[9px] font-bold bg-[#F97316] text-white px-2 py-0.5 rounded-full">
-                                                    MATRIZ
+                                                <span className="flex-shrink-0 text-[9px] font-black bg-[#F97316] text-white px-2 py-0.5 rounded-full uppercase tracking-wide">
+                                                    Matriz
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="mt-1.5 text-[11px] text-[#a17745] dark:text-orange-300 leading-tight pl-5">
+                                        <div className="mt-1.5 text-[11px] text-[#475467] leading-tight pl-5">
                                             {office.endereco}
                                         </div>
-                                        <div className="mt-0.5 text-[10px] text-[#9ca3af] pl-5">
+                                        <div className="mt-0.5 text-[10px] text-[#8896A8] pl-5">
                                             {office.cidade} — {office.estado}
                                         </div>
                                     </button>
@@ -589,14 +691,14 @@ export default function Offices({ user, setCurrentView }) {
                                             <button
                                                 onClick={e => { e.stopPropagation(); setModal({ modo: 'editar', escritorio: office }); }}
                                                 title="Editar escritório"
-                                                className="p-1 rounded text-[#a17745] hover:text-primary hover:bg-primary/10 transition-colors"
+                                                className="p-1 rounded text-[#8896A8] hover:text-[#4A9EF5] hover:bg-[#EAF4FF] transition-colors"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">edit</span>
                                             </button>
                                             <button
                                                 onClick={e => { e.stopPropagation(); setConfirmandoExclusao(office.id); }}
                                                 title="Excluir escritório"
-                                                className="p-1 rounded text-[#a17745] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                className="p-1 rounded text-[#8896A8] hover:text-[#E84545] hover:bg-[#FDEDED] transition-colors"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">delete</span>
                                             </button>
@@ -607,14 +709,14 @@ export default function Offices({ user, setCurrentView }) {
                         })}
                     </div>
                     {/* Legenda */}
-                    <div className="px-4 py-2 border-t border-[#f4eee6] dark:border-[#2c2217] bg-white dark:bg-[#1a130b] flex items-center gap-3 flex-wrap">
-                        <span className="flex items-center gap-1 text-[10px] text-[#6b7280]">
+                    <div className="px-4 py-2 border-t border-[#E4ECF5] bg-[#F7FAFD] flex items-center gap-3 flex-wrap">
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#475467]">
                             <span className="w-2.5 h-2.5 rounded-full bg-[#F97316] inline-block" /> Matriz
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] text-[#6b7280]">
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#475467]">
                             <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6] inline-block" /> Alagoas
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] text-[#6b7280]">
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#475467]">
                             <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] inline-block" /> Sergipe
                         </span>
                     </div>
@@ -625,13 +727,13 @@ export default function Offices({ user, setCurrentView }) {
                     onMouseDown={startResize}
                     onTouchStart={startResize}
                     title="Arrastar para redimensionar"
-                    className="w-1.5 shrink-0 cursor-col-resize group relative flex items-center justify-center bg-[#f4eee6] dark:bg-[#2c2217] hover:bg-primary/30 dark:hover:bg-primary/30 transition-colors duration-150"
+                    className="w-1.5 shrink-0 cursor-col-resize group relative flex items-center justify-center bg-[#E4ECF5] hover:bg-[#4A9EF5]/40 transition-colors duration-150"
                 >
-                    <div className="w-0.5 h-8 rounded-full bg-[#c4a882] dark:bg-[#4a3a2a] group-hover:bg-primary group-hover:h-12 transition-all duration-150" />
+                    <div className="w-0.5 h-8 rounded-full bg-[#8896A8]/50 group-hover:bg-[#4A9EF5] group-hover:h-12 transition-all duration-150" />
                 </div>
 
                 {/* Mapa */}
-                <div className="flex-1 relative">
+                <div className="flex-1 relative bg-white rounded-r-2xl border border-[#E4ECF5] border-l-0 overflow-hidden shadow-sm">
                     <div
                         ref={containerRef}
                         style={{ height: '100%', width: '100%', isolation: 'isolate' }}
