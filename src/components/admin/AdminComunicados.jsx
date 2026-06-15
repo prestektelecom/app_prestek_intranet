@@ -1,9 +1,45 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const FORM_VAZIO = { titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '' };
 
-const C = { bg: '#F5F9FF', surface: '#FFFFFF', surfaceSoft: '#F7FAFD', accent: '#4A9EF5', accentDark: '#2D7BD4', accentDeep: '#1F5BA8', accentSoft: '#EAF4FF', ink: '#0B1B2E', ink2: '#475467', muted: '#8896A8', line: '#E4ECF5', success: '#1F8A5B', successSoft: '#E6F4EC', warning: '#D97706', warningSoft: '#FEF3E2', danger: '#E84545', dangerSoft: '#FDEDED' };
+// ── Paleta Bento Blue ─────────────────────────────────────────────────────
+const C = {
+    bg: '#F5F9FF',
+    surface: '#FFFFFF',
+    surfaceSoft: '#F7FAFD',
+    accent: '#4A9EF5',
+    accentDark: '#2D7BD4',
+    accentDeep: '#1F5BA8',
+    accentSoft: '#EAF4FF',
+    ink: '#0B1B2E',
+    ink2: '#475467',
+    muted: '#8896A8',
+    line: '#E4ECF5',
+    success: '#1F8A5B',
+    successSoft: '#E6F4EC',
+    warning: '#D97706',
+    warningSoft: '#FEF3E2',
+    danger: '#E84545',
+    dangerSoft: '#FDEDED',
+};
+
+const tone = (hex, a) => {
+    const h = hex.replace('#', '');
+    const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+    return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
+};
+
+const sIconBox = (color, bg) => ({
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    background: bg,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color,
+});
 
 const TYPE_META = {
     Urgente: { color: C.danger, soft: C.dangerSoft, icon: 'priority_high', label: 'URGENTE' },
@@ -12,9 +48,12 @@ const TYPE_META = {
 };
 
 function relativeTime(d) {
-    if (!d) return ''; const diff = (new Date() - new Date(d)) / 1000;
-    if (diff < 60) return 'agora'; if (diff < 3600) return `há ${Math.floor(diff/60)}min`;
-    if (diff < 86400) return `há ${Math.floor(diff/3600)}h`; if (diff < 604800) return `há ${Math.floor(diff/86400)}d`;
+    if (!d) return '';
+    const diff = (new Date() - new Date(d)) / 1000;
+    if (diff < 60) return 'agora';
+    if (diff < 3600) return `há ${Math.floor(diff / 60)}min`;
+    if (diff < 86400) return `há ${Math.floor(diff / 3600)}h`;
+    if (diff < 604800) return `há ${Math.floor(diff / 86400)}d`;
     return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
 
@@ -28,6 +67,8 @@ export default function AdminComunicados({ adminEmail }) {
     const [salvando, setSalvando] = useState(false);
     const [excluindo, setExcluindo] = useState(null);
     const [focusedInput, setFocusedInput] = useState(null);
+    const [busca, setBusca] = useState('');
+    const [filtroTipo, setFiltroTipo] = useState('Todos');
 
     const carregar = useCallback(async () => {
         setCarregando(true); setErro(null);
@@ -76,53 +117,210 @@ export default function AdminComunicados({ adminEmail }) {
         } catch (e) { alert(`Erro: ${e.message}`); } finally { setExcluindo(null); }
     };
 
+    const comunicadosFiltrados = useMemo(() => {
+        const termo = busca.toLowerCase().trim();
+        return comunicados.filter(c => {
+            const matchBusca = !termo ||
+                c.titulo.toLowerCase().includes(termo) ||
+                (c.descricao || '').toLowerCase().includes(termo) ||
+                (c.departamento_autor || '').toLowerCase().includes(termo);
+            const matchTipo = filtroTipo === 'Todos' || c.tipo === filtroTipo;
+            return matchBusca && matchTipo;
+        });
+    }, [comunicados, busca, filtroTipo]);
+
+    const total = comunicados.length;
+    const totalUrgentes = comunicados.filter(c => c.tipo === 'Urgente').length;
+    const totalImportantes = comunicados.filter(c => c.tipo === 'Importante').length;
+    const totalGerais = comunicados.filter(c => c.tipo === 'Geral').length;
+
+    const stats = [
+        { label: 'Total', valor: total, icon: 'campaign', cor: C.accent, bg: C.accentSoft },
+        { label: 'Urgentes', valor: totalUrgentes, icon: 'priority_high', cor: C.danger, bg: C.dangerSoft },
+        { label: 'Importantes', valor: totalImportantes, icon: 'notification_important', cor: C.warning, bg: C.warningSoft },
+        { label: 'Gerais', valor: totalGerais, icon: 'article', cor: C.success, bg: C.successSoft },
+    ];
+
     const getInputStyle = (name) => ({
         width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: C.surfaceSoft,
-        border: `1.5px solid ${focusedInput === name ? C.accent : C.line}`, borderRadius: 8,
+        border: `1.5px solid ${focusedInput === name ? C.accent : C.line}`, borderRadius: 10,
         fontSize: 14, color: C.ink, outline: 'none', transition: 'all 0.15s',
     });
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'end', gap: 16 }}>
+        <div className="flex flex-col gap-6">
+            {/* Header */}
+            <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 style={{ margin: 0, color: C.ink, fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em' }}>Gerenciar Comunicados</h1>
-                    <p style={{ margin: '4px 0 0', color: C.ink2, fontSize: 14 }}>Crie, edite e exclua os comunicados exibidos na intranet.</p>
+                    <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Gerenciar Comunicados</h1>
+                    <p className="mt-1 text-sm" style={{ color: C.muted }}>Crie, edite e exclua os comunicados exibidos na intranet.</p>
                 </div>
-                <button onClick={abrirNovo} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: C.accent, color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = C.accentDark} onMouseLeave={e => e.currentTarget.style.background = C.accent}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>Novo Comunicado
+                <button
+                    onClick={abrirNovo}
+                    className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
+                    style={{ background: C.accent }}
+                    onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
+                    onMouseLeave={e => e.currentTarget.style.background = C.accent}
+                >
+                    <span className="material-symbols-outlined text-lg">add</span>
+                    Novo Comunicado
                 </button>
             </div>
 
-            {erro && <div style={{ background: C.dangerSoft, border: `1px solid ${C.danger}`, borderRadius: 10, padding: 16, color: C.danger, fontSize: 14 }}>{erro}</div>}
+            {/* Stats Bento */}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {stats.map(s => (
+                    <div
+                        key={s.label}
+                        className="flex items-center gap-3 rounded-2xl border p-4"
+                        style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
+                    >
+                        <div style={sIconBox(s.cor, s.bg)}>
+                            <span className="material-symbols-outlined">{s.icon}</span>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>{s.label}</p>
+                            <p className="text-2xl font-extrabold" style={{ color: C.ink }}>{carregando ? '—' : s.valor}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
+            {/* Erro */}
+            {erro && (
+                <div
+                    className="rounded-xl border p-4 text-sm"
+                    style={{ background: C.dangerSoft, borderColor: '#F5B0B0', color: C.danger }}
+                >
+                    {erro}
+                </div>
+            )}
+
+            {/* Filtros */}
+            {!carregando && comunicados.length > 0 && (
+                <div className="flex flex-wrap items-center gap-3">
+                    <div
+                        className="flex flex-1 items-center gap-2 rounded-xl border px-3 py-2"
+                        style={{ background: C.surface, borderColor: C.line, minWidth: 220 }}
+                    >
+                        <span className="material-symbols-outlined" style={{ color: C.muted }}>search</span>
+                        <input
+                            type="text"
+                            placeholder="Buscar comunicado..."
+                            value={busca}
+                            onChange={e => setBusca(e.target.value)}
+                            className="w-full bg-transparent text-sm outline-none"
+                            style={{ color: C.ink }}
+                        />
+                        {busca && (
+                            <button onClick={() => setBusca('')} style={{ color: C.muted }}>
+                                <span className="material-symbols-outlined text-base">close</span>
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        {['Todos', 'Urgente', 'Importante', 'Geral'].map(tipo => (
+                            <button
+                                key={tipo}
+                                onClick={() => setFiltroTipo(tipo)}
+                                className="rounded-lg px-3 py-1.5 text-xs font-bold transition-all"
+                                style={{
+                                    background: filtroTipo === tipo ? C.accent : C.surfaceSoft,
+                                    color: filtroTipo === tipo ? '#fff' : C.ink2,
+                                    border: `1px solid ${filtroTipo === tipo ? C.accent : C.line}`,
+                                }}
+                            >
+                                {tipo}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Lista */}
             {carregando ? (
-                <div style={{ textAlign: 'center', padding: '64px 0', color: C.muted }}>Carregando...</div>
+                <div className="flex flex-col items-center gap-3 py-16" style={{ color: C.muted }}>
+                    <span className="material-symbols-outlined animate-spin text-4xl" style={{ color: C.accent }}>progress_activity</span>
+                    Carregando comunicados...
+                </div>
             ) : comunicados.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '64px 0', color: C.muted }}>Nenhum comunicado cadastrado.</div>
+                <div className="flex flex-col items-center gap-3 rounded-2xl border py-16" style={{ background: C.surface, borderColor: C.line, color: C.muted }}>
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full" style={{ background: C.accentSoft, color: C.accent }}>
+                        <span className="material-symbols-outlined text-3xl">campaign</span>
+                    </div>
+                    <p className="text-sm font-medium">Nenhum comunicado cadastrado.</p>
+                    <button
+                        onClick={abrirNovo}
+                        className="mt-1 rounded-lg px-4 py-2 text-sm font-bold text-white"
+                        style={{ background: C.accent }}
+                    >
+                        Criar primeiro comunicado
+                    </button>
+                </div>
+            ) : comunicadosFiltrados.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-16" style={{ color: C.muted }}>
+                    <span className="material-symbols-outlined text-3xl">search_off</span>
+                    <p className="text-sm">Nenhum comunicado encontrado com os filtros aplicados.</p>
+                </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
-                    {comunicados.map(c => {
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    {comunicadosFiltrados.map(c => {
                         const meta = TYPE_META[c.tipo] || TYPE_META.Geral;
                         return (
-                            <div key={c.id} style={{ background: C.surface, borderRadius: 16, border: `1px solid ${C.line}`, borderLeft: `4px solid ${meta.color}`, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                                <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 999, background: meta.soft, color: meta.color, fontSize: 10.5, fontWeight: 700, fontFamily: '"JetBrains Mono", monospace' }}>
-                                                <span className="material-symbols-outlined" style={{ fontSize: 12 }}>{meta.icon}</span>{meta.label}
+                            <div
+                                key={c.id}
+                                className="flex flex-col overflow-hidden rounded-2xl border bg-white transition-shadow hover:shadow-md"
+                                style={{ borderColor: C.line, borderLeft: `4px solid ${meta.color}`, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
+                            >
+                                <div className="flex flex-1 flex-col gap-3 p-5">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold"
+                                                style={{ background: meta.soft, color: meta.color, fontFamily: '"JetBrains Mono", monospace' }}
+                                            >
+                                                <span className="material-symbols-outlined text-xs">{meta.icon}</span>
+                                                {meta.label}
                                             </span>
-                                            <span style={{ fontSize: 11, color: C.muted, fontFamily: '"JetBrains Mono", monospace' }}>{relativeTime(c.criado_em)}</span>
+                                            <span className="text-[11px] font-medium" style={{ color: C.muted, fontFamily: '"JetBrains Mono", monospace' }}>{relativeTime(c.criado_em)}</span>
                                         </div>
-                                        <div style={{ display: 'flex', gap: 4 }}>
-                                            <button onClick={() => abrirEditar(c)} style={{ border: 'none', background: 'none', padding: 4, borderRadius: 6, color: C.muted, cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.color = C.accent} onMouseLeave={e => e.currentTarget.style.color = C.muted}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>edit</span></button>
-                                            <button onClick={() => excluir(c.id)} disabled={excluindo === c.id} style={{ border: 'none', background: 'none', padding: 4, borderRadius: 6, color: C.muted, cursor: 'pointer', opacity: excluindo === c.id ? 0.5 : 1, display: 'inline-flex', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.color = C.danger} onMouseLeave={e => e.currentTarget.style.color = C.muted}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>{excluindo === c.id ? 'sync' : 'delete'}</span></button>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => abrirEditar(c)}
+                                                className="inline-flex items-center rounded-lg p-1.5 transition-colors"
+                                                style={{ color: C.muted }}
+                                                onMouseEnter={e => e.currentTarget.style.color = C.accent}
+                                                onMouseLeave={e => e.currentTarget.style.color = C.muted}
+                                            >
+                                                <span className="material-symbols-outlined text-lg">edit</span>
+                                            </button>
+                                            <button
+                                                onClick={() => excluir(c.id)}
+                                                disabled={excluindo === c.id}
+                                                className="inline-flex items-center rounded-lg p-1.5 transition-colors disabled:opacity-50"
+                                                style={{ color: C.muted }}
+                                                onMouseEnter={e => e.currentTarget.style.color = C.danger}
+                                                onMouseLeave={e => e.currentTarget.style.color = C.muted}
+                                            >
+                                                <span className="material-symbols-outlined text-lg">{excluindo === c.id ? 'sync' : 'delete'}</span>
+                                            </button>
                                         </div>
                                     </div>
-                                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 750, color: C.ink, lineHeight: 1.4 }}>{c.titulo}</h3>
-                                    <p style={{ margin: 0, fontSize: 13.5, color: C.ink2, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.descricao}</p>
-                                    <div style={{ marginTop: 'auto', paddingTop: 10, borderTop: `1px solid ${C.line}`, display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, color: C.muted, fontFamily: '"JetBrains Mono", monospace' }}>
+                                    <h3 className="text-base font-bold leading-snug" style={{ color: C.ink }}>{c.titulo}</h3>
+                                    <p className="text-sm leading-relaxed" style={{ color: C.ink2, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.descricao}</p>
+                                    <div className="mt-auto flex items-center justify-between border-t pt-3 text-[11px] font-bold" style={{ borderColor: C.lineSoft, color: C.muted, fontFamily: '"JetBrains Mono", monospace' }}>
                                         <span>DEPTO: {c.departamento_autor || 'GERAL'}</span>
+                                        {c.link_opcional && (
+                                            <a
+                                                href={c.link_opcional}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-0.5 transition-colors hover:underline"
+                                                style={{ color: C.accent }}
+                                            >
+                                                Link <span className="material-symbols-outlined text-xs">open_in_new</span>
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -131,23 +329,30 @@ export default function AdminComunicados({ adminEmail }) {
                 </div>
             )}
 
+            {/* Modal */}
             {modalAberto && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(11, 27, 46, 0.5)', backdropFilter: 'blur(4px)' }}>
-                    <div style={{ background: C.surface, borderRadius: 16, boxShadow: '0 20px 48px rgba(11,27,46,0.15)', width: '100%', maxWidth: 480, overflow: 'hidden', border: `1px solid ${C.line}` }}>
-                        <div style={{ background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accent})`, padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' }}>
-                            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{editando ? 'edit' : 'campaign'}</span>{editando ? 'Editar Comunicado' : 'Novo Comunicado'}
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(11, 27, 46, 0.5)', backdropFilter: 'blur(4px)' }}>
+                    <div className="w-full max-w-[520px] overflow-hidden rounded-2xl border shadow-2xl" style={{ background: C.surface, borderColor: C.line }}>
+                        <div
+                            className="flex items-center justify-between px-5 py-4 text-white"
+                            style={{ background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accent})` }}
+                        >
+                            <h2 className="flex items-center gap-2 text-base font-bold">
+                                <span className="material-symbols-outlined text-xl">{editando ? 'edit' : 'campaign'}</span>
+                                {editando ? 'Editar Comunicado' : 'Novo Comunicado'}
                             </h2>
-                            <button onClick={() => setModalAberto(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}><span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span></button>
+                            <button onClick={() => setModalAberto(false)} className="inline-flex items-center text-white">
+                                <span className="material-symbols-outlined text-xl">close</span>
+                            </button>
                         </div>
-                        <form onSubmit={salvar} style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <form onSubmit={salvar} className="flex flex-col gap-4 p-5">
                             <div>
-                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 4 }}>TÍTULO *</label>
+                                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Título *</label>
                                 <input required value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} onFocus={() => setFocusedInput('titulo')} onBlur={() => setFocusedInput(null)} style={getInputStyle('titulo')} />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 4 }}>TIPO *</label>
+                                    <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Tipo *</label>
                                     <select value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })} style={getInputStyle('tipo')}>
                                         <option value="Geral">Geral — Verde</option>
                                         <option value="Importante">Importante — Amarelo</option>
@@ -155,21 +360,37 @@ export default function AdminComunicados({ adminEmail }) {
                                     </select>
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 4 }}>DEPTO. AUTOR *</label>
+                                    <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Depto. Autor *</label>
                                     <input required value={form.departamento_autor} onChange={e => setForm({ ...form, departamento_autor: e.target.value })} onFocus={() => setFocusedInput('depto')} onBlur={() => setFocusedInput(null)} style={getInputStyle('depto')} />
                                 </div>
                             </div>
                             <div>
-                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 4 }}>CONTEÚDO *</label>
+                                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Conteúdo *</label>
                                 <textarea required rows={4} value={form.descricao} onChange={e => setForm({ ...form, descricao: e.target.value })} onFocus={() => setFocusedInput('descricao')} onBlur={() => setFocusedInput(null)} style={{ ...getInputStyle('descricao'), resize: 'none' }} />
                             </div>
                             <div>
-                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 4 }}>LINK ADICIONAL (OPCIONAL)</label>
+                                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Link Adicional (Opcional)</label>
                                 <input type="url" value={form.link_opcional} onChange={e => setForm({ ...form, link_opcional: e.target.value })} onFocus={() => setFocusedInput('link')} onBlur={() => setFocusedInput(null)} style={getInputStyle('link')} />
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'end', gap: 10, paddingTop: 10, borderTop: `1px solid ${C.line}` }}>
-                                <button type="button" onClick={() => setModalAberto(false)} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: 'white', color: C.ink2, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Cancelar</button>
-                                <button type="submit" disabled={salvando} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: C.accent, color: 'white', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>{salvando ? 'Salvando...' : 'Salvar'}</button>
+                            <div className="flex justify-end gap-3 border-t pt-4" style={{ borderColor: C.line }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setModalAberto(false)}
+                                    className="rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
+                                    style={{ borderColor: C.line, background: C.surface, color: C.ink2 }}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={salvando}
+                                    className="rounded-lg px-5 py-2 text-sm font-bold text-white transition-all disabled:opacity-60"
+                                    style={{ background: C.accent }}
+                                    onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
+                                    onMouseLeave={e => e.currentTarget.style.background = C.accent}
+                                >
+                                    {salvando ? 'Salvando...' : 'Salvar'}
+                                </button>
                             </div>
                         </form>
                     </div>

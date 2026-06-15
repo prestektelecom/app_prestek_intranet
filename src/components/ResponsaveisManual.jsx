@@ -1,6 +1,46 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import BentoAvatar from './common/Avatar';
 
-// Componente para definir manualmente o responsável de cada setor
+// ── Paleta Bento Blue ─────────────────────────────────────────────────────
+const C = {
+    bg: '#F5F9FF',
+    surface: '#FFFFFF',
+    surfaceSoft: '#F7FAFD',
+    surfaceRaised: '#EFF4FA',
+    accent: '#4A9EF5',
+    accentDark: '#2D7BD4',
+    accentDeep: '#1F5BA8',
+    accentSoft: '#EAF4FF',
+    ink: '#0B1B2E',
+    ink2: '#475467',
+    muted: '#8896A8',
+    line: '#E4ECF5',
+    lineSoft: '#EFF4FA',
+    success: '#1F8A5B',
+    successSoft: '#E6F4EC',
+    danger: '#E84545',
+    dangerSoft: '#FDEDED',
+    warning: '#D97706',
+    warningSoft: '#FEF3E2',
+};
+
+const tone = (hex, a) => {
+    const h = hex.replace('#', '');
+    const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+    return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
+};
+
+const sIconBox = (color, bg) => ({
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    background: bg,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color,
+});
+
 export default function ResponsaveisManual() {
     const [setores, setSetores] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
@@ -9,9 +49,7 @@ export default function ResponsaveisManual() {
     const [salvando, setSalvando] = useState(null);
     const [erro, setErro] = useState(null);
     const [busca, setBusca] = useState('');
-    // Controla qual setor está com o dropdown aberto
     const [setorAberto, setSetorAberto] = useState(null);
-    // Busca de funcionário dentro do dropdown
     const [buscaFunc, setBuscaFunc] = useState('');
 
     const carregarDados = useCallback(async () => {
@@ -30,7 +68,6 @@ export default function ResponsaveisManual() {
             if (dSetores.sucesso) setSetores(dSetores.setores || []);
             if (dFunc.sucesso) setFuncionarios(dFunc.colaboradores || []);
             if (dManuais.sucesso) {
-                // Mapeia id_setor -> entrada completa
                 const mapa = {};
                 (dManuais.responsaveis || []).forEach(r => { mapa[String(r.id_setor)] = r; });
                 setResponsaveisManuais(mapa);
@@ -44,7 +81,6 @@ export default function ResponsaveisManual() {
 
     useEffect(() => { carregarDados(); }, [carregarDados]);
 
-    // Define manualmente um responsável para um setor
     const definirResponsavel = async (id_setor, funcionario) => {
         setSalvando(id_setor);
         try {
@@ -75,7 +111,6 @@ export default function ResponsaveisManual() {
         }
     };
 
-    // Remove a definição manual de um setor (volta ao automático)
     const limparResponsavel = async (id_setor) => {
         setSalvando(id_setor);
         try {
@@ -99,7 +134,6 @@ export default function ResponsaveisManual() {
         }
     };
 
-    // Funcionários ativos filtrados pela busca no dropdown
     const funcionariosFiltrados = useMemo(() => {
         const termo = buscaFunc.toLowerCase().trim();
         return funcionarios
@@ -108,7 +142,6 @@ export default function ResponsaveisManual() {
             .slice(0, 30);
     }, [funcionarios, buscaFunc]);
 
-    // Setores filtrados pela busca principal
     const setoresFiltrados = useMemo(() => {
         const termo = busca.toLowerCase().trim();
         if (!termo) return setores;
@@ -116,86 +149,129 @@ export default function ResponsaveisManual() {
     }, [setores, busca]);
 
     const totalManuais = Object.keys(responsaveisManuais).length;
+    const totalSetores = setores.length;
+    const totalAutomaticos = Math.max(0, totalSetores - totalManuais);
+
+    const stats = [
+        { label: 'Total de Setores', valor: totalSetores, icon: 'domain', cor: C.accent, bg: C.accentSoft },
+        { label: 'Definidos Manualmente', valor: totalManuais, icon: 'edit_note', cor: C.success, bg: C.successSoft },
+        { label: 'Automáticos', valor: totalAutomaticos, icon: 'autorenew', cor: C.accentDeep, bg: C.accentSoft },
+    ];
 
     if (carregando) {
         return (
-            <div className="flex flex-col items-center justify-center h-64 gap-3">
-                <span className="material-symbols-outlined text-4xl text-primary animate-spin">refresh</span>
-                <p className="text-sm text-[#a17745] dark:text-orange-300">Carregando setores e funcionários...</p>
+            <div className="flex h-64 flex-col items-center justify-center gap-3">
+                <span className="material-symbols-outlined animate-spin text-4xl" style={{ color: C.accent }}>refresh</span>
+                <p className="text-sm" style={{ color: C.muted }}>Carregando setores e funcionários...</p>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col gap-6 mt-6 pt-6 border-t border-[#eaddcd] dark:border-gray-800">
+        <div className="flex flex-col gap-6">
             {/* Cabeçalho */}
-            <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                    <h2 className="text-lg font-bold text-[#1d150c] dark:text-white">Responsável Manual por Setor</h2>
-                    <p className="text-sm text-[#a17745] dark:text-orange-300 mt-0.5">
+                    <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Responsável por Setor</h1>
+                    <p className="mt-1 text-sm" style={{ color: C.muted }}>
                         Defina manualmente o responsável exibido em cada card do Diretório de Setores. Tem prioridade sobre os Grupos de Supervisor.
                     </p>
                 </div>
                 <button
                     onClick={carregarDados}
-                    className="flex items-center gap-2 px-3 py-2 rounded text-sm font-medium bg-[#eaddcd] dark:bg-[#2a1d0f] text-[#1d150c] dark:text-white hover:bg-primary hover:text-white transition-colors"
+                    className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
+                    style={{ background: C.accent }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = C.accentDark; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = C.accent; }}
                 >
                     <span className="material-symbols-outlined text-base">refresh</span>
                     Atualizar
                 </button>
             </div>
 
+            {/* Stats Bento */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {stats.map(s => (
+                    <div
+                        key={s.label}
+                        className="flex items-center gap-4 rounded-2xl border p-4"
+                        style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
+                    >
+                        <div style={sIconBox(s.cor, s.bg)}>
+                            <span className="material-symbols-outlined">{s.icon}</span>
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>{s.label}</p>
+                            <p className="text-2xl font-extrabold" style={{ color: C.ink }}>{s.valor}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
             {/* Erro */}
             {erro && (
-                <div className="flex items-center gap-2 p-3 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
+                <div
+                    className="flex items-center gap-2 rounded-xl border p-3 text-sm"
+                    style={{ background: C.dangerSoft, borderColor: '#F5B0B0', color: C.danger }}
+                >
                     <span className="material-symbols-outlined text-base">error</span>
                     {erro}
                 </div>
             )}
 
-            {/* Resumo */}
-            {totalManuais > 0 && (
-                <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
-                    <p className="text-sm font-semibold text-primary flex items-center gap-2">
-                        <span className="material-symbols-outlined text-base">edit_note</span>
-                        {totalManuais} setor(es) com responsável definido manualmente
-                    </p>
-                </div>
-            )}
-
             {/* Aviso informativo */}
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 text-xs">
-                <span className="material-symbols-outlined text-base shrink-0">info</span>
-                <span>Setores <strong>sem definição manual</strong> continuam usando a lógica automática dos <strong>Grupos de Supervisor</strong> configurados acima.</span>
+            <div
+                className="flex items-start gap-2 rounded-xl border p-3 text-xs"
+                style={{ background: C.accentSoft, borderColor: C.accent, color: C.accentDeep }}
+            >
+                <span className="material-symbols-outlined shrink-0 text-base">info</span>
+                <span>Setores <strong>sem definição manual</strong> continuam usando a lógica automática dos <strong>Grupos de Supervisor</strong>.</span>
             </div>
 
             {/* Busca de setor */}
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1a130b] border border-[#eaddcd] dark:border-gray-700">
-                <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-xl">search</span>
+            <div
+                className="flex items-center gap-2 rounded-xl border px-4 py-2.5"
+                style={{ background: C.surface, borderColor: C.line }}
+            >
+                <span className="material-symbols-outlined text-xl" style={{ color: C.muted }}>search</span>
                 <input
                     type="text"
                     placeholder="Buscar setor..."
                     value={busca}
                     onChange={e => setBusca(e.target.value)}
-                    className="flex-1 bg-transparent text-sm text-[#1d150c] dark:text-white placeholder:text-[#a17745] dark:placeholder:text-orange-300 outline-none"
+                    className="flex-1 bg-transparent text-sm outline-none"
+                    style={{ color: C.ink }}
                 />
                 {busca && (
-                    <button onClick={() => setBusca('')} className="text-[#a17745] hover:text-primary transition-colors">
+                    <button
+                        onClick={() => setBusca('')}
+                        className="transition-colors"
+                        style={{ color: C.muted }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = C.ink2; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; }}
+                    >
                         <span className="material-symbols-outlined text-base">close</span>
                     </button>
                 )}
             </div>
 
             {/* Lista de setores */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
                 {setoresFiltrados.length === 0 && (
-                    <p className="text-sm text-[#a17745] dark:text-orange-300 text-center py-8">Nenhum setor encontrado.</p>
+                    <div className="flex flex-col items-center gap-2 py-10" style={{ color: C.muted }}>
+                        <div
+                            className="flex h-12 w-12 items-center justify-center rounded-full"
+                            style={{ background: C.accentSoft, color: C.accent }}
+                        >
+                            <span className="material-symbols-outlined text-2xl">search_off</span>
+                        </div>
+                        <p className="text-sm">Nenhum setor encontrado.</p>
+                    </div>
                 )}
                 {setoresFiltrados.map(setor => {
                     const manual = responsaveisManuais[String(setor.id)];
                     const isAberto = setorAberto === setor.id;
                     const isSalvando = salvando === setor.id;
-                    // Responsável atual: manual (do estado) ou automático (do /api/setores)
                     const responsavelAtual = manual
                         ? { nome: manual.nome, isManual: true }
                         : setor.responsavel
@@ -205,34 +281,51 @@ export default function ResponsaveisManual() {
                     return (
                         <div
                             key={setor.id}
-                            className={`rounded-xl border transition-all ${manual ? 'bg-primary/5 border-primary/30 dark:border-primary/40' : 'bg-white dark:bg-[#1a130b] border-[#eaddcd] dark:border-gray-700'}`}
+                            className="overflow-hidden rounded-2xl border transition-all"
+                            style={{
+                                background: manual ? C.accentSoft : C.surface,
+                                borderColor: manual ? C.accent : C.line,
+                                boxShadow: manual ? `0 1px 3px ${tone(C.accentDeep, 0.08)}` : `0 1px 3px ${tone(C.accentDeep, 0.03)}`,
+                            }}
                         >
                             {/* Linha principal */}
                             <div className="flex items-center justify-between gap-4 p-4">
-                                <div className="flex items-start gap-3 min-w-0">
+                                <div className="flex min-w-0 items-start gap-3">
                                     {/* Ícone do setor */}
-                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${manual ? 'bg-primary text-white' : 'bg-[#eaddcd] dark:bg-[#2a1d0f] text-[#a17745] dark:text-orange-300'}`}>
+                                    <div
+                                        className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                                        style={{
+                                            background: manual ? C.accent : C.surfaceSoft,
+                                            color: manual ? '#fff' : C.accent,
+                                        }}
+                                    >
                                         <span className="material-symbols-outlined text-[18px]">domain</span>
                                     </div>
                                     <div className="min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-sm font-semibold text-[#1d150c] dark:text-white">{setor.nome}</span>
-                                            <span className="text-xs text-[#a17745] dark:text-orange-300">{setor.totalMembros} membro{setor.totalMembros !== 1 ? 's' : ''}</span>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="text-sm font-semibold" style={{ color: C.ink }}>{setor.nome}</span>
+                                            <span className="text-xs" style={{ color: C.muted }}>{setor.totalMembros} membro{setor.totalMembros !== 1 ? 's' : ''}</span>
                                             {manual && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-primary text-white">
+                                                <span
+                                                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold"
+                                                    style={{ background: C.accent, color: '#fff' }}
+                                                >
                                                     <span className="material-symbols-outlined text-xs" style={{ fontSize: '12px' }}>edit_note</span>
                                                     MANUAL
                                                 </span>
                                             )}
                                         </div>
                                         {/* Responsável atual */}
-                                        <p className="text-xs text-[#1d150c] dark:text-gray-400 mt-0.5">
+                                        <p className="mt-0.5 text-xs" style={{ color: C.ink2 }}>
                                             {responsavelAtual ? (
                                                 <>
-                                                    <span className={`font-medium ${responsavelAtual.isManual ? 'text-primary' : 'text-[#a17745] dark:text-orange-400'}`}>
+                                                    <span
+                                                        className="font-semibold"
+                                                        style={{ color: responsavelAtual.isManual ? C.accent : C.muted }}
+                                                    >
                                                         {responsavelAtual.nome}
                                                     </span>
-                                                    <span className="text-[10px] ml-1 opacity-60">
+                                                    <span className="ml-1 text-[10px] opacity-70">
                                                         ({responsavelAtual.isManual ? 'definido manualmente' : 'automático'})
                                                     </span>
                                                 </>
@@ -244,15 +337,18 @@ export default function ResponsaveisManual() {
                                 </div>
 
                                 {/* Botões */}
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex shrink-0 items-center gap-2">
                                     {manual && (
                                         <button
                                             onClick={() => limparResponsavel(setor.id)}
                                             disabled={isSalvando}
-                                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                                            style={{ background: C.dangerSoft, color: C.danger }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = C.danger; e.currentTarget.style.color = '#fff'; }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = C.dangerSoft; e.currentTarget.style.color = C.danger; }}
                                         >
                                             {isSalvando ? (
-                                                <span className="material-symbols-outlined text-sm animate-spin">refresh</span>
+                                                <span className="material-symbols-outlined animate-spin text-sm">refresh</span>
                                             ) : (
                                                 <span className="material-symbols-outlined text-sm">undo</span>
                                             )}
@@ -265,7 +361,10 @@ export default function ResponsaveisManual() {
                                             setBuscaFunc('');
                                         }}
                                         disabled={isSalvando}
-                                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all bg-primary/10 text-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                                        style={{ background: C.accent }}
+                                        onMouseEnter={(e) => { if (!isSalvando) e.currentTarget.style.background = C.accentDark; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = C.accent; }}
                                     >
                                         <span className="material-symbols-outlined text-sm">person_add</span>
                                         <span className="hidden sm:inline">{manual ? 'Alterar' : 'Definir'}</span>
@@ -276,43 +375,54 @@ export default function ResponsaveisManual() {
                             {/* Dropdown de seleção de funcionário */}
                             {isAberto && (
                                 <div className="px-4 pb-4">
-                                    <div className="border border-[#eaddcd] dark:border-gray-700 rounded-xl overflow-hidden">
+                                    <div
+                                        className="overflow-hidden rounded-xl border"
+                                        style={{ background: C.surface, borderColor: C.line }}
+                                    >
                                         {/* Campo de busca do funcionário */}
-                                        <div className="flex items-center gap-2 px-3 py-2.5 bg-[#fcfaf8] dark:bg-[#2c2217] border-b border-[#eaddcd] dark:border-gray-700">
-                                            <span className="material-symbols-outlined text-[#a17745] dark:text-orange-300 text-lg">search</span>
+                                        <div
+                                            className="flex items-center gap-2 border-b px-3 py-2.5"
+                                            style={{ background: C.surfaceSoft, borderColor: C.line }}
+                                        >
+                                            <span className="material-symbols-outlined text-lg" style={{ color: C.muted }}>search</span>
                                             <input
                                                 autoFocus
                                                 type="text"
                                                 placeholder="Buscar funcionário ativo..."
                                                 value={buscaFunc}
                                                 onChange={e => setBuscaFunc(e.target.value)}
-                                                className="flex-1 bg-transparent text-sm text-[#1d150c] dark:text-white placeholder:text-[#a17745] dark:placeholder:text-orange-300 outline-none"
+                                                className="flex-1 bg-transparent text-sm outline-none"
+                                                style={{ color: C.ink }}
                                             />
                                         </div>
                                         {/* Lista de funcionários */}
-                                        <div className="max-h-56 overflow-y-auto">
+                                        <div className="max-h-56 overflow-y-auto scrollbar-hide">
                                             {funcionariosFiltrados.length === 0 && (
-                                                <p className="text-xs text-[#a17745] dark:text-orange-300 text-center py-6">
+                                                <p className="py-6 text-center text-xs" style={{ color: C.muted }}>
                                                     Nenhum funcionário encontrado.
                                                 </p>
                                             )}
-                                            {funcionariosFiltrados.map(func => (
-                                                <button
-                                                    key={func.funcionario_id || func.id}
-                                                    onClick={() => definirResponsavel(setor.id, func)}
-                                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-primary/10 transition-colors border-b border-[#f4eee6] dark:border-gray-800 last:border-0"
-                                                >
-                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                                        <span className="material-symbols-outlined text-primary text-[16px]">person</span>
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-medium text-[#1d150c] dark:text-white truncate">{func.funcionario_nome || func.nome}</p>
-                                                        {func.usuario_email && (
-                                                            <p className="text-xs text-[#a17745] dark:text-orange-300 truncate">{func.usuario_email}</p>
-                                                        )}
-                                                    </div>
-                                                </button>
-                                            ))}
+                                            {funcionariosFiltrados.map(func => {
+                                                const nome = func.funcionario_nome || func.nome || '—';
+                                                return (
+                                                    <button
+                                                        key={func.funcionario_id || func.id}
+                                                        onClick={() => definirResponsavel(setor.id, func)}
+                                                        className="flex w-full items-center gap-3 border-b px-3 py-2.5 text-left transition-colors last:border-0"
+                                                        style={{ borderColor: C.lineSoft }}
+                                                        onMouseEnter={(e) => { e.currentTarget.style.background = C.accentSoft; }}
+                                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                                    >
+                                                        <BentoAvatar name={nome} size={32} color={[C.accent, '#fff']} />
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-sm font-semibold" style={{ color: C.ink }}>{nome}</p>
+                                                            {func.usuario_email && (
+                                                                <p className="truncate text-xs" style={{ color: C.muted }}>{func.usuario_email}</p>
+                                                            )}
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
