@@ -6,7 +6,7 @@
 
 ## 2. Validação
 
-- [ ] 2.1 Iniciar o servidor de desenvolvimento e acessar a página de Escala.
-- [ ] 2.2 Confirmar que o console do navegador não exibe mais `ReferenceError: C is not defined`.
-- [ ] 2.3 Verificar visualmente se o hero da Escala renderiza com o gradiente e as cores esperadas.
-- [ ] 2.4 Rodar `npm run build` (ou equivalente) para garantir que não há erros de compilação.
+- [x] 2.1 Iniciar o servidor de desenvolvimento e acessar a página de Escala.
+- [x] 2.2 Confirmar que o console do navegador não exibe mais `ReferenceError: C is not defined`.
+- [x] 2.3 Verificar visualmente se o hero da Escala renderiza com o gradiente e as cores esperadas.
+- [x] 2.4 Rodar `npm run build` (ou equivalente) para garantir que não há erros de compilação.

@@ -66,6 +66,7 @@ const FORM_VAZIO = {
 const ESTADOS_BR = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
 
 function OfficesHero({ total, contAL, contSE, matriz, onAdd, isAdmin }) {
+    const C = useBentoTheme();
     const kpis = [
         { label: 'Unidades', value: total, icon: 'apartment' },
         { label: 'Alagoas', value: contAL, icon: 'location_on' },

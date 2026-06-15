@@ -250,6 +250,7 @@ export default function Directory({ user, setCurrentView }) {
 
 // ── Hero Banner ──────────────────────────────────────────────────────────────
 function HeroBanner({ busca, setBusca, kpiTotal, kpiAtivos, kpiDeptos, isLoading, setCurrentView }) {
+  const C = useBentoTheme();
   return (
     <div style={{
       background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
@@ -348,6 +349,7 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiAtivos, kpiDeptos, isLoading
 
 // ── Chips de Departamento ────────────────────────────────────────────────────
 function DeptChips({ chips, deptoFiltro, setDeptoFiltro, totalColabs }) {
+  const C = useBentoTheme();
   return (
     <div style={{ marginBottom: 24 }}>
       <div
@@ -378,6 +380,7 @@ function DeptChips({ chips, deptoFiltro, setDeptoFiltro, totalColabs }) {
 }
 
 function ChipButton({ label, count, active, onClick, color }) {
+  const C = useBentoTheme();
   const [hover, setHover] = useState(false);
   const rgb = hexToRgb(color);
 
@@ -425,6 +428,7 @@ function getWhatsAppUrl(phoneStr) {
 
 // ── Card de Colaborador v2 ───────────────────────────────────────────────────
 function EmployeeCardV2({ colab, departamentoNome, animDelay }) {
+  const C = useBentoTheme();
   const [hover, setHover] = useState(false);
   const nome = colab.funcionario_nome || 'Colaborador';
   const email = colab.usuario_email || '';
@@ -610,6 +614,7 @@ function EmployeeCardV2({ colab, departamentoNome, animDelay }) {
 
 // ── Skeleton de carregamento ─────────────────────────────────────────────────
 function SkeletonCard() {
+  const C = useBentoTheme();
   return (
     <div style={{
       background: C.surface, borderRadius: 18, border: `1px solid ${C.line}`,
@@ -639,6 +644,7 @@ function SkeletonCard() {
 
 // ── Estado vazio ─────────────────────────────────────────────────────────────
 function EmptyState({ busca, deptoFiltro, onClear }) {
+  const C = useBentoTheme();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 16, textAlign: 'center' }}>
       <div style={{ width: 72, height: 72, borderRadius: '50%', background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

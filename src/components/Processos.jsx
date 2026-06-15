@@ -46,6 +46,7 @@ function StatusBadge({ status }) {
 }
 
 function ProcessosHero({ total, ativos, revisao, categorias, onAdd }) {
+    const C = useBentoTheme();
     const kpis = [
         { label: 'Processos', value: total, icon: 'folder_open' },
         { label: 'Ativos', value: ativos, icon: 'check_circle' },

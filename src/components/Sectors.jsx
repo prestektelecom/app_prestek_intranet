@@ -313,6 +313,7 @@ export default function Sectors({ user, setCurrentView }) {
 
 // ── Organograma ───────────────────────────────────────────────────────────────
 function OrgChart() {
+    const C = useBentoTheme();
     const directors = [
         { icon: 'terminal', title: 'Tecnologia (TI)', name: 'Sarah Lin' },
         { icon: 'settings_suggest', title: 'Operações', name: 'Marcus Cole' },
@@ -378,6 +379,7 @@ function OrgChart() {
 
 // Nó do organograma (diretoria)
 function OrgNode({ icon, title, name }) {
+    const C = useBentoTheme();
     const [hover, setHover] = useState(false);
     return (
         <div
@@ -401,6 +403,7 @@ function OrgNode({ icon, title, name }) {
 
 // ── Card de Setor ─────────────────────────────────────────────────────────────
 function SectorCard({ id, icon, ramal, title, description, managerName, managerImg, teamCount, isAdmin, onSaveDescription, setCurrentView }) {
+    const C = useBentoTheme();
     const [isEditing, setIsEditing] = useState(false);
     const [editDesc, setEditDesc] = useState(description || '');
     const [hover, setHover] = useState(false);

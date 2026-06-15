@@ -10,6 +10,7 @@ function tone(hex, a) {
 }
 
 function TicketsHero({ total, abertos, finalizados, pendentes }) {
+  const C = useBentoTheme();
   const kpis = [
     { label: 'Total', value: total, icon: 'confirmation_number' },
     { label: 'Abertos', value: abertos, icon: 'check_circle' },
@@ -83,6 +84,7 @@ function TicketsHero({ total, abertos, finalizados, pendentes }) {
 }
 
 function StatusBadge({ status }) {
+  const C = useBentoTheme();
   const config =
     status === 'F' ? { label: 'Finalizado', bg: C.successSoft, text: C.success } :
     status === 'T' ? { label: 'Aberto', bg: C.accentSoft, text: C.accentDeep } :
