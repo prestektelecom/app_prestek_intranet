@@ -6,7 +6,7 @@ export default function ThemeSwitcher() {
 
     return (
         <div>
-            <h4 className="text-sm font-bold text-[#1d150c] dark:text-white mb-4">Aparência</h4>
+            <h4 className="text-sm font-bold text-[#0B1B2E] dark:text-white mb-4">Aparência</h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <label className="cursor-pointer group">
                     <input
@@ -16,15 +16,15 @@ export default function ThemeSwitcher() {
                         checked={theme === 'light'}
                         onChange={() => setTheme('light')}
                     />
-                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#eaddcd] dark:border-gray-800 peer-checked:border-primary peer-checked:ring-2 peer-checked:ring-primary bg-[#fcfaf8] dark:bg-[#2c2217] transition-all dark:bg-neutral-bg3 dark:border-border-subtle">
-                        <div className="h-20 rounded bg-[#f8f7f5] border border-gray-200 flex flex-col overflow-hidden">
-                            <div className="h-4 w-full bg-white dark:bg-[#1a130b] border-b border-gray-100"></div>
+                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#4A9EF5] peer-checked:ring-2 peer-checked:ring-[#4A9EF5] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
+                        <div className="h-20 rounded bg-[#F5F9FF] border border-[#E4ECF5] flex flex-col overflow-hidden">
+                            <div className="h-4 w-full bg-white dark:bg-[#0F1724] border-b border-[#E4ECF5] dark:border-[#1E3A5F]"></div>
                             <div className="flex-1 p-2 flex gap-1">
-                                <div className="w-1/4 h-full bg-gray-100 rounded-sm"></div>
-                                <div className="flex-1 h-full bg-gray-50 rounded-sm"></div>
+                                <div className="w-1/4 h-full bg-[#F7FAFD] dark:bg-[#162231] rounded-sm"></div>
+                                <div className="flex-1 h-full bg-[#EFF4FA] dark:bg-[#0B1B2E] rounded-sm"></div>
                             </div>
                         </div>
-                        <span className="text-sm font-medium text-center text-[#1d150c] dark:text-text-primary">Claro</span>
+                        <span className="text-sm font-medium text-center text-[#0B1B2E] dark:text-white">Claro</span>
                     </div>
                 </label>
 
@@ -36,15 +36,15 @@ export default function ThemeSwitcher() {
                         checked={theme === 'dark'}
                         onChange={() => setTheme('dark')}
                     />
-                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#eaddcd] dark:border-gray-800 peer-checked:border-primary peer-checked:ring-2 peer-checked:ring-primary bg-[#fcfaf8] dark:bg-[#2c2217] transition-all dark:bg-neutral-bg3 dark:border-border-subtle">
-                        <div className="h-20 rounded bg-[#231a0f] border border-gray-700 flex flex-col overflow-hidden">
-                            <div className="h-4 w-full bg-[#2d2418] border-b border-gray-700"></div>
+                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#4A9EF5] peer-checked:ring-2 peer-checked:ring-[#4A9EF5] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
+                        <div className="h-20 rounded bg-[#0B1B2E] border border-[#1E3A5F] flex flex-col overflow-hidden">
+                            <div className="h-4 w-full bg-[#0F1724] border-b border-[#1E3A5F]"></div>
                             <div className="flex-1 p-2 flex gap-1">
-                                <div className="w-1/4 h-full bg-[#382e21] rounded-sm"></div>
-                                <div className="flex-1 h-full bg-[#2d2418] rounded-sm"></div>
+                                <div className="w-1/4 h-full bg-[#162231] rounded-sm"></div>
+                                <div className="flex-1 h-full bg-[#0B1B2E] rounded-sm"></div>
                             </div>
                         </div>
-                        <span className="text-sm font-medium text-center text-[#1d150c] dark:text-text-primary">Escuro</span>
+                        <span className="text-sm font-medium text-center text-[#0B1B2E] dark:text-white">Escuro</span>
                     </div>
                 </label>
 
@@ -56,11 +56,11 @@ export default function ThemeSwitcher() {
                         checked={theme === 'system'}
                         onChange={() => setTheme('system')}
                     />
-                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#eaddcd] dark:border-gray-800 peer-checked:border-primary peer-checked:ring-2 peer-checked:ring-primary bg-[#fcfaf8] dark:bg-[#2c2217] transition-all dark:bg-neutral-bg3 dark:border-border-subtle">
-                        <div className="h-20 rounded bg-gradient-to-br from-[#f8f7f5] to-[#231a0f] border border-gray-300 flex items-center justify-center dark:border-gray-600">
-                            <span className="material-symbols-outlined text-gray-500">settings_brightness</span>
+                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#4A9EF5] peer-checked:ring-2 peer-checked:ring-[#4A9EF5] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
+                        <div className="h-20 rounded bg-gradient-to-br from-[#F5F9FF] to-[#0B1B2E] border border-[#E4ECF5] flex items-center justify-center dark:border-[#1E3A5F]">
+                            <span className="material-symbols-outlined text-[#8896A8]">settings_brightness</span>
                         </div>
-                        <span className="text-sm font-medium text-center text-[#1d150c] dark:text-text-primary">Sistema</span>
+                        <span className="text-sm font-medium text-center text-[#0B1B2E] dark:text-white">Sistema</span>
                     </div>
                 </label>
             </div>

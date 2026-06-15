@@ -121,13 +121,13 @@ export const handleImprimir = (filteredPlantoes, filterMonth, filterYear, filter
     const style = doc.createElement('style');
     style.textContent = `
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1d150c; padding: 32px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0B1B2E; padding: 32px; }
         h1 { font-size: 22px; margin: 0 0 4px 0; }
-        .sub { color: #a17745; font-size: 13px; margin-bottom: 24px; }
+        .sub { color: #8896A8; font-size: 13px; margin-bottom: 24px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eaddcd; }
-        th { background: #fcfaf8; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; color: #a17745; }
-        tr:nth-child(even) td { background: #fcfaf8; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #E4ECF5; }
+        th { background: #F7FAFD; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; color: #8896A8; }
+        tr:nth-child(even) td { background: #F7FAFD; }
         @media print { body { padding: 0; } @page { margin: 16mm; } }
     `;
     doc.head.appendChild(style);

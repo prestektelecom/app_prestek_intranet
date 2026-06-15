@@ -1,6 +1,8 @@
 import React from 'react';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 export default function SelectEmployee({ label, value, onChange, options, allowEmpty }) {
+    const C = useBentoTheme();
     return (
         <label className="flex flex-col gap-2">
             <span className="text-xs sm:text-[10px] font-black uppercase text-[#475467] tracking-widest flex items-center gap-1.5 ml-1">

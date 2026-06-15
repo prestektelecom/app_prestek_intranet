@@ -91,7 +91,7 @@ const LottieAvatar = ({ src, className = '', style = {}, loop = true, crop = fal
     // Placeholder
     return (
         <div
-            className={`flex items-center justify-center bg-surface-raised ${className}`}
+            className={`flex items-center justify-center bg-[#F7FAFD] ${className}`}
             style={style}
         />
     );

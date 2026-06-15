@@ -300,19 +300,19 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
             {/* Sombra superior premium */}
             <div className="absolute inset-x-0 -top-6 h-6 bg-gradient-to-t from-black/5 to-transparent dark:from-black/20 pointer-events-none" />
 
-            <div className="bg-white/95 dark:bg-[#1c1917]/95 backdrop-blur-md border-t border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_-10px_30px_rgba(11,27,46,0.08)] px-6 py-5 max-w-[1200px] mx-auto rounded-t-2xl">
+            <div className="bg-white/95 dark:bg-[#0B1B2E]/95 backdrop-blur-md border-t border-[#E4ECF5] dark:border-[var(--border)] shadow-[0_-10px_30px_rgba(11,27,46,0.08)] px-6 py-5 max-w-[1200px] mx-auto rounded-t-2xl">
 
                 {/* Header do Drawer */}
-                <div className="flex items-center justify-between mb-4 border-b border-[#E4ECF5] dark:border-[#2e2a26] pb-3">
+                <div className="flex items-center justify-between mb-4 border-b border-[#E4ECF5] dark:border-[var(--border)] pb-3">
                     <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[#4A9EF5] dark:text-[#7FD4E8]">compare_arrows</span>
-                        <h3 className="text-sm font-bold text-[#0B1B2E] dark:text-[#f5f0eb]">
+                        <h3 className="text-sm font-bold text-[#0B1B2E] dark:text-[var(--foreground)]">
                             Comparador de Planos <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">({plans.length} selecionados)</span>
                         </h3>
                     </div>
                     <button
                         onClick={onClear}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FDEDED] text-[#E84545] dark:bg-red-950/20 dark:text-red-400 rounded-lg hover:opacity-90 transition-all text-xs font-bold cursor-pointer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--danger-soft)] text-[var(--danger-bento)] rounded-lg hover:opacity-90 transition-all text-xs font-bold cursor-pointer"
                     >
                         <span className="material-symbols-outlined text-[16px]">close</span>
                         Fechar comparação
@@ -372,7 +372,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                         <div className={`grid ${gridColsClass} gap-4 text-xs`}>
 
                             {/* Linha 1: Títulos / Nomes */}
-                            <div className="flex items-center font-bold text-slate-400 dark:text-[#a09080] uppercase tracking-wider">
+                            <div className="flex items-center font-bold text-slate-400 dark:text-[#8896A8] uppercase tracking-wider">
                                 Característica
                             </div>
                             {plans.map((plan) => {
@@ -384,7 +384,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                                         className={`p-3 rounded-xl border relative ${
                                             bCfg
                                                 ? `${bCfg.bg} ${bCfg.border}`
-                                                : 'bg-slate-50/50 dark:bg-[#211e1b]/30 border-slate-100/50 dark:border-[#2e2a26]/20'
+                                                : 'bg-slate-50/50 dark:bg-[#0B1B2E]/30 border-slate-100/50 dark:border-[var(--border)]/20'
                                         }`}
                                     >
                                         {/* Badge do plano */}
@@ -394,7 +394,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                                                 {badge.label}
                                             </span>
                                         )}
-                                        <h4 className="font-extrabold text-[#0B1B2E] dark:text-[#f5f0eb] text-sm leading-tight line-clamp-2">
+                                        <h4 className="font-extrabold text-[#0B1B2E] dark:text-[var(--foreground)] text-sm leading-tight line-clamp-2">
                                             {plan.descricao}
                                         </h4>
                                         <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">ID: IXC-{plan.id}</span>
@@ -403,7 +403,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                             })}
 
                             {/* Linha 2: Valor Mensal */}
-                            <div className="flex items-center font-bold text-slate-500 dark:text-slate-400 py-2 border-b border-slate-100 dark:border-[#2e2a26]/10">
+                            <div className="flex items-center font-bold text-slate-500 dark:text-slate-400 py-2 border-b border-slate-100 dark:border-[var(--border)]/10">
                                 Valor Mensal
                             </div>
                             {plans.map((plan) => {
@@ -411,10 +411,10 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                                 return (
                                     <div
                                         key={`val-${plan.id}`}
-                                        className={`p-3 font-bold border-b border-slate-100 dark:border-[#2e2a26]/10 flex items-center justify-between rounded-lg transition-colors ${
+                                        className={`p-3 font-bold border-b border-slate-100 dark:border-[var(--border)]/10 flex items-center justify-between rounded-lg transition-colors ${
                                             best
                                             ? 'bg-emerald-50/50 dark:bg-emerald-950/10 text-emerald-600 dark:text-emerald-400'
-                                            : 'text-[#0B1B2E] dark:text-[#f5f0eb]'
+                                            : 'text-[#0B1B2E] dark:text-[var(--foreground)]'
                                         }`}
                                     >
                                         <span className="text-sm font-black">
@@ -433,7 +433,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                             {/* Linha 3: Velocidade (se detectada) */}
                             {recomendacao?.enriched?.some(p => p.velocidade) && (
                                 <>
-                                    <div className="flex items-center font-bold text-slate-500 dark:text-slate-400 py-2 border-b border-slate-100 dark:border-[#2e2a26]/10">
+                                    <div className="flex items-center font-bold text-slate-500 dark:text-slate-400 py-2 border-b border-slate-100 dark:border-[var(--border)]/10">
                                         Velocidade
                                     </div>
                                     {recomendacao.enriched.map((plan) => {
@@ -442,8 +442,8 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                                         return (
                                             <div
                                                 key={`vel-${plan.id}`}
-                                                className={`p-3 border-b border-slate-100 dark:border-[#2e2a26]/10 flex items-center gap-2 rounded-lg ${
-                                                    isFastest ? 'text-blue-600 dark:text-blue-400' : 'text-[#0B1B2E] dark:text-[#f5f0eb]'
+                                                className={`p-3 border-b border-slate-100 dark:border-[var(--border)]/10 flex items-center gap-2 rounded-lg ${
+                                                    isFastest ? 'text-blue-600 dark:text-blue-400' : 'text-[#0B1B2E] dark:text-[var(--foreground)]'
                                                 }`}
                                             >
                                                 {plan.velocidade ? (
@@ -464,21 +464,21 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                             )}
 
                             {/* Linha 4: Taxa de Instalação */}
-                            <div className="flex items-center font-bold text-slate-500 dark:text-slate-400 py-2 border-b border-slate-100 dark:border-[#2e2a26]/10">
+                            <div className="flex items-center font-bold text-slate-500 dark:text-slate-400 py-2 border-b border-slate-100 dark:border-[var(--border)]/10">
                                 Taxa de Instalação
                             </div>
                             {plans.map((plan) => (
-                                <div key={`tax-${plan.id}`} className="p-3 text-[#0B1B2E] dark:text-[#f5f0eb] border-b border-slate-100 dark:border-[#2e2a26]/10 flex items-center">
+                                <div key={`tax-${plan.id}`} className="p-3 text-[#0B1B2E] dark:text-[var(--foreground)] border-b border-slate-100 dark:border-[var(--border)]/10 flex items-center">
                                     {plan.taxa_instalacao ? formatCurrency(plan.taxa_instalacao) : 'R$ 0,00'}
                                 </div>
                             ))}
 
                             {/* Linha 5: Prazo de Entrega */}
-                            <div className="flex items-center font-bold text-slate-500 dark:text-slate-400 py-2 border-b border-slate-100 dark:border-[#2e2a26]/10">
+                            <div className="flex items-center font-bold text-slate-500 dark:text-slate-400 py-2 border-b border-slate-100 dark:border-[var(--border)]/10">
                                 Prazo de Entrega
                             </div>
                             {plans.map((plan) => (
-                                <div key={`prazo-${plan.id}`} className="p-3 text-[#0B1B2E] dark:text-[#f5f0eb] border-b border-slate-100 dark:border-[#2e2a26]/10 flex items-center font-semibold">
+                                <div key={`prazo-${plan.id}`} className="p-3 text-[#0B1B2E] dark:text-[var(--foreground)] border-b border-slate-100 dark:border-[var(--border)]/10 flex items-center font-semibold">
                                     {plan.prazo_instalacao || 'A consultar'}
                                 </div>
                             ))}

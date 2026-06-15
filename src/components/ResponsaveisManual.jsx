@@ -1,28 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import BentoAvatar from './common/Avatar';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // ── Paleta Bento Blue ─────────────────────────────────────────────────────
-const C = {
-    bg: '#F5F9FF',
-    surface: '#FFFFFF',
-    surfaceSoft: '#F7FAFD',
-    surfaceRaised: '#EFF4FA',
-    accent: '#4A9EF5',
-    accentDark: '#2D7BD4',
-    accentDeep: '#1F5BA8',
-    accentSoft: '#EAF4FF',
-    ink: '#0B1B2E',
-    ink2: '#475467',
-    muted: '#8896A8',
-    line: '#E4ECF5',
-    lineSoft: '#EFF4FA',
-    success: '#1F8A5B',
-    successSoft: '#E6F4EC',
-    danger: '#E84545',
-    dangerSoft: '#FDEDED',
-    warning: '#D97706',
-    warningSoft: '#FEF3E2',
-};
 
 const tone = (hex, a) => {
     const h = hex.replace('#', '');
@@ -42,6 +22,7 @@ const sIconBox = (color, bg) => ({
 });
 
 export default function ResponsaveisManual() {
+    const C = useBentoTheme();
     const [setores, setSetores] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
     const [responsaveisManuais, setResponsaveisManuais] = useState({});

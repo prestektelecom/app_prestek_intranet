@@ -1,6 +1,8 @@
 import React from 'react';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 export default function CalendarDay({ day, isToday, active, onClick, isAdmin }) {
+    const C = useBentoTheme();
     let classes = "w-full aspect-square flex flex-col items-center justify-center text-xs rounded-full font-bold transition-all duration-300 relative group overflow-hidden ";
     
     if (isAdmin) {

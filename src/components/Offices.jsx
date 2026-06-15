@@ -1,27 +1,8 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import 'leaflet/dist/leaflet.css';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Escala/Cobertura)
-const C = {
-  bg: '#F5F9FF',
-  surface: '#FFFFFF',
-  surfaceSoft: '#F7FAFD',
-  accent: '#4A9EF5',
-  accentDark: '#2D7BD4',
-  accentDeep: '#1F5BA8',
-  accentSoft: '#EAF4FF',
-  cyan: '#7FD4E8',
-  ink: '#0B1B2E',
-  ink2: '#475467',
-  muted: '#8896A8',
-  line: '#E4ECF5',
-  success: '#1F8A5B',
-  successSoft: '#E6F4EC',
-  warning: '#D97706',
-  warningSoft: '#FEF3E2',
-  danger: '#E84545',
-  dangerSoft: '#FDEDED',
-};
 
 function tone(hex, a) {
   const h = hex.replace('#', '');
@@ -130,7 +111,7 @@ function OfficesHero({ total, contAL, contSE, matriz, onAdd, isAdmin }) {
                     <button onClick={onAdd} style={{
                         display: 'inline-flex', alignItems: 'center', gap: 6,
                         padding: '10px 16px', borderRadius: 10,
-                        background: 'white', color: C.accentDeep,
+                        background: C.surface, color: C.accentDeep,
                         fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.12)', border: 'none',
                     }}>
@@ -258,7 +239,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                             {isEdicao && <p className="text-xs text-[#8896A8] font-mono">ID {escritorio.id}</p>}
                         </div>
                     </div>
-                    <button onClick={onFechar} className="text-[#8896A8] hover:text-[#E84545] p-1 rounded-full hover:bg-[#FDEDED] transition-colors">
+                    <button onClick={onFechar} className="text-[#8896A8] hover:text-[#E84545] p-1 rounded-full hover:bg-[var(--danger-soft)] transition-colors">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -379,6 +360,7 @@ const LIST_MIN_PX = 200;
 const LIST_MAX_PCT = 65;
 
 export default function Offices({ user, setCurrentView }) {
+    const C = useBentoTheme();
     const containerRef = useRef(null);
     const mapRef = useRef(null);
     const markersRef = useRef({});
@@ -576,7 +558,7 @@ export default function Offices({ user, setCurrentView }) {
                     <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={() => setConfirmandoExclusao(null)} />
                     <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-[#E4ECF5]">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="bg-[#FDEDED] p-2 rounded-lg">
+                            <div className="bg-[var(--danger-soft)] p-2 rounded-lg">
                                 <span className="material-symbols-outlined text-[#E84545] text-xl">delete</span>
                             </div>
                             <h3 className="font-black text-[#0B1B2E]">Excluir Escritório</h3>
@@ -698,7 +680,7 @@ export default function Offices({ user, setCurrentView }) {
                                             <button
                                                 onClick={e => { e.stopPropagation(); setConfirmandoExclusao(office.id); }}
                                                 title="Excluir escritório"
-                                                className="p-1 rounded text-[#8896A8] hover:text-[#E84545] hover:bg-[#FDEDED] transition-colors"
+                                                className="p-1 rounded text-[#8896A8] hover:text-[#E84545] hover:bg-[var(--danger-soft)] transition-colors"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">delete</span>
                                             </button>

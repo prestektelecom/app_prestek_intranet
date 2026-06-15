@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 const LIMITE = 20;
 
@@ -10,11 +11,11 @@ function DiffBadge({ anterior, novo, label }) {
             <span className="text-[9px] font-black uppercase tracking-widest text-[#475467]">{label}</span>
             {mudou ? (
                 <div className="flex flex-wrap items-center gap-1 text-xs">
-                    <span className="bg-[#FDEDED] text-[#E84545] px-2 py-0.5 rounded-md line-through font-medium">
+                    <span className="bg-[var(--danger-soft)] text-[var(--danger-bento)] px-2 py-0.5 rounded-md line-through font-medium">
                         {anterior || '—'}
                     </span>
                     <span className="material-symbols-outlined text-[14px] text-[#475467]">arrow_forward</span>
-                    <span className="bg-[#E6F4EC] text-[#1F8A5B] px-2 py-0.5 rounded-md font-bold">
+                    <span className="bg-[var(--success-soft)] text-[var(--success-bento)] px-2 py-0.5 rounded-md font-bold">
                         {novo || '—'}
                     </span>
                 </div>
@@ -26,6 +27,7 @@ function DiffBadge({ anterior, novo, label }) {
 }
 
 export default function ScheduleHistoricoTab({ filterMonth, filterYear, user, onViewFullAudit }) {
+    const C = useBentoTheme();
     const [historico, setHistorico] = useState([]);
     const [total, setTotal] = useState(0);
     const [carregando, setCarregando] = useState(true);
@@ -99,7 +101,7 @@ export default function ScheduleHistoricoTab({ filterMonth, filterYear, user, on
 
             {/* Error */}
             {erro && (
-                <div className="p-4 rounded-xl border border-[#E84545]/20 bg-[#FDEDED] text-[#E84545] text-sm font-medium flex items-center gap-2">
+                <div className="p-4 rounded-xl border border-[#E84545]/20 bg-[var(--danger-soft)] text-[var(--danger-bento)] text-sm font-medium flex items-center gap-2">
                     <span className="material-symbols-outlined">error</span>
                     {erro}
                     <button onClick={carregar} className="ml-auto underline hover:no-underline font-bold text-sm">Tentar novamente</button>
@@ -162,7 +164,7 @@ export default function ScheduleHistoricoTab({ filterMonth, filterYear, user, on
                                             <span className="text-sm text-[#475467] font-medium">{formatarDateTime(h.alterado_em)}</span>
                                         </div>
                                         <div className="flex items-center justify-end gap-1 pl-4 md:pl-0">
-                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${temAlteracao ? 'bg-[#FEF3E2] text-[#92400E]' : 'bg-[#F7FAFD] text-[#475467]'}`}>
+                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${temAlteracao ? 'bg-[var(--warning-soft)] text-[var(--warning-bento)]' : 'bg-[var(--surface-soft)] text-[var(--ink2)]'}`}>
                                                 {temAlteracao ? 'Alterado' : 'Sem mudança'}
                                             </span>
                                             <span

@@ -23,11 +23,6 @@ export default {
                 input:           "var(--input)",
                 ring:            "var(--ring)",
 
-                /* ── Legacy aliases (compatibilidade) ──────────────── */
-                "background-light":  "#f8f7f5",
-                "background-dark":   "#141210",
-                secondary:           "#a17745",
-
                 /* Tokens legados — mantidos para não quebrar componentes */
                 "surface-container-lowest": "var(--card)",
                 "surface-container-low":    "var(--surface)",

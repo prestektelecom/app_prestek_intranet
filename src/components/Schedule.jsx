@@ -7,28 +7,9 @@ import ScheduleHistoricoTab from './schedule/ScheduleHistoricoTab';
 import { useScheduleData } from '../hooks/useScheduleData';
 import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
 import { handleImprimir, handleExportarICal } from '../services/exportService';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Colaboradores)
-const C = {
-  bg: '#F5F9FF',
-  surface: '#FFFFFF',
-  surfaceSoft: '#F7FAFD',
-  accent: '#4A9EF5',
-  accentDark: '#2D7BD4',
-  accentDeep: '#1F5BA8',
-  accentSoft: '#EAF4FF',
-  cyan: '#7FD4E8',
-  ink: '#0B1B2E',
-  ink2: '#475467',
-  muted: '#8896A8',
-  line: '#E4ECF5',
-  success: '#1F8A5B',
-  successSoft: '#E6F4EC',
-  warning: '#D97706',
-  warningSoft: '#FEF3E2',
-  danger: '#E84545',
-  dangerSoft: '#FDEDED',
-};
 
 function tone(hex, a) {
   const h = hex.replace('#', '');
@@ -37,6 +18,7 @@ function tone(hex, a) {
 }
 
 function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, user, onPrint, onExport, onHistory, onAudit }) {
+  const C = useBentoTheme();
   const kpis = [
     { label: 'Plantões', value: totalPlantoes, icon: 'event_available' },
     { label: 'Dias Cobertos', value: diasCobertos, icon: 'calendar_today' },
@@ -90,7 +72,7 @@ function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, use
             <button onClick={onExport} style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '9px 14px', borderRadius: 10,
-              background: 'white', color: C.accentDeep,
+              background: C.surface, color: C.accentDeep,
               fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer',
               boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
             }}>
@@ -159,6 +141,7 @@ function SkeletonRow() {
 }
 
 export default function Schedule({ setCurrentView, user }) {
+    const C = useBentoTheme();
     const d = new Date();
     const [activeTab, setActiveTab] = useState('escala');
     const [filterMonth, setFilterMonth] = useState((d.getMonth() + 1).toString());
@@ -440,7 +423,7 @@ export default function Schedule({ setCurrentView, user }) {
                 />
 
                 {erroCarregamento && (
-                    <div className="p-4 rounded-xl border border-[#E84545]/30 bg-[#FDEDED] dark:bg-[#3a1515] text-[#E84545] dark:text-red-300 text-sm font-medium flex items-center gap-2">
+                    <div className="p-4 rounded-xl border border-[#E84545]/30 bg-[var(--danger-soft)] text-[var(--danger-bento)] text-sm font-medium flex items-center gap-2">
                         <span className="material-symbols-outlined">error</span>
                         {erroCarregamento}
                     </div>
@@ -651,7 +634,7 @@ export default function Schedule({ setCurrentView, user }) {
                                         )}
                                     </div>
                                 </div>
-                                <div className="size-10 rounded-full bg-[#FEF3E2] flex items-center justify-center text-[#D97706] shrink-0 transition-transform hover:scale-110 duration-300">
+                                <div className="size-10 rounded-full bg-[var(--warning-soft)] flex items-center justify-center text-[var(--warning-bento)] shrink-0 transition-transform hover:scale-110 duration-300">
                                     <span className="material-symbols-outlined">history</span>
                                 </div>
                             </div>

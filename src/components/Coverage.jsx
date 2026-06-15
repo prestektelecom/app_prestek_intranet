@@ -157,23 +157,23 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="bg-white dark:bg-[#1c1917] rounded-2xl shadow-2xl w-full max-w-lg border border-[#E4ECF5] dark:border-[#2e2a26] my-4">
+            <div className="bg-white dark:bg-[#0B1B2E] rounded-2xl shadow-2xl w-full max-w-lg border border-[#E4ECF5] dark:border-[var(--border)] my-4">
                 {/* Cabeçalho */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] dark:border-[#2e2a26]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] dark:border-[var(--border)]">
                     <div>
-                        <h3 className="text-[#0B1B2E] dark:text-[#f5f0eb] font-bold text-lg">Configurar Cobertura</h3>
+                        <h3 className="text-[#0B1B2E] dark:text-[var(--foreground)] font-bold text-lg">Configurar Cobertura</h3>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {registro.cidade} — {registro.bairro}
                         </p>
                     </div>
-                    <button onClick={onFechar} className="text-slate-400 dark:text-slate-500 hover:text-[#1F5BA8] dark:hover:text-[#4A9EF5] p-1.5 rounded-xl hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all">
+                    <button onClick={onFechar} className="text-slate-400 dark:text-slate-500 hover:text-[#1F5BA8] dark:hover:text-[#4A9EF5] p-1.5 rounded-xl hover:bg-[#F5F9FF] dark:hover:bg-[#0B1B2E] transition-all">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="px-6 py-5 grid grid-cols-2 gap-4">
                     {/* Info somente leitura */}
-                    <div className="col-span-2 bg-[#F5F9FF] dark:bg-[#141210]/50 rounded-xl px-4 py-3 flex items-center gap-3 border border-[#E4ECF5] dark:border-[#2e2a26]">
+                    <div className="col-span-2 bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 rounded-xl px-4 py-3 flex items-center gap-3 border border-[#E4ECF5] dark:border-[var(--border)]">
                         <span className="material-symbols-outlined text-[#1F5BA8] dark:text-[#4A9EF5]">info</span>
                         <div>
                             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -189,11 +189,11 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tecnologia</label>
                         <select
-                            className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                             value={form.tecnologia}
                             onChange={e => handleChange('tecnologia', e.target.value)}
                         >
-                            {TECNOLOGIAS.map(t => <option key={t} value={t} className="dark:bg-[#1c1917]">{t}</option>)}
+                            {TECNOLOGIAS.map(t => <option key={t} value={t} className="dark:bg-[#0B1B2E]">{t}</option>)}
                         </select>
                     </div>
 
@@ -201,11 +201,11 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Veloc. Máxima</label>
                         <select
-                            className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                             value={form.velocidade_maxima}
                             onChange={e => handleChange('velocidade_maxima', e.target.value)}
                         >
-                            {VELOCIDADES.map(v => <option key={v} value={v} className="dark:bg-[#1c1917]">{v}</option>)}
+                            {VELOCIDADES.map(v => <option key={v} value={v} className="dark:bg-[#0B1B2E]">{v}</option>)}
                         </select>
                     </div>
 
@@ -213,11 +213,11 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</label>
                         <select
-                            className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                             value={form.status}
                             onChange={e => handleChange('status', e.target.value)}
                         >
-                            {STATUS_OPCOES.map(s => <option key={s} value={s} className="dark:bg-[#1c1917]">{s}</option>)}
+                            {STATUS_OPCOES.map(s => <option key={s} value={s} className="dark:bg-[#0B1B2E]">{s}</option>)}
                         </select>
                     </div>
 
@@ -235,7 +235,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     </div>
 
                     {/* ─── Seção Localização ─── */}
-                    <div className="col-span-2 border-t border-[#E4ECF5] dark:border-[#2e2a26] pt-3">
+                    <div className="col-span-2 border-t border-[#E4ECF5] dark:border-[var(--border)] pt-3">
                         <button
                             type="button"
                             onClick={() => setMapaAberto(v => !v)}
@@ -259,7 +259,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                                     type="text"
                                     inputMode="decimal"
                                     placeholder="-9.9170800"
-                                    className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent font-mono transition-all"
+                                    className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent font-mono transition-all"
                                     value={form.latitude}
                                     onChange={e => handleCoordChange('latitude', e.target.value)}
                                 />
@@ -270,7 +270,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                                     type="text"
                                     inputMode="decimal"
                                     placeholder="-36.5560000"
-                                    className="border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[#f5f0eb] bg-white dark:bg-[#1c1917]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent font-mono transition-all"
+                                    className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent font-mono transition-all"
                                     value={form.longitude}
                                     onChange={e => handleCoordChange('longitude', e.target.value)}
                                 />
@@ -279,8 +279,8 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
 
                         {/* Mini-mapa colapsável */}
                         {mapaAberto && (
-                            <div className="rounded-xl overflow-hidden border border-[#E4ECF5] dark:border-[#2e2a26] shadow-inner">
-                                <div className="bg-[#F5F9FF] dark:bg-[#141210]/50 px-3 py-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 border-b border-[#E4ECF5] dark:border-[#2e2a26]">
+                            <div className="rounded-xl overflow-hidden border border-[#E4ECF5] dark:border-[var(--border)] shadow-inner">
+                                <div className="bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 px-3 py-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 border-b border-[#E4ECF5] dark:border-[var(--border)]">
                                     <span className="material-symbols-outlined text-[14px]">touch_app</span>
                                     Clique no mapa para definir a posição exata do bairro
                                 </div>
@@ -300,7 +300,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     )}
 
                     <div className="col-span-2 flex gap-3 justify-end pt-2">
-                        <button type="button" onClick={onFechar} className="px-4 py-2.5 text-sm font-semibold border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl text-slate-600 dark:text-[#a09080] bg-white dark:bg-[#211e1b] hover:bg-[#F5F9FF] dark:hover:bg-[#2a2622] active:scale-[0.98] transition-all cursor-pointer">
+                        <button type="button" onClick={onFechar} className="px-4 py-2.5 text-sm font-semibold border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl text-slate-600 dark:text-[#8896A8] bg-white dark:bg-[#0B1B2E] hover:bg-[#F5F9FF] dark:hover:bg-[#1E3A5F] active:scale-[0.98] transition-all cursor-pointer">
                             Cancelar
                         </button>
                         <button type="submit" disabled={salvando} className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:opacity-90 active:scale-[0.98] rounded-xl shadow-[0_4px_12px_rgba(74,158,245,0.25)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60">
@@ -324,7 +324,7 @@ function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) 
             className={`p-3 rounded-xl cursor-pointer transition-all duration-200 flex flex-col gap-2 border ${
                 selecionada 
                     ? 'bg-[#1F5BA8]/10 border-[#1F5BA8]/30' 
-                    : 'border-transparent hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917]/70'
+                    : 'border-transparent hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/70'
             }`}
         >
             <div className="flex items-start justify-between gap-2">
@@ -333,7 +333,7 @@ function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) 
                         {row.estado}
                     </div>
                     <div className="truncate">
-                        <p className="text-xs font-bold text-[#0B1B2E] dark:text-[#f5f0eb] truncate">{row.cidade}</p>
+                        <p className="text-xs font-bold text-[#0B1B2E] dark:text-[var(--foreground)] truncate">{row.cidade}</p>
                         <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{row.bairro}</p>
                     </div>
                 </div>
@@ -347,7 +347,7 @@ function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) 
                         title={row.tem_override ? 'Editar configuração' : 'Configurar dados de cobertura'}
                         className={`p-1 rounded-lg shrink-0 transition-all duration-200 ${
                             row.tem_override
-                                ? 'text-slate-400 dark:text-slate-500 hover:text-[#1F5BA8] dark:hover:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917]'
+                                ? 'text-slate-400 dark:text-slate-500 hover:text-[#1F5BA8] dark:hover:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]'
                                 : 'text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#1F5BA8]/10'
                         }`}
                     >
@@ -370,12 +370,12 @@ function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) 
                 )}
 
                 {/* Speed */}
-                <span className="font-bold text-[#0B1B2E] dark:text-[#f5f0eb]">
+                <span className="font-bold text-[#0B1B2E] dark:text-[var(--foreground)]">
                     {row.velocidade_maxima || '—'}
                 </span>
 
                 {/* Contratos */}
-                <span className="text-slate-500 font-bold bg-[#F5F9FF]/80 dark:bg-[#141210]/50 border border-[#E4ECF5] dark:border-[#2e2a26] px-1.5 py-0.5 rounded">
+                <span className="text-slate-500 font-bold bg-[#F5F9FF]/80 dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-1.5 py-0.5 rounded">
                     {row.total_contratos} contr.
                 </span>
             </div>
@@ -387,7 +387,7 @@ function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) 
                         <span>{row.status}</span>
                         <span className={stat.textCls}>{row.percentual_cobertura}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-[#E4ECF5] dark:bg-[#2e2a26] rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-[#E4ECF5] dark:bg-[#1E3A5F] rounded-full overflow-hidden">
                         <div className={`h-full ${stat.barCls} transition-all`} style={{ width: `${row.percentual_cobertura}%` }} />
                     </div>
                 </div>
@@ -464,7 +464,7 @@ export default function Coverage({ user }) {
     const limparFiltros = () => { setBusca(''); setBuscaInput(''); setFiltroTec(''); setFiltroStatus(''); setPage(1); };
 
     return (
-        <main className="layout-container flex h-full grow flex-col px-4 md:px-6 py-6 overflow-hidden bg-[#F5F9FF] dark:bg-[#141210] text-[#0B1B2E] dark:text-[#f5f0eb]">
+        <main className="layout-container flex h-full grow flex-col px-4 md:px-6 py-6 overflow-hidden bg-[#F5F9FF] dark:bg-[#0B1B2E] text-[#0B1B2E] dark:text-[var(--foreground)]">
             <div className="layout-content-container flex flex-col h-full w-full max-w-[1400px] mx-auto relative gap-4">
 
 
@@ -483,7 +483,7 @@ export default function Coverage({ user }) {
                 )}
 
                 {/* Central de Controle NOC Wrapper */}
-                <div className="relative w-full flex-grow min-h-[500px] md:min-h-[600px] rounded-3xl overflow-hidden border border-[#E4ECF5] dark:border-[#2e2a26] shadow-xl bg-slate-900">
+                <div className="relative w-full flex-grow min-h-[500px] md:min-h-[600px] rounded-3xl overflow-hidden border border-[#E4ECF5] dark:border-[var(--border)] shadow-xl bg-slate-900">
                     
                     {/* Mapa de Cobertura (Fundo) */}
                     {!carregando && dados.length > 0 && (
@@ -495,13 +495,13 @@ export default function Coverage({ user }) {
                     )}
 
                     {/* Barra de Controle Superior Flutuante */}
-                    <div className="absolute top-4 left-4 right-4 z-[10] bg-white/80 dark:bg-[#1c1917]/80 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[#2e2a26]/30 shadow-lg rounded-2xl px-5 py-3 flex flex-wrap justify-between items-center gap-4 transition-all duration-300">
+                    <div className="absolute top-4 left-4 right-4 z-[10] bg-white/80 dark:bg-[#0B1B2E]/80 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-lg rounded-2xl px-5 py-3 flex flex-wrap justify-between items-center gap-4 transition-all duration-300">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-[#1F5BA8]/10 text-[#1F5BA8] dark:text-[#4A9EF5] rounded-xl flex items-center justify-center">
                                 <span className="material-symbols-outlined text-[24px]">map</span>
                             </div>
                             <div>
-                                <h1 className="text-[#0B1B2E] dark:text-[#f5f0eb] text-base md:text-lg font-bold leading-tight">
+                                <h1 className="text-[#0B1B2E] dark:text-[var(--foreground)] text-base md:text-lg font-bold leading-tight">
                                     Central de Cobertura de Rede
                                 </h1>
                                 <p className="text-[10px] text-slate-500 dark:text-slate-400">
@@ -512,10 +512,10 @@ export default function Coverage({ user }) {
 
                         {/* Filtros Integrados */}
                         <div className="flex flex-wrap items-center gap-2.5">
-                            <div className="flex items-center gap-2 bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl px-2.5 h-8.5 focus-within:ring-2 focus-within:ring-[#4A9EF5] focus-within:border-transparent transition-all">
+                            <div className="flex items-center gap-2 bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-2.5 h-8.5 focus-within:ring-2 focus-within:ring-[#4A9EF5] focus-within:border-transparent transition-all">
                                 <span className="material-symbols-outlined text-[#1F5BA8] dark:text-[#4A9EF5] text-[16px]">search</span>
                                 <input
-                                    className="bg-transparent text-xs text-[#0B1B2E] dark:text-[#f5f0eb] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none w-28 md:w-40"
+                                    className="bg-transparent text-xs text-[#0B1B2E] dark:text-[var(--foreground)] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none w-28 md:w-40"
                                     placeholder="Buscar cidade/bairro"
                                     value={buscaInput}
                                     onChange={e => setBuscaInput(e.target.value)}
@@ -524,21 +524,21 @@ export default function Coverage({ user }) {
                             </div>
 
                             <select
-                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5] dark:border-[#2e2a26] px-2.5 text-xs text-[#0B1B2E] dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all"
+                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all"
                                 value={filtroTec}
                                 onChange={e => setFiltroTec(e.target.value)}
                             >
-                                <option value="" className="dark:bg-[#1c1917]">Tecnologia: Todas</option>
-                                {TECNOLOGIAS.map(t => <option key={t} value={t} className="dark:bg-[#1c1917]">{t}</option>)}
+                                <option value="" className="dark:bg-[#0B1B2E]">Tecnologia: Todas</option>
+                                {TECNOLOGIAS.map(t => <option key={t} value={t} className="dark:bg-[#0B1B2E]">{t}</option>)}
                             </select>
 
                             <select
-                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5] dark:border-[#2e2a26] px-2.5 text-xs text-[#0B1B2E] dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all"
+                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all"
                                 value={filtroStatus}
                                 onChange={e => setFiltroStatus(e.target.value)}
                             >
-                                <option value="" className="dark:bg-[#1c1917]">Status: Todos</option>
-                                {STATUS_OPCOES.map(s => <option key={s} value={s} className="dark:bg-[#1c1917]">{s}</option>)}
+                                <option value="" className="dark:bg-[#0B1B2E]">Status: Todos</option>
+                                {STATUS_OPCOES.map(s => <option key={s} value={s} className="dark:bg-[#0B1B2E]">{s}</option>)}
                             </select>
 
                             {(busca || filtroTec || filtroStatus) && (
@@ -562,7 +562,7 @@ export default function Coverage({ user }) {
                     {/* Botão Toggle da Sidebar */}
                     <button
                         onClick={() => setSidebarAberta(!sidebarAberta)}
-                        className="absolute top-[88px] z-[20] size-9 rounded-xl bg-white dark:bg-[#1c1917] border border-[#E4ECF5] dark:border-[#2e2a26] shadow-lg flex items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917]/50 transition-all duration-300"
+                        className="absolute top-[88px] z-[20] size-9 rounded-xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-lg flex items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 transition-all duration-300"
                         style={{ transform: sidebarAberta ? 'translateX(326px)' : 'translateX(16px)' }}
                         title={sidebarAberta ? 'Recolher Painel' : 'Expandir Painel'}
                     >
@@ -573,12 +573,12 @@ export default function Coverage({ user }) {
 
                     {/* Painel Lateral Flutuante */}
                     <div 
-                        className={`absolute top-[88px] bottom-4 left-4 z-[10] w-[310px] max-w-[calc(100vw-32px)] bg-white/90 dark:bg-[#1c1917]/90 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[#2e2a26]/30 shadow-2xl rounded-2xl flex flex-col transition-all duration-300 ${
+                        className={`absolute top-[88px] bottom-4 left-4 z-[10] w-[310px] max-w-[calc(100vw-32px)] bg-white/90 dark:bg-[#0B1B2E]/90 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-2xl rounded-2xl flex flex-col transition-all duration-300 ${
                             sidebarAberta ? 'translate-x-0 opacity-100' : '-translate-x-[330px] opacity-0 pointer-events-none'
                         }`}
                     >
-                        <div className="px-4 py-3 border-b border-[#E4ECF5]/40 dark:border-[#2e2a26]/40 flex justify-between items-center">
-                            <span className="text-[#0B1B2E] dark:text-[#f5f0eb] font-bold text-xs">Cidades e Bairros ({dadosFiltrados.length})</span>
+                        <div className="px-4 py-3 border-b border-[#E4ECF5]/40 dark:border-[var(--border)]/40 flex justify-between items-center">
+                            <span className="text-[#0B1B2E] dark:text-[var(--foreground)] font-bold text-xs">Cidades e Bairros ({dadosFiltrados.length})</span>
                             {carregando && (
                                 <span className="material-symbols-outlined text-[#1F5BA8] text-[14px] animate-spin">autorenew</span>
                             )}
@@ -609,7 +609,7 @@ export default function Coverage({ user }) {
                         </div>
 
                         {/* Paginação da Sidebar */}
-                        <div className="px-3.5 py-2.5 border-t border-[#E4ECF5]/40 dark:border-[#2e2a26]/40 bg-[#F5F9FF]/50 dark:bg-[#141210]/30 rounded-b-2xl flex items-center justify-between">
+                        <div className="px-3.5 py-2.5 border-t border-[#E4ECF5]/40 dark:border-[var(--border)]/40 bg-[#F5F9FF]/50 dark:bg-[#0B1B2E]/30 rounded-b-2xl flex items-center justify-between">
                             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
                                 {page} de {totalPaginas || 1}
                             </span>
@@ -617,14 +617,14 @@ export default function Coverage({ user }) {
                                 <button
                                     disabled={page <= 1}
                                     onClick={() => setPage(p => p - 1)}
-                                    className="p-1 border border-[#E4ECF5] dark:border-[#2e2a26] rounded-lg bg-white dark:bg-[#1c1917] text-slate-600 dark:text-[#a09080] disabled:opacity-40 hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all cursor-pointer"
+                                    className="p-1 border border-[#E4ECF5] dark:border-[var(--border)] rounded-lg bg-white dark:bg-[#0B1B2E] text-slate-600 dark:text-[#8896A8] disabled:opacity-40 hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-sm block">chevron_left</span>
                                 </button>
                                 <button
                                     disabled={page >= totalPaginas}
                                     onClick={() => setPage(p => p + 1)}
-                                    className="p-1 border border-[#E4ECF5] dark:border-[#2e2a26] rounded-lg bg-white dark:bg-[#1c1917] text-slate-600 dark:text-[#a09080] disabled:opacity-40 hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all cursor-pointer"
+                                    className="p-1 border border-[#E4ECF5] dark:border-[var(--border)] rounded-lg bg-white dark:bg-[#0B1B2E] text-slate-600 dark:text-[#8896A8] disabled:opacity-40 hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-sm block">chevron_right</span>
                                 </button>
@@ -634,20 +634,20 @@ export default function Coverage({ user }) {
 
                     {/* Resumo Bento Flutuante (Bottom-Right) */}
                     {isAdmin && !carregando && dados.length > 0 && (
-                        <div className="absolute bottom-4 right-4 z-[10] bg-white/95 dark:bg-[#1c1917]/95 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[#2e2a26]/30 shadow-2xl rounded-2xl p-4 flex flex-col gap-2 max-w-[220px] transition-all duration-300">
+                        <div className="absolute bottom-4 right-4 z-[10] bg-white/95 dark:bg-[#0B1B2E]/95 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-2xl rounded-2xl p-4 flex flex-col gap-2 max-w-[220px] transition-all duration-300">
                             <span className="text-[9px] font-bold text-[#1F5BA8] dark:text-[#4A9EF5] uppercase tracking-wider">Estatísticas Gerais</span>
                             <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div className="bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5]/50 dark:border-[#2e2a26]/50 rounded-xl p-2 flex flex-col">
+                                <div className="bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5]/50 dark:border-[var(--border)]/50 rounded-xl p-2 flex flex-col">
                                     <span className="text-[9px] text-slate-400 font-medium">Cidades</span>
-                                    <span className="text-base font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight mt-0.5">{cidadesUnicas}</span>
+                                    <span className="text-base font-black text-[#0B1B2E] dark:text-[var(--foreground)] leading-tight mt-0.5">{cidadesUnicas}</span>
                                 </div>
-                                <div className="bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5]/50 dark:border-[#2e2a26]/50 rounded-xl p-2 flex flex-col">
+                                <div className="bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5]/50 dark:border-[var(--border)]/50 rounded-xl p-2 flex flex-col">
                                     <span className="text-[9px] text-slate-400 font-medium">Regiões</span>
-                                    <span className="text-base font-black text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight mt-0.5">{dados.length}</span>
+                                    <span className="text-base font-black text-[#0B1B2E] dark:text-[var(--foreground)] leading-tight mt-0.5">{dados.length}</span>
                                 </div>
-                                <div className="bg-[#F5F9FF] dark:bg-[#141210]/50 border border-[#E4ECF5]/50 dark:border-[#2e2a26]/50 rounded-xl p-2 flex flex-col col-span-2">
+                                <div className="bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5]/50 dark:border-[var(--border)]/50 rounded-xl p-2 flex flex-col col-span-2">
                                     <span className="text-[9px] text-slate-400 font-medium">Configuradas (Override)</span>
-                                    <span className="text-xs font-bold text-[#0B1B2E] dark:text-[#f5f0eb] leading-tight mt-0.5">{totalComConfig} / {dados.length}</span>
+                                    <span className="text-xs font-bold text-[#0B1B2E] dark:text-[var(--foreground)] leading-tight mt-0.5">{totalComConfig} / {dados.length}</span>
                                 </div>
                             </div>
                         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MultiSelectEmployee from './MultiSelectEmployee';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 export default function ManagePlantaoModal({
     isOpen,
@@ -19,6 +20,7 @@ export default function ManagePlantaoModal({
     funcionarios,
     getNamesFromIds,
 }) {
+    const C = useBentoTheme();
     const [validationError, setValidationError] = useState('');
     const [historicoOpen, setHistoricoOpen] = useState(false);
     const [n1Open, setN1Open] = useState(true);
@@ -75,7 +77,7 @@ export default function ManagePlantaoModal({
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-[#8896A8] hover:text-[#E84545] transition-colors p-1 rounded-full hover:bg-[#FDEDED]"
+                        className="text-[#8896A8] hover:text-[#E84545] transition-colors p-1 rounded-full hover:bg-[var(--danger-soft)]"
                     >
                         <span className="material-symbols-outlined text-[20px]">close</span>
                     </button>
@@ -91,7 +93,7 @@ export default function ManagePlantaoModal({
 
                         {/* Aviso de plantão existente */}
                         {existingPlantao && (
-                            <div className="flex flex-col gap-1.5 bg-[#FEF3E2] border border-[#D97706]/30 text-[#92400E] px-3 py-2.5 rounded-lg text-xs">
+                            <div className="flex flex-col gap-1.5 bg-[var(--warning-soft)] border border-[var(--warning-bento)]/30 text-[var(--warning-bento)] px-3 py-2.5 rounded-lg text-xs">
                                 <div className="flex items-center gap-1.5 font-black uppercase tracking-wider text-[10px]">
                                     <span className="material-symbols-outlined text-[16px]">warning</span>
                                     Já existe um plantão — salvar irá substituir.
@@ -101,7 +103,7 @@ export default function ManagePlantaoModal({
 
                         {/* Erro de validação inline */}
                         {validationError && (
-                            <div className="flex items-center gap-1.5 bg-[#FDEDED] border border-[#E84545]/30 text-[#E84545] px-3 py-2 rounded-lg text-xs font-bold">
+                            <div className="flex items-center gap-1.5 bg-[var(--danger-soft)] border border-[var(--danger-bento)]/30 text-[var(--danger-bento)] px-3 py-2 rounded-lg text-xs font-bold">
                                 <span className="material-symbols-outlined text-[16px]">error</span>
                                 {validationError}
                             </div>
@@ -242,7 +244,7 @@ export default function ManagePlantaoModal({
                                 type="button"
                                 onClick={onDelete}
                                 disabled={salvando || deletando}
-                                className="px-3 py-2 bg-[#FDEDED] text-[#E84545] font-bold rounded-xl hover:bg-[#E84545]/10 transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                                className="px-3 py-2 bg-[var(--danger-soft)] text-[var(--danger-bento)] font-bold rounded-xl hover:bg-[#E84545]/10 transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                             >
                                 <span className="material-symbols-outlined text-[18px]">delete</span>
                                 <span>Excluir</span>

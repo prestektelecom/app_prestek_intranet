@@ -1,7 +1,9 @@
 import React from 'react';
 import LottieAvatar from '../common/LottieAvatar';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 export default function UserAvatar({ user, allowEmpty, hideName, className }) {
+    const C = useBentoTheme();
     if (!user && allowEmpty) {
         return (
             <div className={`flex items-center gap-2 ${className}`}>

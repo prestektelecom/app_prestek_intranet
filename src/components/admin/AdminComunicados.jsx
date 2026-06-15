@@ -1,28 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const FORM_VAZIO = { titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '' };
 
 // ── Paleta Bento Blue ─────────────────────────────────────────────────────
-const C = {
-    bg: '#F5F9FF',
-    surface: '#FFFFFF',
-    surfaceSoft: '#F7FAFD',
-    accent: '#4A9EF5',
-    accentDark: '#2D7BD4',
-    accentDeep: '#1F5BA8',
-    accentSoft: '#EAF4FF',
-    ink: '#0B1B2E',
-    ink2: '#475467',
-    muted: '#8896A8',
-    line: '#E4ECF5',
-    success: '#1F8A5B',
-    successSoft: '#E6F4EC',
-    warning: '#D97706',
-    warningSoft: '#FEF3E2',
-    danger: '#E84545',
-    dangerSoft: '#FDEDED',
-};
 
 const tone = (hex, a) => {
     const h = hex.replace('#', '');
@@ -41,11 +23,12 @@ const sIconBox = (color, bg) => ({
     color,
 });
 
-const TYPE_META = {
+// Retorna as definições visuais por tipo de comunicado com base no tema atual
+const getTypeMeta = (C) => ({
     Urgente: { color: C.danger, soft: C.dangerSoft, icon: 'priority_high', label: 'URGENTE' },
     Importante: { color: C.warning, soft: C.warningSoft, icon: 'notification_important', label: 'IMPORTANTE' },
     Geral: { color: C.success, soft: C.successSoft, icon: 'article', label: 'GERAL' }
-};
+});
 
 function relativeTime(d) {
     if (!d) return '';
@@ -58,6 +41,7 @@ function relativeTime(d) {
 }
 
 export default function AdminComunicados({ adminEmail }) {
+    const C = useBentoTheme();
     const [comunicados, setComunicados] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
@@ -265,7 +249,8 @@ export default function AdminComunicados({ adminEmail }) {
             ) : (
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                     {comunicadosFiltrados.map(c => {
-                        const meta = TYPE_META[c.tipo] || TYPE_META.Geral;
+                        const typeMeta = getTypeMeta(C);
+                        const meta = typeMeta[c.tipo] || typeMeta.Geral;
                         return (
                             <div
                                 key={c.id}

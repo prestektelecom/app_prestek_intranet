@@ -1,47 +1,28 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // ── Paleta idêntica ao Dashboard ──────────────────────────────────────────────
-const C = {
-  bg:          '#F5F9FF',
-  surface:     '#FFFFFF',
-  surfaceSoft: '#F7FAFD',
-  accent:      '#4A9EF5',
-  accentDark:  '#2D7BD4',
-  accentDeep:  '#1F5BA8',
-  accentSoft:  '#EAF4FF',
-  cyan:        '#7FD4E8',
-  ink:         '#0B1B2E',
-  ink2:        '#475467',
-  muted:       '#8896A8',
-  line:        '#E4ECF5',
-  success:     '#1F8A5B',
-  successSoft: '#E6F4EC',
-  warning:     '#D97706',
-  warningSoft: '#FEF3E2',
-  danger:      '#E84545',
-  dangerSoft:  '#FDEDED',
-};
 
 // ── Sistema de cores por departamento ────────────────────────────────────────
 const DEPT_COLORS = [
-  { keys: ['atendimento', 'suporte', 'relacionamento', 'helpdesk', 'client'],    color: C.accent      },
-  { keys: ['ti', ' t.i', 't.i.', 'tecnologia', 'noc', 'sistema', 'infraestr'],   color: C.cyan        },
-  { keys: ['comercial', 'venda', 'marketing', 'passivo', 'mkt'],                  color: C.warning     },
-  { keys: ['financeiro', 'financ', 'cobrança', 'cobranc', 'jurídico', 'fiscal'],  color: C.success     },
-  { keys: ['rh', 'recursos humanos', 'gestão de pessoas', 'gente'],               color: '#8B5CF6'     },
-  { keys: ['instalação', 'instalacao', 'campo', 'tecnico', 'tecnic', 'correcao'], color: C.danger      },
-  { keys: ['frota', 'estoque', 'patrimonio', 'logist'],                           color: '#0B3D6B'     },
-  { keys: ['diretoria', 'gerencia', 'gerência', 'auditoria'],                     color: '#374151'     },
+  { keys: ['atendimento', 'suporte', 'relacionamento', 'helpdesk', 'client'],    color: '#4A9EF5' },
+  { keys: ['ti', ' t.i', 't.i.', 'tecnologia', 'noc', 'sistema', 'infraestr'],   color: '#7FD4E8' },
+  { keys: ['comercial', 'venda', 'marketing', 'passivo', 'mkt'],                  color: '#D97706' },
+  { keys: ['financeiro', 'financ', 'cobrança', 'cobranc', 'jurídico', 'fiscal'],  color: '#1F8A5B' },
+  { keys: ['rh', 'recursos humanos', 'gestão de pessoas', 'gente'],               color: '#8B5CF6' },
+  { keys: ['instalação', 'instalacao', 'campo', 'tecnico', 'tecnic', 'correcao'], color: '#E84545' },
+  { keys: ['frota', 'estoque', 'patrimonio', 'logist'],                           color: '#0B3D6B' },
+  { keys: ['diretoria', 'gerencia', 'gerência', 'auditoria'],                     color: '#374151' },
 ];
 
-function getDeptColor(deptName) {
-  if (!deptName) return C.muted;
+function getDeptColor(deptName, muted = '#8896A8') {
+  if (!deptName) return muted;
   const lower = deptName.toLowerCase();
   for (const entry of DEPT_COLORS) {
     if (entry.keys.some(k => lower.includes(k))) return entry.color;
   }
-  return C.muted;
+  return muted;
 }
 
 function hexToRgb(hex) {
@@ -55,6 +36,7 @@ const LOTE = 16;
 
 // ── Componente Principal ──────────────────────────────────────────────────────
 export default function Directory({ user, setCurrentView }) {
+    const C = useBentoTheme();
   const isAdmin = user?.is_admin;
   const [colaboradores, setColaboradores] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);

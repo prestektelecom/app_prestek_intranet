@@ -1,17 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icons } from './common/Icons';
 import logoP from '../image/logos/Logo_P.webp';
-
-const C = {
-  accent: '#4A9EF5',
-  accentDeep: '#1F5BA8',
-  accentSoft: '#EAF4FF',
-  surfaceSoft: '#F7FAFD',
-  ink: '#0B1B2E',
-  ink2: '#475467',
-  muted: '#8896A8',
-  line: '#E4ECF5',
-};
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 const menuItems = [
   { id: 'services',  icon: 'Tools',    label: 'Serviços',      group: 'menu' },
@@ -24,58 +14,59 @@ const menuItems = [
   { id: 'tickets',   icon: 'Ticket',   label: 'Meus Chamados', group: 'menu' },
 ];
 
-function GroupLabel({ children }) {
-  return (
-    <div style={{
-      marginTop: 18, marginBottom: 4, padding: '0 12px',
-      fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
-      letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', fontWeight: 600,
-    }}>
-      {children}
-    </div>
-  );
-}
-
-function NavRow({ id, icon, label, active, badge, onClick }) {
-  const [hover, setHover] = useState(false);
-  const IconComponent = Icons[icon];
-
-  return (
-    <button
-      onClick={() => onClick(id)}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '9px 12px', borderRadius: 10, cursor: 'pointer',
-        background: active ? C.accentSoft : (hover ? C.surfaceSoft : 'transparent'),
-        color: active ? C.accentDeep : (hover ? C.ink : C.ink2),
-        fontWeight: active ? 600 : 500, fontSize: 13.5,
-        transition: 'all .12s',
-        border: 'none', width: '100%', textAlign: 'left',
-        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-      }}
-    >
-      <span style={{ display: 'flex', color: active ? C.accent : (hover ? C.accent : C.muted) }}>
-        {IconComponent && <IconComponent />}
-      </span>
-      <span style={{ flex: 1 }}>{label}</span>
-      {badge != null && (
-        <span style={{
-          background: active ? C.accent : '#FFE6E0',
-          color: active ? 'white' : '#E84545',
-          fontSize: 10.5, fontWeight: 700,
-          minWidth: 18, height: 18, padding: '0 6px', borderRadius: 9,
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          {badge}
-        </span>
-      )}
-    </button>
-  );
-}
-
 export default function Sidebar({ currentView, setCurrentView }) {
+  const C = useBentoTheme();
+
+  function GroupLabel({ children }) {
+    return (
+      <div style={{
+        marginTop: 18, marginBottom: 4, padding: '0 12px',
+        fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
+        letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', fontWeight: 600,
+      }}>
+        {children}
+      </div>
+    );
+  }
+
+  function NavRow({ id, icon, label, active, badge, onClick }) {
+    const [hover, setHover] = useState(false);
+    const IconComponent = Icons[icon];
+
+    return (
+      <button
+        onClick={() => onClick(id)}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '9px 12px', borderRadius: 10, cursor: 'pointer',
+          background: active ? C.accentSoft : (hover ? C.surfaceSoft : 'transparent'),
+          color: active ? C.accentDeep : (hover ? C.ink : C.ink2),
+          fontWeight: active ? 600 : 500, fontSize: 13.5,
+          transition: 'all .12s',
+          border: 'none', width: '100%', textAlign: 'left',
+          fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+        }}
+      >
+        <span style={{ display: 'flex', color: active ? C.accent : (hover ? C.accent : C.muted) }}>
+          {IconComponent && <IconComponent />}
+        </span>
+        <span style={{ flex: 1 }}>{label}</span>
+        {badge != null && (
+          <span style={{
+            background: active ? C.accent : C.dangerSoft,
+            color: active ? C.surface : C.danger,
+            fontSize: 10.5, fontWeight: 700,
+            minWidth: 18, height: 18, padding: '0 6px', borderRadius: 9,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {badge}
+          </span>
+        )}
+      </button>
+    );
+  }
   const [urgentCount, setUrgentCount] = useState(0);
 
   useEffect(() => {
@@ -106,7 +97,7 @@ export default function Sidebar({ currentView, setCurrentView }) {
       className="hidden lg:flex flex-col"
       style={{
         width: 248, flexShrink: 0,
-        background: 'white',
+        background: C.surface,
         borderRight: `1px solid ${C.line}`,
         padding: '20px 14px 20px',
         position: 'sticky', top: 0, height: '100vh',
@@ -199,7 +190,7 @@ export default function Sidebar({ currentView, setCurrentView }) {
           </div>
           <button style={{
             marginTop: 11, width: '100%', height: 32, border: 'none', borderRadius: 8,
-            background: 'white', color: C.accentDeep,
+            background: C.surface, color: C.accentDeep,
             fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
             fontWeight: 700, fontSize: 12, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,

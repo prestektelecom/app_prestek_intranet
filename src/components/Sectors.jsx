@@ -1,21 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // ── Paleta compartilhada (mesma do Dashboard / Colaboradores / Serviços) ──────
-const C = {
-    bg: '#F5F9FF',
-    surface: '#FFFFFF',
-    surfaceSoft: '#F7FAFD',
-    accent: '#4A9EF5',
-    accentDark: '#2D7BD4',
-    accentDeep: '#1F5BA8',
-    accentSoft: '#EAF4FF',
-    cyan: '#7FD4E8',
-    ink: '#0B1B2E',
-    ink2: '#475467',
-    muted: '#8896A8',
-    line: '#E4ECF5',
-    danger: '#E84545',
-};
 
 function tone(hex, a) {
     const h = hex.replace('#', '');
@@ -93,6 +79,7 @@ function getIconForSetor(nome) {
 }
 
 export default function Sectors({ user, setCurrentView }) {
+    const C = useBentoTheme();
     const [setores, setSetores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState(null);

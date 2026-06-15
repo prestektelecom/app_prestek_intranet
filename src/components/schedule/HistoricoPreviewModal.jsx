@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { handleExportarHistoricoCSV } from '../../services/exportService';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 const SERVER_PAGE_SIZE = 50;
 
 export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, filterYear, user, showToast }) {
+    const C = useBentoTheme();
     const [rows, setRows] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
@@ -91,7 +93,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                         </button>
                         <button
                             onClick={onClose}
-                            className="text-[#8896A8] hover:text-[#E84545] transition-colors p-1.5 rounded-full hover:bg-[#FDEDED]"
+                            className="text-[#8896A8] hover:text-[#E84545] transition-colors p-1.5 rounded-full hover:bg-[var(--danger-soft)]"
                         >
                             <span className="material-symbols-outlined text-[20px]">close</span>
                         </button>

@@ -1,7 +1,9 @@
 import React from 'react';
 import UserAvatar from './UserAvatar';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 export default function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr, isAdmin, onEdit }) {
+    const C = useBentoTheme();
     const isArray = (val) => Array.isArray(val);
     
     return (

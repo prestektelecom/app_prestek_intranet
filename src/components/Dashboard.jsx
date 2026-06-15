@@ -6,29 +6,9 @@ import BentoAvatar from './common/Avatar'
 import { Icons } from './common/Icons'
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs'
 import TiSupportModal from './TiSupportModal'
+import { useBentoTheme } from '../hooks/useBentoTheme'
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
-
-const C = {
-  bg: '#F5F9FF',
-  surface: '#FFFFFF',
-  surfaceSoft: '#F7FAFD',
-  accent: '#4A9EF5',
-  accentDark: '#2D7BD4',
-  accentDeep: '#1F5BA8',
-  accentSoft: '#EAF4FF',
-  cyan: '#7FD4E8',
-  ink: '#0B1B2E',
-  ink2: '#475467',
-  muted: '#8896A8',
-  line: '#E4ECF5',
-  success: '#1F8A5B',
-  successSoft: '#E6F4EC',
-  warning: '#D97706',
-  warningSoft: '#FEF3E2',
-  danger: '#E84545',
-  dangerSoft: '#FDEDED',
-};
 
 function tone(hex, a) {
   const h = hex.replace('#', '');
@@ -36,13 +16,13 @@ function tone(hex, a) {
   return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
 }
 
-function KpiCard({ label, value, sub, subTone, sparkData, sparkColor }) {
+function KpiCard({ C, label, value, sub, subTone, sparkData, sparkColor }) {
   const subColor = { success: C.success, danger: C.danger, muted: C.ink2, warning: C.warning }[subTone] || C.ink2;
   const subBg = { success: C.successSoft, danger: C.dangerSoft, warning: C.warningSoft, muted: C.surfaceSoft }[subTone] || C.surfaceSoft;
 
   return (
     <div style={{
-      background: 'white', borderRadius: 18, border: `1px solid ${C.line}`,
+      background: C.surface, borderRadius: 18, border: `1px solid ${C.line}`,
       padding: 20, display: 'flex', flexDirection: 'column', gap: 14,
       boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, overflow: 'hidden',
     }}>
@@ -66,7 +46,7 @@ function KpiCard({ label, value, sub, subTone, sparkData, sparkColor }) {
   );
 }
 
-function HeroCard({ firstName, cargoName, currentDateTime, setCurrentView }) {
+function HeroCard({ C, firstName, cargoName, currentDateTime, setCurrentView }) {
   return (
     <div style={{
       background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
@@ -116,7 +96,7 @@ function HeroCard({ firstName, cargoName, currentDateTime, setCurrentView }) {
   );
 }
 
-function SetorBento({ eficiencia, eficienciaLoading }) {
+function SetorBento({ C, eficiencia, eficienciaLoading }) {
   const efVal = eficienciaLoading ? '...' : eficiencia?.sem_dados ? 'N/A' : `${eficiencia?.eficiencia_atual ?? '–'}%`;
   const efSub = !eficienciaLoading && eficiencia && !eficiencia.sem_dados && eficiencia.variacao !== null
     ? { text: `${eficiencia.variacao >= 0 ? '+' : ''}${eficiencia.variacao}%`, tone: eficiencia.variacao >= 0 ? 'success' : 'danger' }
@@ -125,6 +105,7 @@ function SetorBento({ eficiencia, eficienciaLoading }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, height: '100%' }}>
       <KpiCard
+        C={C}
         label="Eficiência"
         value={efVal}
         sub={efSub?.text}
@@ -133,6 +114,7 @@ function SetorBento({ eficiencia, eficienciaLoading }) {
         sparkColor={C.success}
       />
       <KpiCard
+        C={C}
         label="OS Fechadas"
         value={eficienciaLoading ? '...' : (eficiencia?.total_os_mes ?? '–')}
         sub={eficiencia?.no_prazo_mes != null ? `${eficiencia.no_prazo_mes} no prazo` : null}
@@ -141,6 +123,7 @@ function SetorBento({ eficiencia, eficienciaLoading }) {
         sparkColor={C.accent}
       />
       <KpiCard
+        C={C}
         label="Sem SLA"
         value={eficienciaLoading ? '...' : (eficiencia?.os_sem_prazo ?? 0)}
         sub={eficiencia?.os_sem_prazo > 0 ? 'Atenção' : 'Ok'}
@@ -152,7 +135,7 @@ function SetorBento({ eficiencia, eficienciaLoading }) {
   );
 }
 
-function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
+function PlantaoBento({ C, proximoPlantao, plantaoLoading, setCurrentView }) {
   const dateStr = plantaoLoading ? '...' : (proximoPlantao
     ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Nenhum agendado');
@@ -171,7 +154,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
       <div style={{ position: 'relative' }}>
         <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>Próximo Plantão</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'white', color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${tone(C.accent, 0.20)}` }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: C.surface, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${tone(C.accent, 0.20)}` }}>
             <Icons.Clock />
           </div>
           <div>
@@ -183,7 +166,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
           onClick={() => setCurrentView('schedule')}
           style={{
             marginTop: 16, padding: '8px 12px', borderRadius: 9,
-            border: `1px solid ${tone(C.accent, 0.3)}`, background: 'white',
+            border: `1px solid ${tone(C.accent, 0.3)}`, background: C.surface,
             color: C.accent, fontFamily: 'inherit', fontWeight: 600, fontSize: 12.5,
             cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
           }}
@@ -193,7 +176,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
   );
 }
 
-function OsBento({ osCount, osLoading, setCurrentView }) {
+function OsBento({ C, osCount, osLoading, setCurrentView }) {
   const allGood = !osLoading && osCount === 0;
   return (
     <div style={{
@@ -206,7 +189,7 @@ function OsBento({ osCount, osLoading, setCurrentView }) {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>OS no meu nome</div>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: 'white', color: allGood ? C.success : C.warning, fontSize: 11, fontWeight: 700, border: `1px solid ${tone(allGood ? C.success : C.warning, 0.2)}` }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: C.surface, color: allGood ? C.success : C.warning, fontSize: 11, fontWeight: 700, border: `1px solid ${tone(allGood ? C.success : C.warning, 0.2)}` }}>
           {allGood ? <><Icons.Check /> Tudo em dia</> : `${osCount} pendente${osCount !== 1 ? 's' : ''}`}
         </span>
       </div>
@@ -219,14 +202,14 @@ function OsBento({ osCount, osLoading, setCurrentView }) {
       {osCount > 0 && (
         <button
           onClick={() => setCurrentView('tickets')}
-          style={{ padding: '8px 12px', borderRadius: 9, border: `1px solid ${tone(C.warning, 0.3)}`, background: 'white', color: C.warning, fontFamily: 'inherit', fontWeight: 600, fontSize: 12.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, alignSelf: 'flex-start' }}
+          style={{ padding: '8px 12px', borderRadius: 9, border: `1px solid ${tone(C.warning, 0.3)}`, background: C.surface, color: C.warning, fontFamily: 'inherit', fontWeight: 600, fontSize: 12.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, alignSelf: 'flex-start' }}
         >Ver OS <Icons.ArrowR /></button>
       )}
     </div>
   );
 }
 
-function ComunicadosCard({ setCurrentView }) {
+function ComunicadosCard({ C, setCurrentView }) {
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -262,7 +245,7 @@ function ComunicadosCard({ setCurrentView }) {
   }
 
   return (
-    <div style={{ background: 'white', borderRadius: 20, border: `1px solid ${C.line}`, padding: 24, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 24, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Comunicados</h2>
@@ -301,7 +284,7 @@ function ComunicadosCard({ setCurrentView }) {
   );
 }
 
-function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
+function AtalhosCard({ C, setCurrentView, onSuporteTIClick }) {
   const atalhos = [
     { icon: 'Room', label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento', accent: C.accent },
     { icon: 'Headset', label: 'Suporte TI', hint: 'Tempo médio: ~12 min', id: 'tickets', accent: C.accent },
@@ -310,7 +293,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   ];
 
   return (
-    <div style={{ background: 'white', borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <h2 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Atalhos Rápidos</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
         {atalhos.map(a => {
@@ -325,7 +308,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
                 setCurrentView(a.id);
               }
             }}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px', borderRadius: 14, border: `1px solid ${C.line}`, background: 'white', cursor: 'pointer', textAlign: 'left', transition: 'all .15s', fontFamily: 'inherit' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px', borderRadius: 14, border: `1px solid ${C.line}`, background: C.surface, cursor: 'pointer', textAlign: 'left', transition: 'all .15s', fontFamily: 'inherit' }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 10px 24px ${tone(C.accentDeep, 0.10)}`; e.currentTarget.style.borderColor = tone(a.accent, 0.4); }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = C.line; }}
             >
@@ -344,7 +327,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   );
 }
 
-function TeamBento() {
+function TeamBento({ C }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deptoMap, setDeptoMap] = useState({});
@@ -386,7 +369,7 @@ function TeamBento() {
   }, [deptoMap]);
 
   return (
-    <div style={{ background: 'white', borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Disponibilidade</h2>
@@ -434,6 +417,7 @@ const DEFAULT_LAYOUT = [
 ];
 
 export default function Dashboard({ setCurrentView, user }) {
+  const C = useBentoTheme();
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [cargoName, setCargoName] = useState('');
   const [osCount, setOsCount] = useState(0);
@@ -554,7 +538,7 @@ export default function Dashboard({ setCurrentView, user }) {
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => setIsEditing(false)}
-                style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: 'white', color: C.ink2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
+                style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: C.surface, color: C.ink2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
               >Cancelar</button>
               <button
                 onClick={handleSaveLayout}
@@ -567,9 +551,9 @@ export default function Dashboard({ setCurrentView, user }) {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: 'white', color: C.ink2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}
+              style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: C.surface, color: C.ink2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
-              onMouseLeave={e => e.currentTarget.style.background = 'white'}
+              onMouseLeave={e => e.currentTarget.style.background = C.surface}
             >
               <Icons.Sparkle /> Personalizar Dashboard
             </button>
@@ -591,25 +575,25 @@ export default function Dashboard({ setCurrentView, user }) {
           useCSSTransforms={true}
         >
           <div key="hero" className={isEditing ? 'widget-editable' : ''}>
-            <HeroCard firstName={firstName} cargoName={cargoName} currentDateTime={currentDateTime} setCurrentView={setCurrentView} />
+            <HeroCard C={C} firstName={firstName} cargoName={cargoName} currentDateTime={currentDateTime} setCurrentView={setCurrentView} />
           </div>
           <div key="setor" className={isEditing ? 'widget-editable' : ''}>
-            <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} />
+            <SetorBento C={C} eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} />
           </div>
           <div key="plantao" className={isEditing ? 'widget-editable' : ''}>
-            <PlantaoBento proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} setCurrentView={setCurrentView} />
+            <PlantaoBento C={C} proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} setCurrentView={setCurrentView} />
           </div>
           <div key="os" className={isEditing ? 'widget-editable' : ''}>
-            <OsBento osCount={osCount} osLoading={osLoading} osStatusCount={osStatusCount} setCurrentView={setCurrentView} />
+            <OsBento C={C} osCount={osCount} osLoading={osLoading} osStatusCount={osStatusCount} setCurrentView={setCurrentView} />
           </div>
           <div key="comunicados" className={isEditing ? 'widget-editable' : ''}>
-            <ComunicadosCard setCurrentView={setCurrentView} />
+            <ComunicadosCard C={C} setCurrentView={setCurrentView} />
           </div>
           <div key="atalhos" className={isEditing ? 'widget-editable' : ''}>
-            <AtalhosCard setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
+            <AtalhosCard C={C} setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
           </div>
           <div key="team" className={isEditing ? 'widget-editable' : ''}>
-            <TeamBento />
+            <TeamBento C={C} />
           </div>
         </ResponsiveReactGridLayout>
 

@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import ThemeSwitcher from './ThemeSwitcher';
 import { AVATAR_PNGS, resolveAvatarUrl } from '../utils/avatarPngs';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 const PREDEFINED_PNG_AVATARS = AVATAR_PNGS;
 
 export default function Configuracoes({ user, setCurrentView }) {
+    const C = useBentoTheme();
     const fileInputRef = useRef(null);
     const [showAvatarMenu, setShowAvatarMenu] = useState(false);
     const [showAvatarGrid, setShowAvatarGrid] = useState(false);
@@ -289,14 +291,6 @@ export default function Configuracoes({ user, setCurrentView }) {
     };
 
     // ── Paleta Bento Blue ──────────────────────────────────────────────
-    const C = {
-        bg: '#F5F9FF', surface: '#FFFFFF', surfaceSoft: '#F7FAFD',
-        accent: '#4A9EF5', accentDark: '#2D7BD4', accentDeep: '#1F5BA8',
-        accentSoft: '#EAF4FF', ink: '#0B1B2E', ink2: '#475467',
-        muted: '#8896A8', line: '#E4ECF5', lineSoft: '#EFF4FA',
-        success: '#1F8A5B', successSoft: '#E6F4EC',
-        danger: '#E84545', dangerSoft: '#FDEDED',
-    };
     const tone = (hex, a) => { const h = hex.replace('#', ''); const x = h.length === 3 ? h.replace(/./g, c => c + c) : h; return `rgba(${parseInt(x.slice(0,2),16)},${parseInt(x.slice(2,4),16)},${parseInt(x.slice(4,6),16)},${a})`; };
 
     // ── Estilos reutilizáveis ────────────────────────────────────────

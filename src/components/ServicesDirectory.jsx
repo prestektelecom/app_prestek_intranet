@@ -4,13 +4,8 @@ import TechBentoCard from './services/TechBentoCard';
 import StreamingBentoCard from './services/StreamingBentoCard';
 import PlanoComparador from './services/PlanoComparador';
 import { AVATAR_PNGS, resolveAvatarUrl } from '../utils/avatarPngs';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
-const C = {
-    accent: '#4A9EF5',
-    accentDark: '#2D7BD4',
-    accentDeep: '#1F5BA8',
-    cyan: '#7FD4E8',
-};
 
 function tone(hex, a) {
     const h = hex.replace('#', '');
@@ -19,6 +14,7 @@ function tone(hex, a) {
 }
 
 export default function ServicesDirectory({ setCurrentView, user, searchQuery }) {
+    const C = useBentoTheme();
     const isAdmin = user?.is_admin;
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '', type: '' });
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
@@ -517,7 +513,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
     const totalVendasMes = countAtivo + countInativo + countPre + countNegativado + countDesistiu;
 
     return (
-        <main className="flex-1 overflow-y-auto bg-[#F5F9FF] dark:bg-[#141210] py-8 px-4 md:px-10">
+        <main className="flex-1 overflow-y-auto bg-[#F5F9FF] dark:bg-[#0B1B2E] py-8 px-4 md:px-10">
             <div className="flex flex-col w-full max-w-[1200px] mx-auto gap-8">
                 {/* Hero Banner */}
                 <div style={{
@@ -578,7 +574,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                 className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 cursor-pointer shrink-0 ${
                                     filter === f 
                                     ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)]'
-                                    : 'bg-[#EAF4FF] dark:bg-[#211e1b] border border-[#E4ECF5] dark:border-[#2e2a26]/40 text-[#1F5BA8] dark:text-[#7FD4E8] hover:opacity-90'
+                                    : 'bg-[#EAF4FF] dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)]/40 text-[#1F5BA8] dark:text-[#7FD4E8] hover:opacity-90'
                                 }`}
                             >
                                 {f === 'All' && 'Todos os Serviços'}
@@ -599,7 +595,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                 className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap ${
                                     sortConfig.key === 'vendas_mes' 
                                     ? 'bg-[#EAF4FF] text-[#1F5BA8] border-[#4A9EF5]/30 shadow-sm dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8] dark:border-[#4A9EF5]/40' 
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-[#1c1917] dark:text-slate-400 dark:border-[#2e2a26] dark:hover:bg-[#211e1b]'
+                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-[#0B1B2E] dark:text-slate-400 dark:border-[var(--border)] dark:bg-[#0B1B2E]'
                                 }`}
                             >
                                 <span className="material-symbols-outlined text-[16px]">trending_up</span>
@@ -615,7 +611,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                 className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap ${
                                     sortConfig.key === 'valor_mensal' 
                                     ? 'bg-[#EAF4FF] text-[#1F5BA8] border-[#4A9EF5]/30 shadow-sm dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8] dark:border-[#4A9EF5]/40' 
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-[#1c1917] dark:text-slate-400 dark:border-[#2e2a26] dark:hover:bg-[#211e1b]'
+                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-[#0B1B2E] dark:text-slate-400 dark:border-[var(--border)] dark:bg-[#0B1B2E]'
                                 }`}
                             >
                                 <span className="material-symbols-outlined text-[16px]">payments</span>
@@ -634,12 +630,12 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                 {filter !== 'Technical' && filter !== 'Streaming' && (
                 <div className="relative min-h-[300px]">
                     {isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1c1917] rounded-2xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)] gap-3">
+                        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#0B1B2E] rounded-2xl border border-[#E4ECF5] dark:border-[var(--border)] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)] gap-3">
                             <span className="material-symbols-outlined animate-spin text-4xl text-[#4A9EF5]">autorenew</span>
                             <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Carregando planos do IXC...</p>
                         </div>
                     ) : filteredPlans.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1c1917] rounded-2xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)] gap-2">
+                        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#0B1B2E] rounded-2xl border border-[#E4ECF5] dark:border-[var(--border)] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)] gap-2">
                             <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">
                                 {searchQuery ? 'search_off' : 'wifi_off'}
                             </span>
@@ -671,7 +667,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                 {filter === 'Technical' && (
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-2xl font-bold tracking-tight text-[#0B1B2E] dark:text-[#f5f0eb] flex items-center gap-2">
+                        <h2 className="text-2xl font-bold tracking-tight text-[#0B1B2E] dark:text-[var(--foreground)] flex items-center gap-2">
                             <span className="material-symbols-outlined text-2xl text-[#4A9EF5] dark:text-[#7FD4E8]">build</span>
                             Serviços Técnicos e Complementares
                         </h2>
@@ -709,7 +705,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                 {filter === 'Streaming' && (
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-2xl font-bold tracking-tight text-[#0B1B2E] dark:text-[#f5f0eb] flex items-center gap-2">
+                        <h2 className="text-2xl font-bold tracking-tight text-[#0B1B2E] dark:text-[var(--foreground)] flex items-center gap-2">
                             <span className="material-symbols-outlined text-2xl text-[#4A9EF5] dark:text-[#7FD4E8]">play_circle</span>
                             Pacotes de Streaming
                         </h2>
@@ -1072,10 +1068,10 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                 {/* Edit Modal */}
             {editingPlan && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-[#E4ECF5] dark:border-[#2e2a26]">
+                    <div className="bg-white dark:bg-[#0B1B2E] rounded-2xl border border-[#E4ECF5] dark:border-[var(--border)] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-[#E4ECF5] dark:border-[var(--border)]">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-bold text-[#0B1B2E] dark:text-[#f5f0eb]">Editar Plano</h3>
+                                <h3 className="text-lg font-bold text-[#0B1B2E] dark:text-[var(--foreground)]">Editar Plano</h3>
                                 <button 
                                     onClick={() => setEditingPlan(null)}
                                     className="text-slate-400 hover:text-[#4A9EF5] dark:text-[#8896A8] dark:hover:text-[#4A9EF5] transition-colors cursor-pointer"
@@ -1091,7 +1087,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     type="text" 
                                     value={editingPlan.descricao || ''} 
                                     disabled 
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-[#F5F9FF] dark:bg-[#141210]/50 text-slate-400 dark:text-slate-500"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 text-slate-400 dark:text-slate-500"
                                 />
                                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">O nome é puxado automaticamente do IXC.</p>
                             </div>
@@ -1103,7 +1099,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     value={editForm.prazo_instalacao} 
                                     onChange={(e) => setEditForm({...editForm, prazo_instalacao: e.target.value})}
                                     placeholder="Ex: 3 Dias, Imediato, 5 Dias Úteis..."
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Este dado será salvo nativamente no banco de dados local.</p>
                             </div>
@@ -1115,15 +1111,15 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     value={editForm.taxa_instalacao} 
                                     onChange={(e) => setEditForm({...editForm, taxa_instalacao: e.target.value})}
                                     placeholder="Ex: 50.00"
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Insira o valor apenas com números e ponto (ex: 50.00).</p>
                             </div>
                         </div>
-                        <div className="p-6 border-t border-[#E4ECF5] dark:border-[#2e2a26] flex justify-end gap-3 bg-[#F5F9FF] dark:bg-[#141210]/30">
+                        <div className="p-6 border-t border-[#E4ECF5] dark:border-[var(--border)] flex justify-end gap-3 bg-[#F5F9FF] dark:bg-[#0B1B2E]/30">
                             <button 
                                 onClick={() => setEditingPlan(null)}
-                                className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-[#a09080] bg-white dark:bg-[#211e1b] border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all cursor-pointer"
+                                className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-[#8896A8] bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
                             >
                                 Cancelar
                             </button>
@@ -1146,10 +1142,10 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
             {/* Edit Tech Service Modal */}
             {editingTechService && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-[#E4ECF5] dark:border-[#2e2a26]">
+                    <div className="bg-white dark:bg-[#0B1B2E] rounded-2xl border border-[#E4ECF5] dark:border-[var(--border)] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-[#E4ECF5] dark:border-[var(--border)]">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-bold text-[#0B1B2E] dark:text-[#f5f0eb]">
+                                <h3 className="text-lg font-bold text-[#0B1B2E] dark:text-[var(--foreground)]">
                                     {editingTechService?.id ? 'Editar Serviço Técnico' : 'Novo Serviço Técnico'}
                                 </h3>
                                 <button 
@@ -1167,7 +1163,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     type="text" 
                                     value={editTechForm.service} 
                                     onChange={(e) => setEditTechForm({...editTechForm, service: e.target.value})}
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1178,7 +1174,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     value={editTechForm.value} 
                                     onChange={(e) => setEditTechForm({...editTechForm, value: e.target.value})}
                                     placeholder="Ex: R$ 50,00"
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1189,7 +1185,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     value={editTechForm.deadline} 
                                     onChange={(e) => setEditTechForm({...editTechForm, deadline: e.target.value})}
                                     placeholder="Ex: Até 5 dias úteis"
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1200,7 +1196,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     value={editTechForm.payment} 
                                     onChange={(e) => setEditTechForm({...editTechForm, payment: e.target.value})}
                                     placeholder="Ex: À vista ou 2x Boleto"
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1213,7 +1209,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     <select 
                                         value={editTechForm.icon} 
                                         onChange={(e) => setEditTechForm({...editTechForm, icon: e.target.value})}
-                                        className="flex-1 px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                        className="flex-1 px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                     >
                                         <option value="router">Router</option>
                                         <option value="swap_horiz">Swap Horizontal</option>
@@ -1232,10 +1228,10 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                 </div>
                             </div>
                         </div>
-                        <div className="p-6 border-t border-[#E4ECF5] dark:border-[#2e2a26] flex justify-end gap-3 bg-[#F5F9FF] dark:bg-[#141210]/30">
+                        <div className="p-6 border-t border-[#E4ECF5] dark:border-[var(--border)] flex justify-end gap-3 bg-[#F5F9FF] dark:bg-[#0B1B2E]/30">
                             <button 
                                 onClick={() => setEditingTechService(null)}
-                                className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-[#a09080] bg-white dark:bg-[#211e1b] border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all cursor-pointer"
+                                className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-[#8896A8] bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
                             >
                                 Cancelar
                             </button>
@@ -1253,10 +1249,10 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
             {/* Edit Streaming Service Modal */}
             {editingStreamingService && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1c1917] rounded-2xl border border-[#E4ECF5] dark:border-[#2e2a26] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-[#E4ECF5] dark:border-[#2e2a26]">
+                    <div className="bg-white dark:bg-[#0B1B2E] rounded-2xl border border-[#E4ECF5] dark:border-[var(--border)] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-[#E4ECF5] dark:border-[var(--border)]">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-bold text-[#0B1B2E] dark:text-[#f5f0eb]">
+                                <h3 className="text-lg font-bold text-[#0B1B2E] dark:text-[var(--foreground)]">
                                     {editingStreamingService?.id ? 'Editar Pacote de Streaming' : 'Novo Pacote de Streaming'}
                                 </h3>
                                 <button 
@@ -1275,7 +1271,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     value={editStreamingForm.service} 
                                     onChange={(e) => setEditStreamingForm({...editStreamingForm, service: e.target.value})}
                                     placeholder="Ex: LEVEDUCA+WATCH+PARAMOUNT"
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1286,7 +1282,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     value={editStreamingForm.value} 
                                     onChange={(e) => setEditStreamingForm({...editStreamingForm, value: e.target.value})}
                                     placeholder="Ex: R$ 19,90"
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1297,7 +1293,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     value={editStreamingForm.deadline} 
                                     onChange={(e) => setEditStreamingForm({...editStreamingForm, deadline: e.target.value})}
                                     placeholder="Ex: Mensal"
-                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                    className="w-full px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                 />
                             </div>
                             
@@ -1310,7 +1306,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     <select 
                                         value={editStreamingForm.icon} 
                                         onChange={(e) => setEditStreamingForm({...editStreamingForm, icon: e.target.value})}
-                                        className="flex-1 px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#141210] text-slate-900 dark:text-[#f5f0eb] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                                        className="flex-1 px-4 py-2 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] text-slate-900 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
                                     >
                                         <option value="play_circle">Play Circle</option>
                                         <option value="smart_display">Smart Display</option>
@@ -1323,10 +1319,10 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                 </div>
                             </div>
                         </div>
-                        <div className="p-6 border-t border-[#E4ECF5] dark:border-[#2e2a26] flex justify-end gap-3 bg-[#F5F9FF] dark:bg-[#141210]/30">
+                        <div className="p-6 border-t border-[#E4ECF5] dark:border-[var(--border)] flex justify-end gap-3 bg-[#F5F9FF] dark:bg-[#0B1B2E]/30">
                             <button 
                                 onClick={() => setEditingStreamingService(null)}
-                                className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-[#a09080] bg-white dark:bg-[#211e1b] border border-[#E4ECF5] dark:border-[#2e2a26] rounded-xl hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all cursor-pointer"
+                                className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-[#8896A8] bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
                             >
                                 Cancelar
                             </button>
@@ -1347,21 +1343,21 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
             {deleteModal.isOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}></div>
-                    <div className="relative w-full max-w-sm transform overflow-hidden rounded-2xl bg-white dark:bg-[#1c1917] p-6 text-left align-middle shadow-2xl transition-all border border-[#E4ECF5] dark:border-[#2e2a26]">
+                    <div className="relative w-full max-w-sm transform overflow-hidden rounded-2xl bg-white dark:bg-[#0B1B2E] p-6 text-left align-middle shadow-2xl transition-all border border-[#E4ECF5] dark:border-[var(--border)]">
                         <div className="flex flex-col items-center text-center">
                             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                                 <span className="material-symbols-outlined text-3xl">delete_forever</span>
                             </div>
-                            <h3 className="text-xl font-bold text-[#0B1B2E] dark:text-[#f5f0eb]">Confirmar Exclusão</h3>
+                            <h3 className="text-xl font-bold text-[#0B1B2E] dark:text-[var(--foreground)]">Confirmar Exclusão</h3>
                             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                                Tem certeza que deseja excluir <span className="font-bold text-[#0B1B2E] dark:text-[#f5f0eb]">"{deleteModal.title}"</span>? Esta ação não poderá ser desfeita.
+                                Tem certeza que deseja excluir <span className="font-bold text-[#0B1B2E] dark:text-[var(--foreground)]">"{deleteModal.title}"</span>? Esta ação não poderá ser desfeita.
                             </p>
                         </div>
 
                         <div className="mt-8 flex gap-3">
                             <button
                                 onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}
-                                className="flex-1 rounded-xl border border-[#E4ECF5] dark:border-[#2e2a26] bg-white dark:bg-[#211e1b] px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-[#a09080] hover:bg-[#F5F9FF] dark:hover:bg-[#1c1917] transition-all cursor-pointer"
+                                className="flex-1 rounded-xl border border-[#E4ECF5] dark:border-[var(--border)] bg-white dark:bg-[#0B1B2E] px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-[#8896A8] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
                             >
                                 Cancelar
                             </button>
@@ -1404,4 +1400,3 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
         </main>
     )
 }
-

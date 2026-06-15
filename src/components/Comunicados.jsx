@@ -1,26 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // ── Paleta Bento Blue ────────────────────────────────────────────────────────
-const C = {
-  bg:          '#F5F9FF',
-  surface:     '#FFFFFF',
-  surfaceSoft: '#F7FAFD',
-  accent:      '#4A9EF5',
-  accentDark:  '#2D7BD4',
-  accentDeep:  '#1F5BA8',
-  accentSoft:  '#EAF4FF',
-  cyan:        '#7FD4E8',
-  ink:         '#0B1B2E',
-  ink2:        '#475467',
-  muted:       '#8896A8',
-  line:        '#E4ECF5',
-  success:     '#1F8A5B',
-  successSoft: '#E6F4EC',
-  warning:     '#D97706',
-  warningSoft: '#FEF3E2',
-  danger:      '#E84545',
-  dangerSoft:  '#FDEDED',
-};
 
 function hexToRgb(hex) {
   const h = hex.replace('#', '');
@@ -50,7 +31,8 @@ function relativeTime(dataStr) {
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').replace(' de ', ' ');
 }
 
-const TYPE_META = {
+// Retorna as definições visuais por tipo de comunicado com base no tema atual
+const getTypeMeta = (C) => ({
   Urgente: {
     color: C.danger,
     soft: C.dangerSoft,
@@ -69,9 +51,10 @@ const TYPE_META = {
     icon: 'article',
     label: 'GERAL'
   }
-};
+});
 
 export default function Comunicados({ user, setCurrentView }) {
+    const C = useBentoTheme();
     const [comunicados, setComunicados] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -378,6 +361,7 @@ export default function Comunicados({ user, setCurrentView }) {
 // ── Subcomponentes ───────────────────────────────────────────────────────────
 
 function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kpiGerais, isLoading, isAdmin, onNewComunicado }) {
+    const C = useBentoTheme();
     return (
         <div style={{
             background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
@@ -507,6 +491,7 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kp
 }
 
 function ChipButton({ label, count, active, onClick, color }) {
+    const C = useBentoTheme();
     const [hover, setHover] = useState(false);
     const rgb = hexToRgb(color);
 
@@ -543,8 +528,10 @@ function ChipButton({ label, count, active, onClick, color }) {
 }
 
 function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
+    const C = useBentoTheme();
     const [hover, setHover] = useState(false);
-    const meta = TYPE_META[item.tipo] || TYPE_META.Geral;
+    const typeMeta = getTypeMeta(C);
+    const meta = typeMeta[item.tipo] || typeMeta.Geral;
     const rgb = hexToRgb(meta.color);
 
     return (
@@ -729,6 +716,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
 }
 
 function SkeletonCard() {
+    const C = useBentoTheme();
     return (
         <div style={{
             background: C.surface,
@@ -759,6 +747,7 @@ function SkeletonCard() {
 }
 
 function EmptyState({ busca, filtro, onClear }) {
+    const C = useBentoTheme();
     return (
         <div style={{
             display: 'flex',
@@ -815,6 +804,7 @@ function EmptyState({ busca, filtro, onClear }) {
 }
 
 function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, onSubmit }) {
+    const C = useBentoTheme();
     const [focusedInput, setFocusedInput] = useState(null);
 
     const getInputStyle = (name) => ({
@@ -1084,6 +1074,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
 }
 
 function DeleteModal({ onClose, onConfirm }) {
+    const C = useBentoTheme();
     return (
         <div style={{
             position: 'fixed',

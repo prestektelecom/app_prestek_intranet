@@ -145,7 +145,7 @@ export default function App() {
     }
 
     return (
-        <div className="bg-background text-foreground font-display h-screen flex transition-colors duration-200">
+        <div className="bg-background text-foreground font-jakarta h-screen flex transition-colors duration-200">
             {currentView !== 'dashboard' && (
                 <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
             )}

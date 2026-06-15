@@ -5,29 +5,9 @@ import AdminComunicados from './admin/AdminComunicados';
 import AdminAuditoria from './admin/AdminAuditoria';
 import PlantaoHistorico from './schedule/PlantaoHistorico';
 import BentoAvatar from './common/Avatar';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-// ── Paleta Bento Blue ─────────────────────────────────────────────────────
-const C = {
-    bg: '#F5F9FF',
-    surface: '#FFFFFF',
-    surfaceSoft: '#F7FAFD',
-    accent: '#4A9EF5',
-    accentDark: '#2D7BD4',
-    accentDeep: '#1F5BA8',
-    accentSoft: '#EAF4FF',
-    ink: '#0B1B2E',
-    ink2: '#475467',
-    muted: '#8896A8',
-    line: '#E4ECF5',
-    lineSoft: '#EFF4FA',
-    success: '#1F8A5B',
-    successSoft: '#E6F4EC',
-    danger: '#E84545',
-    cyan: '#7FD4E8',
-    cyanSoft: '#EAF8FC',
-};
 
 const tone = (hex, a) => {
     const h = hex.replace('#', '');
@@ -47,7 +27,7 @@ const sIconBox = (color, bg) => ({
 });
 
 // Logo azul estilo bento
-function BentoLogo({ size = 32 }) {
+function BentoLogo({ C, size = 32 }) {
     return (
         <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="4" y="4" width="14" height="14" rx="4" fill={C.accent} />
@@ -58,14 +38,14 @@ function BentoLogo({ size = 32 }) {
     );
 }
 
-function NavRow({ id, icon, label, active, badge, onClick }) {
+function NavRow({ C, id, icon, label, active, badge, onClick }) {
     return (
         <button
             onClick={() => onClick(id)}
             className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all"
             style={{
                 background: active ? C.accent : 'transparent',
-                color: active ? '#fff' : C.ink2,
+                color: active ? C.surface : C.ink2,
             }}
             onMouseEnter={(e) => {
                 if (!active) e.currentTarget.style.background = C.accentSoft;
@@ -76,7 +56,7 @@ function NavRow({ id, icon, label, active, badge, onClick }) {
         >
             <span
                 className="material-symbols-outlined text-xl"
-                style={{ color: active ? '#fff' : C.muted }}
+                style={{ color: active ? C.surface : C.muted }}
             >
                 {icon}
             </span>
@@ -84,7 +64,7 @@ function NavRow({ id, icon, label, active, badge, onClick }) {
             {badge != null && (
                 <span
                     className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
-                    style={{ background: active ? 'rgba(255,255,255,0.25)' : '#FFE6E0', color: active ? '#fff' : C.danger }}
+                    style={{ background: active ? 'rgba(245,249,255,0.25)' : C.dangerSoft, color: active ? C.surface : C.danger }}
                 >
                     {badge}
                 </span>
@@ -94,6 +74,7 @@ function NavRow({ id, icon, label, active, badge, onClick }) {
 }
 
 export default function AdminDashboard({ setCurrentView, user }) {
+    const C = useBentoTheme();
     const [abaAtiva, setAbaAtiva] = useState('painel');
     const [stats, setStats] = useState(null);
     const [logsRecentes, setLogsRecentes] = useState([]);
@@ -168,7 +149,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                 }}
             >
                 <div className="flex items-center gap-3">
-                    <BentoLogo size={34} />
+                    <BentoLogo C={C} size={34} />
                     <span className="text-lg font-extrabold tracking-tight" style={{ color: C.ink }}>Prestek Admin</span>
                 </div>
 
@@ -214,6 +195,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                         {menuItens.map(item => (
                             <NavRow
                                 key={item.id}
+                                C={C}
                                 {...item}
                                 active={abaAtiva === item.id}
                                 onClick={setAbaAtiva}
@@ -336,7 +318,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                     ) : (
                                         <div className="flex flex-col gap-5">
                                             {logsRecentes.map(log => {
-                                                const { icon, cor } = ICONE_ACAO[log.acao] || { icon: 'info', cor: 'bg-surface-raised text-muted' };
+                                                const { icon, cor } = ICONE_ACAO[log.acao] || { icon: 'info', cor: 'bg-[#F7FAFD] text-[#8896A8]' };
                                                 return (
                                                     <div key={log.id} className="flex items-start gap-4">
                                                         <div className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cor}`}>

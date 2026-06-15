@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 const LIMITE = 50;
 
@@ -10,11 +11,11 @@ function DiffBadge({ anterior, novo, label }) {
             <span className="text-[9px] font-black uppercase tracking-widest text-[#475467]">{label}</span>
             {mudou ? (
                 <div className="flex flex-wrap items-center gap-1 text-xs">
-                    <span className="bg-[#FDEDED] text-[#E84545] px-2 py-0.5 rounded-md line-through font-medium">
+                    <span className="bg-[var(--danger-soft)] text-[var(--danger-bento)] px-2 py-0.5 rounded-md line-through font-medium">
                         {anterior || '—'}
                     </span>
                     <span className="material-symbols-outlined text-[14px] text-[#475467]">arrow_forward</span>
-                    <span className="bg-[#E6F4EC] text-[#1F8A5B] px-2 py-0.5 rounded-md font-bold">
+                    <span className="bg-[var(--success-soft)] text-[var(--success-bento)] px-2 py-0.5 rounded-md font-bold">
                         {novo || '—'}
                     </span>
                 </div>
@@ -26,6 +27,7 @@ function DiffBadge({ anterior, novo, label }) {
 }
 
 export default function PlantaoHistorico({ setCurrentView, user }) {
+    const C = useBentoTheme();
     const [historico, setHistorico] = useState([]);
     const [total, setTotal] = useState(0);
     const [carregando, setCarregando] = useState(true);
@@ -213,7 +215,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                             type="button"
                             onClick={exportarCSV}
                             disabled={exportando || carregando || total === 0}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#1F8A5B]/60 bg-[#E6F4EC] text-[#1F8A5B] font-bold text-sm hover:bg-[#1F8A5B]/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#1F8A5B]/60 bg-[var(--success-soft)] text-[var(--success-bento)] font-bold text-sm hover:bg-[#1F8A5B]/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
                         >
                             <span className="material-symbols-outlined text-[18px]">
                                 {exportando ? 'hourglass_empty' : 'download'}
@@ -225,7 +227,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
 
                 {/* Error state */}
                 {erro && (
-                    <div className="p-4 rounded-xl border border-[#E84545]/20 bg-[#FDEDED] text-[#E84545] text-sm font-medium flex items-center gap-2">
+                    <div className="p-4 rounded-xl border border-[#E84545]/20 bg-[var(--danger-soft)] text-[var(--danger-bento)] text-sm font-medium flex items-center gap-2">
                         <span className="material-symbols-outlined">error</span>
                         {erro}
                     </div>
@@ -296,7 +298,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                                                 <span className="text-sm text-[#475467] font-medium">{formatarDateTime(h.alterado_em)}</span>
                                             </div>
                                             <div className="flex items-center justify-end gap-1 pl-4 md:pl-0">
-                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${temAlteracao ? 'bg-[#FEF3E2] text-[#92400E]' : 'bg-[#F7FAFD] text-[#475467]'}`}>
+                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${temAlteracao ? 'bg-[var(--warning-soft)] text-[var(--warning-bento)]' : 'bg-[var(--surface-soft)] text-[var(--ink2)]'}`}>
                                                     {temAlteracao ? 'Alterado' : 'Sem mudança'}
                                                 </span>
                                                 <span className="material-symbols-outlined text-[18px] text-[#475467] ml-1 transition-transform duration-200" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>

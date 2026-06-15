@@ -1,26 +1,7 @@
 import { useState, useEffect } from 'react'
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // ─── Design system idêntico ao Dashboard ──────────────────────────────────────
-const C = {
-  bg: '#F5F9FF',
-  surface: '#FFFFFF',
-  surfaceSoft: '#F7FAFD',
-  accent: '#4A9EF5',
-  accentDark: '#2D7BD4',
-  accentDeep: '#1F5BA8',
-  accentSoft: '#EAF4FF',
-  cyan: '#7FD4E8',
-  ink: '#0B1B2E',
-  ink2: '#475467',
-  muted: '#8896A8',
-  line: '#E4ECF5',
-  success: '#1F8A5B',
-  successSoft: '#E6F4EC',
-  warning: '#D97706',
-  warningSoft: '#FEF3E2',
-  danger: '#E84545',
-  dangerSoft: '#FDEDED',
-};
 
 function tone(hex, a) {
   const h = hex.replace('#', '');
@@ -29,6 +10,7 @@ function tone(hex, a) {
 }
 
 export default function TiSupportModal({ isOpen, onClose, user }) {
+    const C = useBentoTheme();
   const [mensagem, setMensagem] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);

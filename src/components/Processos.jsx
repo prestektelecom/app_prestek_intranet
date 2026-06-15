@@ -1,27 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { CATEGORIAS, PROCESSOS, STATUS_CONFIG } from '../data/processosData';
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Escala/Escritórios)
-const C = {
-  bg: '#F5F9FF',
-  surface: '#FFFFFF',
-  surfaceSoft: '#F7FAFD',
-  accent: '#4A9EF5',
-  accentDark: '#2D7BD4',
-  accentDeep: '#1F5BA8',
-  accentSoft: '#EAF4FF',
-  cyan: '#7FD4E8',
-  ink: '#0B1B2E',
-  ink2: '#475467',
-  muted: '#8896A8',
-  line: '#E4ECF5',
-  success: '#1F8A5B',
-  successSoft: '#E6F4EC',
-  warning: '#D97706',
-  warningSoft: '#FEF3E2',
-  danger: '#E84545',
-  dangerSoft: '#FDEDED',
-};
 
 function tone(hex, a) {
   const h = hex.replace('#', '');
@@ -110,7 +91,7 @@ function ProcessosHero({ total, ativos, revisao, categorias, onAdd }) {
                     <button onClick={onAdd} style={{
                         display: 'inline-flex', alignItems: 'center', gap: 6,
                         padding: '10px 16px', borderRadius: 10,
-                        background: 'white', color: C.accentDeep,
+                        background: C.surface, color: C.accentDeep,
                         fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.12)', border: 'none',
                     }}>
@@ -232,7 +213,7 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                             )}
                         </div>
                     </div>
-                    <button onClick={onFechar} className="text-[#8896A8] hover:text-[#E84545] p-1 rounded-full hover:bg-[#FDEDED] transition-colors">
+                    <button onClick={onFechar} className="text-[#8896A8] hover:text-[#E84545] p-1 rounded-full hover:bg-[var(--danger-soft)] transition-colors">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -330,6 +311,7 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
 const ROWS_PER_PAGE = 10;
 
 export default function Processos({ setCurrentView }) {
+    const C = useBentoTheme();
     const [lista, setLista] = useState(PROCESSOS);
     const [busca, setBusca] = useState('');
     const [categoriaAtiva, setCategoriaAtiva] = useState('todos');

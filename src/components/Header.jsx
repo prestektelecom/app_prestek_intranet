@@ -2,28 +2,20 @@ import { useState, useEffect, useRef } from 'react';
 import { resolveNomeSetor } from '../utils/resolveSetor';
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs';
 import { Icons } from './common/Icons';
-
-const C = {
-  accent: '#4A9EF5',
-  accentDeep: '#1F5BA8',
-  accentSoft: '#EAF4FF',
-  surfaceSoft: '#F7FAFD',
-  ink: '#0B1B2E',
-  ink2: '#475467',
-  muted: '#8896A8',
-  line: '#E4ECF5',
-  danger: '#E84545',
-};
+import { useBentoTheme } from '../hooks/useBentoTheme';
 
 const defaultAvatar = AVATAR_PNGS[7];
 
-const iconBtn = {
-  width: 40, height: 40, borderRadius: 10, border: `1px solid ${C.line}`, cursor: 'pointer',
-  background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-  transition: 'all .12s', boxShadow: `0 1px 2px rgba(31,91,168,0.04)`,
-};
+function iconBtn(C) {
+  return {
+    width: 40, height: 40, borderRadius: 10, border: `1px solid ${C.line}`, cursor: 'pointer',
+    background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    transition: 'all .12s', boxShadow: `0 1px 2px ${C.accentDeep}0A`,
+  };
+}
 
 export default function Header({ currentView, setCurrentView, user, searchQuery, setSearchQuery }) {
+  const C = useBentoTheme();
   const func = user?.funcionario ?? {};
   const safeName = func.funcionario || user?.nome || 'Usuário';
   const safeRole = func.id_funcao || 'Colaborador';
@@ -134,7 +126,7 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
   return (
     <header style={{
       position: 'sticky', top: 0, zIndex: 1000,
-      height: 72, background: 'rgba(245,249,255,0.88)', backdropFilter: 'blur(14px)',
+      height: 72, background: C.bg + 'E0', backdropFilter: 'blur(14px)',
       WebkitBackdropFilter: 'blur(14px)',
       borderBottom: `1px solid ${C.line}`,
       display: 'flex', alignItems: 'center', padding: '0 24px', gap: 20,
@@ -144,7 +136,7 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
       <button
         className="lg:hidden"
         onClick={() => setIsMobileMenuOpen(v => !v)}
-        style={{ ...iconBtn, flexShrink: 0 }}
+        style={{ ...iconBtn(C), flexShrink: 0 }}
         aria-label="Menu"
       >
         <span className="material-symbols-outlined" style={{ fontSize: 22, color: C.ink2 }}>
@@ -159,8 +151,8 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
       <div style={{
         flex: '1 1 0%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
         height: 42, padding: '0 14px',
-        background: 'white', border: `1px solid ${C.line}`, borderRadius: 12,
-        boxShadow: `0 1px 2px rgba(31,91,168,0.04)`,
+        background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12,
+        boxShadow: `0 1px 2px ${C.accentDeep}0A`,
       }}>
         <span style={{ color: C.muted, display: 'flex' }}><Icons.Search /></span>
         <input
@@ -196,7 +188,7 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
         <div style={{ position: 'relative' }} ref={notificationsRef}>
           <button
             onClick={() => { setIsNotificationsOpen(v => !v); if (!isNotificationsOpen) setHasViewedUrgent(true); }}
-            style={iconBtn}
+            style={iconBtn(C)}
           >
             <span style={{ position: 'relative', display: 'flex', color: C.ink2 }}>
               <Icons.Bell />
@@ -212,8 +204,8 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
           {isNotificationsOpen && (
             <div style={{
               position: 'absolute', right: 0, marginTop: 8, width: 320,
-              background: 'white', border: `1px solid ${C.line}`, borderRadius: 16,
-              boxShadow: '0 12px 32px rgba(11,27,46,0.12)', zIndex: 50, overflow: 'hidden',
+              background: C.surface, border: `1px solid ${C.line}`, borderRadius: 16,
+              boxShadow: `0 12px 32px ${C.ink}1F`, zIndex: 50, overflow: 'hidden',
             }}>
               <div style={{
                 background: C.surfaceSoft, padding: '12px 16px',
@@ -223,7 +215,7 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
                 <span style={{ fontWeight: 700, color: C.ink }}>Notificações</span>
                 {hasUrgent && (
                   <span style={{
-                    background: '#FDEDED', color: C.danger,
+                    background: C.dangerSoft, color: C.danger,
                     fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
                   }}>
                     {urgentAnnouncements.length} Urgente(s)
@@ -234,7 +226,7 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
               <div style={{ maxHeight: 350, overflowY: 'auto' }}>
                 {!hasUrgent ? (
                   <div style={{ padding: '32px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 22, background: '#E6F4EC', color: '#1F8A5B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 22, background: C.successSoft, color: C.success, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <span className="material-symbols-outlined" style={{ fontSize: 24 }}>task_alt</span>
                     </div>
                     <div style={{ fontWeight: 600, color: C.ink }}>Tudo tranquilo!</div>
@@ -245,7 +237,7 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
                   try { dateFormatted = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(a.criado_em)); } catch (_) {}
                   return (
                     <div key={a.id} style={{ padding: '12px 16px', display: 'flex', gap: 12, cursor: 'pointer', borderBottom: `1px solid ${C.line}` }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 16, background: '#FDEDED', color: C.danger, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 16, background: C.dangerSoft, color: C.danger, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <span className="material-symbols-outlined" style={{ fontSize: 16 }}>priority_high</span>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -275,7 +267,7 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
 
         {/* Admin */}
         {user?.is_admin && (
-          <button onClick={() => setCurrentView('admin')} title="Painel Administrativo" style={iconBtn}>
+          <button onClick={() => setCurrentView('admin')} title="Painel Administrativo" style={iconBtn(C)}>
             <span style={{ color: C.accent, display: 'flex' }}><Icons.Admin /></span>
           </button>
         )}
@@ -293,7 +285,7 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
             setCurrentView('login');
           }}
           title="Sair da Conta"
-          style={iconBtn}
+          style={iconBtn(C)}
         >
           <span style={{ color: C.ink2, display: 'flex' }}><Icons.Logout /></span>
         </button>
@@ -304,8 +296,8 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
           style={{
             display: 'flex', alignItems: 'center', gap: 10, marginLeft: 4,
             padding: '5px 14px 5px 5px', borderRadius: 999,
-            background: 'white', border: `1px solid ${C.line}`,
-            boxShadow: `0 1px 2px rgba(31,91,168,0.04)`,
+            background: C.surface, border: `1px solid ${C.line}`,
+            boxShadow: `0 1px 2px ${C.accentDeep}0A`,
             cursor: 'pointer', flexShrink: 0,
           }}
         >
@@ -329,8 +321,8 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
       {isMobileMenuOpen && (
         <div className="lg:hidden" style={{
           position: 'absolute', top: '100%', left: 0, right: 0,
-          background: 'white', borderBottom: `1px solid ${C.line}`,
-          padding: 16, boxShadow: '0 8px 24px rgba(11,27,46,0.10)',
+          background: C.surface, borderBottom: `1px solid ${C.line}`,
+          padding: 16, boxShadow: `0 8px 24px ${C.ink}1A`,
           zIndex: 50, display: 'flex', flexDirection: 'column', gap: 4,
         }}>
           {mobileMenuItems.map(item => {

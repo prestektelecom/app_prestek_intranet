@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 export default function MultiSelectEmployee({
     values,
@@ -8,6 +9,7 @@ export default function MultiSelectEmployee({
     idField = 'funcionario_id',
     nameField = 'funcionario_nome',
 }) {
+    const C = useBentoTheme();
     const [search, setSearch] = useState('');
 
     const getId = (opt) => String(opt[idField] ?? opt.id ?? '');
