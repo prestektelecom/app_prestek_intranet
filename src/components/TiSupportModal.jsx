@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { tone } from '../utils/tone';
 
 // ─── Design system idêntico ao Dashboard ──────────────────────────────────────
 
-function tone(hex, a) {
-  const h = hex.replace('#', '');
-  const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
-  return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
-}
+const TECNICOS = [
+  { id: '59570', nome: 'MARCIO EDUARDO FELIX' },
+  { id: '59841', nome: 'EVERTON DOS SANTOS VIEIRA' },
+];
 
 export default function TiSupportModal({ isOpen, onClose, user }) {
     const C = useBentoTheme();
@@ -17,18 +17,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [protocoloData, setProtocoloData] = useState(null);
 
-  const [solicitantes, setSolicitantes] = useState([]);
-  const [solicitanteSelecionado, setSolicitanteSelecionado] = useState('');
-
-  // Sincroniza o usuário logado quando o prop user resolver
-  useEffect(() => {
-    if (user) {
-      const nome = user?.funcionario?.funcionario || user?.nome || 'Usuário Intranet';
-      const id = user?.funcionario?.id || user?.id || 'atual';
-      setSolicitantes([{ id, nome }]);
-      setSolicitanteSelecionado(nome);
-    }
-  }, [user]);
+  const [tecnicoSelecionado, setTecnicoSelecionado] = useState('');
 
   const handleClose = () => {
     onClose();
@@ -37,18 +26,20 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
       setProtocoloData(null);
       setFeedback(null);
       setMensagem('');
+      setTecnicoSelecionado('');
     }, 300);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!mensagem.trim()) return;
+    if (!mensagem.trim() || !tecnicoSelecionado) return;
 
     setIsLoading(true);
     setFeedback(null);
 
     const colaborador_id = user?.funcionario?.id || null;
-    const nome_solicitante = solicitanteSelecionado || user?.funcionario?.funcionario || user?.nome || 'Usuário Intranet';
+    const nome_solicitante = user?.funcionario?.funcionario || user?.nome || 'Usuário Intranet';
+    const tecnico = TECNICOS.find(t => t.id === tecnicoSelecionado);
 
     try {
       const res = await fetch('/api/ixc/su-ticket', {
@@ -57,7 +48,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
         body: JSON.stringify({
           mensagem,
           colaborador_id,
-          tecnico_id: '59570', // Márcio Eduardo Felix
+          tecnico_id: tecnico?.id || '59570',
           nome_solicitante
         })
       });
@@ -243,7 +234,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
               </div>
 
               <form onSubmit={handleSubmit}>
-                {/* Seleção do Solicitante */}
+                {/* Seleção do Técnico Responsável */}
                 <div style={{ marginBottom: 18 }}>
                   <label style={{
                     display: 'block',
@@ -252,19 +243,20 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                     letterSpacing: '0.15em', textTransform: 'uppercase',
                     color: C.muted, marginBottom: 8,
                   }}>
-                    Solicitante registrado
+                    Enviar para
                   </label>
                   <div style={{ position: 'relative' }}>
                     <select
-                      value={solicitanteSelecionado}
-                      onChange={(e) => setSolicitanteSelecionado(e.target.value)}
+                      value={tecnicoSelecionado}
+                      onChange={(e) => setTecnicoSelecionado(e.target.value)}
+                      required
                       style={{
                         width: '100%',
                         padding: '12px 16px',
                         background: C.bg,
                         border: `1px solid ${C.line}`,
                         borderRadius: 14,
-                        fontSize: 13.5, color: C.ink,
+                        fontSize: 13.5, color: tecnicoSelecionado ? C.ink : C.muted,
                         fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                         outline: 'none',
                         boxSizing: 'border-box',
@@ -275,56 +267,14 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                       onFocus={e => { e.target.style.borderColor = C.accent; }}
                       onBlur={e => { e.target.style.borderColor = C.line; }}
                     >
-                      {solicitantes.map(s => (
-                        <option key={s.id} value={s.nome} style={{ background: C.surface, color: C.ink }}>
-                          {s.nome}
+                      <option value="" disabled style={{ background: C.surface, color: C.muted }}>
+                        Quem vai atender
+                      </option>
+                      {TECNICOS.map(t => (
+                        <option key={t.id} value={t.id} style={{ background: C.surface, color: C.ink }}>
+                          {t.nome}
                         </option>
                       ))}
-                    </select>
-                    <div style={{
-                      position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
-                      pointerEvents: 'none', color: C.muted, display: 'flex', alignItems: 'center'
-                    }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m6 9 6 6 6-6"/>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Seleção do Técnico Responsável (Márcio Felix - Fixo) */}
-                <div style={{ marginBottom: 18 }}>
-                  <label style={{
-                    display: 'block',
-                    fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: 10.5, fontWeight: 600,
-                    letterSpacing: '0.15em', textTransform: 'uppercase',
-                    color: C.muted, marginBottom: 8,
-                  }}>
-                    Técnico responsável
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <select
-                      value="MARCIO EDUARDO FELIX"
-                      disabled
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: C.bg,
-                        border: `1px solid ${C.line}`,
-                        borderRadius: 14,
-                        fontSize: 13.5, color: C.ink2,
-                        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-                        outline: 'none',
-                        boxSizing: 'border-box',
-                        appearance: 'none',
-                        cursor: 'not-allowed',
-                        opacity: 0.85,
-                      }}
-                    >
-                      <option value="MARCIO EDUARDO FELIX" style={{ background: C.surface, color: C.ink }}>
-                        MARCIO EDUARDO FELIX
-                      </option>
                     </select>
                     <div style={{
                       position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
@@ -412,20 +362,20 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                   </button>
                   <button
                     type="submit"
-                    disabled={isLoading || !mensagem.trim()}
+                    disabled={isLoading || !mensagem.trim() || !tecnicoSelecionado}
                     style={{
                       flex: 1, padding: '11px 16px', borderRadius: 11,
                       border: 'none',
-                      background: isLoading || !mensagem.trim() ? tone(C.accent, 0.4) : C.accent,
+                      background: isLoading || !mensagem.trim() || !tecnicoSelecionado ? tone(C.accent, 0.4) : C.accent,
                       color: 'white', fontFamily: 'inherit',
                       fontWeight: 700, fontSize: 13.5,
-                      cursor: isLoading || !mensagem.trim() ? 'not-allowed' : 'pointer',
+                      cursor: isLoading || !mensagem.trim() || !tecnicoSelecionado ? 'not-allowed' : 'pointer',
                       transition: 'all .15s',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                      boxShadow: isLoading || !mensagem.trim() ? 'none' : `0 6px 16px ${tone(C.accent, 0.30)}`,
+                      boxShadow: isLoading || !mensagem.trim() || !tecnicoSelecionado ? 'none' : `0 6px 16px ${tone(C.accent, 0.30)}`,
                     }}
-                    onMouseEnter={e => { if (!isLoading && mensagem.trim()) e.currentTarget.style.background = C.accentDark; }}
-                    onMouseLeave={e => { if (!isLoading && mensagem.trim()) e.currentTarget.style.background = C.accent; }}
+                    onMouseEnter={e => { if (!isLoading && mensagem.trim() && tecnicoSelecionado) e.currentTarget.style.background = C.accentDark; }}
+                    onMouseLeave={e => { if (!isLoading && mensagem.trim() && tecnicoSelecionado) e.currentTarget.style.background = C.accent; }}
                   >
                     {isLoading ? (
                       <span style={{

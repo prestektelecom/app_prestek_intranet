@@ -7,14 +7,10 @@ import { Icons } from './common/Icons'
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs'
 import TiSupportModal from './TiSupportModal'
 import { useBentoTheme } from '../hooks/useBentoTheme'
+import { tone } from '../utils/tone'
+import BentoCard from './common/BentoCard'
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
-
-function tone(hex, a) {
-  const h = hex.replace('#', '');
-  const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
-  return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
-}
 
 function KpiCard({ C, label, value, sub, subTone, sparkData, sparkColor }) {
   const subColor = { success: C.success, danger: C.danger, muted: C.ink2, warning: C.warning }[subTone] || C.ink2;
@@ -144,17 +140,11 @@ function PlantaoBento({ C, proximoPlantao, plantaoLoading, setCurrentView }) {
     : 'Sem cobertura ativa';
 
   return (
-    <div style={{
-      background: `linear-gradient(160deg, white 0%, ${C.accentSoft} 100%)`,
-      borderRadius: 20, border: `1px solid ${C.line}`,
-      padding: 24, display: 'flex', flexDirection: 'column', gap: 14,
-      boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, position: 'relative', overflow: 'hidden',
-    }}>
-      <div style={{ position: 'absolute', top: -30, right: -30, width: 130, height: 130, borderRadius: '50%', background: tone(C.accent, 0.10), filter: 'blur(20px)' }} />
+    <BentoCard C={C} accent="accent" glow>
       <div style={{ position: 'relative' }}>
-        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>Próximo Plantão</div>
+        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.15em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>Próximo Plantão</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: C.surface, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${tone(C.accent, 0.20)}` }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: C.accentSoft, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icons.Clock />
           </div>
           <div>
@@ -169,31 +159,30 @@ function PlantaoBento({ C, proximoPlantao, plantaoLoading, setCurrentView }) {
             border: `1px solid ${tone(C.accent, 0.3)}`, background: C.surface,
             color: C.accent, fontFamily: 'inherit', fontWeight: 600, fontSize: 12.5,
             cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
+            transition: 'all .15s',
           }}
+          onMouseEnter={e => { e.currentTarget.style.background = C.accentSoft; e.currentTarget.style.borderColor = C.accent; }}
+          onMouseLeave={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = tone(C.accent, 0.3); }}
         >Ver plantões <Icons.ArrowR /></button>
       </div>
-    </div>
+    </BentoCard>
   );
 }
 
 function OsBento({ C, osCount, osLoading, setCurrentView }) {
   const allGood = !osLoading && osCount === 0;
+  const accent = allGood ? 'success' : 'warning';
+  const accentColor = allGood ? C.success : C.warning;
+
   return (
-    <div style={{
-      background: allGood
-        ? `linear-gradient(160deg, ${C.successSoft} 0%, white 100%)`
-        : `linear-gradient(160deg, ${C.warningSoft} 0%, white 100%)`,
-      borderRadius: 20, border: `1px solid ${C.line}`,
-      padding: 24, display: 'flex', flexDirection: 'column', gap: 14,
-      boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
-    }}>
+    <BentoCard C={C} accent={accent}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>OS no meu nome</div>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: C.surface, color: allGood ? C.success : C.warning, fontSize: 11, fontWeight: 700, border: `1px solid ${tone(allGood ? C.success : C.warning, 0.2)}` }}>
+        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.15em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>OS no meu nome</div>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: allGood ? C.successSoft : C.warningSoft, color: accentColor, fontSize: 11, fontWeight: 700, border: `1px solid ${tone(accentColor, 0.2)}` }}>
           {allGood ? <><Icons.Check /> Tudo em dia</> : `${osCount} pendente${osCount !== 1 ? 's' : ''}`}
         </span>
       </div>
-      <div style={{ fontSize: 60, fontWeight: 800, color: C.ink, letterSpacing: '-0.04em', lineHeight: 1, marginTop: 4 }}>
+      <div style={{ fontSize: 48, fontWeight: 800, color: C.ink, letterSpacing: '-0.04em', lineHeight: 1, marginTop: 4 }}>
         {osLoading ? '...' : osCount}
       </div>
       <div style={{ fontSize: 12.5, color: C.ink2 }}>
@@ -202,10 +191,17 @@ function OsBento({ C, osCount, osLoading, setCurrentView }) {
       {osCount > 0 && (
         <button
           onClick={() => setCurrentView('tickets')}
-          style={{ padding: '8px 12px', borderRadius: 9, border: `1px solid ${tone(C.warning, 0.3)}`, background: C.surface, color: C.warning, fontFamily: 'inherit', fontWeight: 600, fontSize: 12.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, alignSelf: 'flex-start' }}
+          style={{
+            padding: '8px 12px', borderRadius: 9, border: `1px solid ${tone(C.warning, 0.3)}`,
+            background: C.surface, color: C.warning, fontFamily: 'inherit', fontWeight: 600,
+            fontSize: 12.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center',
+            gap: 4, alignSelf: 'flex-start', transition: 'all .15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = C.warningSoft; e.currentTarget.style.borderColor = C.warning; }}
+          onMouseLeave={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = tone(C.warning, 0.3); }}
         >Ver OS <Icons.ArrowR /></button>
       )}
-    </div>
+    </BentoCard>
   );
 }
 
