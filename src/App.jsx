@@ -18,6 +18,8 @@ import Offices from './components/Offices'
 import NotFound from './components/NotFound'
 import { useTheme } from './hooks/useTheme'
 import { usePresence } from './hooks/usePresence'
+import MobileBottomNav from './components/MobileBottomNav'
+import MobileMoreSheet from './components/MobileMoreSheet'
 
 export default function App() {
     const [user, setUser] = useState(() => {
@@ -58,6 +60,8 @@ export default function App() {
         if (validUser && savedView) return savedView
         return 'login'
     })
+
+    const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false)
 
     useEffect(() => {
         if (currentView !== 'login') {
@@ -146,12 +150,10 @@ export default function App() {
 
     return (
         <div className="bg-background text-foreground font-jakarta h-screen flex transition-colors duration-200">
-            {currentView !== 'dashboard' && (
-                <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
-            )}
+            <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
             <div className="flex flex-1 flex-col overflow-hidden">
                 <Header currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-                <div className="flex-1 flex overflow-hidden">
+                <div className="flex-1 flex overflow-hidden pb-[64px] lg:pb-0">
                     {/* Renderização baseada em currentView */}
                     {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
                     {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} />}
@@ -172,6 +174,20 @@ export default function App() {
                     )}
                 </div>
             </div>
+            {/* Mobile Navigation */}
+            <MobileBottomNav
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+                isMoreSheetOpen={isMoreSheetOpen}
+                setIsMoreSheetOpen={setIsMoreSheetOpen}
+            />
+            <MobileMoreSheet
+                isOpen={isMoreSheetOpen}
+                onClose={() => setIsMoreSheetOpen(false)}
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+                user={user}
+            />
         </div>
     )
 }

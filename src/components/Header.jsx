@@ -28,21 +28,10 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
   const [urgentAnnouncements, setUrgentAnnouncements] = useState([]);
   const [hasViewedUrgent, setHasViewedUrgent] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const notificationsRef = useRef(null);
   const avatarUrlRef = useRef(avatarUrl);
   const searchInputRef = useRef(null);
 
-  const mobileMenuItems = [
-    { id: 'dashboard',  label: 'Dashboard',    icon: 'Dashboard' },
-    { id: 'services',   label: 'Serviços',      icon: 'Tools' },
-    { id: 'coverage',   label: 'Cobertura',     icon: 'Shield' },
-    { id: 'directory',  label: 'Colaboradores', icon: 'People' },
-    { id: 'sectors',    label: 'Setores',       icon: 'Pie' },
-    { id: 'schedule',   label: 'Plantão',       icon: 'Clock' },
-    { id: 'offices',    label: 'Escritórios',   icon: 'Building' },
-    { id: 'processes',  label: 'Processos',     icon: 'Doc' },
-  ];
 
   useEffect(() => {
     setAvatarUrl(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
@@ -132,17 +121,6 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
       display: 'flex', alignItems: 'center', padding: '0 24px', gap: 20,
       fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
     }}>
-      {/* Mobile hamburger */}
-      <button
-        className="lg:hidden"
-        onClick={() => setIsMobileMenuOpen(v => !v)}
-        style={{ ...iconBtn(C), flexShrink: 0 }}
-        aria-label="Menu"
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: 22, color: C.ink2 }}>
-          {isMobileMenuOpen ? 'close' : 'menu'}
-        </span>
-      </button>
 
       {/* Spacer para centralizar a busca quando o menu estiver oculto (Dashboard) */}
       {currentView === 'dashboard' && <div style={{ flex: 1 }} className="hidden lg:block" />}
@@ -317,38 +295,6 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden" style={{
-          position: 'absolute', top: '100%', left: 0, right: 0,
-          background: C.surface, borderBottom: `1px solid ${C.line}`,
-          padding: 16, boxShadow: `0 8px 24px ${C.ink}1A`,
-          zIndex: 50, display: 'flex', flexDirection: 'column', gap: 4,
-        }}>
-          {mobileMenuItems.map(item => {
-            const IconC = Icons[item.icon];
-            return (
-              <button
-                key={item.id}
-                onClick={() => { setCurrentView(item.id); setIsMobileMenuOpen(false); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 14px', borderRadius: 10,
-                  background: currentView === item.id ? C.accentSoft : 'transparent',
-                  color: currentView === item.id ? C.accentDeep : C.ink2,
-                  border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                  fontWeight: 600, fontSize: 14, textAlign: 'left',
-                }}
-              >
-                <span style={{ color: currentView === item.id ? C.accent : C.muted, display: 'flex' }}>
-                  {IconC && <IconC />}
-                </span>
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
     </header>
   );
 }
