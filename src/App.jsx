@@ -16,7 +16,7 @@ import AdminDashboard from './components/AdminDashboard'
 import TicketsList from './components/TicketsList'
 import Offices from './components/Offices'
 import NotFound from './components/NotFound'
-import { useTheme } from './hooks/useTheme'
+
 import { usePresence } from './hooks/usePresence'
 import MobileBottomNav from './components/MobileBottomNav'
 import MobileMoreSheet from './components/MobileMoreSheet'
@@ -73,7 +73,6 @@ export default function App() {
         }
     }, [currentView])
 
-    useTheme() // Initialize theme globally
     usePresence(user) // Rastreia atividade do usuário logado
 
     const [searchQuery, setSearchQuery] = useState('')
