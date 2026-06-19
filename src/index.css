@@ -66,16 +66,16 @@
 }
 
 .dark {
-  /* Dark mode: Bento Blue escuro */
-  --background:      #0B1B2E;
-  --background-alt:  #0F1724;
-  --card:            #0F1724;
+  /* Default Dark Mode: Bento Blue escuro (Cyber-Obsidian fallback) */
+  --background:      #070B13;
+  --background-alt:  #0B121F;
+  --card:            #0B121F;
 
-  --surface:         #162231;
-  --surface-raised:  #1C2C3D;
+  --surface:         #111C2C;
+  --surface-raised:  #16263B;
 
-  --border:          #1E3A5F;
-  --border-subtle:   #162231;
+  --border:          #1E2E4A;
+  --border-subtle:   #111C2C;
 
   --foreground:      #F5F9FF;
   --foreground-muted:#8896A8;
@@ -87,8 +87,8 @@
   --primary-subtle:  rgba(74, 158, 245, 0.15);
   --primary-muted:   rgba(74, 158, 245, 0.25);
 
-  --input:           #162231;
-  --input-focus:     #1C2C3D;
+  --input:           #111C2C;
+  --input-focus:     #16263B;
   --ring:            rgba(74, 158, 245, 0.40);
 
   /* Bento / Dashboard v2 tokens */
@@ -96,12 +96,12 @@
   --accent-dark:     #7AB8F8;
   --accent-deep:     #1F5BA8;
   --accent-soft:     rgba(74, 158, 245, 0.15);
-  --surface-soft:    #162231;
+  --surface-soft:    #111C2C;
   --ink:             #F5F9FF;
   --ink2:            #8896A8;
   --muted-bento:     #8896A8;
-  --line:            #1E3A5F;
-  --line-soft:       #162231;
+  --line:            #1E2E4A;
+  --line-soft:       #111C2C;
   --success-bento:   #2DB37F;
   --success-soft:    rgba(45, 179, 127, 0.15);
   --warning-bento:   #F5A623;
@@ -114,6 +114,156 @@
   --shadow-md:       0 4px 16px rgba(0, 0, 0, 0.35);
   --shadow-lg:       0 12px 32px rgba(0, 0, 0, 0.40);
   --shadow-xl:       0 24px 48px rgba(0, 0, 0, 0.50);
+}
+
+/* 1. Cyber-Obsidian (Glassmorphic Neo-Blue) */
+.dark-cyber {
+  --background:      #070B13;
+  --background-alt:  #0B121F;
+  --card:            #0B121F;
+
+  --surface:         rgba(17, 28, 44, 0.85);
+  --surface-raised:  rgba(22, 38, 59, 0.90);
+
+  --border:          #1E2E4A;
+  --border-subtle:   #111C2C;
+
+  --foreground:      #F5F9FF;
+  --foreground-muted:#8896A8;
+  --foreground-faint:#475467;
+
+  /* Primária (Azul Elétrico Néon) */
+  --primary:         #00F2FE;
+  --primary-hover:   #4A9EF5;
+  --primary-subtle:  rgba(0, 242, 254, 0.12);
+  --primary-muted:   rgba(0, 242, 254, 0.20);
+
+  --input:           #111C2C;
+  --input-focus:     #16263B;
+  --ring:            rgba(0, 242, 254, 0.35);
+
+  /* Bento / Dashboard v2 tokens */
+  --accent:          #00F2FE;
+  --accent-dark:     #4A9EF5;
+  --accent-deep:     #1F5BA8;
+  --accent-soft:     rgba(0, 242, 254, 0.12);
+  --surface-soft:    #111C2C;
+  --ink:             #F5F9FF;
+  --ink2:            #8896A8;
+  --muted-bento:     #8896A8;
+  --line:            #1E2E4A;
+  --line-soft:       #111C2C;
+  --success-bento:   #00F5D4;
+  --success-soft:    rgba(0, 245, 212, 0.12);
+  --warning-bento:   #FFB800;
+  --warning-soft:    rgba(255, 184, 0, 0.12);
+  --danger-bento:    #FF2A54;
+  --danger-soft:     rgba(255, 42, 84, 0.12);
+
+  --shadow-sm:       0 1px 3px rgba(0, 0, 0, 0.40);
+  --shadow-md:       0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg:       0 12px 32px rgba(0, 0, 0, 0.50);
+  --shadow-xl:       0 24px 48px rgba(0, 0, 0, 0.60);
+}
+
+/* 2. Deep-Space Aurora (Índigo Cósmico) */
+.dark-aurora {
+  --background:      #0F0C20;
+  --background-alt:  #161233;
+  --card:            #161233;
+
+  --surface:         #1D1742;
+  --surface-raised:  #251E54;
+
+  --border:          #2E2254;
+  --border-subtle:   #1D1742;
+
+  --foreground:      #F5F9FF;
+  --foreground-muted:#A398CD;
+  --foreground-faint:#6B5F9C;
+
+  /* Primária (Roxo Aurora) */
+  --primary:         #8A2BE2;
+  --primary-hover:   #A04DF0;
+  --primary-subtle:  rgba(138, 43, 226, 0.15);
+  --primary-muted:   rgba(138, 43, 226, 0.25);
+
+  --input:           #1D1742;
+  --input-focus:     #251E54;
+  --ring:            rgba(138, 43, 226, 0.40);
+
+  /* Bento / Dashboard v2 tokens */
+  --accent:          #8A2BE2;
+  --accent-dark:     #A04DF0;
+  --accent-deep:     #521193;
+  --accent-soft:     rgba(138, 43, 226, 0.15);
+  --surface-soft:    #1D1742;
+  --ink:             #F5F9FF;
+  --ink2:            #A398CD;
+  --muted-bento:     #8896A8;
+  --line:            #2E2254;
+  --line-soft:       #1D1742;
+  --success-bento:   #00FF87;
+  --success-soft:    rgba(0, 255, 135, 0.15);
+  --warning-bento:   #FF6B00;
+  --warning-soft:    rgba(255, 107, 0, 0.15);
+  --danger-bento:    #FF007A;
+  --danger-soft:     rgba(255, 0, 122, 0.15);
+
+  --shadow-sm:       0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-md:       0 4px 16px rgba(138, 43, 226, 0.10);
+  --shadow-lg:       0 12px 32px rgba(138, 43, 226, 0.15);
+  --shadow-xl:       0 24px 48px rgba(138, 43, 226, 0.20);
+}
+
+/* 3. Minimalist Pitch Black (AMOLED Contrast) */
+.dark-amoled {
+  --background:      #000000;
+  --background-alt:  #0A0A0A;
+  --card:            #0A0A0A;
+
+  --surface:         #121212;
+  --surface-raised:  #1A1A1A;
+
+  --border:          #222222;
+  --border-subtle:   #121212;
+
+  --foreground:      #FFFFFF;
+  --foreground-muted:#888888;
+  --foreground-faint:#444444;
+
+  /* Primária (Azul de Alto Contraste) */
+  --primary:         #4A9EF5;
+  --primary-hover:   #7AB8F8;
+  --primary-subtle:  rgba(74, 158, 245, 0.15);
+  --primary-muted:   rgba(74, 158, 245, 0.25);
+
+  --input:           #121212;
+  --input-focus:     #1A1A1A;
+  --ring:            rgba(74, 158, 245, 0.40);
+
+  /* Bento / Dashboard v2 tokens */
+  --accent:          #4A9EF5;
+  --accent-dark:     #7AB8F8;
+  --accent-deep:     #1F5BA8;
+  --accent-soft:     rgba(74, 158, 245, 0.15);
+  --surface-soft:    #121212;
+  --ink:             #FFFFFF;
+  --ink2:            #888888;
+  --muted-bento:     #888888;
+  --line:            #222222;
+  --line-soft:       #121212;
+  --success-bento:   #00C853;
+  --success-soft:    rgba(0, 200, 83, 0.15);
+  --warning-bento:   #FFD600;
+  --warning-soft:    rgba(255, 214, 0, 0.15);
+  --danger-bento:    #D50000;
+  --danger-soft:     rgba(213, 0, 0, 0.15);
+
+  --shadow-sm:       none;
+  --shadow-md:       0 0 0 1px #222222;
+  --shadow-lg:       0 0 0 1px #333333;
+  --shadow-xl:       0 0 0 1px #444444;
 }
 
 /* ── Base Layer ─────────────────────────────────────────────── */
