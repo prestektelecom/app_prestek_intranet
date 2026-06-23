@@ -3673,8 +3673,55 @@ app.post('/api/user/dashboard-layout', async (req, res) => {
     }
 });
 
+// ─── Health Check ────────────────────────────────────────────────
+app.get('/api/health', async (req, res) => {
+    try {
+        await pool.query('SELECT 1')
+        return res.status(200).json({ status: 'ok', database: 'connected' })
+    } catch (err) {
+        console.error('[health] Banco indisponível:', err.message)
+        return res.status(503).json({ status: 'unavailable', database: 'disconnected' })
+    }
+})
+
 // ─── Inicialização ───────────────────────────────────────────────
-app.listen(PORT, () => {
-    console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
+function iniciarServidor() {
+    const server = app.listen(PORT, () => {
+        console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
+    })
+
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`❌ Porta ${PORT} já está em uso.`)
+        } else {
+            console.error('❌ Erro ao iniciar servidor:', err.message)
+        }
+        process.exit(1)
+    })
+}
+
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('❌ Falha ao conectar com PostgreSQL:', err.message)
+        // Mesmo com erro no banco, inicia o servidor para que /api/health responda
+        // e outras rotas possam degradar graciosamente.
+        const server = app.listen(PORT, () => {
+            console.log(`⚠️ Backend rodando em http://localhost:${PORT} (sem conexão com banco)`)
+        })
+
+        server.on('error', (errSrv) => {
+            if (errSrv.code === 'EADDRINUSE') {
+                console.error(`❌ Porta ${PORT} já está em uso.`)
+            } else {
+                console.error('❌ Erro ao iniciar servidor:', errSrv.message)
+            }
+            process.exit(1)
+        })
+        return
+    }
+
+    release()
+    console.log('✅ Conectado ao banco PostgreSQL com sucesso.')
+    iniciarServidor()
 })
 // trigger restart

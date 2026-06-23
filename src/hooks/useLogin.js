@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { loginUsuario } from '../services/auth'
 
 const CHAVE_CREDS = '@Stitch:creds'
@@ -26,8 +26,38 @@ export function useLogin(onLogin) {
     const [carregando, setCarregando] = useState(false)
     const [mostrarSenha, setMostrarSenha] = useState(false)
     const [lembrar, setLembrar] = useState(false)
-    
+    const [backendPronto, setBackendPronto] = useState(false)
+    const [verificandoBackend, setVerificandoBackend] = useState(true)
+
     const credValida = !!credsSalvas
+
+    useEffect(() => {
+        let cancelado = false
+        const verificar = async () => {
+            try {
+                const res = await fetch('/api/health', {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(3000)
+                })
+                if (!cancelado) {
+                    setBackendPronto(res.ok)
+                    setVerificandoBackend(false)
+                }
+            } catch {
+                if (!cancelado) {
+                    setBackendPronto(false)
+                    setVerificandoBackend(false)
+                }
+            }
+        }
+
+        verificar()
+        const intervalo = setInterval(verificar, 3000)
+        return () => {
+            cancelado = true
+            clearInterval(intervalo)
+        }
+    }, [])
 
     const handleSubmit = async (e) => {
         if (e) e.preventDefault()
@@ -74,6 +104,8 @@ export function useLogin(onLogin) {
         mostrarSenha, setMostrarSenha,
         lembrar, setLembrar,
         credValida,
+        backendPronto,
+        verificandoBackend,
         handleSubmit
     }
 }

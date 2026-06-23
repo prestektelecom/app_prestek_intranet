@@ -39,7 +39,10 @@ export default function LoginForm({
     erro, carregando,
     mostrarSenha, setMostrarSenha,
     lembrar, setLembrar,
-    credValida, handleSubmit
+    credValida,
+    backendPronto,
+    verificandoBackend,
+    handleSubmit
 }) {
     return (
         <div className="flex flex-col justify-center p-14 bg-white min-h-[600px]">
@@ -115,14 +118,22 @@ export default function LoginForm({
 
                 <button
                     type="submit"
-                    disabled={carregando}
+                    disabled={carregando || verificandoBackend || !backendPronto}
                     className="mt-4 w-full h-[52px] border-none rounded-xl cursor-pointer text-white font-semibold text-[15px] tracking-wide flex items-center justify-center gap-2.5 transition-all duration-150 active:translate-y-px disabled:opacity-70 disabled:cursor-wait"
                     style={{
                         background: 'linear-gradient(180deg, #4A9EF5, #2D7BD4)',
                         boxShadow: '0 10px 24px rgba(74,158,245,0.32)',
                     }}
                 >
-                    {carregando ? (
+                    {verificandoBackend || !backendPronto ? (
+                        <>
+                            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            Aguardando servidor...
+                        </>
+                    ) : carregando ? (
                         <>
                             <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
