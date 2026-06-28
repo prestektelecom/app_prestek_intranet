@@ -1877,53 +1877,67 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
             log(`Tentativa ${i + 1} sem OS ainda... res: ` + JSON.stringify(dataOS));
         }
 
-        // Se encontrou a OS e escolheu um técnico, força a atualização da OS
-        // IXC requer que enviemos os dados completos da OS de volta no PUT
+        // Se encontrou a OS e escolheu um técnico, agenda via mensagem/evento 5.
+        // A OS 1813612 prova que o IXC agenda pela tabela su_oss_chamado_mensagem
+        // com id_evento: "5", id_tecnico e data_inicio/data_final.
         if (osIdFinal && osRecord && tecnico_id) {
-            log(`Atualizando OS ${osIdFinal} para o técnico ${tecnico_id}`);
-            const updateOsUrl = `https://${host}/webservice/v1/su_oss_chamado/${osIdFinal}`;
-            
-            // Formatando datas para o padrao do IXC (YYYY-MM-DD HH:MM:SS)
+            log(`Agendando OS ${osIdFinal} para o técnico ${tecnico_id}`);
+            const msgUrl = `https://${host}/webservice/v1/su_oss_chamado_mensagem`;
+
             const agora = new Date();
             const pad = (n) => String(n).padStart(2, '0');
             const data_agenda = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())} ${pad(agora.getHours())}:${pad(agora.getMinutes())}:00`;
             const data_agenda_final = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())} 23:59:59`;
 
-            // Mesclamos o payload original da OS, sobrescrevendo só os campos necessários
-            const updateOsBody = JSON.stringify({
-                ...osRecord,
+            const agendaPayload = {
+                id_chamado: osIdFinal,
+                status: 'AG',
+                id_evento: '5', // Agendamento
+                mensagem: 'Agendado automaticamente via Intranet',
                 id_tecnico: tecnico_id,
-                data_agenda: data_agenda,
-                data_agenda_final: data_agenda_final,
-                status: 'AG', // Força para status Agendado
-                mensagem_resposta: 'Agendado automaticamente via Intranet'
-            });
-            
+                data_inicio: data_agenda,
+                data_final: data_agenda_final,
+                id_equipe: '0',
+                finaliza_processo: 'N'
+            };
+            const agendaBody = JSON.stringify(agendaPayload);
+            log(`Payload POST /su_oss_chamado_mensagem: ${agendaBody}`);
+
             try {
-                const headersPut = {
+                const headersMsg = {
                     'Content-Type': 'application/json',
                     Authorization: 'Basic ' + Buffer.from(token).toString('base64')
                 };
-                const resUpdateOs = await fetch(updateOsUrl, {
-                    method: 'PUT',
-                    headers: headersPut,
-                    body: updateOsBody
+                const resMsg = await fetch(msgUrl, {
+                    method: 'POST',
+                    headers: headersMsg,
+                    body: agendaBody
                 });
-                if (!resUpdateOs.ok) {
-                    console.error("Falha requisição PUT atualizar técnico OS:", await resUpdateOs.text());
-                } else {
-                    const putResult = await resUpdateOs.json();
-                    if (putResult.type === 'error') {
-                         log("Erro interno do IXC ao atualizar OS: " + JSON.stringify(putResult));
+                const rawMsg = await resMsg.text();
+                log(`Resposta raw POST /su_oss_chamado_mensagem: ${rawMsg}`);
+
+                let msgResult;
+                try {
+                    msgResult = JSON.parse(rawMsg);
+                } catch (parseErr) {
+                    log(`Resposta do POST mensagem não é JSON válido: ${parseErr.message}`);
+                }
+
+                if (msgResult) {
+                    if (msgResult.type === 'error') {
+                        log(`Erro do IXC ao agendar OS ${osIdFinal}: ${JSON.stringify(msgResult)}`);
+                        if (msgResult.message && msgResult.message.includes('botão respectivo')) {
+                            log('IMPORTANTE: o usuário/token da API não tem permissão para agendar OS via webservice. Verifique permissões no IXC.');
+                        }
                     } else {
-                         log(`Técnico ${tecnico_id} agendado com sucesso na OS ${osIdFinal}. Resposta: ` + JSON.stringify(putResult));
+                        log(`Técnico ${tecnico_id} agendado com sucesso na OS ${osIdFinal}. Resposta: ${JSON.stringify(msgResult)}`);
                     }
                 }
-            } catch (errUpdateOs) {
-                log("Erro no TRY CATCH ao fazer PUT na OS: " + errUpdateOs.message);
+            } catch (errMsg) {
+                log(`Erro no TRY CATCH ao agendar OS ${osIdFinal}: ${errMsg.message}`);
             }
         } else {
-            log(`Não atualizou a OS. osIdFinal: ${osIdFinal}, tecnicoId: ${tecnico_id}`);
+            log(`Não agendou a OS. osIdFinal: ${osIdFinal}, tecnicoId: ${tecnico_id}`);
         }
 
         log(`FIM. Retornando protocolo ${protocoloFinal}`);
