@@ -31,6 +31,10 @@ function hexToRgb(hex) {
   return `${parseInt(x.slice(0,2),16)}, ${parseInt(x.slice(2,4),16)}, ${parseInt(x.slice(4,6),16)}`;
 }
 
+function tone(hex, a) {
+  return `rgba(${hexToRgb(hex)}, ${a})`;
+}
+
 // ── Quantidade por lote de scroll infinito ────────────────────────────────────
 const LOTE = 16;
 
@@ -157,18 +161,18 @@ export default function Directory({ user, setCurrentView }) {
   return (
     <main style={{ flex: 1, overflowY: 'auto', background: C.bg, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: C.ink }}>
 
-      {/* ── Hero Banner ──────────────────────────────────────────────────── */}
-      <HeroBanner
-        busca={busca}
-        setBusca={setBusca}
-        kpiTotal={kpiTotal}
-        kpiAtivos={kpiAtivos}
-        kpiDeptos={kpiDeptos}
-        isLoading={isLoading}
-        setCurrentView={setCurrentView}
-      />
+      <div style={{ padding: '32px 32px 48px', maxWidth: 1440, margin: '0 auto' }}>
 
-      <div style={{ padding: '0 32px 48px', maxWidth: 1440, margin: '0 auto' }}>
+        {/* ── Hero Banner ──────────────────────────────────────────────────── */}
+        <HeroBanner
+          busca={busca}
+          setBusca={setBusca}
+          kpiTotal={kpiTotal}
+          kpiAtivos={kpiAtivos}
+          kpiDeptos={kpiDeptos}
+          isLoading={isLoading}
+          setCurrentView={setCurrentView}
+        />
 
         {/* ── Chips de Departamento ─────────────────────────────────────────── */}
         <DeptChips
@@ -254,10 +258,13 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiAtivos, kpiDeptos, isLoading
   return (
     <div style={{
       background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
-      padding: '40px 32px 36px',
+      borderRadius: 24,
+      padding: '32px 36px',
+      color: 'white',
       position: 'relative',
       overflow: 'hidden',
       marginBottom: 28,
+      boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
     }}>
       {/* Grid pattern SVG */}
       <svg style={{ position: 'absolute', inset: 0, opacity: 0.12, pointerEvents: 'none' }} width="100%" height="100%">
