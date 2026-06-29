@@ -1,28 +1,43 @@
-﻿## 1. Diagnóstico e verificação do problema
+﻿## 1. Diagnostico e verificacao do problema
 
-- [x] 1.1 Abrir um chamado de teste pelo modal de TI e capturar o `ixc_debug.log` gerado no backend
-- [x] 1.2 Confirmar no log que o PUT da OS não persiste `id_tecnico` nem `status`
-- [x] 1.3 Verificar no `os-data.json` e na OS 1813612 (agendada manualmente) qual o evento/mensagem usado pelo IXC
+- [x] 1.1 Abrir um chamado de teste pelo modal de TI e capturar o `ixc_debug.log`
+- [x] 1.2 Confirmar que PUT com payload minimo nao persiste `id_tecnico`
+- [x] 1.3 Confirmar que PUT com spread completo retorna `type: success` mas NAO persiste `id_tecnico` na OS do workflow
+- [x] 1.4 Mapear a diferenca entre su_ticket (id_responsavel_tecnico) e su_oss_chamado (id_tecnico)
+- [x] 1.5 Identificar o formulario IXC "Agendar OS" e seu equivalente via API
 
-## 2. Corrigir o agendamento da OS (backend/server.js)
+## 2. Corrigir o fluxo pos-OS (backend/server.js)
 
-- [x] 2.1 Localizar o bloco após a criação da OS na rota `POST /api/ixc/su-ticket`
-- [x] 2.2 Substituir o `PUT /su_oss_chamado/:id` por `POST /su_oss_chamado_mensagem` com evento 5 (Agendamento):
-  - `id_chamado` ← `osIdFinal`
-  - `status` ← `"AG"`
-  - `id_evento` ← `"5"`
-  - `mensagem` ← `"Agendado automaticamente via Intranet"`
-  - `id_tecnico` ← `tecnico_id`
-  - `data_inicio` ← `data_agenda`
-  - `data_final` ← `data_agenda_final`
-  - `id_equipe` ← `"0"`
-  - `finaliza_processo` ← `"N"`
-- [x] 2.3 Melhorar o log do resultado: registrar payload e response completo (sucesso ou erro detalhado)
+- [x] 2.1 Implementar TENTATIVA 1: criar OS manualmente ja agendada com `id_tecnico`
+  - endpoint: `POST /webservice/v1/su_oss_chamado` com header `ixcsoft: incluir`
+  - body: campos obrigatorios da OS + `id_tecnico`, `status: "AG"`, `data_agenda`, `data_agenda_final`
+- [x] 2.2 Implementar TENTATIVA 2 (fallback): quando a manual for bloqueada, buscar OS do workflow, deletar mensagens, deletar OS e recriar manualmente
+  - Deletar mensagens via `DELETE /webservice/v1/su_oss_chamado_mensagem/:id`
+  - Deletar OS via `DELETE /webservice/v1/su_oss_chamado/:id`
+  - Recriar OS manual com `ixcsoft: incluir`
+  - Guardar o protocolo da OS deletada para retornar ao frontend
+- [x] 2.3 Logar resultado de cada passo separadamente
+- [x] 2.4 Garantir que falhas nos passos nao quebrem o retorno do protocolo ao frontend
 
-## 3. Validação
+## 3. Validacao
 
-- [ ] 3.1 Garantir que o usuário/token da API do IXC tenha permissão para agendar OS via webservice
-- [ ] 3.2 Reiniciar o backend e abrir um chamado de teste selecionando EVERTON como atendente
-- [ ] 3.3 Verificar no `ixc_debug.log` que o POST da mensagem retornou sucesso (sem `type: "error"`)
-- [ ] 3.4 Confirmar no painel do IXC Soft que o chamado está vinculado ao técnico correto
-- [ ] 3.5 Repetir o teste selecionando MARCIO para garantir que ambos os técnicos funcionam
+- [x] 3.1 Testar abertura com EVERTON (59841)
+  - Ticket `776701` / OS manual `1816695`
+  - `id_tecnico`: 59841, `status`: AG, `data_agenda` preenchida
+  - Protocolo retornado: `202606150950`
+- [x] 3.2 Testar abertura com MARCIO (59570)
+  - Ticket `776702` / OS manual `1816697`
+  - `id_tecnico`: 59570, `status`: AG, `data_agenda` preenchida
+  - Protocolo retornado: `202606150951`
+- [x] 3.3 Verificar no `ixc_debug.log` que o fluxo executou corretamente
+  - OS do workflow encontrada e deletada
+  - Mensagens deletadas
+  - OS manual criada com sucesso
+- [x] 3.4 Confirmar no painel IXC Soft
+  - Campo `id_tecnico` preenchido no registro da OS
+  - Status AG e datas de agendamento preenchidas
+
+## 4. Conclusao
+
+- [x] 4.1 Fluxo implementado e validado
+- [ ] 4.2 Commitar alteracoes

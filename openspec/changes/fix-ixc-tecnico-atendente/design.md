@@ -1,67 +1,103 @@
 ﻿## Context
 
 O fluxo de abertura de chamado de TI via intranet faz:
-1. `POST /webservice/v1/su_ticket` → cria o ticket
-2. Poll (até 6x, 3s entre tentativas) aguardando a OS vinculada (`su_oss_chamado`) ser criada pelo IXC via workflow
-3. `PUT /webservice/v1/su_oss_chamado/:id` → tenta setar `id_tecnico`
+1. `POST /webservice/v1/su_ticket` -> cria o ticket (com `id_responsavel_tecnico`)
+2. O workflow do IXC cria a OS vinculada (`su_oss_chamado`) automaticamente
+3. A OS nasce com `id_tecnico = 0` - o workflow **nao herda** `id_responsavel_tecnico` do ticket
+4. A intranet precisa garantir que a OS saia agendada com o tecnico correto
 
-O `PUT /su_oss_chamado/:id` aceita a requisição, mas não persiste `id_tecnico` nem `status` — esses campos são controlados pelo workflow do IXC. A OS 1813612 (agendada manualmente no IXC) mostra que o agendamento é feito pela tabela `su_oss_chamado_mensagem` com `id_evento: "5"`, `id_tecnico` e `data_inicio`/`data_final`.
-
-O frontend já está correto: `TiSupportModal.jsx` envia `tecnico_id` dinamicamente; o `select` permite escolher entre MARCIO (59570) e EVERTON (59841).
+O frontend ja esta correto: `TiSupportModal.jsx` envia `tecnico_id` dinamicamente; o `select` permite escolher entre MARCIO (59570) e EVERTON (59841). Os IDs sao fixos - nao ha busca dinamica na tabela `funcionarios`.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Garantir que `id_tecnico` seja corretamente persistido na OS do IXC ao abrir chamado
-- Mapear os campos obrigatórios do PUT da OS com os nomes corretos que o IXC espera
-- Loggar de forma clara o resultado do PUT (sucesso ou erro detalhado)
-- Manter o campo de técnico editável no frontend (já implementado)
+- Garantir que `id_tecnico` seja corretamente persistido no **registro** da OS (campo direto)
+- Garantir que a OS seja criada **agendada** (`status = "AG"` + datas de agendamento)
+- Data de agendamento = hora atual (automatico, sem input do usuario)
+- Logar claramente o resultado de cada passo
 
 **Non-Goals:**
 - Alterar o endpoint `/api/ixc/su-ticket` ou o contrato de resposta
-- Modificar o fluxo de criação do ticket em si
-- Adicionar novos técnicos além de MARCIO e EVERTON
-- Lidar com casos onde o IXC não gera OS (timeout após 18s)
+- Busca dinamica de tecnicos na tabela `funcionarios`
+- Adicionar novos tecnicos alem de MARCIO e EVERTON
+- Lidar com casos onde o IXC nao gera OS (timeout apos 18s)
 
 ## Decisions
 
-### Decisão 1: Usar `su_oss_chamado_mensagem` com evento 5 (Agendamento)
+### Decisao 1: Substituir a OS do workflow por uma OS manual agendada
 
-**Escolhido**: Após a OS ser criada pelo workflow, postar uma mensagem na tabela `su_oss_chamado_mensagem` com `id_evento: "5"` (Agendamento), `id_tecnico` e datas de agendamento. Esse é o caminho que a OS 1813612 (exemplo real agendado no IXC) utilizou.
+**Escolhido**: Como o workflow do IXC sempre cria a OS primeiro (bloqueando a criacao manual) e a API nao permite alterar `id_tecnico`/`status` de uma OS criada por workflow, o backend executa os seguintes passos:
 
-**Alternativas consideradas**:
-- **PUT direto na OS**: Atualiza campos livres (ex: `mensagem_resposta`), mas `id_tecnico` e `status` são controlados pelo workflow e não são persistidos.
-- **PUT com bypass de workflow (`id_wfl_tarefa: ''`)**: Também não persistiu `id_tecnico`/`status` nos testes.
-- **Eventos 8 (Assumir) e 16 (Reagendamento)**: Postaram mensagem com sucesso, mas não alteraram o estado da OS.
-- **Endpoint específico de agendamento**: `su_oss_chamado_agendar` não existe no webservice disponível.
+1. Cria o `su_ticket` normalmente.
+2. Tenta criar a `su_oss_chamado` manualmente ja agendada.
+3. Se bloqueada, busca a OS gerada pelo workflow.
+4. Deleta as mensagens vinculadas a essa OS.
+5. Deleta a OS do workflow.
+6. Cria uma nova OS manual agendada com o tecnico correto.
+7. Armazena o protocolo da OS deletada e o retorna ao frontend.
 
-**Payload da mensagem de agendamento**:
+**Payload da OS manual:**
+```json
+{
+  "id_cliente": "681",
+  "id_login": "1",
+  "id_contrato": "18426",
+  "id_filial": "1",
+  "id_assunto": "1154",
+  "id_ticket": "<ticketId>",
+  "id_ticket_setor": "16",
+  "setor": "54",
+  "id_cidade": "1721",
+  "id_tecnico": "<tecnico_id>",
+  "prioridade": "N",
+  "origem_endereco": "CC",
+  "endereco": "AL Penedo 57200-000 SENHOR DO BONFIM - RODOVIA MARIO FREIRE LEAHY, 1650",
+  "numero": "1650",
+  "bairro": "SENHOR DO BONFIM",
+  "cidade": "1721",
+  "cep": "57200-000",
+  "latitude": "-10.277295",
+  "longitude": "-36.5581617",
+  "status": "AG",
+  "data_agenda": "<hora atual>",
+  "data_agenda_final": "<hoje 23:59:59>",
+  "mensagem": "<mensagemFormatada>"
+}
 ```
-id_chamado:        osIdFinal
-status:            "AG"
-id_evento:         "5"
-mensagem:          "Agendado automaticamente via Intranet"
-id_tecnico:        tecnico_id
-data_inicio:       data_agenda
-data_final:        data_agenda_final
-id_equipe:         "0"
-finaliza_processo: "N"
-```
 
-### Decisão 2: Manter o poll de OS e só atualizar após encontrá-la
+### Decisao 2: Data de agendamento = hora atual (automatico)
 
-**Escolhido**: O poll atual já aguarda a OS ser criada pelo workflow do IXC antes de tentar o PUT. Esse comportamento deve ser mantido — só ajustar o payload do PUT.
+`data_agenda` = timestamp atual (minuto zerado); `data_agenda_final` = hoje as 23:59:59. Sem input do usuario.
 
-**Rationale**: O IXC cria a OS assincronamente via workflow (pode levar alguns segundos). Tentar setar o técnico antes da OS existir falharia.
+### Decisao 3: Manter o protocolo da OS deletada
+
+A OS manual nao gera protocolo automaticamente. Para nao quebrar a experiencia do usuario, o backend guarda o protocolo da OS do workflow antes de deleta-la e o retorna na resposta.
 
 ## Risks / Trade-offs
 
-- **[Risco] IXC muda os campos obrigatórios** → O PUT pode voltar a falhar. Mitigation: logar o response completo do PUT para diagnóstico rápido.
-- **[Risco] Timeout do poll (>18s)** → OS não é encontrada, técnico não é setado. Mitigation: já existe; o chamado é criado mas sem técnico. Fora do escopo desta correção.
-- **[Trade-off] Mapeamento manual** → Se o IXC mudar nomes de campos, o mapeamento pode quebrar. Compensado pela clareza e controle explícito sobre o que está sendo enviado.
+- **[Risco] OS manual nao tem protocolo proprio**: O protocolo retornado e o da OS deletada. A OS final nao tera protocolo no IXC.
+- **[Risco] Origem da OS fica "M" (manual)**: Em vez de "P" (processo/workflow), o que pode afetar filtros/relatorios.
+- **[Risco] Ticket fica sem OS se a delecao funcionar mas a criacao manual falhar**: O backend loga o erro, mas o ticket pode ficar inconsistente.
+- **[Risco] Workflow pode ter criado outros registros alem da OS**: No cenario atual, a OS e deletada antes que o workflow avance muito, mas isso depende de timing.
 
 ## Migration Plan
 
-1. Ajustar o bloco `PUT /su_oss_chamado` no `backend/server.js` (~linha 1893)
-2. Testar com um chamado real e verificar o log `ixc_debug.log`
-3. Confirmar no IXC Soft que o técnico aparece vinculado ao chamado
+1. Substituir o bloco pos-OS no `backend/server.js` pelo fluxo de OS manual + delecao do workflow
+2. Testar com EVERTON e MARCIO
+3. Verificar no IXC Soft se a OS final esta agendada com o tecnico correto
+4. Commitar as alteracoes
+
+## Results / Test Notes
+
+Testes realizados em 2026-06-29:
+
+| Ticket | OS Workflow | OS Manual | Tecnico | Status | data_agenda | Protocolo retornado |
+|--------|-------------|-----------|---------|--------|-------------|---------------------|
+| 776701 | 1816694 (deletada) | 1816695 | EVERTON (59841) | AG | 2026-06-29 16:42:00 | 202606150950 |
+| 776702 | 1816696 (deletada) | 1816697 | MARCIO (59570) | AG | 2026-06-29 16:43:00 | 202606150951 |
+
+**Conclusao:**
+- O fluxo funciona para ambos os tecnicos.
+- A OS final e criada manualmente com `id_tecnico` correto, `status = "AG"` e datas de agendamento.
+- O protocolo da OS deletada e retornado ao frontend.
+- A solucao e operacional, mas depende de deletar a OS do workflow rapidamente antes que ela avance no processo.

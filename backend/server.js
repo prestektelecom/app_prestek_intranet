@@ -1840,104 +1840,198 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
             return data.registros ? data.registros[0] : null;
         };
 
-        console.log(`Ticket ${ticketId} aberto. Aguardando geração do protocolo...`);
+        console.log(`Ticket ${ticketId} aberto. Processando OS agendada...`);
         
         let osIdFinal = null;
         let osRecord = null;
+        let osManualCriada = false;
 
-        for (let i = 0; i < 6; i++) {
-            await sleep(3000); // Aguarda 3 segundos entre tentativas (até 18s no total)
-            let ticketInfo = await fetchTicket();
-            
-            if (ticketInfo && ticketInfo.protocolo) {
-                protocoloFinal = ticketInfo.protocolo;
-                log(`Protocolo encontrado na tentativa ${i + 1}: ${protocoloFinal}`);
-            }
-            
-            // Busca a OS vinculada sempre, pois precisamos dela para setar o técnico
-            const urlOS = `https://${host}/webservice/v1/su_oss_chamado`;
-            log(`Buscando OS vinculada ao ticket ${ticketId} [TENTATIVA ${i+1}]`);
-            const respOS = await fetch(urlOS, {
+        const agora = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const data_agenda = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())} ${pad(agora.getHours())}:${pad(agora.getMinutes())}:00`;
+        const data_agenda_final = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())} 23:59:59`;
+
+        // Helper: payload base para OS manual agendada
+        const buildOSManualPayload = (ticketId, tecnico_id) => ({
+            id_cliente: ixcIds.id_cliente,
+            id_login: ixcIds.id_login,
+            id_contrato: ixcIds.id_contrato,
+            id_filial: '1',
+            id_assunto: '1154',
+            id_ticket: ticketId,
+            id_ticket_setor: '16',
+            setor: '54',
+            id_cidade: '1721',
+            id_tecnico: tecnico_id,
+            prioridade: 'N',
+            origem_endereco: 'CC',
+            endereco: 'AL Penedo 57200-000 SENHOR DO BONFIM - RODOVIA MARIO FREIRE LEAHY, 1650',
+            numero: '1650',
+            bairro: 'SENHOR DO BONFIM',
+            cidade: '1721',
+            cep: '57200-000',
+            latitude: '-10.277295',
+            longitude: '-36.5581617',
+            status: 'AG',
+            data_agenda: data_agenda,
+            data_agenda_final: data_agenda_final,
+            mensagem: mensagemFormatada
+        });
+
+        // Helper: criar OS manual agendada
+        const criarOSManual = async (ticketId, tecnico_id) => {
+            const urlOSIncluir = `https://${host}/webservice/v1/su_oss_chamado`;
+            const payload = buildOSManualPayload(ticketId, tecnico_id);
+            const body = JSON.stringify(payload);
+            log(`[OS MANUAL] Payload POST /su_oss_chamado: ${body}`);
+
+            const res = await fetch(urlOSIncluir, {
                 method: 'POST',
-                headers: { ...headers, ixcsoft: 'listar' },
-                body: JSON.stringify({ qtype: 'su_oss_chamado.id_ticket', query: ticketId, oper: '=', page: '1', rp: '1' })
+                headers: { ...headers, ixcsoft: 'incluir' },
+                body
             });
-            const dataOS = await respOS.json();
-            
-            if (dataOS.registros && dataOS.registros[0]) {
-                osRecord = dataOS.registros[0];
-                osIdFinal = osRecord.id;
-                log(`ENCONTROU OS! ID: ${osIdFinal}. Protocolo OS: ${osRecord.protocolo}`);
-                if (!protocoloFinal && osRecord.protocolo) {
-                    protocoloFinal = osRecord.protocolo;
-                }
-                break; // Achamos a OS, podemos sair do loop
-            }
-            
-            log(`Tentativa ${i + 1} sem OS ainda... res: ` + JSON.stringify(dataOS));
-        }
-
-        // Se encontrou a OS e escolheu um técnico, agenda via mensagem/evento 5.
-        // A OS 1813612 prova que o IXC agenda pela tabela su_oss_chamado_mensagem
-        // com id_evento: "5", id_tecnico e data_inicio/data_final.
-        if (osIdFinal && osRecord && tecnico_id) {
-            log(`Agendando OS ${osIdFinal} para o técnico ${tecnico_id}`);
-            const msgUrl = `https://${host}/webservice/v1/su_oss_chamado_mensagem`;
-
-            const agora = new Date();
-            const pad = (n) => String(n).padStart(2, '0');
-            const data_agenda = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())} ${pad(agora.getHours())}:${pad(agora.getMinutes())}:00`;
-            const data_agenda_final = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())} 23:59:59`;
-
-            const agendaPayload = {
-                id_chamado: osIdFinal,
-                status: 'AG',
-                id_evento: '5', // Agendamento
-                mensagem: 'Agendado automaticamente via Intranet',
-                id_tecnico: tecnico_id,
-                data_inicio: data_agenda,
-                data_final: data_agenda_final,
-                id_equipe: '0',
-                finaliza_processo: 'N'
-            };
-            const agendaBody = JSON.stringify(agendaPayload);
-            log(`Payload POST /su_oss_chamado_mensagem: ${agendaBody}`);
+            const raw = await res.text();
+            log(`[OS MANUAL] Resposta raw: ${raw}`);
 
             try {
-                const headersMsg = {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Basic ' + Buffer.from(token).toString('base64')
-                };
-                const resMsg = await fetch(msgUrl, {
-                    method: 'POST',
-                    headers: headersMsg,
-                    body: agendaBody
-                });
-                const rawMsg = await resMsg.text();
-                log(`Resposta raw POST /su_oss_chamado_mensagem: ${rawMsg}`);
-
-                let msgResult;
-                try {
-                    msgResult = JSON.parse(rawMsg);
-                } catch (parseErr) {
-                    log(`Resposta do POST mensagem não é JSON válido: ${parseErr.message}`);
+                const result = JSON.parse(raw);
+                if (result.type === 'success' && result.id) {
+                    return { sucesso: true, id: result.id, result };
                 }
-
-                if (msgResult) {
-                    if (msgResult.type === 'error') {
-                        log(`Erro do IXC ao agendar OS ${osIdFinal}: ${JSON.stringify(msgResult)}`);
-                        if (msgResult.message && msgResult.message.includes('botão respectivo')) {
-                            log('IMPORTANTE: o usuário/token da API não tem permissão para agendar OS via webservice. Verifique permissões no IXC.');
-                        }
-                    } else {
-                        log(`Técnico ${tecnico_id} agendado com sucesso na OS ${osIdFinal}. Resposta: ${JSON.stringify(msgResult)}`);
-                    }
-                }
-            } catch (errMsg) {
-                log(`Erro no TRY CATCH ao agendar OS ${osIdFinal}: ${errMsg.message}`);
+                return { sucesso: false, erro: result.message || JSON.stringify(result), result };
+            } catch (e) {
+                return { sucesso: false, erro: `JSON inválido: ${e.message}`, raw };
             }
+        };
+
+        // Helper: deletar mensagens de uma OS
+        const deletarMensagensOS = async (osId) => {
+            const urlMsg = `https://${host}/webservice/v1/su_oss_chamado_mensagem`;
+            const listRes = await fetch(urlMsg, {
+                method: 'POST',
+                headers: { ...headers, ixcsoft: 'listar' },
+                body: JSON.stringify({ qtype: 'su_oss_chamado_mensagem.id_chamado', query: osId, oper: '=', page: '1', rp: '100' })
+            });
+            const listData = await listRes.json();
+            const mensagens = listData.registros || [];
+            log(`[DELETE MSGS] ${mensagens.length} mensagem(ns) encontrada(s) na OS ${osId}`);
+
+            for (const msg of mensagens) {
+                const delRes = await fetch(`${urlMsg}/${msg.id}`, {
+                    method: 'DELETE',
+                    headers
+                });
+                const delRaw = await delRes.text();
+                log(`[DELETE MSG] Mensagem ${msg.id}: ${delRaw}`);
+            }
+            return mensagens.length;
+        };
+
+        // Helper: deletar OS
+        const deletarOS = async (osId) => {
+            const urlOS = `https://${host}/webservice/v1/su_oss_chamado`;
+            const delRes = await fetch(`${urlOS}/${osId}`, {
+                method: 'DELETE',
+                headers
+            });
+            const delRaw = await delRes.text();
+            log(`[DELETE OS] OS ${osId}: ${delRaw}`);
+            try {
+                const result = JSON.parse(delRaw);
+                return { sucesso: result.type !== 'error', result };
+            } catch (e) {
+                return { sucesso: false, erro: delRaw };
+            }
+        };
+
+        // ─── PASSO 1: Tentar criar OS manual imediatamente ────────────────────
+        if (tecnico_id) {
+            try {
+                log(`[PASSO 1] Tentando criar OS manual agendada para ticket ${ticketId}`);
+                const tentativa = await criarOSManual(ticketId, tecnico_id);
+                if (tentativa.sucesso) {
+                    osIdFinal = tentativa.id;
+                    osManualCriada = true;
+                    log(`[PASSO 1] OS manual criada com sucesso. ID: ${osIdFinal}`);
+                } else {
+                    log(`[PASSO 1] Falha ao criar OS manual: ${tentativa.erro}`);
+                }
+            } catch (err) {
+                log(`[PASSO 1] Erro no TRY CATCH: ${err.message}`);
+            }
+        }
+
+        // ─── PASSO 2: Se falhou, buscar OS do workflow, deletar e recriar manualmente
+        if (!osIdFinal && tecnico_id) {
+            log(`[PASSO 2] Buscando OS gerada pelo workflow para ticket ${ticketId}`);
+            
+            for (let i = 0; i < 6; i++) {
+                await sleep(3000);
+                let ticketInfo = await fetchTicket();
+                
+                if (ticketInfo && ticketInfo.protocolo) {
+                    protocoloFinal = ticketInfo.protocolo;
+                    log(`[PASSO 2] Protocolo do ticket encontrado: ${protocoloFinal}`);
+                }
+                
+                const urlOS = `https://${host}/webservice/v1/su_oss_chamado`;
+                log(`[PASSO 2] Buscando OS vinculada ao ticket ${ticketId} [TENTATIVA ${i+1}]`);
+                const respOS = await fetch(urlOS, {
+                    method: 'POST',
+                    headers: { ...headers, ixcsoft: 'listar' },
+                    body: JSON.stringify({ qtype: 'su_oss_chamado.id_ticket', query: ticketId, oper: '=', page: '1', rp: '1' })
+                });
+                const dataOS = await respOS.json();
+                
+                if (dataOS.registros && dataOS.registros[0]) {
+                    osRecord = dataOS.registros[0];
+                    const osWorkflowId = osRecord.id;
+                    const osWorkflowProtocolo = osRecord.protocolo || '';
+                    log(`[PASSO 2] OS do workflow encontrada. ID: ${osWorkflowId}, Protocolo: ${osWorkflowProtocolo}`);
+                    
+                    if (!protocoloFinal && osWorkflowProtocolo) {
+                        protocoloFinal = osWorkflowProtocolo;
+                        log(`[PASSO 2] Protocolo da OS do workflow armazenado: ${protocoloFinal}`);
+                    }
+                    
+                    // Deletar mensagens e OS do workflow
+                    try {
+                        log(`[PASSO 2] Deletando mensagens da OS ${osWorkflowId}`);
+                        await deletarMensagensOS(osWorkflowId);
+                        
+                        log(`[PASSO 2] Deletando OS do workflow ${osWorkflowId}`);
+                        const delResult = await deletarOS(osWorkflowId);
+                        
+                        if (delResult.sucesso) {
+                            log(`[PASSO 2] OS do workflow deletada. Criando OS manual...`);
+                            const tentativa = await criarOSManual(ticketId, tecnico_id);
+                            if (tentativa.sucesso) {
+                                osIdFinal = tentativa.id;
+                                osManualCriada = true;
+                                log(`[PASSO 2] OS manual criada com sucesso apos deletar workflow. ID: ${osIdFinal}`);
+                            } else {
+                                log(`[PASSO 2] ERRO CRITICO: OS do workflow deletada, mas falha ao criar manual: ${tentativa.erro}`);
+                            }
+                        } else {
+                            log(`[PASSO 2] Falha ao deletar OS do workflow: ${JSON.stringify(delResult)}`);
+                        }
+                    } catch (err) {
+                        log(`[PASSO 2] Erro no TRY CATCH ao deletar/reciar OS: ${err.message}`);
+                    }
+                    break;
+                }
+                
+                log(`[PASSO 2] Tentativa ${i + 1} sem OS ainda...`);
+            }
+        }
+
+        // ─── PASSO 3: Verificar OS final ──────────────────────────────────────
+        if (osIdFinal && osManualCriada) {
+            log(`[FINAL] OS agendada manualmente. ID: ${osIdFinal}, Tecnico: ${tecnico_id}, Protocolo retornado: ${protocoloFinal || '(vazio)'}`);
+        } else if (osIdFinal && osRecord) {
+            log(`[FINAL] Nao foi possivel substituir a OS do workflow. OS atual: ${osIdFinal}`);
         } else {
-            log(`Não agendou a OS. osIdFinal: ${osIdFinal}, tecnicoId: ${tecnico_id}`);
+            log(`[FINAL] Nenhuma OS processada. osIdFinal: ${osIdFinal}, tecnicoId: ${tecnico_id}`);
         }
 
         log(`FIM. Retornando protocolo ${protocoloFinal}`);
