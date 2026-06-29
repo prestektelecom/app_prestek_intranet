@@ -566,62 +566,66 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
 
                 {/* Filters and Sorting */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide flex-1">
-                        {['All', 'PF', 'PJ', 'Link', 'Technical', 'Streaming'].map(f => (
-                            <button 
-                                key={f}
-                                onClick={() => setFilter(f)}
-                                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 cursor-pointer shrink-0 ${
-                                    filter === f 
-                                    ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)]'
-                                    : 'bg-[#EAF4FF] dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)]/40 text-[#1F5BA8] dark:text-[#7FD4E8] hover:opacity-90'
-                                }`}
-                            >
-                                {f === 'All' && 'Todos os Serviços'}
-                                {f === 'PF' && <><span className="material-symbols-outlined text-lg">person</span>Internet PF</>}
-                                {f === 'PJ' && <><span className="material-symbols-outlined text-lg">business</span>Internet PJ</>}
-                                {f === 'Link' && <><span className="material-symbols-outlined text-lg">router</span>Link Dedicado</>}
-                                {f === 'Technical' && <><span className="material-symbols-outlined text-lg">build</span>Serviços Técnicos</>}
-                                {f === 'Streaming' && <><span className="material-symbols-outlined text-lg">play_circle</span>Streaming's</>}
-                            </button>
-                        ))}
+                    <div className="flex-1 min-w-0 overflow-x-auto scroll-smooth snap-x snap-mandatory scroll-px-1 pb-1 pt-1 px-1 scrollbar-hide">
+                        <div className="inline-flex items-center gap-1 p-1 bg-[#EAF4FF] dark:bg-[#0B1B2E]/80 rounded-2xl">
+                            {['All', 'PF', 'PJ', 'Link', 'Technical', 'Streaming'].map(f => (
+                                <button 
+                                    key={f}
+                                    onClick={() => setFilter(f)}
+                                    className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer shrink-0 whitespace-nowrap snap-start ${
+                                        filter === f 
+                                        ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)] scale-[1.02]'
+                                        : 'bg-transparent text-[#1F5BA8] dark:text-[#7FD4E8] hover:bg-[#D6E9FF] dark:hover:bg-[#1F5BA8]/20'
+                                    }`}
+                                >
+                                    {f === 'All' && 'Todos os Serviços'}
+                                    {f === 'PF' && <><span className="material-symbols-outlined text-base sm:text-lg">person</span>Internet PF</>}
+                                    {f === 'PJ' && <><span className="material-symbols-outlined text-base sm:text-lg">business</span>Internet PJ</>}
+                                    {f === 'Link' && <><span className="material-symbols-outlined text-base sm:text-lg">router</span>Link Dedicado</>}
+                                    {f === 'Technical' && <><span className="material-symbols-outlined text-base sm:text-lg">build</span>Serviços Técnicos</>}
+                                    {f === 'Streaming' && <><span className="material-symbols-outlined text-base sm:text-lg">play_circle</span>Streaming's</>}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {filter !== 'Technical' && filter !== 'Streaming' && (
-                        <div className="flex items-center gap-2 shrink-0 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                        <div className="flex items-center gap-2 shrink-0 overflow-x-auto pb-1 pt-1 px-1 scrollbar-hide">
                             <span className="text-sm font-medium text-slate-500 dark:text-slate-400 mr-1 hidden sm:block">Ordenar por:</span>
-                            <button 
-                                onClick={() => handleSort('vendas_mes')}
-                                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap ${
-                                    sortConfig.key === 'vendas_mes' 
-                                    ? 'bg-[#EAF4FF] text-[#1F5BA8] border-[#4A9EF5]/30 shadow-sm dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8] dark:border-[#4A9EF5]/40' 
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-[#0B1B2E] dark:text-slate-400 dark:border-[var(--border)] dark:bg-[#0B1B2E]'
-                                }`}
-                            >
-                                <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                                Vendas
-                                {sortConfig.key === 'vendas_mes' && (
-                                    <span className="material-symbols-outlined text-[14px]">
-                                        {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
-                                    </span>
-                                )}
-                            </button>
-                            <button 
-                                onClick={() => handleSort('valor_mensal')}
-                                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap ${
-                                    sortConfig.key === 'valor_mensal' 
-                                    ? 'bg-[#EAF4FF] text-[#1F5BA8] border-[#4A9EF5]/30 shadow-sm dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8] dark:border-[#4A9EF5]/40' 
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-[#0B1B2E] dark:text-slate-400 dark:border-[var(--border)] dark:bg-[#0B1B2E]'
-                                }`}
-                            >
-                                <span className="material-symbols-outlined text-[16px]">payments</span>
-                                Preço
-                                {sortConfig.key === 'valor_mensal' && (
-                                    <span className="material-symbols-outlined text-[14px]">
-                                        {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
-                                    </span>
-                                )}
-                            </button>
+                            <div className="inline-flex items-center gap-1 p-1 bg-[#EAF4FF] dark:bg-[#0B1B2E]/80 rounded-2xl">
+                                <button 
+                                    onClick={() => handleSort('vendas_mes')}
+                                    className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                                        sortConfig.key === 'vendas_mes' 
+                                        ? 'bg-white text-[#1F5BA8] shadow-sm border border-[#4A9EF5]/30 dark:bg-[#1F5BA8]/30 dark:text-[#7FD4E8] dark:border-[#4A9EF5]/40' 
+                                        : 'bg-transparent text-slate-600 hover:bg-[#D6E9FF] dark:text-slate-400 dark:hover:bg-[#1F5BA8]/20'
+                                    }`}
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">trending_up</span>
+                                    Vendas
+                                    {sortConfig.key === 'vendas_mes' && (
+                                        <span className="material-symbols-outlined text-[14px]">
+                                            {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
+                                        </span>
+                                    )}
+                                </button>
+                                <button 
+                                    onClick={() => handleSort('valor_mensal')}
+                                    className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                                        sortConfig.key === 'valor_mensal' 
+                                        ? 'bg-white text-[#1F5BA8] shadow-sm border border-[#4A9EF5]/30 dark:bg-[#1F5BA8]/30 dark:text-[#7FD4E8] dark:border-[#4A9EF5]/40' 
+                                        : 'bg-transparent text-slate-600 hover:bg-[#D6E9FF] dark:text-slate-400 dark:hover:bg-[#1F5BA8]/20'
+                                    }`}
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">payments</span>
+                                    Preço
+                                    {sortConfig.key === 'valor_mensal' && (
+                                        <span className="material-symbols-outlined text-[14px]">
+                                            {sortConfig.direction === 'ascending' ? 'arrow_upward' : 'arrow_downward'}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
