@@ -407,6 +407,7 @@ function SectorCard({ id, icon, ramal, title, description, managerName, managerI
     const [isEditing, setIsEditing] = useState(false);
     const [editDesc, setEditDesc] = useState(description || '');
     const [hover, setHover] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const handleSave = () => {
         if (onSaveDescription) onSaveDescription(id, editDesc);
@@ -417,6 +418,8 @@ function SectorCard({ id, icon, ramal, title, description, managerName, managerI
         sessionStorage.setItem('@Stitch:directoryFilter', id);
         setCurrentView('directory');
     };
+
+    const podeExpandir = description && description.length > 90;
 
     return (
         <div
@@ -470,9 +473,25 @@ function SectorCard({ id, icon, ramal, title, description, managerName, managerI
                         {description && (
                             <p title={description} style={{
                                 margin: 0, fontSize: 13.5, color: C.ink2, lineHeight: 1.55,
-                                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                                display: isExpanded ? 'block' : '-webkit-box',
+                                WebkitLineClamp: isExpanded ? 'unset' : 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
                                 paddingRight: isAdmin ? 28 : 0,
                             }}>{description}</p>
+                        )}
+                        {podeExpandir && (
+                            <button
+                                onClick={e => { e.preventDefault(); e.stopPropagation(); setIsExpanded(v => !v); }}
+                                style={{
+                                    marginTop: 6, fontSize: 12, fontWeight: 700, color: C.accent,
+                                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                }}
+                            >
+                                {isExpanded ? 'Ver menos' : 'Ver mais'}
+                                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{isExpanded ? 'expand_less' : 'expand_more'}</span>
+                            </button>
                         )}
                         {isAdmin && (
                             <button
