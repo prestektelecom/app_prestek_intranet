@@ -1855,7 +1855,7 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         const buildOSManualPayload = (ticketId, tecnico_id) => ({
             id_cliente: ixcIds.id_cliente,
             id_login: ixcIds.id_login,
-            id_contrato: ixcIds.id_contrato,
+            id_contrato_kit: ixcIds.id_contrato,
             id_filial: '1',
             id_assunto: '1154',
             id_ticket: ticketId,

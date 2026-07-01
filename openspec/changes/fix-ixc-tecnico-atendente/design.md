@@ -41,7 +41,7 @@ O frontend ja esta correto: `TiSupportModal.jsx` envia `tecnico_id` dinamicament
 {
   "id_cliente": "681",
   "id_login": "1",
-  "id_contrato": "18426",
+  "id_contrato_kit": "18426",
   "id_filial": "1",
   "id_assunto": "1154",
   "id_ticket": "<ticketId>",

@@ -37,7 +37,14 @@
   - Campo `id_tecnico` preenchido no registro da OS
   - Status AG e datas de agendamento preenchidas
 
-## 4. Conclusao
+## 4. Corrigir contrato vazio na OS manual
 
-- [x] 4.1 Fluxo implementado e validado
-- [ ] 4.2 Commitar alteracoes
+- [x] 4.1 Confirmar que `su_oss_chamado` espera `id_contrato_kit` e nao `id_contrato`
+- [x] 4.2 Atualizar `buildOSManualPayload` em `backend/server.js` para enviar `id_contrato_kit: ixcIds.id_contrato`
+- [x] 4.3 Manter `id_contrato` no `su_ticket` (continua correto)
+- [ ] 4.4 Testar abertura de chamado e confirmar que o contrato aparece preenchido no painel IXC
+
+## 5. Conclusao
+
+- [x] 5.1 Fluxo implementado e validado (tecnico + status AG)
+- [ ] 5.2 Commitar alteracoes
