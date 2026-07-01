@@ -287,3 +287,25 @@
 [2026-06-29T20:06:19.199Z] [PASSO 2] OS manual criada com sucesso apos deletar workflow. ID: 1816710
 [2026-06-29T20:06:19.200Z] [FINAL] OS agendada manualmente. ID: 1816710, Tecnico: 59841, Protocolo retornado: 202606150966
 [2026-06-29T20:06:19.200Z] FIM. Retornando protocolo 202606150966
+[2026-07-01T23:37:44.749Z] == INICIANDO ABERTURA TICK: Tecnico 59841 ==
+[2026-07-01T23:37:45.314Z] Criado Ticket: {"type":"success","message":"Registro inserido com sucesso!","id":"777665","atualiza_campos":[{"tipo":"i","campo":"id_cliente","valor":"681"},{"tipo":"i","campo":"status","valor":"T"},{"tipo":"s","campo":"su_status","valor":"EP"},{"tipo":"i","campo":"protocolo","valor":""},{"tipo":"i","campo":"token","valor":"697ef0fd539618acea45904868f008fa99a43a31"},{"tipo":"i","campo":"id_filial","valor":"1"},{"tipo":"i","campo":"interacao_pendente","valor":"I"},{"tipo":"i","campo":"id_evento_status_processo","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-07-01 20:37:47"}]}
+[2026-07-01T23:37:45.315Z] [PASSO 1] Tentando criar OS manual agendada para ticket 777665
+[2026-07-01T23:37:45.316Z] [OS MANUAL] Payload POST /su_oss_chamado: {"id_cliente":"681","id_login":"1","id_contrato":"18426","id_filial":"1","id_assunto":"1154","id_ticket":"777665","id_ticket_setor":"16","setor":"54","id_cidade":"1721","id_tecnico":"59841","prioridade":"N","origem_endereco":"CC","endereco":"AL Penedo 57200-000 SENHOR DO BONFIM - RODOVIA MARIO FREIRE LEAHY, 1650","numero":"1650","bairro":"SENHOR DO BONFIM","cidade":"1721","cep":"57200-000","latitude":"-10.277295","longitude":"-36.5581617","status":"AG","data_agenda":"2026-07-01 20:37:00","data_agenda_final":"2026-07-01 23:59:59","mensagem":"Solicitante: MARCIO EDUARDO FELIX\n\n========================\nDESCREVA A SITUAÇÃO:\nTeste\n========================"}
+[2026-07-01T23:37:45.706Z] [OS MANUAL] Resposta raw: {"type":"error","message":"Esse ticket j\u00e1 possui uma O.S. vinculada [ID: 777665], para criar mais que uma OS por atendimento, utilize PROCESSO!","atualiza_campos":[{"tipo":"i","campo":"data_agenda_final","valor":"01\/07\/2026 23:59:59"},{"tipo":"s","campo":"status_assinatura","valor":""},{"tipo":"i","campo":"habilita_assinatura_cliente","valor":"N"},{"tipo":"s","campo":"status","valor":"AG"},{"tipo":"r","campo":"origem_os_aberta","valor":""},{"tipo":"i","campo":"ultima_atualizacao","valor":""}]}
+[2026-07-01T23:37:45.709Z] [PASSO 1] Falha ao criar OS manual: Esse ticket já possui uma O.S. vinculada [ID: 777665], para criar mais que uma OS por atendimento, utilize PROCESSO!
+[2026-07-01T23:37:45.718Z] [PASSO 2] Buscando OS gerada pelo workflow para ticket 777665
+[2026-07-01T23:37:48.724Z] buscando ticket 777665...
+[2026-07-01T23:37:48.933Z] [PASSO 2] Buscando OS vinculada ao ticket 777665 [TENTATIVA 1]
+[2026-07-01T23:37:49.107Z] [PASSO 2] OS do workflow encontrada. ID: 1819457, Protocolo: 202607154914
+[2026-07-01T23:37:49.107Z] [PASSO 2] Protocolo da OS do workflow armazenado: 202607154914
+[2026-07-01T23:37:49.108Z] [PASSO 2] Deletando mensagens da OS 1819457
+[2026-07-01T23:37:49.293Z] [DELETE MSGS] 1 mensagem(ns) encontrada(s) na OS 1819457
+[2026-07-01T23:37:49.511Z] [DELETE MSG] Mensagem 4278375: {"type":"success","message":"Registro 4278375 excluido com sucesso!"}
+[2026-07-01T23:37:49.515Z] [PASSO 2] Deletando OS do workflow 1819457
+[2026-07-01T23:37:49.726Z] [DELETE OS] OS 1819457: {"type":"success","message":"Registro 1819457 excluido com sucesso!"}
+[2026-07-01T23:37:49.728Z] [PASSO 2] OS do workflow deletada. Criando OS manual...
+[2026-07-01T23:37:49.729Z] [OS MANUAL] Payload POST /su_oss_chamado: {"id_cliente":"681","id_login":"1","id_contrato":"18426","id_filial":"1","id_assunto":"1154","id_ticket":"777665","id_ticket_setor":"16","setor":"54","id_cidade":"1721","id_tecnico":"59841","prioridade":"N","origem_endereco":"CC","endereco":"AL Penedo 57200-000 SENHOR DO BONFIM - RODOVIA MARIO FREIRE LEAHY, 1650","numero":"1650","bairro":"SENHOR DO BONFIM","cidade":"1721","cep":"57200-000","latitude":"-10.277295","longitude":"-36.5581617","status":"AG","data_agenda":"2026-07-01 20:37:00","data_agenda_final":"2026-07-01 23:59:59","mensagem":"Solicitante: MARCIO EDUARDO FELIX\n\n========================\nDESCREVA A SITUAÇÃO:\nTeste\n========================"}
+[2026-07-01T23:37:49.956Z] [OS MANUAL] Resposta raw: {"type":"success","message":"Registro inserido com sucesso!","id":"1819458","":"bloqueia_contrato","atualiza_campos":[{"tipo":"i","campo":"data_agenda_final","valor":"01\/07\/2026 23:59:59"},{"tipo":"s","campo":"status_assinatura","valor":""},{"tipo":"i","campo":"habilita_assinatura_cliente","valor":"N"},{"tipo":"s","campo":"status","valor":"AG"},{"tipo":"r","campo":"origem_os_aberta","valor":"M"},{"tipo":"i","campo":"ultima_atualizacao","valor":"2026-07-01 20:37:52"}]}
+[2026-07-01T23:37:49.959Z] [PASSO 2] OS manual criada com sucesso apos deletar workflow. ID: 1819458
+[2026-07-01T23:37:49.960Z] [FINAL] OS agendada manualmente. ID: 1819458, Tecnico: 59841, Protocolo retornado: 202607154914
+[2026-07-01T23:37:49.961Z] FIM. Retornando protocolo 202607154914
