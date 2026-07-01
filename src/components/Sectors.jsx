@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useOrgChartData } from '../hooks/useOrgChartData';
+import OrgChartEditor from './OrgChartEditor';
 
 // ── Paleta compartilhada (mesma do Dashboard / Colaboradores / Serviços) ──────
 
@@ -84,6 +86,8 @@ export default function Sectors({ user, setCurrentView }) {
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState(null);
     const [viewMode, setViewMode] = useState('grid');
+    const [showEditor, setShowEditor] = useState(false);
+    const { data: orgData, loaded: orgLoaded, save: saveOrgData, reset: resetOrgData } = useOrgChartData();
 
     const isAdmin = user?.is_admin;
 
@@ -202,7 +206,34 @@ export default function Sectors({ user, setCurrentView }) {
                 </div>
 
                 {/* ── Organograma ─────────────────────────────────────────── */}
-                <OrgChart />
+                <div style={{ position: 'relative' }}>
+                    <OrgChart data={orgData} loaded={orgLoaded} />
+                    <button
+                        onClick={() => setShowEditor(true)}
+                        title="Editar organograma"
+                        style={{
+                            position: 'absolute', top: 28, right: 32,
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            padding: '8px 14px', borderRadius: 10, border: `1px solid ${C.line}`,
+                            background: C.surface, color: C.ink2, fontWeight: 700, fontSize: 12.5,
+                            cursor: 'pointer', transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accentDeep; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.ink2; }}
+                    >
+                        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>edit</span>
+                        Editar
+                    </button>
+                </div>
+
+                {showEditor && orgData && (
+                    <OrgChartEditor
+                        data={orgData}
+                        onSave={next => { saveOrgData(next); setShowEditor(false); }}
+                        onClose={() => setShowEditor(false)}
+                        onReset={() => { if (confirm('Restaurar organograma padrão?')) { resetOrgData(); setShowEditor(false); } }}
+                    />
+                )}
 
                 {/* ── Diretório de Setores ────────────────────────────────── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -297,29 +328,29 @@ export default function Sectors({ user, setCurrentView }) {
                     )}
                 </div>
 
-                {/* ── Footer ──────────────────────────────────────────────── */}
-                <div style={{ marginTop: 16, paddingTop: 28, borderTop: `1px solid ${C.line}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16, color: C.muted, fontSize: 13 }}>
-                    <p style={{ margin: 0, fontWeight: 600 }}>© 2024 Prestek Intranet. Apenas para uso interno.</p>
-                    <div style={{ display: 'flex', gap: 24, fontWeight: 700 }}>
-                        <a style={{ color: C.ink2, textDecoration: 'none' }} href="#">Política</a>
-                        <a style={{ color: C.ink2, textDecoration: 'none' }} href="#">Central de Ajuda</a>
-                        <a style={{ color: C.ink2, textDecoration: 'none' }} href="#">Reportar Problema</a>
-                    </div>
-                </div>
             </div>
         </main>
     );
 }
 
 // ── Organograma ───────────────────────────────────────────────────────────────
-function OrgChart() {
+function OrgChart({ data, loaded }) {
     const C = useBentoTheme();
-    const directors = [
-        { icon: 'terminal', title: 'Tecnologia (TI)', name: 'Sarah Lin' },
-        { icon: 'settings_suggest', title: 'Operações', name: 'Marcus Cole' },
-        { icon: 'trending_up', title: 'Vendas & MKT', name: 'Elena Rodriguez' },
-        { icon: 'support_agent', title: 'Suporte', name: 'David Kim' },
-    ];
+    const connectorColor = tone(C.accent, 0.35);
+
+    if (!loaded || !data) {
+        return (
+            <div style={{
+                background: C.surface, borderRadius: 24, border: `1px solid ${C.line}`,
+                padding: '28px 32px', minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+                <p style={{ color: C.muted, fontWeight: 600 }}>Carregando organograma...</p>
+            </div>
+        );
+    }
+
+    const root = data.root;
+    const areas = data.areas || [];
 
     return (
         <div style={{
@@ -339,7 +370,7 @@ function OrgChart() {
             </div>
 
             <div style={{ width: '100%', overflowX: 'auto', padding: '24px 4px 8px' }}>
-                <div style={{ minWidth: 640, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ minWidth: 1120, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     {/* CEO */}
                     <div
                         style={{
@@ -348,28 +379,41 @@ function OrgChart() {
                             color: 'white', boxShadow: `0 16px 36px -16px ${tone(C.accentDeep, 0.55)}`,
                             position: 'relative', zIndex: 2,
                         }}>
-                        <div style={{
-                            width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px',
-                            backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCaXDL9-IKCovbonIRkZxmOQtVMGSq9hyfkzfGLuREdVts0S_TaHxPdDnq3Q0ZJQjUV4h3rsQYIqn8IcxS_XYiTsGl7VZSibnFKenb1YcQ0cRTa6H2PBFYkAI08QxDVYEakee_SSZNVmDgKUZKNBbH83yobUivT_QlJR9MXzzJSQqZiUM-DhViuKy72fSO78t2--RJlAX_T4wZe--SQJQK8UqaFsgnKqB24Y4bEsxXAfaVVzxQ5ICzm6VI9t9ELNXIsqly0dkdybeQ')",
-                            backgroundSize: 'cover', backgroundPosition: 'center',
-                            border: '3px solid rgba(255,255,255,0.6)',
-                        }} />
-                        <p style={{ margin: 0, fontWeight: 800, fontSize: 17 }}>Jonathan Prestek</p>
-                        <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)', fontFamily: MONO }}>CEO</p>
+                        {root.photo ? (
+                            <div style={{
+                                width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px',
+                                backgroundImage: `url('${root.photo}')`,
+                                backgroundSize: 'cover', backgroundPosition: 'center',
+                                border: '3px solid rgba(255,255,255,0.6)',
+                            }} />
+                        ) : (
+                            <div style={{
+                                width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px',
+                                background: 'rgba(255,255,255,0.20)',
+                                border: '3px solid rgba(255,255,255,0.6)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: 32, color: 'white' }}>person</span>
+                            </div>
+                        )}
+                        <p style={{ margin: 0, fontWeight: 800, fontSize: 17 }}>{root.name}</p>
+                        <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.85)', fontFamily: MONO }}>{root.role}</p>
                     </div>
 
-                    {/* Conectores */}
-                    <div style={{ width: 2, height: 28, background: tone(C.accent, 0.35) }} />
-                    <div style={{ width: '76%', height: 2, background: tone(C.accent, 0.35) }} />
-                    <div style={{ width: '76%', display: 'flex', justifyContent: 'space-around', marginTop: -1 }}>
-                        {directors.map((_, i) => (
-                            <div key={i} style={{ width: 2, height: 24, background: tone(C.accent, 0.35) }} />
+                    {/* Conectores do CEO */}
+                    <div style={{ width: 2, height: 28, background: connectorColor }} />
+                    <div style={{ width: '88%', height: 2, background: connectorColor }} />
+                    <div style={{ width: '88%', display: 'flex', justifyContent: 'space-around', marginTop: -1 }}>
+                        {areas.map((_, i) => (
+                            <div key={i} style={{ width: 2, height: 24, background: connectorColor }} />
                         ))}
                     </div>
 
-                    {/* Diretorias */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, width: '100%', marginTop: 4 }}>
-                        {directors.map(d => <OrgNode key={d.title} {...d} />)}
+                    {/* Áreas */}
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${areas.length}, 1fr)`, gap: 12, width: '100%', alignItems: 'start' }}>
+                        {areas.map(area => (
+                            <AreaColumn key={area.title} area={area} />
+                        ))}
                     </div>
                 </div>
             </div>
@@ -377,8 +421,33 @@ function OrgChart() {
     );
 }
 
-// Nó do organograma (diretoria)
-function OrgNode({ icon, title, name }) {
+function AreaColumn({ area }) {
+    const C = useBentoTheme();
+    const connectorColor = tone(C.accent, 0.35);
+    const hasChildren = area.children && area.children.length > 0;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <OrgAreaNode icon={area.icon} title={area.title} name={area.name} isStaff={area.isStaff} />
+
+            {hasChildren && (
+                <>
+                    <div style={{ width: 2, height: 18, background: connectorColor }} />
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                        {area.children.map((child, idx) => (
+                            <div key={idx} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                {idx > 0 && <div style={{ width: 2, height: 10, background: connectorColor, marginBottom: 10 }} />}
+                                <OrgLeafNode title={child} />
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
+function OrgAreaNode({ icon, title, name, isStaff = false }) {
     const C = useBentoTheme();
     const [hover, setHover] = useState(false);
     return (
@@ -386,17 +455,42 @@ function OrgNode({ icon, title, name }) {
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
             style={{
-                background: C.surface, border: `1px solid ${hover ? tone(C.accent, 0.4) : C.line}`,
-                borderRadius: 16, padding: '18px 12px', textAlign: 'center', cursor: 'pointer',
+                width: '100%',
+                background: isStaff ? tone(C.accentSoft, 0.35) : C.surface,
+                border: `1px solid ${hover ? tone(C.accent, 0.4) : (isStaff ? tone(C.accent, 0.25) : C.line)}`,
+                borderStyle: isStaff ? 'dashed' : 'solid',
+                borderRadius: 16, padding: '16px 8px', textAlign: 'center', cursor: 'pointer',
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 boxShadow: hover ? `0 14px 30px -16px ${tone(C.accentDeep, 0.4)}` : `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
                 transform: hover ? 'translateY(-3px)' : 'none', transition: 'all 0.2s',
             }}>
-            <div style={{ width: 44, height: 44, borderRadius: '50%', background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-                <span className="material-symbols-outlined" style={{ color: C.accent, fontSize: 24 }}>{icon}</span>
+            <div style={{ width: 40, height: 40, borderRadius: '50%', background: C.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                <span className="material-symbols-outlined" style={{ color: C.accent, fontSize: 22 }}>{icon}</span>
             </div>
-            <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: C.ink }}>{title}</p>
-            <p style={{ margin: '4px 0 0', fontSize: 11, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: MONO }}>{name}</p>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 12.5, color: C.ink, lineHeight: 1.25 }}>{title}</p>
+            {name && (
+                <p style={{ margin: '4px 0 0', fontSize: 10.5, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO }}>{name}</p>
+            )}
+        </div>
+    );
+}
+
+function OrgLeafNode({ title }) {
+    const C = useBentoTheme();
+    const [hover, setHover] = useState(false);
+    return (
+        <div
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            style={{
+                width: '92%',
+                background: C.surface,
+                border: `1px solid ${hover ? tone(C.accent, 0.4) : C.line}`,
+                borderRadius: 12, padding: '9px 6px', textAlign: 'center', cursor: 'default',
+                boxShadow: hover ? `0 8px 18px -12px ${tone(C.accentDeep, 0.35)}` : `0 1px 2px ${tone(C.accentDeep, 0.04)}`,
+                transition: 'all 0.2s',
+            }}>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 11, color: C.ink2, lineHeight: 1.25 }}>{title}</p>
         </div>
     );
 }

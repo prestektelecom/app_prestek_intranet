@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-03-05T10:22:00",
+  "root": {
+    "name": "Severino Júnior",
+    "role": "CEO / Sócio Diretor",
+    "photo": null
+  },
+  "areas": [
+    {
+      "icon": "precision_manufacturing",
+      "title": "Gerente Operacional",
+      "name": "Caroline",
+      "isStaff": false,
+      "children": [
+        "NOC",
+        "Suporte Técnico",
+        "Infraestrutura",
+        "Instalação",
+        "Frota"
+      ]
+    },
+    {
+      "icon": "storefront",
+      "title": "Supervisor Comercial",
+      "name": "?",
+      "isStaff": false,
+      "children": [
+        "V. PAP",
+        "V. INT",
+        "Marketing"
+      ]
+    },
+    {
+      "icon": "support_agent",
+      "title": "Supervisor Relacionamento com Cliente",
+      "name": "Erika",
+      "isStaff": false,
+      "children": [
+        "SAC / Atendimento",
+        "Retenção",
+        "Pós-Venda",
+        "Ouvidoria"
+      ]
+    },
+    {
+      "icon": "account_balance",
+      "title": "Controladoria",
+      "name": "Roberta",
+      "isStaff": false,
+      "children": [
+        "Financeiro",
+        "Cobrança",
+        "Almoxarifado",
+        "Auditoria Interna",
+        "Patrimônio",
+        "Fiscal"
+      ]
+    },
+    {
+      "icon": "groups",
+      "title": "RH / Cultura Performance",
+      "name": null,
+      "isStaff": true,
+      "children": [
+        "TST (Técnico em Segurança do Trabalho)"
+      ]
+    },
+    {
+      "icon": "dns",
+      "title": "TI / Sistemas / BI",
+      "name": null,
+      "isStaff": true,
+      "children": []
+    }
+  ]
+}
