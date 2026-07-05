@@ -38,6 +38,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
     setFeedback(null);
 
     const colaborador_id = user?.funcionario?.id || null;
+    const email_solicitante = user?.funcionario?.email || user?.email || null;
     const nome_solicitante = user?.funcionario?.funcionario || user?.nome || 'Usuário Intranet';
     const tecnico = TECNICOS.find(t => t.id === tecnicoSelecionado);
 
@@ -49,7 +50,8 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
           mensagem,
           colaborador_id,
           tecnico_id: tecnico?.id || '59570',
-          nome_solicitante
+          nome_solicitante,
+          email_solicitante
         })
       });
 

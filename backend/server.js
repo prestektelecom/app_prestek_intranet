@@ -1726,7 +1726,7 @@ app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
 
 // ─── Rota: Abrir Ticket de Suporte no IXC ────────────────────────────────────
 app.post('/api/ixc/su-ticket', async (req, res) => {
-    const { mensagem, colaborador_id, tecnico_id, nome_solicitante } = req.body;
+    const { mensagem, colaborador_id, tecnico_id, nome_solicitante, email_solicitante } = req.body;
 
     if (!mensagem) {
         return res.status(400).json({ sucesso: false, erro: 'A descrição da situação é obrigatória.' });
@@ -1756,6 +1756,41 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         console.warn("Aviso ao buscar dados do colaborador no banco:", dbErr.message);
     }
 
+    // ─── RESOLVER SOLICITANTE DO TICKET ─────────────────────────────────────
+    let ixc_usuario_id = '0';
+    let ixc_func_id = null;
+    if (colaborador_id || email_solicitante) {
+        try {
+            let queryStr = 'SELECT usuario_id, funcionario_id FROM usuarios_perfil WHERE ';
+            let params = [];
+            if (colaborador_id) {
+                queryStr += 'funcionario_id = $1 OR usuario_id = $1';
+                params.push(String(colaborador_id));
+                if (email_solicitante) {
+                    queryStr += ' OR funcionario_email = $2 OR usuario_email = $2';
+                    params.push(email_solicitante);
+                }
+            } else {
+                queryStr += 'funcionario_email = $1 OR usuario_email = $1';
+                params.push(email_solicitante);
+            }
+            queryStr += ' LIMIT 1';
+
+            const dbRes = await pool.query(queryStr, params);
+            if (dbRes.rows.length > 0) {
+                if (dbRes.rows[0].usuario_id) {
+                    ixc_usuario_id = dbRes.rows[0].usuario_id;
+                }
+                if (dbRes.rows[0].funcionario_id) {
+                    ixc_func_id = dbRes.rows[0].funcionario_id;
+                }
+                console.log(`[RESOLVE SOLICITANTE TICKET] Resolvido via Banco Local: usuario_id=${ixc_usuario_id}, funcionario_id=${ixc_func_id || 'N/A'}. Tecnico da OS: ${tecnico_id || 'N/A'}`);
+            }
+        } catch (dbErr) {
+            console.error(`[RESOLVE SOLICITANTE TICKET] Erro ao consultar banco local:`, dbErr.message);
+        }
+    }
+
     // Formata a mensagem com o nome do solicitante
     let mensagemFormatada = '';
     if (nome_solicitante) {
@@ -1770,11 +1805,12 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         id_login: ixcIds.id_login,
         id_contrato: ixcIds.id_contrato,
         id_filial: '1',
+        id_usuarios: ixc_usuario_id, // Usuário que abriu o chamado
         id_assunto: '1154',
         id_canal_atendimento: '4',
         id_ticket_setor: '16',
         id_wfl_processo: '237',
-        id_responsavel_tecnico: tecnico_id || colaborador_id || '0',
+        id_responsavel_tecnico: ixc_func_id || tecnico_id || '0',
         titulo: 'SUPORTE DE TI VIA INTRANET',
         origem_endereco: 'CC',
         endereco: 'AL Penedo 57200-000 SENHOR DO BONFIM - RODOVIA MARIO FREIRE LEAHY, 1650',
@@ -1823,6 +1859,8 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
 
         const ticketId = resultado.id;
         let protocoloFinal = "";
+
+        // (Solicitante agora é definido no id_usuarios do ticket, mantendo id_tecnico da OS com o tecnico_id)
 
         // Função auxiliar para aguardar
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
