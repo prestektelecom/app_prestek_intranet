@@ -20,6 +20,7 @@ import NotFound from './components/NotFound'
 import { usePresence } from './hooks/usePresence'
 import MobileBottomNav from './components/MobileBottomNav'
 import MobileMoreSheet from './components/MobileMoreSheet'
+import MobileDrawer from './components/responsive/MobileDrawer'
 
 export default function App() {
     const [user, setUser] = useState(() => {
@@ -62,6 +63,7 @@ export default function App() {
     })
 
     const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false)
+    const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
 
     useEffect(() => {
         if (currentView !== 'login') {
@@ -151,7 +153,7 @@ export default function App() {
         <div className="bg-background text-foreground font-jakarta h-screen flex transition-colors duration-200">
             <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
             <div className="flex flex-1 flex-col overflow-hidden">
-                <Header currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                <Header currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onMenuClick={() => setIsMobileDrawerOpen(true)} />
                 <div className="flex-1 flex overflow-hidden pb-[64px] lg:pb-0">
                     {/* Renderização baseada em currentView */}
                     {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
@@ -183,6 +185,13 @@ export default function App() {
             <MobileMoreSheet
                 isOpen={isMoreSheetOpen}
                 onClose={() => setIsMoreSheetOpen(false)}
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+                user={user}
+            />
+            <MobileDrawer
+                isOpen={isMobileDrawerOpen}
+                onClose={() => setIsMobileDrawerOpen(false)}
                 currentView={currentView}
                 setCurrentView={setCurrentView}
                 user={user}

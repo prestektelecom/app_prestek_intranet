@@ -4,6 +4,7 @@ import ScheduleRow from './schedule/ScheduleRow';
 import ManagePlantaoModal from './schedule/ManagePlantaoModal';
 import HistoricoPreviewModal from './schedule/HistoricoPreviewModal';
 import ScheduleHistoricoTab from './schedule/ScheduleHistoricoTab';
+import ScheduleMobileCard from './schedule/ScheduleMobileCard';
 import { useScheduleData } from '../hooks/useScheduleData';
 import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
 import { handleImprimir, handleExportarICal } from '../services/exportService';
@@ -657,8 +658,9 @@ export default function Schedule({ setCurrentView, user }) {
                                 )}
                             </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
+                            {/* Desktop/Tablet table */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="schedule-table w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-[#F7FAFD] border-b border-[#E4ECF5]">
                                             <th scope="col" className="p-4 pl-8 text-[11px] font-black text-[#475467] uppercase tracking-widest">DATA</th>
@@ -711,6 +713,57 @@ export default function Schedule({ setCurrentView, user }) {
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+
+                            {/* Mobile cards */}
+                            <div className="md:hidden p-4 space-y-3">
+                                {loading ? (
+                                    [...Array(5)].map((_, i) => (
+                                        <div key={i} className="rounded-2xl border border-[#E4ECF5] bg-white p-4 space-y-3 animate-pulse">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 rounded-xl bg-[#E4ECF5]" />
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="h-4 bg-[#E4ECF5] rounded w-1/2" />
+                                                    <div className="h-3 bg-[#E4ECF5] rounded w-1/3" />
+                                                </div>
+                                            </div>
+                                            <div className="h-3 bg-[#E4ECF5] rounded w-3/4" />
+                                            <div className="h-3 bg-[#E4ECF5] rounded w-1/2" />
+                                        </div>
+                                    ))
+                                ) : filteredPlantoes.length === 0 ? (
+                                    <div className="flex flex-col items-center gap-4 py-12 text-center">
+                                        <span className="material-symbols-outlined text-5xl text-[#8896A8]/40">event_busy</span>
+                                        <div>
+                                            <p className="font-black text-[#0B1B2E] text-base">Nenhum plantão encontrado</p>
+                                            <p className="text-[#475467] text-sm mt-1">Não há plantões agendados para os filtros selecionados.</p>
+                                        </div>
+                                        {filtrosAtivos && (
+                                            <button
+                                                onClick={limparFiltros}
+                                                className="flex items-center gap-2 px-4 py-2 bg-[#EAF4FF] text-[#4A9EF5] rounded-lg font-bold text-sm hover:bg-[#EAF4FF]/80 transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
+                                                Limpar filtros
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    filteredPlantoes.map((p) => (
+                                        <ScheduleMobileCard
+                                            key={p.id ?? toIsoDay(p.data)}
+                                            date={formatarData(p.data)}
+                                            day={getDiaSemana(p.data)}
+                                            isToday={isHoje(p.data)}
+                                            isWeekend={isFimDeSemana(p.data)}
+                                            n1={mapIdsToPessoas(p.n1_id)}
+                                            n2={p.n2_id ? mapIdsToPessoas(p.n2_id) : [{ name: 'Não atribuído', initials: '??', img: null }]}
+                                            mgr={mapIdsToPessoas(p.gerente_id)}
+                                            isAdmin={user?.is_admin}
+                                            onEdit={() => openManagement(toIsoDay(p.data))}
+                                        />
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
@@ -803,6 +856,29 @@ export default function Schedule({ setCurrentView, user }) {
                         </div>
                     </div>
                 )}
+
+                <style>{`
+                    @media (max-width: 767px) {
+                        .schedule-table th:first-child,
+                        .schedule-table td:first-child {
+                            position: sticky;
+                            left: 0;
+                            z-index: 10;
+                            background: white;
+                        }
+                        .schedule-table th:first-child::after,
+                        .schedule-table td:first-child::after {
+                            content: '';
+                            position: absolute;
+                            top: 0;
+                            right: 0;
+                            bottom: 0;
+                            width: 4px;
+                            background: linear-gradient(to right, rgba(0,0,0,0.06), transparent);
+                            pointer-events: none;
+                        }
+                    }
+                `}</style>
 
                 <footer className="mt-8 pt-8 border-t border-[#E4ECF5] pb-4 flex flex-col md:flex-row justify-between items-center text-xs text-[#8896A8] font-bold gap-4 uppercase tracking-widest">
                     <p>© 2026 Prestek Intranet • Portal Interno</p>

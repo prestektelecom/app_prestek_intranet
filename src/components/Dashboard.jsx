@@ -99,7 +99,7 @@ function SetorBento({ C, eficiencia, eficienciaLoading }) {
     : null;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, height: '100%' }}>
+    <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 14, height: '100%' }}>
       <KpiCard
         C={C}
         label="Eficiência"
@@ -291,7 +291,7 @@ function AtalhosCard({ C, setCurrentView, onSuporteTIClick }) {
   return (
     <div style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <h2 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Atalhos Rápidos</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 10 }}>
         {atalhos.map(a => {
           const IconC = Icons[a.icon];
           return (
@@ -402,7 +402,7 @@ function TeamBento({ C }) {
   );
 }
 
-const DEFAULT_LAYOUT = [
+const DEFAULT_LAYOUT_LG = [
   { i: 'hero', x: 0, y: 0, w: 12, h: 2, static: true },
   { i: 'setor', x: 0, y: 2, w: 6, h: 2 },
   { i: 'plantao', x: 6, y: 2, w: 3, h: 2 },
@@ -411,6 +411,47 @@ const DEFAULT_LAYOUT = [
   { i: 'atalhos', x: 8, y: 4, w: 4, h: 2 },
   { i: 'team', x: 8, y: 6, w: 4, h: 2 }
 ];
+
+// Layouts por breakpoint para react-grid-layout
+const DEFAULT_LAYOUTS = {
+  lg: DEFAULT_LAYOUT_LG,
+  md: [
+    { i: 'hero', x: 0, y: 0, w: 12, h: 2, static: true },
+    { i: 'setor', x: 0, y: 2, w: 6, h: 2 },
+    { i: 'plantao', x: 6, y: 2, w: 3, h: 2 },
+    { i: 'os', x: 9, y: 2, w: 3, h: 2 },
+    { i: 'comunicados', x: 0, y: 4, w: 7, h: 3 },
+    { i: 'atalhos', x: 7, y: 4, w: 5, h: 2 },
+    { i: 'team', x: 7, y: 6, w: 5, h: 2 }
+  ],
+  sm: [
+    { i: 'hero', x: 0, y: 0, w: 6, h: 2, static: true },
+    { i: 'setor', x: 0, y: 2, w: 6, h: 2 },
+    { i: 'plantao', x: 0, y: 4, w: 3, h: 2 },
+    { i: 'os', x: 3, y: 4, w: 3, h: 2 },
+    { i: 'comunicados', x: 0, y: 6, w: 6, h: 3 },
+    { i: 'atalhos', x: 0, y: 9, w: 3, h: 2 },
+    { i: 'team', x: 3, y: 9, w: 3, h: 2 }
+  ],
+  xs: [
+    { i: 'hero', x: 0, y: 0, w: 4, h: 2, static: true },
+    { i: 'setor', x: 0, y: 2, w: 4, h: 2 },
+    { i: 'plantao', x: 0, y: 4, w: 4, h: 2 },
+    { i: 'os', x: 0, y: 6, w: 4, h: 2 },
+    { i: 'comunicados', x: 0, y: 8, w: 4, h: 3 },
+    { i: 'atalhos', x: 0, y: 11, w: 4, h: 2 },
+    { i: 'team', x: 0, y: 13, w: 4, h: 2 }
+  ],
+  xxs: [
+    { i: 'hero', x: 0, y: 0, w: 2, h: 2, static: true },
+    { i: 'setor', x: 0, y: 2, w: 2, h: 2 },
+    { i: 'plantao', x: 0, y: 4, w: 2, h: 2 },
+    { i: 'os', x: 0, y: 6, w: 2, h: 2 },
+    { i: 'comunicados', x: 0, y: 8, w: 2, h: 3 },
+    { i: 'atalhos', x: 0, y: 11, w: 2, h: 2 },
+    { i: 'team', x: 0, y: 13, w: 2, h: 2 }
+  ]
+};
 
 export default function Dashboard({ setCurrentView, user }) {
   const C = useBentoTheme();
@@ -425,7 +466,7 @@ export default function Dashboard({ setCurrentView, user }) {
   const [eficienciaLoading, setEficienciaLoading] = useState(true);
 
   // Estados do react-grid-layout
-  const [layout, setLayout] = useState(DEFAULT_LAYOUT);
+  const [layouts, setLayouts] = useState(DEFAULT_LAYOUTS);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTiModalOpen, setIsTiModalOpen] = useState(false);
@@ -435,23 +476,35 @@ export default function Dashboard({ setCurrentView, user }) {
   const safeDepto = func.id_departamento || '';
   const funcId = func.id || user?.id;
 
-  // Carrega o layout salvo do usuário
+  // Carrega o layout salvo do usuário (suporta formato legado array e novo objeto por breakpoint)
   useEffect(() => {
     if (!user?.id) return;
     fetch(`/api/user/dashboard-layout?userId=${user.id}`)
       .then(r => r.json())
       .then(d => {
-        if (d.sucesso && d.layout && d.layout.length > 0) {
-          // Garante que o hero sempre seja estático
-          const userLayout = d.layout.map(item => item.i === 'hero' ? { ...item, static: true } : item);
-          setLayout(userLayout);
+        if (!d.sucesso || !d.layout) return;
+
+        let userLayouts;
+        if (Array.isArray(d.layout)) {
+          // Formato legado: array único usado como lg
+          const normalized = d.layout.map(item => item.i === 'hero' ? { ...item, static: true } : item);
+          userLayouts = { ...DEFAULT_LAYOUTS, lg: normalized };
+        } else if (typeof d.layout === 'object') {
+          // Novo formato: objeto com layouts por breakpoint
+          userLayouts = { ...DEFAULT_LAYOUTS };
+          Object.keys(d.layout).forEach(bp => {
+            if (Array.isArray(d.layout[bp])) {
+              userLayouts[bp] = d.layout[bp].map(item => item.i === 'hero' ? { ...item, static: true } : item);
+            }
+          });
         }
+        if (userLayouts) setLayouts(userLayouts);
       })
       .catch(err => console.error('Erro ao carregar layout:', err));
   }, [user?.id]);
 
-  const handleLayoutChange = (newLayout) => {
-    setLayout(newLayout);
+  const handleLayoutChange = (currentLayout, allLayouts) => {
+    setLayouts(allLayouts);
   };
 
   const handleSaveLayout = async () => {
@@ -460,7 +513,7 @@ export default function Dashboard({ setCurrentView, user }) {
       await fetch('/api/user/dashboard-layout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, layout })
+        body: JSON.stringify({ userId: user.id, layout: layouts })
       });
       setIsEditing(false);
     } catch (err) {
@@ -559,7 +612,7 @@ export default function Dashboard({ setCurrentView, user }) {
         {/* Grid Interativa */}
         <ResponsiveReactGridLayout
           className={`layout ${isEditing ? 'is-editing' : ''}`}
-          layouts={{ lg: layout }}
+          layouts={layouts}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 12, sm: 6, xs: 4, xxs: 2 }}
           rowHeight={100}

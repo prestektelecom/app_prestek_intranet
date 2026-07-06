@@ -346,10 +346,10 @@ export default function Configuracoes({ user, setCurrentView }) {
             </div>
 
             {/* ── Conteúdo principal ─────────────────────────────────────── */}
-            <div style={{ maxWidth: 1024, margin: '-48px auto 0', padding: '0 24px', display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 24, position: 'relative' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 px-4 md:px-6" style={{ maxWidth: 1024, margin: '-48px auto 0', gap: 24, position: 'relative' }}>
 
                 {/* ── Card lateral — Perfil ──────────────────────────────── */}
-                <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="lg:col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                     {/* Avatar card */}
                     <div style={{ ...sCard, position: 'sticky', top: 88 }}>
@@ -435,7 +435,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                 </div>
 
                 {/* ── Formulários lado direito ───────────────────────────── */}
-                <div style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="lg:col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                     {/* Informações Pessoais */}
                     <div style={sCard}>
@@ -445,7 +445,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                                 <div style={sIconBox(C.accent, C.accentSoft)}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>person</span></div>
                                 <h3 style={sH3}>Informações Pessoais</h3>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+                            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 18 }}>
                                 {[
                                     { label: 'NOME', name: 'nome', value: displayNome, type: 'text', span: 1 },
                                     { label: 'SOBRENOME', name: 'sobrenome', value: displaySobrenome, type: 'text', span: 1 },
@@ -453,7 +453,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                                     { label: 'NÚMERO DE TELEFONE', name: 'telefone_celular', value: displayPhone, type: 'tel', span: 1 },
                                     { label: 'DATA DE NASCIMENTO', name: 'data_nascimento', value: displayBirthDate, type: 'date', span: 1 },
                                 ].map(({ label, name, value, type, span }) => (
-                                    <div key={name} style={{ gridColumn: `span ${span}` }}>
+                                    <div key={name} className={`col-span-1 ${span === 2 ? 'md:col-span-2' : ''}`}>
                                         <label style={sLabel}>{label}</label>
                                         <input name={name} type={type} value={value} onChange={handleInputChange}
                                             style={sInput}
@@ -473,7 +473,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                                 <div style={sIconBox('#7FD4E8', '#EEF9FC')}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>work</span></div>
                                 <h3 style={sH3}>Setor e Função</h3>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+                            <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 18 }}>
                                 <div>
                                     <label style={sLabel}>SETOR</label>
                                     <input readOnly value={deptoName} style={sInputRO} />

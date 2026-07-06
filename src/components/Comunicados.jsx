@@ -204,7 +204,7 @@ export default function Comunicados({ user, setCurrentView }) {
     return (
         <main style={{ flex: 1, overflowY: 'auto', background: C.bg, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: C.ink }}>
 
-            <div style={{ padding: '32px 32px 48px', maxWidth: 1200, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+            <div style={{ padding: '24px 16px 40px', maxWidth: 1200, margin: '0 auto', width: '100%', boxSizing: 'border-box' }} className="md:px-8 md:py-8 lg:pb-12">
 
                 {/* ── Hero Banner ──────────────────────────────────────────────── */}
                 <HeroBanner
@@ -229,7 +229,7 @@ export default function Comunicados({ user, setCurrentView }) {
                     flexWrap: 'wrap',
                     marginBottom: 24
                 }}>
-                    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, paddingTop: 4, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: 8, paddingBottom: 4, paddingTop: 4, flexWrap: 'wrap' }}>
                         <ChipButton
                             label="Todas as Atualizações"
                             count={countTotal}
@@ -304,13 +304,13 @@ export default function Comunicados({ user, setCurrentView }) {
 
                 {/* ── Feed de Cards / Loading / Vazio ─────────────────────────── */}
                 {loading ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 20 }}>
                         {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
                     </div>
                 ) : comunicadosFiltrados.length === 0 ? (
                     <EmptyState busca={busca} filtro={filtro} onClear={() => { setBusca(''); setFiltro('Todas'); }} />
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 24 }}>
                         {comunicadosFiltrados.map((item, idx) => (
                             <ComunicadoCard
                                 key={item.id}
@@ -367,13 +367,12 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kp
         <div style={{
             background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
             borderRadius: 24,
-            padding: '32px 36px',
             color: 'white',
             position: 'relative',
             overflow: 'hidden',
             marginBottom: 28,
             boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
-        }}>
+        }} className="p-6 md:p-8 lg:p-10">
             {/* Grid pattern SVG */}
             <svg style={{ position: 'absolute', inset: 0, opacity: 0.12, pointerEvents: 'none' }} width="100%" height="100%">
                 <defs>
@@ -392,7 +391,7 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kp
                 {/* Cabeçalho do Hero */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 20, flexWrap: 'wrap' }}>
                     <div>
-                        <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, color: 'white', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                        <h1 style={{ margin: 0, fontWeight: 800, color: 'white', letterSpacing: '-0.03em', lineHeight: 1.1 }} className="text-[28px] md:text-4xl">
                             📢 Comunicados da Empresa
                         </h1>
                         <p style={{ margin: '8px 0 0', fontSize: 15, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5, maxWidth: 640 }}>
@@ -605,7 +604,6 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                                 style={{
                                     border: 'none',
                                     background: 'none',
-                                    padding: 4,
                                     borderRadius: 6,
                                     color: C.muted,
                                     cursor: 'pointer',
@@ -614,6 +612,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                                     justifyContent: 'center',
                                     transition: 'all 0.15s'
                                 }}
+                                className="min-w-[44px] min-h-[44px]"
                                 onMouseEnter={e => { e.currentTarget.style.color = C.accent; e.currentTarget.style.background = C.accentSoft; }}
                                 onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.background = 'none'; }}
                                 title="Editar"
@@ -625,7 +624,6 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                                 style={{
                                     border: 'none',
                                     background: 'none',
-                                    padding: 4,
                                     borderRadius: 6,
                                     color: C.muted,
                                     cursor: 'pointer',
@@ -634,6 +632,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                                     justifyContent: 'center',
                                     transition: 'all 0.15s'
                                 }}
+                                className="min-w-[44px] min-h-[44px]"
                                 onMouseEnter={e => { e.currentTarget.style.color = C.danger; e.currentTarget.style.background = C.dangerSoft; }}
                                 onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.background = 'none'; }}
                                 title="Excluir"
@@ -911,7 +910,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                         />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 16 }}>
                         <div>
                             <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Tipo *

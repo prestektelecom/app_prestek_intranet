@@ -575,6 +575,12 @@ export default function Offices({ user, setCurrentView }) {
                 </div>
             )}
 
+            <style>{`
+                @media (max-width: 767px) {
+                    .offices-list { width: 100% !important; min-width: 0 !important; }
+                }
+            `}</style>
+
             {/* Hero */}
             <div className="px-6 py-6 flex-shrink-0">
                 <OfficesHero
@@ -625,9 +631,9 @@ export default function Offices({ user, setCurrentView }) {
             </div>
 
             {/* Corpo: lista + mapa */}
-            <div ref={corpoRef} className="flex flex-1 min-h-0 px-6 pb-6">
-                {/* Lista lateral — largura controlada por drag */}
-                <div style={{ width: `${listWidth}%`, minWidth: `${LIST_MIN_PX}px` }} className="flex flex-col min-h-0 bg-white rounded-l-2xl border border-[#E4ECF5] border-r-0 overflow-hidden shadow-sm">
+            <div ref={corpoRef} className="flex flex-col md:flex-row flex-1 min-h-0 px-6 pb-6 gap-3 md:gap-0">
+                {/* Lista lateral — largura controlada por drag (apenas desktop) */}
+                <div style={{ width: `${listWidth}%`, minWidth: `${LIST_MIN_PX}px` }} className="offices-list flex flex-col min-h-0 bg-white rounded-2xl md:rounded-r-none md:rounded-l-2xl border border-[#E4ECF5] md:border-r-0 overflow-hidden shadow-sm h-[45%] md:h-auto">
                     <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 min-h-0">
                         {carregando && (
                             <div className="text-center text-sm text-[#8896A8] py-8">Carregando escritórios…</div>
@@ -710,13 +716,13 @@ export default function Offices({ user, setCurrentView }) {
                     onMouseDown={startResize}
                     onTouchStart={startResize}
                     title="Arrastar para redimensionar"
-                    className="w-1.5 shrink-0 cursor-col-resize group relative flex items-center justify-center bg-[#E4ECF5] hover:bg-[#4A9EF5]/40 transition-colors duration-150"
+                    className="hidden md:flex w-1.5 shrink-0 cursor-col-resize group relative items-center justify-center bg-[#E4ECF5] hover:bg-[#4A9EF5]/40 transition-colors duration-150"
                 >
                     <div className="w-0.5 h-8 rounded-full bg-[#8896A8]/50 group-hover:bg-[#4A9EF5] group-hover:h-12 transition-all duration-150" />
                 </div>
 
                 {/* Mapa */}
-                <div className="flex-1 relative bg-white rounded-r-2xl border border-[#E4ECF5] border-l-0 overflow-hidden shadow-sm">
+                <div className="offices-map flex-1 relative bg-white rounded-2xl md:rounded-l-none md:rounded-r-2xl border border-[#E4ECF5] md:border-l-0 overflow-hidden shadow-sm h-[55%] md:h-auto">
                     <div
                         ref={containerRef}
                         style={{ height: '100%', width: '100%', isolation: 'isolate' }}

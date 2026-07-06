@@ -3797,12 +3797,13 @@ app.get('/api/user/dashboard-layout', async (req, res) => {
 });
 
 // POST /api/user/dashboard-layout
-// Corpo: { userId: string, layout: Array<{i, x, y, w, h}> }
-// Salva ou sobrescreve o layout do usuário (upsert)
+// Corpo: { userId: string, layout: Array<{i, x, y, w, h}> | Object<{lg, md, sm, xs, xxs}> }
+// Salva ou sobrescreve o layout do usuário (upsert).
+// Aceita tanto o formato legado (array único) quanto o novo formato com layouts por breakpoint.
 app.post('/api/user/dashboard-layout', async (req, res) => {
     const { userId, layout } = req.body;
-    if (!userId || !Array.isArray(layout)) {
-        return res.status(400).json({ sucesso: false, erro: 'userId e layout (array) são obrigatórios.' });
+    if (!userId || (!Array.isArray(layout) && (typeof layout !== 'object' || layout === null))) {
+        return res.status(400).json({ sucesso: false, erro: 'userId e layout (array ou objeto por breakpoint) são obrigatórios.' });
     }
     try {
         await pool.query(

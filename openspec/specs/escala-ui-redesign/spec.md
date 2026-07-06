@@ -3,9 +3,7 @@
 ## Purpose
 
 Definir os requisitos visuais para alinhar a página "Visão Geral da Escala" (`Schedule.jsx`) ao mesmo estilo e layout das páginas Dashboard, Serviços, Colaboradores e Cobertura, adotando o padrão visual "Bento Blue" da Prestek. O escopo é estritamente de interface; o fluxo funcional e a estrutura de dados permanecem inalterados.
-
 ## Requirements
-
 ### Requirement: Paleta e Fundo da Página
 
 A página SHALL usar o fundo azul claro Prestek `#F5F9FF` e a paleta de cores "Bento Blue" em todos os seus elementos visuais.
@@ -78,3 +76,23 @@ A estrutura de layout e o fluxo funcional da página SHALL ser preservados.
 #### Scenario: Usuário utiliza filtros, tabs e modais
 - **WHEN** o usuário interage com filtros laterais, tabs "Escala"/"Histórico", botões de ação ou modais
 - **THEN** o comportamento permanece o mesmo, alterando apenas o revestimento visual.
+
+### Requirement: Tabela de escala adaptativa
+A tabela de escala/agenda SHALL se adaptar a viewports pequenas, mantendo a legibilidade dos turnos e colaboradores.
+
+#### Scenario: Desktop
+- **WHEN** a viewport é maior ou igual a `lg` (1024px)
+- **THEN** a escala é exibida como tabela completa com dias da semana e colaboradores
+
+#### Scenario: Tablet
+- **WHEN** a viewport está entre `md` (768px) e `lg` (1024px)
+- **THEN** a tabela permite scroll horizontal controlado ou fixa colunas de identificação do colaborador
+
+#### Scenario: Mobile
+- **WHEN** a viewport é menor que `md` (768px)
+- **THEN** a escala é exibida como lista de cards por colaborador ou por dia, com detalhes do turno visíveis
+
+#### Scenario: Navegação entre períodos
+- **WHEN** o usuário navega entre semanas ou períodos em mobile
+- **THEN** os controles de navegação são grandes o suficiente para toque e não causam overflow horizontal
+

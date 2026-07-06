@@ -50,7 +50,7 @@ export default function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr
                 </div>
             </td>
             {isAdmin && (
-                <td className="p-4 pr-6 w-12 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <td className="p-4 pr-6 w-12 text-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <div className="w-8 h-8 rounded-full bg-[#EAF4FF] text-[#4A9EF5] flex items-center justify-center mx-auto shadow-sm">
                         <span className="material-symbols-outlined text-[16px]">edit</span>
                     </div>

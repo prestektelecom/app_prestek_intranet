@@ -2,9 +2,7 @@
 
 ## Purpose
 Define os requisitos de layout responsivo para a página de Dashboard da intranet, garantindo que widgets e controles se adaptem corretamente a viewports móveis, tablets e desktops.
-
 ## Requirements
-
 ### Requirement: Dashboard layout adapts to viewport width
 The Dashboard SHALL render a single-column layout on mobile, a two-column layout on tablet and the existing multi-column layout on desktop.
 
@@ -37,3 +35,19 @@ The "Personalizar Dashboard" button and its edit/save/cancel controls SHALL rema
 #### Scenario: Editing layout on mobile
 - **WHEN** the user enters edit mode on a mobile device
 - **THEN** the action buttons SHALL stack vertically and remain inside the viewport
+
+### Requirement: KPIs e Bento cards empilham em telas estreitas
+O layout responsivo do Dashboard SHALL garantir que widgets internos com múltiplas colunas empilhem seus elementos em telas pequenas.
+
+#### Scenario: KPI em mobile
+- **WHEN** um widget de KPI é renderizado em uma viewport menor que `md` (768px)
+- **THEN** os indicadores internos do KPI são empilhados verticalmente em vez de forçar 3 colunas fixas
+
+#### Scenario: Bento card interno em mobile
+- **WHEN** um Bento card contém um grid interno de 3 colunas
+- **THEN** abaixo de `md` o grid interno se torna 1 coluna e abaixo de `lg` pode se tornar 2 colunas
+
+#### Scenario: Layout salvo respeita breakpoints
+- **WHEN** o `react-grid-layout` salva o layout do usuário
+- **THEN** o sistema salva layouts para múltiplos breakpoints (`lg`, `md`, `sm`, `xs`) e não apenas para `lg`
+

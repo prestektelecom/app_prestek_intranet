@@ -3,9 +3,7 @@
 ## Purpose
 
 Definir os requisitos visuais para alinhar a página "Meus Chamados" (`TicketsList.jsx`) ao mesmo estilo e layout das páginas Dashboard, Serviços, Colaboradores, Cobertura, Escala, Escritórios e Processos, adotando o padrão visual "Bento Blue" da Prestek. O escopo é estritamente de interface; o fluxo funcional e a estrutura de dados permanecem inalterados.
-
 ## Requirements
-
 ### Requirement: Paleta e Fundo da Página
 
 A página SHALL usar o fundo azul claro Prestek `#F5F9FF` e a paleta de cores "Bento Blue" em todos os seus elementos visuais.
@@ -70,3 +68,23 @@ A estrutura de layout e o fluxo funcional da página SHALL ser preservados.
 #### Scenario: Usuário utiliza a página de chamados
 - **WHEN** a página monta ou o usuário clica em "Tentar Novamente"
 - **THEN** a requisição para `/api/ixc/su-ticket/list` continua funcionando e a lista é exibida normalmente, alterando apenas o revestimento visual.
+
+### Requirement: Lista de chamados adaptativa
+A lista de chamados (Tickets) SHALL exibir os dados de forma legível em mobile, tablet e desktop.
+
+#### Scenario: Desktop
+- **WHEN** a viewport é maior ou igual a `lg` (1024px)
+- **THEN** a lista é exibida como tabela completa com todas as colunas
+
+#### Scenario: Tablet
+- **WHEN** a viewport está entre `md` (768px) e `lg` (1024px)
+- **THEN** a tabela permite scroll horizontal controlado ou oculta colunas de baixa prioridade
+
+#### Scenario: Mobile
+- **WHEN** a viewport é menor que `md` (768px)
+- **THEN** a lista de chamados é exibida como cards com as informações mais importantes visíveis e detalhes acessíveis ao expandir ou abrir
+
+#### Scenario: Ações do chamado
+- **WHEN** um chamado possui ações (visualizar, editar, atender)
+- **THEN** as ações ficam acessíveis nos cards mobile por botão de menu ou botões visíveis
+

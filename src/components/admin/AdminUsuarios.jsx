@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import BentoAvatar from '../common/Avatar';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
+import ResponsiveTable from '../responsive/ResponsiveTable';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -159,109 +160,92 @@ export default function AdminUsuarios({ adminEmail }) {
 
             {/* Tabela */}
             <div
-                className="overflow-hidden rounded-2xl border shadow-sm"
+                className="overflow-hidden rounded-2xl border shadow-sm p-2 md:p-4"
                 style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
             >
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr style={{ background: C.surfaceSoft, borderBottom: `1px solid ${C.line}` }}>
-                            <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>Colaborador</th>
-                            <th className="hidden px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider md:table-cell" style={{ color: C.muted }}>E-mail</th>
-                            <th className="hidden px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider lg:table-cell" style={{ color: C.muted }}>Última Atividade</th>
-                            <th className="px-5 py-3.5 text-center text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>Perfil</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {carregando ? (
-                            <tr>
-                                <td colSpan={4} className="py-14 text-center" style={{ color: C.muted }}>
-                                    <div className="flex flex-col items-center gap-3">
-                                        <span className="material-symbols-outlined animate-spin text-3xl" style={{ color: C.accent }}>progress_activity</span>
-                                        Carregando usuários...
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : usuarios.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} className="py-14 text-center" style={{ color: C.muted }}>
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div
-                                            className="flex h-12 w-12 items-center justify-center rounded-full"
-                                            style={{ background: C.accentSoft, color: C.accent }}
-                                        >
-                                            <span className="material-symbols-outlined text-2xl">search_off</span>
-                                        </div>
-                                        Nenhum usuário encontrado.
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : (
-                            usuarios.map(u => {
-                                const displayName = u.funcionario_nome || u.usuario_nome || '—';
-                                return (
-                                    <tr
-                                        key={u.usuario_id}
-                                        className="transition-colors"
-                                        style={{ borderBottom: `1px solid ${C.lineSoft}` }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.background = C.surfaceSoft; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                                    >
-                                        <td className="px-5 py-3.5">
-                                            <div className="flex items-center gap-3">
-                                                <BentoAvatar name={displayName} size={36} color={[C.accent, '#fff']} />
-                                                <div>
-                                                    <div className="font-semibold" style={{ color: C.ink }}>{displayName}</div>
-                                                    <div className="text-xs md:hidden" style={{ color: C.muted }}>{u.usuario_email}</div>
-                                                </div>
+                {carregando ? (
+                    <div className="py-14 text-center" style={{ color: C.muted }}>
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="material-symbols-outlined animate-spin text-3xl" style={{ color: C.accent }}>progress_activity</span>
+                            Carregando usuários...
+                        </div>
+                    </div>
+                ) : (
+                    <ResponsiveTable
+                        columns={[
+                            {
+                                key: 'nome',
+                                header: 'Colaborador',
+                                render: (_, u) => {
+                                    const displayName = u.funcionario_nome || u.usuario_nome || '—';
+                                    return (
+                                        <div className="flex items-center gap-3">
+                                            <BentoAvatar name={displayName} size={36} color={[C.accent, '#fff']} />
+                                            <div>
+                                                <div className="font-semibold" style={{ color: C.ink }}>{displayName}</div>
+                                                <div className="text-xs md:hidden" style={{ color: C.muted }}>{u.usuario_email}</div>
                                             </div>
-                                        </td>
-                                        <td className="hidden px-5 py-3.5 md:table-cell" style={{ color: C.ink2 }}>{u.usuario_email}</td>
-                                        <td className="hidden px-5 py-3.5 lg:table-cell" style={{ color: C.muted }}>
-                                            {u.ultima_atividade ? new Date(u.ultima_atividade).toLocaleString('pt-BR') : '—'}
-                                        </td>
-                                        <td className="px-5 py-3.5 text-center">
-                                            <button
-                                                onClick={() => toggleAdmin(u)}
-                                                disabled={salvando === u.usuario_id}
-                                                title={u.is_admin ? 'Revogar acesso admin' : 'Conceder acesso admin'}
-                                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60"
-                                                style={{
-                                                    background: u.is_admin ? C.accentSoft : C.surfaceSoft,
-                                                    color: u.is_admin ? C.accentDeep : C.muted,
-                                                    border: `1px solid ${u.is_admin ? C.accent : C.line}`,
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    if (u.is_admin) {
-                                                        e.currentTarget.style.background = C.dangerSoft;
-                                                        e.currentTarget.style.color = C.danger;
-                                                        e.currentTarget.style.borderColor = C.danger;
-                                                    } else {
-                                                        e.currentTarget.style.background = C.accentSoft;
-                                                        e.currentTarget.style.color = C.accentDeep;
-                                                        e.currentTarget.style.borderColor = C.accent;
-                                                    }
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.background = u.is_admin ? C.accentSoft : C.surfaceSoft;
-                                                    e.currentTarget.style.color = u.is_admin ? C.accentDeep : C.muted;
-                                                    e.currentTarget.style.borderColor = u.is_admin ? C.accent : C.line;
-                                                }}
-                                            >
-                                                <span className="material-symbols-outlined text-base">
-                                                    {salvando === u.usuario_id ? 'sync' : u.is_admin ? 'verified_user' : 'person'}
-                                                </span>
-                                                {u.is_admin ? 'Admin' : 'Usuário'}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })
+                                        </div>
+                                    );
+                                }
+                            },
+                            { key: 'usuario_email', header: 'E-mail', priority: false },
+                            { key: 'ultima_atividade', header: 'Última Atividade', priority: false, render: (v) => v ? new Date(v).toLocaleString('pt-BR') : '—' },
+                            { key: 'perfil', header: 'Perfil', render: (_, u) => u.is_admin ? 'Admin' : 'Usuário' },
+                        ]}
+                        rows={usuarios}
+                        keyExtractor={(u) => u.usuario_id}
+                        cardTitle={(u) => u.funcionario_nome || u.usuario_nome || '—'}
+                        actions={(u) => (
+                            <button
+                                onClick={() => toggleAdmin(u)}
+                                disabled={salvando === u.usuario_id}
+                                title={u.is_admin ? 'Revogar acesso admin' : 'Conceder acesso admin'}
+                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60 min-h-[36px]"
+                                style={{
+                                    background: u.is_admin ? C.accentSoft : C.surfaceSoft,
+                                    color: u.is_admin ? C.accentDeep : C.muted,
+                                    border: `1px solid ${u.is_admin ? C.accent : C.line}`,
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (u.is_admin) {
+                                        e.currentTarget.style.background = C.dangerSoft;
+                                        e.currentTarget.style.color = C.danger;
+                                        e.currentTarget.style.borderColor = C.danger;
+                                    } else {
+                                        e.currentTarget.style.background = C.accentSoft;
+                                        e.currentTarget.style.color = C.accentDeep;
+                                        e.currentTarget.style.borderColor = C.accent;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = u.is_admin ? C.accentSoft : C.surfaceSoft;
+                                    e.currentTarget.style.color = u.is_admin ? C.accentDeep : C.muted;
+                                    e.currentTarget.style.borderColor = u.is_admin ? C.accent : C.line;
+                                }}
+                            >
+                                <span className="material-symbols-outlined text-base">
+                                    {salvando === u.usuario_id ? 'sync' : u.is_admin ? 'verified_user' : 'person'}
+                                </span>
+                                {u.is_admin ? 'Admin' : 'Usuário'}
+                            </button>
                         )}
-                    </tbody>
-                </table>
+                        emptyMessage={(
+                            <div className="flex flex-col items-center gap-2">
+                                <div
+                                    className="flex h-12 w-12 items-center justify-center rounded-full"
+                                    style={{ background: C.accentSoft, color: C.accent }}
+                                >
+                                    <span className="material-symbols-outlined text-2xl">search_off</span>
+                                </div>
+                                Nenhum usuário encontrado.
+                            </div>
+                        )}
+                    />
+                )}
                 {!carregando && usuarios.length > 0 && (
                     <div
-                        className="border-t px-5 py-3 text-xs font-medium"
+                        className="border-t px-5 py-3 text-xs font-medium mt-2"
                         style={{ borderColor: C.line, color: C.muted }}
                     >
                         {usuarios.length} colaborador(es) listado(s)

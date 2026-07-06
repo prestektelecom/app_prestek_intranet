@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import ResponsiveTable from './responsive/ResponsiveTable';
 
 // Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Escala/Escritórios/Processos)
 
@@ -185,41 +186,24 @@ export default function TicketsList({ user }) {
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-[#F7FAFD] border-b border-[#E4ECF5]">
-                    <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest">ID</th>
-                    <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest">Protocolo</th>
-                    <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest">Assunto / Mensagem</th>
-                    <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest text-center">Status</th>
-                    <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest text-right">Data</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E4ECF5] bg-white">
-                  {tickets.map((ticket) => (
-                    <tr
-                      key={ticket.id}
-                      className="hover:bg-[#EAF4FF] transition-colors group"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-black text-[#4A9EF5]">#{ticket.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#0B1B2E] font-mono">
-                        {ticket.protocolo || <span className="text-[#8896A8] italic">Aguardando...</span>}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-[#0B1B2E] max-w-md">
-                        <div className="font-bold mb-0.5 truncate">{ticket.titulo || 'Suporte de TI'}</div>
-                        <div className="text-[#475467] text-xs line-clamp-1">{ticket.menssagem}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <StatusBadge status={ticket.status} />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-[#475467] font-medium">
-                        {ticket.data_cadastro ? new Date(ticket.data_cadastro).toLocaleDateString('pt-BR') : '--/--/--'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="p-2 md:p-4">
+              <ResponsiveTable
+                columns={[
+                  { key: 'id', header: 'ID', render: (v) => <span className="font-black text-[#4A9EF5]">#{v}</span> },
+                  { key: 'protocolo', header: 'Protocolo', render: (v) => v || <span className="text-[#8896A8] italic">Aguardando...</span> },
+                  { key: 'titulo', header: 'Assunto / Mensagem', fullWidth: true, render: (v, row) => (
+                    <div>
+                      <div className="font-bold truncate">{v || 'Suporte de TI'}</div>
+                      <div className="text-[#475467] text-xs line-clamp-1">{row.menssagem}</div>
+                    </div>
+                  )},
+                  { key: 'status', header: 'Status', render: (v) => <StatusBadge status={v} /> },
+                  { key: 'data_cadastro', header: 'Data', render: (v) => v ? new Date(v).toLocaleDateString('pt-BR') : '--/--/--' },
+                ]}
+                rows={tickets}
+                keyExtractor={(row) => row.id}
+                cardTitle={(row) => row.titulo || 'Suporte de TI'}
+              />
             </div>
           )}
         </div>

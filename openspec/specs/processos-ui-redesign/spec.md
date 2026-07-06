@@ -3,9 +3,7 @@
 ## Purpose
 
 Definir os requisitos visuais para alinhar a página "Processos Operacionais" (`Processos.jsx`) ao mesmo estilo e layout das páginas Dashboard, Serviços, Colaboradores, Cobertura, Escala e Escritórios, adotando o padrão visual "Bento Blue" da Prestek. O escopo é estritamente de interface; o fluxo funcional e a estrutura de dados permanecem inalterados.
-
 ## Requirements
-
 ### Requirement: Paleta e Fundo da Página
 
 A página SHALL usar o fundo azul claro Prestek `#F5F9FF` e a paleta de cores "Bento Blue" em todos os seus elementos visuais.
@@ -88,3 +86,23 @@ A estrutura de layout e o fluxo funcional da página SHALL ser preservados.
 #### Scenario: Usuário utiliza busca, filtros, tabela e modal
 - **WHEN** o usuário interage com busca, filtros por categoria, tabela, cards mobile, paginação ou modal CRUD
 - **THEN** o comportamento permanece o mesmo, alterando apenas o revestimento visual.
+
+### Requirement: Tabela de processos adaptativa
+A tabela de processos SHALL se adaptar a viewports pequenas sem perder acessibilidade aos dados.
+
+#### Scenario: Desktop
+- **WHEN** a viewport é maior ou igual a `lg` (1024px)
+- **THEN** a tabela de processos exibe todas as colunas disponíveis
+
+#### Scenario: Tablet
+- **WHEN** a viewport está entre `md` (768px) e `lg` (1024px)
+- **THEN** a tabela mantém colunas prioritárias visíveis e permite scroll horizontal para colunas secundárias
+
+#### Scenario: Mobile
+- **WHEN** a viewport é menor que `md` (768px)
+- **THEN** a tabela é convertida em lista de cards, cada um representando um processo com seus dados principais
+
+#### Scenario: Busca e filtros
+- **WHEN** a página de processos possui busca ou filtros
+- **THEN** em telas pequenas os filtros são empilhados ou colapsados em um painel de filtros
+

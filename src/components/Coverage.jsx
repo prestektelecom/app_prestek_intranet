@@ -396,6 +396,79 @@ function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) 
     );
 }
 
+// ─── Painel de Cidades Reutilizável ───────────────────────────────
+function PainelCidades({
+    dadosFiltrados,
+    carregando,
+    pagAtual,
+    page,
+    totalPaginas,
+    setPage,
+    setModalOverride,
+    cidadeSelecionada,
+    setCidadeSelecionada,
+    isAdmin,
+    onClose,
+}) {
+    return (
+        <>
+            <div className="px-4 py-3 border-b border-[#E4ECF5]/40 dark:border-[var(--border)]/40 flex justify-between items-center">
+                <span className="text-[#0B1B2E] dark:text-[var(--foreground)] font-bold text-xs">Cidades e Bairros ({dadosFiltrados.length})</span>
+                {carregando && (
+                    <span className="material-symbols-outlined text-[#1F5BA8] text-[14px] animate-spin">autorenew</span>
+                )}
+            </div>
+
+            {/* Lista de itens compacta */}
+            <div className="flex-1 overflow-y-auto px-2 py-2 flex flex-col gap-1.5 custom-scrollbar">
+                {carregando && pagAtual.length === 0 ? (
+                    <div className="py-16 text-center text-slate-400 dark:text-slate-500 text-xs">
+                        <span className="material-symbols-outlined text-4xl animate-spin block mb-2">autorenew</span>
+                        Buscando cidades no IXC...
+                    </div>
+                ) : pagAtual.length === 0 ? (
+                    <div className="py-16 text-center text-slate-400 dark:text-slate-500 text-xs">
+                        <span className="material-symbols-outlined text-4xl block mb-2">location_off</span>
+                        Nenhuma cidade/bairro.
+                    </div>
+                ) : pagAtual.map((row, i) => (
+                    <RowCompacto
+                        key={`${row.cidade_ixc_id}::${row.bairro}::${i}`}
+                        row={row}
+                        onConfigurar={(r) => { setModalOverride(r); if (onClose) onClose(); }}
+                        selecionada={`${row.cidade_ixc_id}::${row.bairro}` === cidadeSelecionada}
+                        onSelecionar={(id) => { setCidadeSelecionada(id); if (onClose) onClose(); }}
+                        isAdmin={isAdmin}
+                    />
+                ))}
+            </div>
+
+            {/* Paginação da Sidebar */}
+            <div className="px-3.5 py-2.5 border-t border-[#E4ECF5]/40 dark:border-[var(--border)]/40 bg-[#F5F9FF]/50 dark:bg-[#0B1B2E]/30 rounded-b-2xl flex items-center justify-between">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
+                    {page} de {totalPaginas || 1}
+                </span>
+                <div className="flex gap-1.5">
+                    <button
+                        disabled={page <= 1}
+                        onClick={() => setPage(p => p - 1)}
+                        className="p-1 border border-[#E4ECF5] dark:border-[var(--border)] rounded-lg bg-white dark:bg-[#0B1B2E] text-slate-600 dark:text-[#8896A8] disabled:opacity-40 hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-sm block">chevron_left</span>
+                    </button>
+                    <button
+                        disabled={page >= totalPaginas}
+                        onClick={() => setPage(p => p + 1)}
+                        className="p-1 border border-[#E4ECF5] dark:border-[var(--border)] rounded-lg bg-white dark:bg-[#0B1B2E] text-slate-600 dark:text-[#8896A8] disabled:opacity-40 hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-sm block">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+}
+
 // ─── Componente Principal ─────────────────────────────────────────
 export default function Coverage({ user }) {
     const isAdmin = user?.is_admin;
@@ -410,6 +483,8 @@ export default function Coverage({ user }) {
     const [modalOverride, setModalOverride] = useState(null);
     const [cidadeSelecionada, setCidadeSelecionada] = useState(null);
     const [sidebarAberta, setSidebarAberta] = useState(true);
+    const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     // Metadados de auditoria vindos do backend (paginação + contratos sem localização)
     const [metaAuditoria, setMetaAuditoria] = useState(null);
     const LIMIT = 6;
@@ -495,23 +570,23 @@ export default function Coverage({ user }) {
                     )}
 
                     {/* Barra de Controle Superior Flutuante */}
-                    <div className="absolute top-4 left-4 right-4 z-[10] bg-white/80 dark:bg-[#0B1B2E]/80 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-lg rounded-2xl px-5 py-3 flex flex-wrap justify-between items-center gap-4 transition-all duration-300">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-[#1F5BA8]/10 text-[#1F5BA8] dark:text-[#4A9EF5] rounded-xl flex items-center justify-center">
+                    <div className="absolute top-4 left-4 right-4 z-[10] bg-white/80 dark:bg-[#0B1B2E]/80 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-lg rounded-2xl px-4 md:px-5 py-3 flex flex-col md:flex-row md:flex-wrap md:justify-between gap-3 md:gap-4 transition-all duration-300 max-h-[70vh] md:max-h-none overflow-y-auto md:overflow-visible">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-2 bg-[#1F5BA8]/10 text-[#1F5BA8] dark:text-[#4A9EF5] rounded-xl flex items-center justify-center shrink-0">
                                 <span className="material-symbols-outlined text-[24px]">map</span>
                             </div>
-                            <div>
-                                <h1 className="text-[#0B1B2E] dark:text-[var(--foreground)] text-base md:text-lg font-bold leading-tight">
+                            <div className="min-w-0">
+                                <h1 className="text-[#0B1B2E] dark:text-[var(--foreground)] text-base md:text-lg font-bold leading-tight truncate">
                                     Central de Cobertura de Rede
                                 </h1>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                                     Gestão e monitoramento por região de contratos do IXC
                                 </p>
                             </div>
                         </div>
 
                         {/* Filtros Integrados */}
-                        <div className="flex flex-wrap items-center gap-2.5">
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                             <div className="flex items-center gap-2 bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-2.5 h-8.5 focus-within:ring-2 focus-within:ring-[#4A9EF5] focus-within:border-transparent transition-all">
                                 <span className="material-symbols-outlined text-[#1F5BA8] dark:text-[#4A9EF5] text-[16px]">search</span>
                                 <input
@@ -524,7 +599,7 @@ export default function Coverage({ user }) {
                             </div>
 
                             <select
-                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all"
+                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all flex-1 md:flex-none"
                                 value={filtroTec}
                                 onChange={e => setFiltroTec(e.target.value)}
                             >
@@ -533,7 +608,7 @@ export default function Coverage({ user }) {
                             </select>
 
                             <select
-                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all"
+                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all flex-1 md:flex-none"
                                 value={filtroStatus}
                                 onChange={e => setFiltroStatus(e.target.value)}
                             >
@@ -552,17 +627,17 @@ export default function Coverage({ user }) {
                         <button
                             onClick={carregar}
                             disabled={carregando}
-                            className="flex items-center justify-center gap-2 h-8.5 px-4 bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:opacity-90 active:scale-[0.98] transition-all duration-200 rounded-xl text-white text-xs font-bold shadow-[0_4px_12px_rgba(74,158,245,0.25)] disabled:opacity-60"
+                            className="flex items-center justify-center gap-2 h-8.5 px-4 bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:opacity-90 active:scale-[0.98] transition-all duration-200 rounded-xl text-white text-xs font-bold shadow-[0_4px_12px_rgba(74,158,245,0.25)] disabled:opacity-60 w-full md:w-auto"
                         >
                             <span className={`material-symbols-outlined text-[16px] ${carregando ? 'animate-spin' : ''}`}>sync</span>
                             <span>{carregando ? 'Sincronizando...' : 'Sincronizar'}</span>
                         </button>
                     </div>
 
-                    {/* Botão Toggle da Sidebar */}
+                    {/* Botão Toggle da Sidebar (desktop) */}
                     <button
                         onClick={() => setSidebarAberta(!sidebarAberta)}
-                        className="absolute top-[88px] z-[20] size-9 rounded-xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-lg flex items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 transition-all duration-300"
+                        className="hidden md:flex absolute top-[88px] z-[20] size-9 rounded-xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-lg items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 transition-all duration-300"
                         style={{ transform: sidebarAberta ? 'translateX(326px)' : 'translateX(16px)' }}
                         title={sidebarAberta ? 'Recolher Painel' : 'Expandir Painel'}
                     >
@@ -571,70 +646,69 @@ export default function Coverage({ user }) {
                         </span>
                     </button>
 
-                    {/* Painel Lateral Flutuante */}
-                    <div 
-                        className={`absolute top-[88px] bottom-4 left-4 z-[10] w-[310px] max-w-[calc(100vw-32px)] bg-white/90 dark:bg-[#0B1B2E]/90 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-2xl rounded-2xl flex flex-col transition-all duration-300 ${
+                    {/* Botão Toggle da Sidebar (mobile) */}
+                    <button
+                        onClick={() => setSidebarMobileAberta(true)}
+                        className="md:hidden absolute top-[88px] left-4 z-[20] size-9 rounded-xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-lg flex items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 transition-all duration-300"
+                        title="Abrir lista de cidades"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">list</span>
+                    </button>
+
+                    {/* Painel Lateral Flutuante (desktop) */}
+                    <div
+                        className={`hidden md:flex absolute top-[88px] bottom-4 left-4 z-[10] w-[310px] bg-white/90 dark:bg-[#0B1B2E]/90 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-2xl rounded-2xl flex-col transition-all duration-300 ${
                             sidebarAberta ? 'translate-x-0 opacity-100' : '-translate-x-[330px] opacity-0 pointer-events-none'
                         }`}
                     >
-                        <div className="px-4 py-3 border-b border-[#E4ECF5]/40 dark:border-[var(--border)]/40 flex justify-between items-center">
-                            <span className="text-[#0B1B2E] dark:text-[var(--foreground)] font-bold text-xs">Cidades e Bairros ({dadosFiltrados.length})</span>
-                            {carregando && (
-                                <span className="material-symbols-outlined text-[#1F5BA8] text-[14px] animate-spin">autorenew</span>
-                            )}
-                        </div>
+                        <PainelCidades
+                            dadosFiltrados={dadosFiltrados}
+                            carregando={carregando}
+                            pagAtual={pagAtual}
+                            page={page}
+                            totalPaginas={totalPaginas}
+                            setPage={setPage}
+                            setModalOverride={setModalOverride}
+                            cidadeSelecionada={cidadeSelecionada}
+                            setCidadeSelecionada={setCidadeSelecionada}
+                            isAdmin={isAdmin}
+                        />
+                    </div>
 
-                        {/* Lista de itens compacta */}
-                        <div className="flex-1 overflow-y-auto px-2 py-2 flex flex-col gap-1.5 custom-scrollbar">
-                            {carregando && pagAtual.length === 0 ? (
-                                <div className="py-16 text-center text-slate-400 dark:text-slate-500 text-xs">
-                                    <span className="material-symbols-outlined text-4xl animate-spin block mb-2">autorenew</span>
-                                    Buscando cidades no IXC...
+                    {/* Drawer mobile de cidades */}
+                    {sidebarMobileAberta && (
+                        <div className="md:hidden fixed inset-0 z-[30]" role="dialog" aria-modal="true">
+                            <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarMobileAberta(false)} />
+                            <div className="absolute left-0 top-0 h-full w-[300px] max-w-[80vw] bg-white/95 dark:bg-[#0B1B2E]/95 backdrop-blur-md border-r border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-2xl rounded-r-2xl flex flex-col animate-in slide-in-from-left duration-200">
+                                <div className="px-4 py-3 border-b border-[#E4ECF5]/40 dark:border-[var(--border)]/40 flex justify-between items-center">
+                                    <span className="text-[#0B1B2E] dark:text-[var(--foreground)] font-bold text-xs">Cidades e Bairros ({dadosFiltrados.length})</span>
+                                    <button
+                                        onClick={() => setSidebarMobileAberta(false)}
+                                        className="p-1 rounded-lg hover:bg-[#F5F9FF] dark:hover:bg-[#0B1B2E] text-slate-500"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">close</span>
+                                    </button>
                                 </div>
-                            ) : pagAtual.length === 0 ? (
-                                <div className="py-16 text-center text-slate-400 dark:text-slate-500 text-xs">
-                                    <span className="material-symbols-outlined text-4xl block mb-2">location_off</span>
-                                    Nenhuma cidade/bairro.
-                                </div>
-                            ) : pagAtual.map((row, i) => (
-                                <RowCompacto
-                                    key={`${row.cidade_ixc_id}::${row.bairro}::${i}`}
-                                    row={row}
-                                    onConfigurar={setModalOverride}
-                                    selecionada={`${row.cidade_ixc_id}::${row.bairro}` === cidadeSelecionada}
-                                    onSelecionar={setCidadeSelecionada}
+                                <PainelCidades
+                                    dadosFiltrados={dadosFiltrados}
+                                    carregando={carregando}
+                                    pagAtual={pagAtual}
+                                    page={page}
+                                    totalPaginas={totalPaginas}
+                                    setPage={setPage}
+                                    setModalOverride={setModalOverride}
+                                    cidadeSelecionada={cidadeSelecionada}
+                                    setCidadeSelecionada={setCidadeSelecionada}
                                     isAdmin={isAdmin}
+                                    onClose={() => setSidebarMobileAberta(false)}
                                 />
-                            ))}
-                        </div>
-
-                        {/* Paginação da Sidebar */}
-                        <div className="px-3.5 py-2.5 border-t border-[#E4ECF5]/40 dark:border-[var(--border)]/40 bg-[#F5F9FF]/50 dark:bg-[#0B1B2E]/30 rounded-b-2xl flex items-center justify-between">
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
-                                {page} de {totalPaginas || 1}
-                            </span>
-                            <div className="flex gap-1.5">
-                                <button
-                                    disabled={page <= 1}
-                                    onClick={() => setPage(p => p - 1)}
-                                    className="p-1 border border-[#E4ECF5] dark:border-[var(--border)] rounded-lg bg-white dark:bg-[#0B1B2E] text-slate-600 dark:text-[#8896A8] disabled:opacity-40 hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
-                                >
-                                    <span className="material-symbols-outlined text-sm block">chevron_left</span>
-                                </button>
-                                <button
-                                    disabled={page >= totalPaginas}
-                                    onClick={() => setPage(p => p + 1)}
-                                    className="p-1 border border-[#E4ECF5] dark:border-[var(--border)] rounded-lg bg-white dark:bg-[#0B1B2E] text-slate-600 dark:text-[#8896A8] disabled:opacity-40 hover:bg-[#F5F9FF] dark:bg-[#0B1B2E] transition-all cursor-pointer"
-                                >
-                                    <span className="material-symbols-outlined text-sm block">chevron_right</span>
-                                </button>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Resumo Bento Flutuante (Bottom-Right) */}
                     {isAdmin && !carregando && dados.length > 0 && (
-                        <div className="absolute bottom-4 right-4 z-[10] bg-white/95 dark:bg-[#0B1B2E]/95 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-2xl rounded-2xl p-4 flex flex-col gap-2 max-w-[220px] transition-all duration-300">
+                        <div className="absolute bottom-4 right-4 z-[10] bg-white/95 dark:bg-[#0B1B2E]/95 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-2xl rounded-2xl p-3 md:p-4 flex flex-col gap-2 max-w-[180px] md:max-w-[220px] transition-all duration-300">
                             <span className="text-[9px] font-bold text-[#1F5BA8] dark:text-[#4A9EF5] uppercase tracking-wider">Estatísticas Gerais</span>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div className="bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5]/50 dark:border-[var(--border)]/50 rounded-xl p-2 flex flex-col">

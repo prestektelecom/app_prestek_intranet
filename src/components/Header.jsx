@@ -14,7 +14,7 @@ function iconBtn(C) {
   };
 }
 
-export default function Header({ currentView, setCurrentView, user, searchQuery, setSearchQuery }) {
+export default function Header({ currentView, setCurrentView, user, searchQuery, setSearchQuery, onMenuClick }) {
   const C = useBentoTheme();
   const func = user?.funcionario ?? {};
   const safeName = func.funcionario || user?.nome || 'Usuário';
@@ -113,25 +113,40 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
     : safeName;
 
   return (
-    <header style={{
-      position: 'sticky', top: 0, zIndex: 1000,
-      height: 72, background: C.bg + 'E0', backdropFilter: 'blur(14px)',
-      WebkitBackdropFilter: 'blur(14px)',
-      borderBottom: `1px solid ${C.line}`,
-      display: 'flex', alignItems: 'center', padding: '0 24px', gap: 20,
-      fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-    }}>
+    <header
+      className="sticky top-0 z-[1000] flex items-center gap-3 sm:gap-5 px-3 sm:px-5 lg:px-6 h-16 lg:h-[72px] shrink-0"
+      style={{
+        background: C.bg + 'E0', backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
+        borderBottom: `1px solid ${C.line}`,
+        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+      }}
+    >
+      {/* Mobile menu button */}
+      {onMenuClick && (
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden flex items-center justify-center w-10 h-10 rounded-[10px] shrink-0"
+          style={{ ...iconBtn(C) }}
+          aria-label="Abrir menu"
+        >
+          <span style={{ color: C.ink2, display: 'flex' }}><Icons.More /></span>
+        </button>
+      )}
 
       {/* Spacer para centralizar a busca quando o menu estiver oculto (Dashboard) */}
-      {currentView === 'dashboard' && <div style={{ flex: 1 }} className="hidden lg:block" />}
+      {currentView === 'dashboard' && <div className="hidden lg:block flex-1" />}
 
       {/* Search box */}
-      <div style={{
-        flex: '1 1 0%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
-        height: 42, padding: '0 14px',
-        background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12,
-        boxShadow: `0 1px 2px ${C.accentDeep}0A`,
-      }}>
+      <div className={`
+        flex items-center gap-2 sm:gap-[10px] h-[42px] px-3 sm:px-[14px] rounded-xl shrink-0
+        ${currentView === 'dashboard' ? 'flex-1 max-w-[540px]' : 'w-full max-w-[540px] sm:flex-1'}
+      `}
+        style={{
+          background: C.surface, border: `1px solid ${C.line}`,
+          boxShadow: `0 1px 2px ${C.accentDeep}0A`,
+        }}
+      >
         <span style={{ color: C.muted, display: 'flex' }}><Icons.Search /></span>
         <input
           ref={searchInputRef}
@@ -146,22 +161,21 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
             }
           }}
           placeholder={currentView === 'services' ? "Buscar planos por nome, valor ou ID..." : "Buscar serviços, pessoas ou documentos..."}
+          className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm"
           style={{
-            flex: '1 1 0%', border: 'none', outline: 'none', background: 'transparent',
-            fontFamily: 'inherit', fontSize: 14, color: C.ink,
+            fontFamily: 'inherit', color: C.ink,
           }}
         />
-        <span style={{
-          fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5,
-          padding: '3px 7px', border: `1px solid ${C.line}`, borderRadius: 5,
-          color: C.muted, background: C.surfaceSoft, flexShrink: 0,
-        }}>⌘K</span>
+        <span className="hidden sm:inline-flex font-mono text-[10.5px] px-[7px] py-[3px] rounded"
+          style={{
+            border: `1px solid ${C.line}`, color: C.muted, background: C.surfaceSoft,
+          }}>⌘K</span>
       </div>
 
-      <div style={{ flex: 1 }} />
+      <div className="flex-1" />
 
       {/* Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         {/* Notifications */}
         <div style={{ position: 'relative' }} ref={notificationsRef}>
           <button
@@ -180,11 +194,15 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
           </button>
 
           {isNotificationsOpen && (
-            <div style={{
-              position: 'absolute', right: 0, marginTop: 8, width: 320,
-              background: C.surface, border: `1px solid ${C.line}`, borderRadius: 16,
-              boxShadow: `0 12px 32px ${C.ink}1F`, zIndex: 50, overflow: 'hidden',
-            }}>
+            <div className={`
+              absolute right-0 mt-2 rounded-2xl z-50 overflow-hidden
+              w-[calc(100vw-32px)] max-w-[320px] sm:w-80
+            `}
+              style={{
+                background: C.surface, border: `1px solid ${C.line}`,
+                boxShadow: `0 12px 32px ${C.ink}1F`,
+              }}
+            >
               <div style={{
                 background: C.surfaceSoft, padding: '12px 16px',
                 borderBottom: `1px solid ${C.line}`,
@@ -271,24 +289,23 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
         {/* Profile pill */}
         <div
           onClick={() => setCurrentView('settings')}
+          className="hidden sm:flex items-center gap-2.5 ml-1 pr-3.5 pl-[5px] rounded-full cursor-pointer shrink-0"
           style={{
-            display: 'flex', alignItems: 'center', gap: 10, marginLeft: 4,
-            padding: '5px 14px 5px 5px', borderRadius: 999,
             background: C.surface, border: `1px solid ${C.line}`,
             boxShadow: `0 1px 2px ${C.accentDeep}0A`,
-            cursor: 'pointer', flexShrink: 0,
           }}
         >
           <img
             src={avatarUrl || defaultAvatar}
             alt={safeName}
-            style={{ width: 34, height: 34, borderRadius: 17, objectFit: 'cover', flexShrink: 0, background: C.surfaceSoft }}
+            className="w-[34px] h-[34px] rounded-full object-cover shrink-0"
+            style={{ background: C.surfaceSoft }}
           />
-          <div className="hidden lg:flex flex-col" style={{ lineHeight: 1.15 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: C.ink, letterSpacing: '0.02em', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div className="hidden lg:flex flex-col leading-tight">
+            <span className="text-xs font-bold tracking-wide truncate" style={{ color: C.ink, maxWidth: 180 }}>
               {displayName.toUpperCase()}
             </span>
-            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9.5, color: C.muted, letterSpacing: '0.15em', marginTop: 2, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'uppercase' }}>
+            <span className="font-mono text-[9.5px] tracking-[0.15em] mt-0.5 truncate uppercase" style={{ color: C.muted, maxWidth: 180 }}>
               {cargoName}
             </span>
           </div>

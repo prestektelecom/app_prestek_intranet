@@ -194,14 +194,14 @@ export default function Directory({ user, setCurrentView }) {
 
         {/* ── Grid de Cards ────────────────────────────────────────────────── */}
         {isLoading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : colaboradoresFiltrados.length === 0 ? (
           <EmptyState busca={busca} deptoFiltro={deptoFiltro} onClear={() => { setBusca(''); setDeptoFiltro(''); }} />
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {colaboradoresVisiveis.map((colab, idx) => (
                 <EmployeeCardV2
                   key={colab.usuario_id || colab.funcionario_id}
@@ -247,6 +247,9 @@ export default function Directory({ user, setCurrentView }) {
         }
         .emp-card-actions { opacity: 0; transform: translateY(6px); transition: opacity 0.2s, transform 0.2s; }
         .emp-card:hover .emp-card-actions { opacity: 1; transform: translateY(0); }
+        @media (hover: none) and (pointer: coarse) {
+          .emp-card-actions { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
     </main>
   );
