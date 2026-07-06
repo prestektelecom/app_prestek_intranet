@@ -63,14 +63,14 @@ export default function TechBentoCard({ service, isAdmin, onEditClick, onDeleteC
                         <div className="flex items-center gap-2 w-full justify-end">
                             <button 
                                 onClick={() => onEditClick(service)}
-                                className="flex items-center justify-center p-2 rounded-lg bg-[#EAF4FF] text-[#1F5BA8] hover:bg-[#4A9EF5] hover:text-white dark:bg-[#0B1B2E] dark:text-[#7FD4E8] dark:hover:bg-[#1F5BA8] dark:hover:text-white border border-[#EAF4FF] dark:border-[var(--border)] transition-all cursor-pointer"
+                                className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg bg-[#EAF4FF] text-[#1F5BA8] hover:bg-[#4A9EF5] hover:text-white dark:bg-[#0B1B2E] dark:text-[#7FD4E8] dark:hover:bg-[#1F5BA8] dark:hover:text-white border border-[#EAF4FF] dark:border-[var(--border)] transition-all cursor-pointer"
                                 title="Editar Serviço"
                             >
                                 <span className="material-symbols-outlined text-sm font-bold">edit</span>
                             </button>
                             <button 
                                 onClick={() => onDeleteClick(service.id)}
-                                className="flex items-center justify-center p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white dark:bg-[#0B1B2E] dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white border border-red-100 dark:border-[var(--border)] transition-all cursor-pointer"
+                                className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white dark:bg-[#0B1B2E] dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white border border-red-100 dark:border-[var(--border)] transition-all cursor-pointer"
                                 title="Excluir Serviço"
                             >
                                 <span className="material-symbols-outlined text-sm font-bold">delete</span>

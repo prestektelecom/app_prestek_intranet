@@ -878,13 +878,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                             border: 'none',
                             color: 'white',
                             borderRadius: 8,
-                            padding: 6,
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             transition: 'all 0.15s'
                         }}
+                        className="min-w-[44px] min-h-[44px]"
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
                     >
@@ -1003,7 +1003,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                         display: 'flex',
                         justifyContent: 'end',
                         gap: 12
-                    }}>
+                    }} className="flex-col sm:flex-row">
                         <button
                             type="button"
                             onClick={onClose}
@@ -1135,7 +1135,7 @@ function DeleteModal({ onClose, onConfirm }) {
                     Esta ação não pode ser desfeita. O comunicado será removido permanentemente do feed da intranet.
                 </p>
 
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
                         onClick={onClose}
                         style={{

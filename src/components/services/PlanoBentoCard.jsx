@@ -105,7 +105,7 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
                     {isAdmin && (
                         <button 
                             onClick={() => onEditClick(plan)}
-                            className="flex items-center justify-center p-2 rounded-lg bg-[#EAF4FF] text-[#1F5BA8] hover:bg-[#4A9EF5] hover:text-white dark:bg-[#0B1B2E] dark:text-[#7FD4E8] dark:hover:bg-[#1F5BA8] dark:hover:text-white border border-[#EAF4FF] dark:border-[var(--border)] transition-all cursor-pointer"
+                            className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg bg-[#EAF4FF] text-[#1F5BA8] hover:bg-[#4A9EF5] hover:text-white dark:bg-[#0B1B2E] dark:text-[#7FD4E8] dark:hover:bg-[#1F5BA8] dark:hover:text-white border border-[#EAF4FF] dark:border-[var(--border)] transition-all cursor-pointer"
                             title="Editar Plano"
                         >
                             <span className="material-symbols-outlined text-sm font-bold">edit</span>
