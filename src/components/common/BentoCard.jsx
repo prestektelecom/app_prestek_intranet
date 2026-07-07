@@ -1,9 +1,9 @@
 import { tone } from '../../utils/tone';
 
-export function BentoCard({ C, children, accent, glow = false, className = '' }) {
+export function BentoCard({ C, children, accent, glow = false, className = '', hoverBorder = true }) {
   return (
     <div
-      className={className}
+      className={`${className} ${hoverBorder ? 'bento-hover-border' : ''}`.trim()}
       style={{
         background: C.surface,
         borderRadius: 20,

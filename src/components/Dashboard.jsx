@@ -17,7 +17,7 @@ function KpiCard({ C, label, value, sub, subTone, sparkData, sparkColor }) {
   const subBg = { success: C.successSoft, danger: C.dangerSoft, warning: C.warningSoft, muted: C.surfaceSoft }[subTone] || C.surfaceSoft;
 
   return (
-    <div style={{
+    <div className="bento-hover-border" style={{
       background: C.surface, borderRadius: 18, border: `1px solid ${C.line}`,
       padding: 20, display: 'flex', flexDirection: 'column', gap: 14,
       boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, overflow: 'hidden',

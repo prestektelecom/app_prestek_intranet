@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function StreamingBentoCard({ service, isAdmin, onEditClick, onDeleteClick }) {
     return (
-        <div className="relative flex flex-col justify-between p-6 rounded-2xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+        <div className="bento-hover-border relative flex flex-col justify-between p-6 rounded-2xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-[0_4px_20px_-4px_rgba(74,158,245,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
             <div>
                 {/* Cabeçalho do Card */}
                 <div className="flex items-start gap-4 mb-4">

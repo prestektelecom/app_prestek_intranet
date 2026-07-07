@@ -17,7 +17,7 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
 
     return (
         <div 
-            className={`relative flex flex-col justify-between p-6 rounded-2xl bg-white dark:bg-[#0B1B2E] border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+            className={`bento-hover-border relative flex flex-col justify-between p-6 rounded-2xl bg-white dark:bg-[#0B1B2E] border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                 isComparing 
                 ? 'border-[#4A9EF5] dark:border-[#4A9EF5] shadow-[0_8px_30px_rgba(74,158,245,0.12)] ring-2 ring-[#4A9EF5]/40'
                 : isTopSeller 
