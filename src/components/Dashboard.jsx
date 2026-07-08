@@ -222,7 +222,9 @@ function ComunicadosCard({ C, setCurrentView }) {
   function tagStyle(tipo) {
     const map = {
       Urgente: { bg: C.dangerSoft, color: C.danger, label: 'URGENTE' },
+      Importante: { bg: C.warningSoft, color: C.warning, label: 'IMPORTANTE' },
       Aviso: { bg: C.warningSoft, color: C.warning, label: 'AVISO' },
+      Geral: { bg: C.successSoft, color: C.success, label: 'GERAL' },
       Info: { bg: C.accentSoft, color: C.accentDeep, label: 'INFO' },
     };
     return map[tipo] || { bg: C.surfaceSoft, color: C.ink2, label: (tipo || 'OK').toUpperCase() };
@@ -237,6 +239,19 @@ function ComunicadosCard({ C, setCurrentView }) {
       const d = Math.floor(h / 24);
       if (d < 7) return `${d}d`;
       return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(dateStr));
+    } catch (_) { return ''; }
+  }
+
+  function formatFullDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+      return new Date(dateStr).toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     } catch (_) { return ''; }
   }
 
@@ -258,17 +273,18 @@ function ComunicadosCard({ C, setCurrentView }) {
               const tag = tagStyle(it.tipo);
               return (
                 <div key={it.id || i}
-                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 12px', borderRadius: 12, cursor: 'pointer', transition: 'background .12s' }}
+                  onClick={() => setCurrentView('announcements')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 12px 14px 9px', borderRadius: 12, cursor: 'pointer', transition: 'background .12s', borderLeft: `3px solid ${tag.color}` }}
                   onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: '0.12em', fontWeight: 700, padding: '4px 8px', borderRadius: 6, background: tag.bg, color: tag.color, flexShrink: 0 }}>{tag.label}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.titulo}</div>
-                    <div style={{ fontSize: 12, color: C.ink2, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.descricao}</div>
+                    <div style={{ fontSize: 12, color: C.ink2, marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', whiteSpace: 'normal' }}>{it.descricao}</div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, color: C.muted }}>{relativeTime(it.criado_em)}</div>
+                    <div title={formatFullDate(it.criado_em)} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, color: C.muted, cursor: 'help' }}>{relativeTime(it.criado_em)}</div>
                     <div style={{ fontSize: 11.5, color: C.ink2, marginTop: 2 }}>{it.departamento_autor || ''}</div>
                   </div>
                 </div>

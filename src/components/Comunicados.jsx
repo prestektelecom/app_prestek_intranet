@@ -31,6 +31,21 @@ function relativeTime(dataStr) {
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').replace(' de ', ' ');
 }
 
+function formatFullDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    return new Date(dateStr).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (_) {
+    return '';
+  }
+}
+
 // Retorna as definições visuais por tipo de comunicado com base no tema atual
 const getTypeMeta = (C) => ({
   Urgente: {
@@ -584,14 +599,18 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                             {meta.label}
                         </span>
 
-                        <span style={{
-                            fontSize: 11.5,
-                            color: C.muted,
-                            fontFamily: '"JetBrains Mono", monospace',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 4
-                        }}>
+                        <span 
+                            title={formatFullDate(item.criado_em)}
+                            style={{
+                                fontSize: 11.5,
+                                color: C.muted,
+                                fontFamily: '"JetBrains Mono", monospace',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                cursor: 'help'
+                            }}
+                        >
                             <span className="material-symbols-outlined" style={{ fontSize: 13 }}>calendar_today</span>
                             {relativeTime(item.criado_em)}
                         </span>
