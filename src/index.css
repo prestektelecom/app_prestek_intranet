@@ -390,20 +390,71 @@
   border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* ── Bento Hover Border ─────────────────────────────────────── */
+/* ── Bento Aurora Border ────────────────────────────────────── */
+/*
+ * Técnica: @property + conic-gradient via ::before com mask-composite.
+ * A borda animada tem 1.5px de largura e gira em 3s no hover.
+ * Compatível com overflow:hidden (inset: 0, não vaza para fora).
+ */
+
+@property --bento-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes bento-aurora-spin {
+  to { --bento-angle: 360deg; }
+}
+
 .bento-hover-border {
-  transition: box-shadow 250ms ease;
+  position: relative;
+  isolation: isolate;
+  transition: box-shadow 300ms ease;
+}
+
+/* Anel aurora — visível apenas no hover */
+.bento-hover-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--bento-angle),
+    var(--hover-border-from)  0%,
+    #00D4FF                  25%,
+    #7AB8F8                  50%,
+    var(--hover-border-to)   75%,
+    var(--hover-border-from) 100%
+  );
+  /* Mask: exibe apenas a faixa de 1.5px nas bordas */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bento-hover-border:hover::before {
+  opacity: 1;
+  animation: bento-aurora-spin 3s linear infinite;
 }
 
 .bento-hover-border:hover {
-  box-shadow:
-    0 0 0 2px var(--hover-border-from),
-    0 0 24px 0px var(--hover-border-glow) !important;
+  box-shadow: 0 0 28px 4px var(--hover-border-glow) !important;
 }
 
-/* Suprimir efeito de hover border no modo de edição do dashboard */
+/* Suprimir efeito de aurora no modo de edição do dashboard */
 .layout.is-editing .bento-hover-border:hover {
   box-shadow: none !important;
+}
+.layout.is-editing .bento-hover-border::before {
+  display: none !important;
 }
 
 /* ── React Grid Layout Customizations ────────────────────────── */

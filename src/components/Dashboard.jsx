@@ -241,7 +241,7 @@ function ComunicadosCard({ C, setCurrentView }) {
   }
 
   return (
-    <div style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 24, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="bento-hover-border" style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 24, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Comunicados</h2>
@@ -289,7 +289,7 @@ function AtalhosCard({ C, setCurrentView, onSuporteTIClick }) {
   ];
 
   return (
-    <div style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="bento-hover-border" style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <h2 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Atalhos Rápidos</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 10 }}>
         {atalhos.map(a => {
@@ -365,7 +365,7 @@ function TeamBento({ C }) {
   }, [deptoMap]);
 
   return (
-    <div style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="bento-hover-border" style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Disponibilidade</h2>
