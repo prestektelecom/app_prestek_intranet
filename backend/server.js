@@ -714,7 +714,7 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
 
     try {
         // 1. Resolver o ID de técnico do IXC (mesma lógica de /api/os-chamados)
-        let ixcTecnicoId = funcionarioId;
+        let ixcTecnicoId = null;
         const pRes = await pool.query(
             'SELECT usuario_email, funcionario_id FROM usuarios_perfil WHERE funcionario_id = $1 OR usuario_id = $1 LIMIT 1',
             [funcionarioId]
@@ -729,12 +729,18 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
                 const dUser = await rUser.json();
                 if (dUser.total > 0 && dUser.registros[0].funcionario) {
                     ixcTecnicoId = dUser.registros[0].funcionario;
-                } else if (pRes.rows[0].funcionario_id) {
-                    ixcTecnicoId = pRes.rows[0].funcionario_id;
+                    console.log(`[Eficiência] resolvido via email → ${ixcTecnicoId}`);
                 }
-            } else if (pRes.rows[0].funcionario_id) {
-                ixcTecnicoId = pRes.rows[0].funcionario_id;
             }
+            if (!ixcTecnicoId && pRes.rows[0].funcionario_id) {
+                ixcTecnicoId = pRes.rows[0].funcionario_id;
+                console.log(`[Eficiência] resolvido via funcionario_id local → ${ixcTecnicoId}`);
+            }
+        }
+
+        if (!ixcTecnicoId) {
+            console.log(`[Eficiência] falha ao resolver ixcTecnicoId para funcionarioId=${funcionarioId}`);
+            return res.json({ sucesso: false, sem_dados: true, erro: 'Técnico não encontrado no IXC' });
         }
 
         console.log(`[Eficiência] funcionarioId=${funcionarioId} → ixcTecnicoId=${ixcTecnicoId}`);
@@ -763,9 +769,9 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
             })
         }).then(r => r.json()).catch(() => ({ registros: [] }));
 
-        // Filtra por período usando data_final (primário) ou data_fechamento (fallback)
+        // Filtra por período usando data_fechamento (primário) ou data_final (fallback)
         const getDataFechamento = (os) => {
-            const raw = [os.data_final, os.data_fechamento].find(isDataValida);
+            const raw = [os.data_fechamento, os.data_final].find(isDataValida);
             return raw ? new Date(raw) : null;
         };
 
@@ -810,21 +816,24 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
             return { metaHoras, apenasUteis: assunto.sla_apenas_dias_uteis === 'S' };
         };
 
-        // Conta horas úteis entre dois instantes (seg–sex, 08:00–18:00)
+        // Conta horas úteis entre dois instantes (seg–sex, 08:00–18:00) com precisão de minutos
         const HORA_INICIO = 8;
         const HORA_FIM = 18;
         const calcHorasUteis = (inicio, fim) => {
-            let horas = 0;
+            let minutos = 0;
             const cur = new Date(inicio);
-            while (cur < fim) {
+            const limite = new Date(inicio);
+            limite.setDate(limite.getDate() + 30); // teto de 30 dias corridos (~30 dias úteis)
+            const fimEfetivo = fim < limite ? fim : limite;
+            while (cur < fimEfetivo) {
                 const diaSemana = cur.getDay(); // 0=dom, 6=sab
                 if (diaSemana !== 0 && diaSemana !== 6) {
                     const hora = cur.getHours();
-                    if (hora >= HORA_INICIO && hora < HORA_FIM) horas++;
+                    if (hora >= HORA_INICIO && hora < HORA_FIM) minutos++;
                 }
-                cur.setHours(cur.getHours() + 1);
+                cur.setMinutes(cur.getMinutes() + 1);
             }
-            return horas;
+            return minutos / 60;
         };
 
         const calcHoras = (abertura, fechamento, apenasUteis) => {
@@ -838,7 +847,7 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
             let totalComPrazo = 0;
             let osSemPrazo = 0;
             registros.forEach(os => {
-                const dataFechamentoRaw = [os.data_final, os.data_fechamento].find(isDataValida);
+                const dataFechamentoRaw = [os.data_fechamento, os.data_final].find(isDataValida);
                 const fechamento = dataFechamentoRaw ? new Date(dataFechamentoRaw) : null;
                 const abertura = isDataValida(os.data_abertura) ? new Date(os.data_abertura) : null;
                 if (!fechamento || !abertura) return;
@@ -855,15 +864,49 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
         const dadosMesAtual = calcEficiencia(resMesAtual.registros || []);
         const dadosMesAnterior = calcEficiencia(resMesAnterior.registros || []);
 
-        // 5. Calcular variação
+        // 5. Calcular variação proporcional ao período (OS/dia)
         let variacao = null;
         let tendencia = 'estavel';
-        if (dadosMesAtual.eficiencia !== null && dadosMesAnterior.eficiencia !== null && dadosMesAnterior.eficiencia > 0) {
-            variacao = dadosMesAtual.eficiencia - dadosMesAnterior.eficiencia;
-            tendencia = variacao > 0 ? 'subindo' : variacao < 0 ? 'caindo' : 'estavel';
-        } else if (dadosMesAtual.eficiencia !== null && dadosMesAnterior.total === 0) {
-            // Sem dados do mês anterior — mostra eficiência sem variação
-            variacao = null;
+        const diasDecorridosMesAtual = agora.getDate();
+        const diasMesAnterior = new Date(agora.getFullYear(), agora.getMonth(), 0).getDate();
+
+        if (dadosMesAtual.total > 0 && dadosMesAnterior.total > 0) {
+            const taxaAtual = dadosMesAtual.noPrazo / diasDecorridosMesAtual;
+            const taxaAnterior = dadosMesAnterior.noPrazo / diasMesAnterior;
+            if (taxaAnterior > 0) {
+                variacao = Math.round((taxaAtual - taxaAnterior) / taxaAnterior * 100);
+                tendencia = variacao > 0 ? 'subindo' : variacao < 0 ? 'caindo' : 'estavel';
+            }
+        }
+
+        // 6. Histórico semanal das últimas 8 semanas (domingo–sábado)
+        const getInicioSemana = (d) => {
+            const data = new Date(d);
+            data.setHours(0, 0, 0, 0);
+            data.setDate(data.getDate() - data.getDay());
+            return data;
+        };
+
+        const historicoSemanal = [];
+        const inicioSemanaAtual = getInicioSemana(agora);
+        for (let i = 7; i >= 0; i--) {
+            const inicio = new Date(inicioSemanaAtual);
+            inicio.setDate(inicio.getDate() - i * 7);
+            const fimSemana = new Date(inicio);
+            fimSemana.setDate(fimSemana.getDate() + 6);
+            fimSemana.setHours(23, 59, 59, 999);
+
+            const registrosSemana = registrosFechados.filter(os => {
+                const d = getDataFechamento(os);
+                return d >= inicio && d <= fimSemana;
+            });
+
+            const calc = calcEficiencia(registrosSemana);
+            historicoSemanal.push({
+                semana: inicio.toISOString().slice(0, 10),
+                eficiencia: calc.eficiencia,
+                total: calc.total
+            });
         }
 
         const periodoNome = agora.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
@@ -881,7 +924,8 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
             variacao,
             tendencia,
             periodo: periodoNome,
-            sem_dados: dadosMesAtual.total === 0 || dadosMesAtual.semPrazo === true
+            sem_dados: dadosMesAtual.total === 0 || dadosMesAtual.semPrazo === true,
+            historico_semanal: historicoSemanal
         });
 
     } catch (e) {

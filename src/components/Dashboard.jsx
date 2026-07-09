@@ -12,7 +12,7 @@ import BentoCard from './common/BentoCard'
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
-function KpiCard({ C, label, value, sub, subTone, sparkData, sparkColor }) {
+function KpiCard({ C, label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
   const subColor = { success: C.success, danger: C.danger, muted: C.ink2, warning: C.warning }[subTone] || C.ink2;
   const subBg = { success: C.successSoft, danger: C.dangerSoft, warning: C.warningSoft, muted: C.surfaceSoft }[subTone] || C.surfaceSoft;
 
@@ -25,7 +25,7 @@ function KpiCard({ C, label, value, sub, subTone, sparkData, sparkColor }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.15em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>{label}</div>
         {sub && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: subBg, color: subColor, fontSize: 11, fontWeight: 700 }}>
+          <div title={subTooltip} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: subBg, color: subColor, fontSize: 11, fontWeight: 700, cursor: subTooltip ? 'help' : 'default' }}>
             {subTone === 'danger' && <Icons.TrendDown />}
             {subTone === 'success' && <Icons.Check />}
             {sub}
@@ -97,6 +97,12 @@ function SetorBento({ C, eficiencia, eficienciaLoading }) {
   const efSub = !eficienciaLoading && eficiencia && !eficiencia.sem_dados && eficiencia.variacao !== null
     ? { text: `${eficiencia.variacao >= 0 ? '+' : ''}${eficiencia.variacao}%`, tone: eficiencia.variacao >= 0 ? 'success' : 'danger' }
     : null;
+  const efSubTooltip = efSub
+    ? 'Variação calculada pela taxa diária de OS no prazo (mês atual vs mês anterior).'
+    : null;
+  const efSparkData = eficiencia?.historico_semanal?.length
+    ? eficiencia.historico_semanal.map(s => s.eficiencia ?? 0)
+    : (eficiencia?.eficiencia_atual != null ? Array(8).fill(eficiencia.eficiencia_atual) : []);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 14, height: '100%' }}>
@@ -106,7 +112,8 @@ function SetorBento({ C, eficiencia, eficienciaLoading }) {
         value={efVal}
         sub={efSub?.text}
         subTone={efSub?.tone}
-        sparkData={[72, 68, 75, 80, 78, 82, 85, eficiencia?.eficiencia_atual || 80]}
+        subTooltip={efSubTooltip}
+        sparkData={efSparkData}
         sparkColor={C.success}
       />
       <KpiCard
