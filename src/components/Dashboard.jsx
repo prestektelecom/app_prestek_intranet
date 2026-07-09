@@ -220,7 +220,7 @@ function ComunicadosCard({ C, setCurrentView }) {
     fetch('/api/comunicados')
       .then(r => r.json())
       .then(d => {
-        if (d.sucesso) setComunicados(d.comunicados.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)).slice(0, 4));
+        if (d.sucesso) setComunicados(d.comunicados.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)));
       })
       .catch(() => { })
       .finally(() => setLoading(false));
@@ -262,6 +262,17 @@ function ComunicadosCard({ C, setCurrentView }) {
     } catch (_) { return ''; }
   }
 
+  // Remove formatação WhatsApp/Markdown do preview do card bento
+  function stripMarkdown(text) {
+    if (!text) return '';
+    return text
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/_(.*?)_/g, '$1')
+      .replace(/[🔹🔸→←•➡️]/gu, '')
+      .replace(/\n+/g, ' ')
+      .trim();
+  }
+
   return (
     <div className="bento-hover-border" style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 24, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
@@ -273,31 +284,87 @@ function ComunicadosCard({ C, setCurrentView }) {
           Ver todos <Icons.ArrowR />
         </button>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {loading ? [1, 2, 3].map(i => <div key={i} style={{ height: 56, borderRadius: 12, background: C.surfaceSoft }} />) :
-          comunicados.length === 0 ? <div style={{ padding: '24px 0', textAlign: 'center', color: C.muted, fontSize: 13 }}>Nenhum comunicado recente.</div> :
-            comunicados.map((it, i) => {
-              const tag = tagStyle(it.tipo);
-              return (
-                <div key={it.id || i}
-                  onClick={() => setCurrentView('announcements')}
-                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 12px 14px 9px', borderRadius: 12, cursor: 'pointer', transition: 'background .12s', borderLeft: `3px solid ${tag.color}` }}
-                  onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: '0.12em', fontWeight: 700, padding: '4px 8px', borderRadius: 6, background: tag.bg, color: tag.color, flexShrink: 0 }}>{tag.label}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.titulo}</div>
-                    <div style={{ fontSize: 12, color: C.ink2, marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', whiteSpace: 'normal' }}>{it.descricao}</div>
+      {/* Wrapper relativo para o fade gradient funcionar */}
+      <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+        <div
+          className="custom-scrollbar"
+          style={{ display: 'flex', flexDirection: 'column', gap: 8, height: '100%', overflowY: 'auto', paddingRight: 2 }}
+        >
+          {loading ? [1, 2, 3].map(i => (
+            <div key={i} style={{ height: 72, borderRadius: 12, background: C.surfaceSoft, animation: 'pulse 1.5s ease-in-out infinite', flexShrink: 0 }} />
+          )) :
+            comunicados.length === 0 ? <div style={{ padding: '24px 0', textAlign: 'center', color: C.muted, fontSize: 13 }}>Nenhum comunicado recente.</div> :
+              comunicados.map((it, i) => {
+                const tag = tagStyle(it.tipo);
+                const preview = stripMarkdown(it.descricao);
+                return (
+                  <div key={it.id || i}
+                    onClick={() => setCurrentView('announcements')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'stretch',
+                      borderRadius: 12,
+                      cursor: 'pointer',
+                      transition: 'background .12s',
+                      borderLeft: `3px solid ${tag.color}`,
+                      minHeight: 72,
+                      maxHeight: 72,
+                      overflow: 'hidden',
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    {/* Conteúdo principal */}
+                    <div style={{ flex: 1, minWidth: 0, padding: '10px 12px 10px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+                      {/* Linha 1: badge + título */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, overflow: 'hidden' }}>
+                        <span style={{
+                          fontFamily: '"JetBrains Mono", monospace', fontSize: 9, letterSpacing: '0.10em',
+                          fontWeight: 700, padding: '2px 6px', borderRadius: 5,
+                          background: tag.bg, color: tag.color, flexShrink: 0, lineHeight: 1.6,
+                        }}>{tag.label}</span>
+                        <span style={{
+                          fontSize: 13.5, fontWeight: 600, color: C.ink,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>{it.titulo}</span>
+                      </div>
+                      {/* Linha 2: preview limpo */}
+                      <div style={{
+                        fontSize: 12, color: C.ink2,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>{preview}</div>
+                    </div>
+
+                    {/* Coluna direita: tempo + autor */}
+                    <div style={{
+                      flexShrink: 0, maxWidth: 88, padding: '10px 12px 10px 0',
+                      display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+                      justifyContent: 'center', gap: 3,
+                    }}>
+                      <div title={formatFullDate(it.criado_em)} style={{
+                        fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5,
+                        color: C.muted, cursor: 'help', whiteSpace: 'nowrap',
+                      }}>{relativeTime(it.criado_em)}</div>
+                      <div style={{
+                        fontSize: 11, color: C.ink2,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        maxWidth: 88, textAlign: 'right',
+                      }}>{it.departamento_autor || ''}</div>
+                    </div>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div title={formatFullDate(it.criado_em)} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, color: C.muted, cursor: 'help' }}>{relativeTime(it.criado_em)}</div>
-                    <div style={{ fontSize: 11.5, color: C.ink2, marginTop: 2 }}>{it.departamento_autor || ''}</div>
-                  </div>
-                </div>
-              );
-            })
-        }
+                );
+              })
+          }
+        </div>
+        {/* Fade gradient — indica que há mais conteúdo abaixo */}
+        {comunicados.length > 3 && (
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
+            background: `linear-gradient(to bottom, transparent, ${C.surface})`,
+            pointerEvents: 'none',
+          }} />
+        )}
       </div>
     </div>
   );
