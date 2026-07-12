@@ -163,24 +163,10 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
         fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
       }}
     >
-      {/* Mobile menu button */}
-      {onMenuClick && (
-        <button
-          onClick={onMenuClick}
-          className="lg:hidden flex items-center justify-center w-10 h-10 rounded-[10px] shrink-0"
-          style={{ ...iconBtn(C) }}
-          aria-label="Abrir menu"
-        >
-          <span style={{ color: C.ink2, display: 'flex' }}><Icons.More /></span>
-        </button>
-      )}
-
-      {/* Spacer para centralizar a busca quando o menu estiver oculto (Dashboard) */}
-      {currentView === 'dashboard' && <div className="hidden lg:block flex-1" />}
 
       {/* Search box */}
       <div className={`
-        flex items-center gap-2 sm:gap-[10px] h-[42px] px-3 sm:px-[14px] rounded-xl shrink-0
+        lg:hidden flex items-center gap-2 sm:gap-[10px] h-[42px] px-3 sm:px-[14px] rounded-xl shrink-0
         ${currentView === 'dashboard' ? 'flex-1 max-w-[540px]' : 'w-full max-w-[540px] sm:flex-1'}
       `}
         style={{
@@ -316,55 +302,6 @@ export default function Header({ currentView, setCurrentView, user, searchQuery,
           )}
         </div>
 
-        {/* Admin */}
-        {user?.is_admin && (
-          <button onClick={() => setCurrentView('admin')} title="Painel Administrativo" style={iconBtn(C)}>
-            <span style={{ color: C.accent, display: 'flex' }}><Icons.Admin /></span>
-          </button>
-        )}
-
-        {/* Logout */}
-        <button
-          onClick={async () => {
-            if (user?.id) {
-              try { await fetch(`/api/presenca/${user.id}/logout`, { method: 'POST' }); } catch (_) {}
-            }
-            localStorage.removeItem('@Stitch:user');
-            localStorage.removeItem('@Stitch:currentView');
-            sessionStorage.removeItem('@Stitch:user');
-            sessionStorage.removeItem('@Stitch:currentView');
-            setCurrentView('login');
-          }}
-          title="Sair da Conta"
-          style={iconBtn(C)}
-        >
-          <span style={{ color: C.ink2, display: 'flex' }}><Icons.Logout /></span>
-        </button>
-
-        {/* Profile pill */}
-        <div
-          onClick={() => setCurrentView('settings')}
-          className="hidden sm:flex items-center gap-2.5 ml-1 pr-3.5 pl-[5px] rounded-full cursor-pointer shrink-0"
-          style={{
-            background: C.surface, border: `1px solid ${C.line}`,
-            boxShadow: `0 1px 2px ${C.accentDeep}0A`,
-          }}
-        >
-          <img
-            src={avatarUrl || defaultAvatar}
-            alt={safeName}
-            className="w-[34px] h-[34px] rounded-full object-cover shrink-0"
-            style={{ background: C.surfaceSoft }}
-          />
-          <div className="hidden lg:flex flex-col leading-tight">
-            <span className="text-xs font-bold tracking-wide truncate" style={{ color: C.ink, maxWidth: 180 }}>
-              {displayName.toUpperCase()}
-            </span>
-            <span className="font-mono text-[9.5px] tracking-[0.15em] mt-0.5 truncate uppercase" style={{ color: C.muted, maxWidth: 180 }}>
-              {cargoName}
-            </span>
-          </div>
-        </div>
       </div>
 
       <style>{`

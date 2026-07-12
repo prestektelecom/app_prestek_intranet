@@ -151,7 +151,7 @@ export default function App() {
 
     return (
         <div className="bg-background text-foreground font-jakarta h-screen h-dvh flex transition-colors duration-200">
-            <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+            <Sidebar currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             <div className="flex flex-1 flex-col overflow-hidden">
                 <Header currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onMenuClick={() => setIsMobileDrawerOpen(true)} />
                 <div className="flex-1 flex overflow-hidden pb-[64px] lg:pb-0">
