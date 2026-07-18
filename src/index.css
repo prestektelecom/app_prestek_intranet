@@ -4,6 +4,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animação de shake para o sino de notificações */
+@keyframes bell-shake {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(-15deg); }
+  40% { transform: rotate(15deg); }
+  60% { transform: rotate(-10deg); }
+  80% { transform: rotate(10deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.bell-shake-hover:hover {
+  animation: bell-shake 0.5s ease-in-out;
+}
+
+.notification-item {
+  transition: opacity 0.2s ease;
+}
+
 /* ═══════════════════════════════════════════════════════════
    Sistema de Design Semântico — Prestek Intranet
    Design System Bento Blue

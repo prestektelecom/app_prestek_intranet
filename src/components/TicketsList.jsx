@@ -10,6 +10,72 @@ function tone(hex, a) {
   return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
 }
 
+function truncateText(texto, maxLength = 150) {
+  if (!texto || typeof texto !== 'string') return '';
+  const trimmed = texto.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  return trimmed.slice(0, maxLength - 3) + '...';
+}
+
+function parseTicketMessage(texto) {
+  if (!texto || typeof texto !== 'string') return '';
+
+  // Normalizar quebras de linha e espaços excessivos
+  const normalized = texto
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  // Extrair conteúdo entre o primeiro e segundo delimitador de = (3 ou mais)
+  const match = normalized.match(/={3,}\s*([\s\S]*?)\s*={3,}/);
+
+  if (match) {
+    const content = match[1];
+    const lines = content.split('\n')
+      .map((line) => {
+        // Remover labels de seção em maiúsculas no início da linha (ex: "DESCREVA A SITUAÇÃO: ")
+        return line.replace(/^[A-ZÀ-Ú0-9\s/()-]+:\s*/i, '').trim();
+      })
+      .filter((line) => {
+        if (!line) return false;
+        // Remover metadados de solicitante
+        if (line.toLowerCase().startsWith('solicitante:')) return false;
+        if (line.toLowerCase().startsWith('solicitação:')) return false;
+        if (line.toLowerCase().startsWith('observação:')) return false;
+        if (line.toLowerCase().startsWith('obs:')) return false;
+        return true;
+      });
+
+    const clean = lines.join(' ').trim();
+    return truncateText(clean, 150);
+  }
+
+  // Fallback: mensagem sem delimitadores de template
+  return truncateText(normalized, 150);
+}
+
+function formatTicketDate(row) {
+  // Campo de data de abertura/cadastro identificado na API IXC
+  if (row.data_criacao) {
+    const date = new Date(row.data_criacao);
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleDateString('pt-BR');
+    }
+  }
+
+  // Fallback: extrair data do protocolo quando no formato YYYYMMDD...
+  if (row.protocolo && /^\d{8}/.test(row.protocolo)) {
+    const p = row.protocolo;
+    const y = p.slice(0, 4);
+    const m = p.slice(4, 6);
+    const d = p.slice(6, 8);
+    return `${d}/${m}/${y}`;
+  }
+
+  return '—';
+}
+
 function TicketsHero({ total, abertos, finalizados, pendentes }) {
   const C = useBentoTheme();
   const kpis = [
@@ -190,15 +256,16 @@ export default function TicketsList({ user }) {
               <ResponsiveTable
                 columns={[
                   { key: 'id', header: 'ID', render: (v) => <span className="font-black text-[#4A9EF5]">#{v}</span> },
-                  { key: 'protocolo', header: 'Protocolo', render: (v) => v || <span className="text-[#8896A8] italic">Aguardando...</span> },
-                  { key: 'titulo', header: 'Assunto / Mensagem', fullWidth: true, render: (v, row) => (
-                    <div>
-                      <div className="font-bold truncate">{v || 'Suporte de TI'}</div>
-                      <div className="text-[#475467] text-xs line-clamp-1">{row.menssagem}</div>
-                    </div>
+                  { key: 'titulo', header: 'Assunto', fullWidth: true, render: (v) => (
+                    <span className="font-bold truncate">{v || 'Suporte de TI'}</span>
+                  )},
+                  { key: 'menssagem', header: 'Mensagem', fullWidth: true, render: (v) => (
+                    <span className="text-[#475467] text-xs line-clamp-2">{parseTicketMessage(v)}</span>
                   )},
                   { key: 'status', header: 'Status', render: (v) => <StatusBadge status={v} /> },
-                  { key: 'data_cadastro', header: 'Data', render: (v) => v ? new Date(v).toLocaleDateString('pt-BR') : '--/--/--' },
+                  { key: 'data_criacao', header: 'Data', render: (_v, row) => (
+                    <span className="text-[#475467] text-sm whitespace-nowrap">{formatTicketDate(row)}</span>
+                  )},
                 ]}
                 rows={tickets}
                 keyExtractor={(row) => row.id}
