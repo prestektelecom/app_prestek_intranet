@@ -13,6 +13,12 @@ function tone(hex, a) {
     return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
 }
 
+const RANKING_TABS = [
+    { icon: 'workspace_premium', label: 'Planos' },
+    { icon: 'group', label: 'Colaboradoras' },
+    { icon: 'request_quote', label: 'Ticket Médio' },
+];
+
 export default function ServicesDirectory({ setCurrentView, user, searchQuery }) {
     const C = useBentoTheme();
     const isAdmin = user?.is_admin;
@@ -69,10 +75,6 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
     const [activeSlide, setActiveSlide] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
 
-    // Confetti and Gamification State
-    const [confettiLoaded, setConfettiLoaded] = useState(false);
-    const confettiLoadingRef = useRef(false);
-
     useEffect(() => {
         fetchPlans();
         fetchServicosTecnicos();
@@ -90,12 +92,6 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
         return () => clearInterval(interval);
     }, [isHovered]);
 
-    useEffect(() => {
-        if (activeSlide === 1 || activeSlide === 2) {
-            triggerConfetti();
-        }
-    }, [activeSlide]);
-
     const getDeterministicAvatar = (vendor) => {
         if (!vendor) return null;
         const name = vendor.nome || '';
@@ -109,54 +105,6 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
         } else {
             const idx = id % 32;
             return AVATAR_PNGS[idx];
-        }
-    };
-
-    const triggerConfetti = () => {
-        if (window.confetti) {
-            runConfettiEffects();
-        } else {
-            if (confettiLoadingRef.current) return;
-            confettiLoadingRef.current = true;
-            
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
-            script.async = true;
-            script.onload = () => {
-                setConfettiLoaded(true);
-                confettiLoadingRef.current = false;
-                runConfettiEffects();
-            };
-            script.onerror = () => {
-                console.error("Erro ao carregar script de confetes via CDN");
-                confettiLoadingRef.current = false;
-            };
-            document.body.appendChild(script);
-        }
-    };
-
-    const runConfettiEffects = () => {
-        if (!window.confetti) return;
-        try {
-            const duration = 2.5 * 1000;
-            const animationEnd = Date.now() + duration;
-            const defaults = { startVelocity: 25, spread: 360, ticks: 50, zIndex: 1000 };
-
-            const randomInRange = (min, max) => Math.random() * (max - min) + min;
-
-            const interval = setInterval(() => {
-                const timeLeft = animationEnd - Date.now();
-
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-
-                const particleCount = 40 * (timeLeft / duration);
-                window.confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-                window.confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-            }, 250);
-        } catch (error) {
-            console.error("Erro ao disparar confetes:", error);
         }
     };
 
@@ -745,17 +693,38 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
 
                 {filter !== 'Technical' && filter !== 'Streaming' && (
                 <div 
-                    className="mt-8 relative overflow-hidden"
+                    className="mt-8"
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
-                    {/* Carousel Navigation */}
-                    <div className="absolute top-2 sm:top-1 right-2 z-10 flex gap-2">
-                        <button onClick={() => setActiveSlide(0)} className={`w-2.5 h-2.5 rounded-full transition-colors cursor-pointer ${activeSlide === 0 ? 'bg-[#4A9EF5]' : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 hover:dark:bg-slate-500'}`}></button>
-                        <button onClick={() => setActiveSlide(1)} className={`w-2.5 h-2.5 rounded-full transition-colors cursor-pointer ${activeSlide === 1 ? 'bg-[#4A9EF5]' : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 hover:dark:bg-slate-500'}`}></button>
-                        <button onClick={() => setActiveSlide(2)} className={`w-2.5 h-2.5 rounded-full transition-colors cursor-pointer ${activeSlide === 2 ? 'bg-[#4A9EF5]' : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 hover:dark:bg-slate-500'}`}></button>
+                    {/* Section Header + Tab Navigation */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                        <div>
+                            <h2 className="flex items-center gap-2 text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                                <span className="material-symbols-outlined text-[#4A9EF5]">emoji_events</span>
+                                Rankings do Mês
+                            </h2>
+                            <p className="mt-0.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Destaques de vendas da equipe — atualizado automaticamente</p>
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto">
+                            {RANKING_TABS.map((tab, idx) => (
+                                <button
+                                    key={tab.label}
+                                    onClick={() => setActiveSlide(idx)}
+                                    className={`inline-flex items-center gap-1.5 rounded-full px-3 sm:px-4 min-h-[44px] text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer shrink-0 whitespace-nowrap ${
+                                        activeSlide === idx
+                                        ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)] scale-[1.02]'
+                                        : 'bg-[#EAF4FF] text-[#1F5BA8] dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8] hover:bg-[#D6E9FF] dark:hover:bg-[#1F5BA8]/30'
+                                    }`}
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
+                    <div className="relative overflow-hidden">
                     <div 
                         className="flex transition-transform duration-700 ease-in-out"
                         style={{ transform: `translateX(-${activeSlide * 100}%)` }}
@@ -1065,6 +1034,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                         </div>
                     </div>
 
+                    </div>
                     </div>
                 </div>
                 )}

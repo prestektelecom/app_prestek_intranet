@@ -630,6 +630,7 @@ app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
         return res.set('Cache-Control', 'no-store').json({ 
             sucesso: true, 
             quantidade: abertas, 
+            total_registros: registros.length,
             statusCount,
             cacheStatus: 'MISS'
         });
