@@ -33,13 +33,6 @@ async function fetchIXC(url, options = {}, timeoutMs = 15000) {
     }
 }
 
-// Cache legado para OS abertas (mantido por compatibilidade — migração incremental)
-let cacheOS = {
-    dados: null,
-    timestamp: 0,
-    promise: null
-};
-
 const app = express()
 const PORT = process.env.PORT || 3001
 
@@ -587,7 +580,9 @@ app.get('/api/filiais', async (req, res) => {
     }
 });
 
-// ─── Rota: Listar Quantidade de OS do Funcionário (Busca Global c/ Cache) ──
+// ─── Rota: Listar Quantidade de OS do Funcionário ────────────────────────────
+// Alinhada com /api/ixc/su-ticket/list: consulta su_oss_chamado filtrando por
+// id_tecnico e retorna quantidade de OS abertas + breakdown por status.
 app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
     const { funcionarioId } = req.params;
     
@@ -605,87 +600,38 @@ app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
     };
 
     try {
-        // 1. Resolver o ID de Técnico do IXC
-        let ixcTecnicoId = funcionarioId;
-        const pRes = await pool.query('SELECT usuario_email, funcionario_id FROM usuarios_perfil WHERE funcionario_id = $1 OR usuario_id = $1 LIMIT 1', [funcionarioId]);
-        
-        if (pRes.rows.length > 0) {
-            const email = pRes.rows[0].usuario_email;
-            if (email) {
-               const rUser = await fetch(`https://${host}/webservice/v1/usuarios`, {
-                   method: 'POST',
-                   headers: headers,
-                   body: JSON.stringify({ qtype: 'usuarios.email', query: email, oper: '=', page: '1', rp: '1' })
-               });
-               const dUser = await rUser.json();
-               if (dUser.total > 0 && dUser.registros[0].funcionario) {
-                   ixcTecnicoId = dUser.registros[0].funcionario; 
-               } else if (pRes.rows[0].funcionario_id) {
-                   ixcTecnicoId = pRes.rows[0].funcionario_id;
-               }
-            } else if (pRes.rows[0].funcionario_id) {
-               ixcTecnicoId = pRes.rows[0].funcionario_id;
-            }
-        }
+        const body = JSON.stringify({
+            qtype: 'su_oss_chamado.id_tecnico',
+            query: funcionarioId,
+            oper: '=',
+            page: '1',
+            rp: '1000',
+            sortname: 'su_oss_chamado.id',
+            sortorder: 'desc'
+        });
 
-        // 2. Verificar Cache Global (1 minuto)
-        let cacheStatus = 'HIT';
-        const agora = Date.now();
-        if (!cacheOS.dados || (agora - cacheOS.timestamp > 60000)) {
-            cacheStatus = 'MISS';
-            if (!cacheOS.promise) {
-                console.log("-> Cache expirado ou vazio em /api/os-chamados. Buscando OS abertas no IXC...");
-                cacheOS.promise = (async () => {
-                    try {
-                        const statusAtivos = ['A', 'AG', 'AS', 'EN', 'AN', 'EX'];
-                        const promises = statusAtivos.map(async (status) => {
-                            const body = JSON.stringify({
-                                qtype: 'su_oss_chamado.status',
-                                query: status,
-                                oper: '=',
-                                page: '1',
-                                rp: '10000'
-                            });
-                            try {
-                                const resp = await fetch(url, { method: 'POST', headers, body });
-                                const json = await resp.json();
-                                return json.registros || [];
-                            } catch (err) {
-                                return [];
-                            }
-                        });
-                        const resultados = await Promise.all(promises);
-                        cacheOS.dados = resultados.flat();
-                        cacheOS.timestamp = Date.now();
-                        console.log(`-> Cache atualizado. Total de OS abertas na empresa: ${cacheOS.dados.length}`);
-                    } catch (error) {
-                        console.error('-> Erro ao atualizar cache de OS:', error.message);
-                    } finally {
-                        cacheOS.promise = null; // Libera independente de sucesso ou falha
-                    }
-                })();
-            }
-            // Aguarda a promessa que está em andamento (seja a recém-criada ou de uma req concorrente)
-            await cacheOS.promise;
-        }
-
-        // 3. Filtrar localmente e contar
-        const dadosAFiltrar = cacheOS.dados || [];
-        const registrosDoTecnico = dadosAFiltrar.filter(os => String(os.id_tecnico) === String(ixcTecnicoId));
-        console.log(`-> Usuario ${funcionarioId} (Tecnico ${ixcTecnicoId}): ${registrosDoTecnico.length} OS encontrada.`);
+        const resposta = await fetch(url, { method: 'POST', headers, body });
+        const dados = await resposta.json();
+        const registros = dados.registros || [];
 
         const statusCount = { A: 0, AG: 0, AS: 0, EN: 0, AN: 0, EX: 0, OUTROS: 0 };
-        registrosDoTecnico.forEach(os => {
+        const openStatuses = ['A', 'AG', 'AS', 'EN', 'AN', 'EX'];
+        let abertas = 0;
+
+        registros.forEach(os => {
             const s = String(os.status).toUpperCase();
             if (statusCount[s] !== undefined) statusCount[s]++;
             else statusCount['OUTROS']++;
+            if (openStatuses.includes(s)) abertas++;
         });
-        
-        return res.json({ 
+
+        console.log(`-> /api/os-chamados/${funcionarioId}: ${abertas} OS abertas de ${registros.length} total.`);
+
+        return res.set('Cache-Control', 'no-store').json({ 
             sucesso: true, 
-            quantidade: registrosDoTecnico.length, 
+            quantidade: abertas, 
             statusCount,
-            cacheStatus
+            cacheStatus: 'MISS'
         });
 
     } catch (e) {
@@ -2141,21 +2087,21 @@ app.post('/api/ixc/su-ticket/list', async (req, res) => {
     };
 
     const body = JSON.stringify({
-        qtype: 'su_ticket.id_responsavel_tecnico',
+        qtype: 'su_oss_chamado.id_tecnico',
         query: colaborador_id || '0',
         oper: '=',
         page: '1',
-        rp: '100',
-        sortname: 'su_ticket.id',
+        rp: '1000',
+        sortname: 'su_oss_chamado.id',
         sortorder: 'desc'
     });
 
     try {
-        const url = `https://${host}/webservice/v1/su_ticket`;
+        const url = `https://${host}/webservice/v1/su_oss_chamado`;
         const resposta = await fetch(url, { method: 'POST', headers, body });
         const dados = await resposta.json();
 
-        return res.json({ 
+        return res.set('Cache-Control', 'no-store').json({ 
             sucesso: true, 
             tickets: dados.registros || [] 
         });

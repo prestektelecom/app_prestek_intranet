@@ -1,0 +1,7 @@
+schema: spec-driven
+status: draft
+created: 2026-07-19
+title: Teste CLI OpenSpec
+description: Change de teste para validar o CLI
+specs:
+  - teste-parser

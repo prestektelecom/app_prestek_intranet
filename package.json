@@ -8,7 +8,11 @@
     "dev:backend": "cd backend && npm run dev",
     "dev": "node scripts/dev-start.mjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "openspec": "node scripts/openspec-cli.mjs",
+    "openspec:new": "node scripts/openspec-cli.mjs new",
+    "openspec:archive": "node scripts/openspec-cli.mjs archive",
+    "openspec:list": "node scripts/openspec-cli.mjs list"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

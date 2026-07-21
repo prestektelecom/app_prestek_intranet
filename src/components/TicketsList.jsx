@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 import ResponsiveTable from './responsive/ResponsiveTable';
+import FilterBar from './responsive/FilterBar';
 
 // Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Escala/Escritórios/Processos)
 
@@ -56,9 +57,9 @@ function parseTicketMessage(texto) {
 }
 
 function formatTicketDate(row) {
-  // Campo de data de abertura/cadastro identificado na API IXC
-  if (row.data_criacao) {
-    const date = new Date(row.data_criacao);
+  // Campo de data de agendamento da OS
+  if (row.data_agenda) {
+    const date = new Date(row.data_agenda);
     if (!isNaN(date.getTime())) {
       return date.toLocaleDateString('pt-BR');
     }
@@ -75,6 +76,24 @@ function formatTicketDate(row) {
 
   return '—';
 }
+
+const OPEN_STATUSES = ['AG', 'A', 'AS', 'EN', 'AN', 'EX'];
+
+function getStatusCategory(status) {
+  const s = String(status).toUpperCase();
+  if (s === 'F') return 'finalizado';
+  if (s === 'C') return 'cancelado';
+  if (OPEN_STATUSES.includes(s)) return 'aberto';
+  return 'pendente';
+}
+
+const STATUS_FILTERS = [
+  { key: 'aberto', label: 'Abertos' },
+  { key: 'finalizado', label: 'Finalizados' },
+  { key: 'cancelado', label: 'Cancelados' },
+  { key: 'pendente', label: 'Pendentes' },
+  { key: 'todos', label: 'Todos' },
+];
 
 function TicketsHero({ total, abertos, finalizados, pendentes }) {
   const C = useBentoTheme();
@@ -114,7 +133,7 @@ function TicketsHero({ total, abertos, finalizados, pendentes }) {
           fontSize: 11.5, fontWeight: 600, fontFamily: '"JetBrains Mono", monospace',
           letterSpacing: '0.12em', textTransform: 'uppercase',
         }}>
-          <span style={{ width: 6, height: 6, borderRadius: 3, background: '#7FD8B8' }} />
+          <span style={{ width: 6, height: 6, borderRadius: 3, background: C.success }} />
           Suporte Técnico
         </div>
         <h1 style={{ margin: '14px 0 6px', fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08 }}>
@@ -152,9 +171,11 @@ function TicketsHero({ total, abertos, finalizados, pendentes }) {
 
 function StatusBadge({ status }) {
   const C = useBentoTheme();
+  const category = getStatusCategory(status);
   const config =
-    status === 'F' ? { label: 'Finalizado', bg: C.successSoft, text: C.success } :
-    status === 'T' ? { label: 'Aberto', bg: C.accentSoft, text: C.accentDeep } :
+    category === 'finalizado' ? { label: 'Finalizado', bg: C.successSoft, text: C.success } :
+    category === 'cancelado' ? { label: 'Cancelado', bg: C.dangerSoft, text: C.danger } :
+    category === 'aberto' ? { label: 'Aberto', bg: C.accentSoft, text: C.accentDeep } :
     { label: 'Pendente', bg: C.warningSoft, text: C.warning };
 
   return (
@@ -172,6 +193,7 @@ export default function TicketsList({ user }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('aberto');
 
   const fetchTickets = async () => {
     setLoading(true);
@@ -205,10 +227,18 @@ export default function TicketsList({ user }) {
 
   const { total, abertos, finalizados, pendentes } = useMemo(() => ({
     total: tickets.length,
-    abertos: tickets.filter(t => t.status === 'T').length,
-    finalizados: tickets.filter(t => t.status === 'F').length,
-    pendentes: tickets.filter(t => t.status !== 'T' && t.status !== 'F').length,
+    abertos: tickets.filter(t => getStatusCategory(t.status) === 'aberto').length,
+    finalizados: tickets.filter(t => getStatusCategory(t.status) === 'finalizado').length,
+    pendentes: tickets.filter(t => {
+      const cat = getStatusCategory(t.status);
+      return cat !== 'aberto' && cat !== 'finalizado';
+    }).length,
   }), [tickets]);
+
+  const filteredTickets = useMemo(() => {
+    if (activeFilter === 'todos') return tickets;
+    return tickets.filter(t => getStatusCategory(t.status) === activeFilter);
+  }, [tickets, activeFilter]);
 
   return (
     <main
@@ -223,55 +253,114 @@ export default function TicketsList({ user }) {
           pendentes={pendentes}
         />
 
-        <div className="bg-white border border-[#E4ECF5] rounded-[20px] overflow-hidden shadow-sm flex-1 flex flex-col">
+        <div
+          className="rounded-[20px] overflow-hidden shadow-sm flex-1 flex flex-col"
+          style={{ backgroundColor: C.surface, border: `1px solid ${C.line}` }}
+        >
           {loading ? (
             <div className="flex flex-col items-center justify-center p-20 gap-4">
-              <span className="w-10 h-10 border-4 border-[#EAF4FF] border-t-[#4A9EF5] rounded-full animate-spin" />
-              <p className="text-[#475467] font-bold animate-pulse">Buscando chamados no IXC...</p>
+              <span
+                className="w-10 h-10 border-4 rounded-full animate-spin"
+                style={{ borderColor: C.accentSoft, borderTopColor: C.accent }}
+              />
+              <p className="font-bold animate-pulse" style={{ color: C.ink2 }}>
+                Buscando chamados no IXC...
+              </p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center p-20 gap-4 text-center">
-              <span className="material-symbols-outlined text-6xl text-[#E84545]">error</span>
+              <span className="material-symbols-outlined text-6xl" style={{ color: C.danger }}>error</span>
               <div className="space-y-1">
-                <p className="text-[#0B1B2E] font-black text-lg">Ops! Algo deu errado.</p>
-                <p className="text-[#475467]">{error}</p>
+                <p className="font-black text-lg" style={{ color: C.ink }}>Ops! Algo deu errado.</p>
+                <p style={{ color: C.ink2 }}>{error}</p>
               </div>
               <button
                 onClick={fetchTickets}
-                className="mt-2 px-6 py-2 text-sm font-bold bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#4A9EF5]/30 transition-all"
+                className="mt-2 px-6 py-2 text-sm font-bold hover:brightness-110 text-white rounded-lg transition-all"
+                style={{
+                  background: `linear-gradient(to right, ${C.accentDeep}, ${C.accent})`,
+                  boxShadow: `0 4px 12px ${tone(C.accent, 0.3)}`,
+                }}
               >
                 Tentar Novamente
               </button>
             </div>
           ) : tickets.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-20 gap-4 text-center">
-              <span className="material-symbols-outlined text-6xl text-[#8896A8]">confirmation_number</span>
+              <span className="material-symbols-outlined text-6xl" style={{ color: C.muted }}>confirmation_number</span>
               <div className="space-y-1">
-                <p className="text-[#0B1B2E] font-black text-lg">Nenhum chamado encontrado.</p>
-                <p className="text-[#475467]">Você ainda não abriu nenhum ticket de suporte.</p>
+                <p className="font-black text-lg" style={{ color: C.ink }}>Nenhum chamado encontrado.</p>
+                <p style={{ color: C.ink2 }}>Você ainda não abriu nenhum ticket de suporte.</p>
               </div>
             </div>
           ) : (
-            <div className="p-2 md:p-4">
-              <ResponsiveTable
-                columns={[
-                  { key: 'id', header: 'ID', render: (v) => <span className="font-black text-[#4A9EF5]">#{v}</span> },
-                  { key: 'titulo', header: 'Assunto', fullWidth: true, render: (v) => (
-                    <span className="font-bold truncate">{v || 'Suporte de TI'}</span>
-                  )},
-                  { key: 'menssagem', header: 'Mensagem', fullWidth: true, render: (v) => (
-                    <span className="text-[#475467] text-xs line-clamp-2">{parseTicketMessage(v)}</span>
-                  )},
-                  { key: 'status', header: 'Status', render: (v) => <StatusBadge status={v} /> },
-                  { key: 'data_criacao', header: 'Data', render: (_v, row) => (
-                    <span className="text-[#475467] text-sm whitespace-nowrap">{formatTicketDate(row)}</span>
-                  )},
-                ]}
-                rows={tickets}
-                keyExtractor={(row) => row.id}
-                cardTitle={(row) => row.titulo || 'Suporte de TI'}
-              />
-            </div>
+            <>
+              <div className="px-4 py-3 md:px-6 md:py-4 border-b" style={{ borderColor: C.line }}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h2 className="font-bold text-lg" style={{ color: C.ink }}>Chamados</h2>
+                  <FilterBar
+                    activeFilters={activeFilter === 'todos' ? [] : [STATUS_FILTERS.find(f => f.key === activeFilter)?.label]}
+                    onClear={() => setActiveFilter('todos')}
+                  >
+                    {STATUS_FILTERS.map(filter => {
+                      const isActive = activeFilter === filter.key;
+                      return (
+                        <button
+                          key={filter.key}
+                          onClick={() => setActiveFilter(filter.key)}
+                          className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                          style={{
+                            background: isActive ? C.accent : C.surfaceSoft,
+                            color: isActive ? C.surface : C.ink2,
+                            border: `1px solid ${isActive ? C.accent : C.line}`,
+                          }}
+                        >
+                          {filter.label}
+                        </button>
+                      );
+                    })}
+                  </FilterBar>
+                </div>
+              </div>
+
+              {filteredTickets.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-16 gap-4 text-center">
+                  <span className="material-symbols-outlined text-5xl" style={{ color: C.muted }}>filter_list</span>
+                  <div className="space-y-1">
+                    <p className="font-black text-lg" style={{ color: C.ink }}>Nenhum chamado neste filtro.</p>
+                    <p style={{ color: C.ink2 }}>Tente outro status ou visualize todos.</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveFilter('todos')}
+                    className="px-4 py-2 text-sm font-bold rounded-lg transition-all"
+                    style={{
+                      background: C.accentSoft,
+                      color: C.accentDeep,
+                    }}
+                  >
+                    Ver todos
+                  </button>
+                </div>
+              ) : (
+                <div className="p-2 md:p-4">
+                  <ResponsiveTable
+                    columns={[
+                      { key: 'id', header: 'ID', render: (v, row) => <span className="font-black" style={{ color: C.accent }}>#{v || row.id}</span> },
+                      { key: 'mensagem', header: 'Assunto', fullWidth: true, render: (v) => (
+                        <span className="font-bold text-xs line-clamp-2" style={{ color: C.ink2 }}>{parseTicketMessage(v) || 'Suporte de TI'}</span>
+                      )},
+                      { key: 'status', header: 'Status', render: (v) => <StatusBadge status={v} /> },
+                      { key: 'data_agenda', header: 'Data', render: (_v, row) => (
+                        <span className="text-sm whitespace-nowrap" style={{ color: C.ink2 }}>{formatTicketDate(row)}</span>
+                      )},
+                    ]}
+                    rows={filteredTickets}
+                    keyExtractor={(row) => row.id}
+                    cardTitle={(row) => parseTicketMessage(row.mensagem) || 'Suporte de TI'}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
