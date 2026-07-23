@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import { resolveNomeSetor } from '../utils/resolveSetor'
 import Sparkline from './common/Sparkline'
@@ -13,6 +13,35 @@ const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.
 const CARD_TITLE = 'text-[17px] font-bold tracking-tight text-foreground'
 const CARD = 'bento-hover-border flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-sm'
 const ACTION_BTN = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
+
+const HERO_SLIDE_INTERVAL = 8000;
+const HERO_MAX_PX = 1280;
+const HERO_JPEG_QUALITY = 0.82;
+
+// Redimensiona a imagem no browser (máx. HERO_MAX_PX na maior dimensão) e
+// retorna um data URL JPEG base64 — protege o limite de ~5 MB do localStorage.
+function resizeImageToDataUrl(file, maxPx = HERO_MAX_PX, quality = HERO_JPEG_QUALITY) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Imagem inválida'));
+      img.onload = () => {
+        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
   const toneClasses = {
@@ -78,35 +107,203 @@ function DashboardHeader({ firstName, cargoName, currentTime, currentDate, city 
   );
 }
 
-function HeroCard({ firstName, cargoName, currentDateTime }) {
+function HeroBgModal({ isOpen, images, onSave, onClose }) {
+  const [draft, setDraft] = useState(images);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef(null);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDraft(images);
+      cardRef.current?.focus();
+    }
+  }, [isOpen, images]);
+
+  if (!isOpen) return null;
+
+  const handleFiles = async (e) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+    e.target.value = '';
+    if (!files.length) return;
+    setIsProcessing(true);
+    const results = await Promise.allSettled(files.map(f => resizeImageToDataUrl(f)));
+    const urls = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+    setDraft(prev => [...prev, ...urls]);
+    setIsProcessing(false);
+  };
+
+  const removeImage = (idx) => setDraft(prev => prev.filter((_, i) => i !== idx));
+
   return (
-    <div className="relative h-full overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--accent-deep)] via-[var(--accent-dark)] to-[var(--accent)] p-6 text-white shadow-lg md:p-8">
-      <svg className="absolute inset-0 opacity-15" width="100%" height="100%">
-        <defs>
-          <pattern id="hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#hero-grid)" />
-      </svg>
-      <div className="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
-      <div className="relative flex h-full flex-wrap items-start justify-between gap-6">
-        <div className="max-w-xl">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-            {currentDateTime || '...'}
+    <div
+      className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Gerenciar imagens de fundo do banner"
+        className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl outline-none"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div>
+            <div className="text-[15px] font-bold tracking-tight text-foreground">Imagens do banner</div>
+            <div className="mt-0.5 text-xs text-muted">Elas passam automaticamente a cada 8 segundos</div>
           </div>
-          <h2 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight md:text-3xl">
-            Olá, {firstName} 👋
-          </h2>
-          <p className="mt-1 text-sm text-white/85">
-            Bem-vindo ao seu painel, setor <strong>{cargoName || '...'}</strong>.
-          </p>
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface text-muted transition hover:bg-surface-raised hover:text-foreground"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">
-          <Icons.Sparkle /> Assistente
-        </button>
+
+        <div className="px-6 py-5">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            onChange={handleFiles}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessing}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-surface-raised px-4 py-5 text-sm font-semibold text-muted transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-60"
+          >
+            <Icons.Plus />
+            {isProcessing ? 'Processando imagens...' : 'Adicionar imagens do dispositivo'}
+          </button>
+
+          {draft.length === 0 ? (
+            <p className="mt-4 rounded-xl bg-surface-raised px-4 py-3 text-center text-[12.5px] text-muted">
+              Nenhuma imagem adicionada. O banner exibirá o gradiente padrão.
+            </p>
+          ) : (
+            <div className="mt-4 grid max-h-64 grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3">
+              {draft.map((src, idx) => (
+                <div key={idx} className="group relative aspect-video overflow-hidden rounded-lg border border-border">
+                  <img src={src} alt={`Imagem ${idx + 1}`} className="h-full w-full object-cover" />
+                  <button
+                    onClick={() => removeImage(idx)}
+                    aria-label={`Remover imagem ${idx + 1}`}
+                    className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-white transition hover:bg-black/80"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-2.5 border-t border-border px-6 py-4">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-[13px] font-semibold text-faint transition hover:bg-surface-raised hover:text-foreground"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => onSave(draft)}
+            disabled={isProcessing}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border-none bg-primary px-4 py-2.5 text-[13px] font-bold text-white transition hover:bg-[var(--primary-hover)] disabled:opacity-60"
+          >
+            <Icons.Check /> Salvar
+          </button>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function HeroCard({ firstName, cargoName, currentDateTime, bgImages, onChangeBg }) {
+  const count = bgImages.length;
+  // Dois layers empilhados: o inativo recebe o próximo src e vai de opacity 0→1
+  const [current, setCurrent] = useState({ index: 0, layer: 0 });
+  const [layerSrc, setLayerSrc] = useState([bgImages[0], bgImages[0]]);
+
+  useEffect(() => {
+    setCurrent({ index: 0, layer: 0 });
+    setLayerSrc([bgImages[0], bgImages[0]]);
+  }, [bgImages]);
+
+  useEffect(() => {
+    if (count < 2) return;
+    const id = setInterval(() => {
+      const nextIndex = (current.index + 1) % count;
+      const nextLayer = 1 - current.layer;
+      setLayerSrc(srcs => {
+        const s = [...srcs];
+        s[nextLayer] = bgImages[nextIndex];
+        return s;
+      });
+      setCurrent({ index: nextIndex, layer: nextLayer });
+    }, HERO_SLIDE_INTERVAL);
+    return () => clearInterval(id);
+  }, [count, current, bgImages]);
+
+  return (
+    <div className="relative h-full overflow-hidden rounded-2xl p-6 text-white shadow-lg md:p-8">
+      {count === 0 ? (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-deep)] via-[var(--accent-dark)] to-[var(--accent)]" />
+          <svg className="absolute inset-0 opacity-15" width="100%" height="100%">
+            <defs>
+              <pattern id="hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hero-grid)" />
+          </svg>
+          <div className="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
+        </>
+      ) : count === 1 ? (
+        <img src={bgImages[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        [0, 1].map(layer => (
+          <img
+            key={layer}
+            src={layerSrc[layer]}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
+            style={{ opacity: current.layer === layer ? 1 : 0 }}
+          />
+        ))
+      )}
+      <button
+        onClick={onChangeBg}
+        title="Gerenciar imagens de fundo"
+        aria-label="Gerenciar imagens de fundo do hero"
+        className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/25 text-white backdrop-blur-sm transition hover:bg-black/45"
+      >
+        <Icons.Image />
+      </button>
+      {count === 0 && (
+        <div className="relative z-10 flex h-full flex-wrap items-start justify-between gap-6">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+              {currentDateTime || '...'}
+            </div>
+            <h2 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight md:text-3xl">
+              Olá, {firstName} 👋
+            </h2>
+            <p className="mt-1 text-sm text-white/85">
+              Bem-vindo ao seu painel, setor <strong>{cargoName || '...'}</strong>.
+            </p>
+          </div>
+          <button className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">
+            <Icons.Sparkle /> Assistente
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -631,6 +828,18 @@ export default function Dashboard({ setCurrentView, user }) {
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [location, setLocation] = useState({ city: 'São Paulo', temp: '24°C' });
+  const [heroBgImages, setHeroBgImages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dashboardHeroBgImages');
+      if (saved) return JSON.parse(saved);
+      // Migração da chave legada (string única) para o formato array
+      const legacy = localStorage.getItem('dashboardHeroBg');
+      return legacy ? [legacy] : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isHeroBgModalOpen, setIsHeroBgModalOpen] = useState(false);
   const [cargoName, setCargoName] = useState('');
   const [osCount, setOsCount] = useState(0);
   const [osStatusCount, setOsStatusCount] = useState(null);
@@ -761,6 +970,15 @@ export default function Dashboard({ setCurrentView, user }) {
       .catch(() => { });
   }, []);
 
+  // Persiste as imagens de fundo do hero no localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('dashboardHeroBgImages', JSON.stringify(heroBgImages));
+    } catch (err) {
+      console.warn('Não foi possível salvar as imagens do hero (limite do localStorage):', err);
+    }
+  }, [heroBgImages]);
+
   const safeName = func.funcionario || user?.nome || 'Usuário';
   const firstName = safeName.split(' ')[0] || 'Usuário';
 
@@ -811,7 +1029,7 @@ export default function Dashboard({ setCurrentView, user }) {
           useCSSTransforms={true}
         >
           <div key="hero" className={isEditing ? 'widget-editable' : ''}>
-            <HeroCard firstName={firstName} cargoName={cargoName} currentDateTime={currentDateTime} />
+            <HeroCard firstName={firstName} cargoName={cargoName} currentDateTime={currentDateTime} bgImages={heroBgImages} onChangeBg={() => setIsHeroBgModalOpen(true)} />
           </div>
           <div key="setor" className={isEditing ? 'widget-editable' : ''}>
             <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} />
@@ -847,6 +1065,15 @@ export default function Dashboard({ setCurrentView, user }) {
       </div>
 
       <TiSupportModal isOpen={isTiModalOpen} onClose={() => setIsTiModalOpen(false)} user={user} />
+      <HeroBgModal
+        isOpen={isHeroBgModalOpen}
+        images={heroBgImages}
+        onSave={(newImages) => {
+          setHeroBgImages(newImages);
+          setIsHeroBgModalOpen(false);
+        }}
+        onClose={() => setIsHeroBgModalOpen(false)}
+      />
     </main>
   );
 }
