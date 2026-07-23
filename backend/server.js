@@ -1047,6 +1047,7 @@ app.get('/api/colaboradores', async (req, res) => {
                     // Prioridade: preferência salva em Configurações > ramal vindo do IXC
                     ramal: ramalLocal !== undefined ? ramalLocal : (f.ramal || null),
                     foto_perfil: fotoLocal || ixcFoto || null,
+                    data_nascimento: f.data_nascimento || null,
                     ativo: f.ativo
                 };
         });

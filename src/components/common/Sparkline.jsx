@@ -1,4 +1,8 @@
+import { useId } from 'react'
+
 export default function Sparkline({ data, color = '#4A9EF5', height = 56, fill = true }) {
+  // ID único por instância: permite cores em var(--token) sem quebrar a referência do gradiente
+  const gradientId = `spark-fill-${useId().replace(/:/g, '')}`
   if (!data || data.length < 2) return null;
 
   const max = Math.max(...data);
@@ -25,7 +29,7 @@ export default function Sparkline({ data, color = '#4A9EF5', height = 56, fill =
     >
       {fill && (
         <defs>
-          <linearGradient id={`spark-fill-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.18" />
             <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
@@ -34,7 +38,7 @@ export default function Sparkline({ data, color = '#4A9EF5', height = 56, fill =
       {fill && (
         <path
           d={fillPath}
-          fill={`url(#spark-fill-${color.replace('#', '')})`}
+          fill={`url(#${gradientId})`}
         />
       )}
       <path

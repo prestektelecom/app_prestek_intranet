@@ -2,143 +2,157 @@ import { useState, useEffect } from 'react'
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import { resolveNomeSetor } from '../utils/resolveSetor'
 import Sparkline from './common/Sparkline'
-import BentoAvatar from './common/Avatar'
 import { Icons } from './common/Icons'
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs'
 import TiSupportModal from './TiSupportModal'
-import { useBentoTheme } from '../hooks/useBentoTheme'
-import { tone } from '../utils/tone'
-import BentoCard from './common/BentoCard'
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
-function KpiCard({ C, label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
-  const subColor = { success: C.success, danger: C.danger, muted: C.ink2, warning: C.warning }[subTone] || C.ink2;
-  const subBg = { success: C.successSoft, danger: C.dangerSoft, warning: C.warningSoft, muted: C.surfaceSoft }[subTone] || C.surfaceSoft;
+/* ── Tokens utilitários do design system semântico (vars em index.css) ── */
+const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-muted'
+const CARD_TITLE = 'text-[17px] font-bold tracking-tight text-foreground'
+const CARD = 'bento-hover-border flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-sm'
+const ACTION_BTN = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
+
+function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
+  const toneClasses = {
+    success: 'bg-[var(--success-soft)] text-[var(--success-bento)]',
+    danger: 'bg-[var(--danger-soft)] text-[var(--danger-bento)]',
+    warning: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]',
+    muted: 'bg-surface-raised text-faint',
+  };
+  const subClass = toneClasses[subTone] || toneClasses.muted;
 
   return (
-    <div className="bento-hover-border" style={{
-      background: C.surface, borderRadius: 18, border: `1px solid ${C.line}`,
-      padding: 20, display: 'flex', flexDirection: 'column', gap: 14,
-      boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, overflow: 'hidden',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.15em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>{label}</div>
+    <div className="bento-hover-border flex h-full flex-col gap-3.5 overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className={LABEL_MONO}>{label}</div>
         {sub && (
-          <div title={subTooltip} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: subBg, color: subColor, fontSize: 11, fontWeight: 700, cursor: subTooltip ? 'help' : 'default' }}>
+          <div title={subTooltip} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${subClass} ${subTooltip ? 'cursor-help' : ''}`}>
             {subTone === 'danger' && <Icons.TrendDown />}
             {subTone === 'success' && <Icons.Check />}
             {sub}
           </div>
         )}
       </div>
-      <div style={{ fontSize: 30, fontWeight: 800, color: C.ink, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</div>
+      <div className="text-3xl font-extrabold leading-none tracking-tight text-foreground">{value}</div>
       {sparkData && (
-        <div style={{ marginTop: 'auto' }}>
-          <Sparkline data={sparkData} color={sparkColor || C.accent} height={44} />
+        <div className="mt-auto">
+          <Sparkline data={sparkData} color={sparkColor || 'var(--accent)'} height={44} />
         </div>
       )}
     </div>
   );
 }
 
-function HeroCard({ C, firstName, cargoName, currentDateTime, setCurrentView }) {
+function DashboardHeader({ firstName, cargoName, currentTime, currentDate, city }) {
   return (
-    <div style={{
-      background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
-      borderRadius: 24, padding: '32px 36px', color: 'white',
-      position: 'relative', overflow: 'hidden',
-      boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
-    }}>
-      <svg style={{ position: 'absolute', inset: 0, opacity: 0.15 }} width="100%" height="100%">
-        <defs><pattern id="hero-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" /></pattern></defs>
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+          Olá, {firstName} 👋
+        </h1>
+        <p className="mt-1 text-sm text-faint">
+          {cargoName
+            ? <>Aqui está o resumo do seu dia · setor <strong className="font-semibold text-foreground">{cargoName}</strong></>
+            : 'Aqui está o resumo do seu dia.'}
+        </p>
+      </div>
+      <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+            <Icons.CloudSun />
+          </div>
+          <div className="leading-tight">
+            <div className="text-sm font-bold text-foreground">24°C</div>
+            <div className="text-xs text-muted">{city}</div>
+          </div>
+        </div>
+        <div className="h-8 w-px bg-border" />
+        <div className="leading-tight">
+          <div className="text-lg font-bold tabular-nums text-foreground">{currentTime || '--:--'}</div>
+          <div className="text-xs text-muted">{currentDate || '...'}</div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function HeroCard({ firstName, cargoName, currentDateTime }) {
+  return (
+    <div className="relative h-full overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--accent-deep)] via-[var(--accent-dark)] to-[var(--accent)] p-6 text-white shadow-lg md:p-8">
+      <svg className="absolute inset-0 opacity-15" width="100%" height="100%">
+        <defs>
+          <pattern id="hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+          </pattern>
+        </defs>
         <rect width="100%" height="100%" fill="url(#hero-grid)" />
       </svg>
-      <div style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)' }} />
-      <div style={{ position: 'absolute', bottom: -100, right: 80, width: 220, height: 220, borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)' }} />
-      <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
-        <div style={{ maxWidth: 620 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '5px 11px', borderRadius: 999,
-            background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
-            fontSize: 11.5, fontWeight: 600, fontFamily: '"JetBrains Mono", monospace',
-            letterSpacing: '0.12em', textTransform: 'uppercase',
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: 3, background: '#7FD8B8' }} />
+      <div className="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
+      <div className="relative flex h-full flex-wrap items-start justify-between gap-6">
+        <div className="max-w-xl">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
             {currentDateTime || '...'}
           </div>
-          <h1 style={{ margin: '16px 0 8px', fontSize: 38, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08 }}>
-            Olá,{' '}
-            <span style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${C.cyan} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              {firstName}
-            </span>{' '}👋
-          </h1>
-          <p style={{ margin: 0, fontSize: 15, opacity: 0.85, lineHeight: 1.5 }}>
+          <h2 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight md:text-3xl">
+            Olá, {firstName} 👋
+          </h2>
+          <p className="mt-1 text-sm text-white/85">
             Bem-vindo ao seu painel, setor <strong>{cargoName || '...'}</strong>.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '11px 18px', borderRadius: 11, border: '1px solid rgba(255,255,255,0.3)',
-            background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)',
-            color: 'white', fontFamily: 'inherit', fontWeight: 600, fontSize: 13.5, cursor: 'pointer',
-          }}><Icons.Sparkle /> Assistente</button>
-
-        </div>
+        <button className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">
+          <Icons.Sparkle /> Assistente
+        </button>
       </div>
     </div>
   );
 }
 
-function SetorBento({ C, eficiencia, eficienciaLoading }) {
+function SetorBento({ eficiencia, eficienciaLoading }) {
   const efVal = eficienciaLoading ? '...' : eficiencia?.sem_dados ? 'N/A' : `${eficiencia?.eficiencia_atual ?? '–'}%`;
   const efSub = !eficienciaLoading && eficiencia && !eficiencia.sem_dados && eficiencia.variacao !== null
     ? { text: `${eficiencia.variacao >= 0 ? '+' : ''}${eficiencia.variacao}%`, tone: eficiencia.variacao >= 0 ? 'success' : 'danger' }
     : null;
-  const efSubTooltip = efSub
-    ? 'Variação calculada pela taxa diária de OS no prazo (mês atual vs mês anterior).'
-    : null;
+  const efSubTooltip = efSub ? 'Variação calculada pela taxa diária de OS no prazo (mês atual vs mês anterior).' : null;
   const efSparkData = eficiencia?.historico_semanal?.length
     ? eficiencia.historico_semanal.map(s => s.eficiencia ?? 0)
     : (eficiencia?.eficiencia_atual != null ? Array(8).fill(eficiencia.eficiencia_atual) : []);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 14, height: '100%' }}>
+    <div className="grid h-full grid-cols-1 gap-3.5 md:grid-cols-3">
       <KpiCard
-        C={C}
         label="Eficiência"
         value={efVal}
         sub={efSub?.text}
         subTone={efSub?.tone}
         subTooltip={efSubTooltip}
         sparkData={efSparkData}
-        sparkColor={C.success}
+        sparkColor="var(--success-bento)"
       />
       <KpiCard
-        C={C}
         label="OS Fechadas"
         value={eficienciaLoading ? '...' : (eficiencia?.total_os_mes ?? '–')}
         sub={eficiencia?.no_prazo_mes != null ? `${eficiencia.no_prazo_mes} no prazo` : null}
         subTone="success"
         sparkData={[8, 12, 9, 14, 11, 15, 13, eficiencia?.total_os_mes || 12]}
-        sparkColor={C.accent}
+        sparkColor="var(--accent)"
       />
       <KpiCard
-        C={C}
         label="Sem SLA"
         value={eficienciaLoading ? '...' : (eficiencia?.os_sem_prazo ?? 0)}
         sub={eficiencia?.os_sem_prazo > 0 ? 'Atenção' : 'Ok'}
         subTone={eficiencia?.os_sem_prazo > 0 ? 'warning' : 'success'}
         sparkData={[2, 1, 3, 2, 1, 0, 1, eficiencia?.os_sem_prazo || 0]}
-        sparkColor={C.warning}
+        sparkColor="var(--warning-bento)"
       />
     </div>
   );
 }
 
-function PlantaoBento({ C, proximoPlantao, plantaoLoading, setCurrentView }) {
+function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
   const dateStr = plantaoLoading ? '...' : (proximoPlantao
     ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Nenhum agendado');
@@ -147,72 +161,57 @@ function PlantaoBento({ C, proximoPlantao, plantaoLoading, setCurrentView }) {
     : 'Sem cobertura ativa';
 
   return (
-    <BentoCard C={C} accent="accent" glow>
-      <div style={{ position: 'relative' }}>
-        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.15em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>Próximo Plantão</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: C.accentSoft, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icons.Clock />
-          </div>
-          <div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>{dateStr}</div>
-            <div style={{ fontSize: 12.5, color: C.ink2, marginTop: 2 }}>{timeStr}</div>
-          </div>
+    <div className={CARD}>
+      <div className={LABEL_MONO}>Próximo Plantão</div>
+      <div className="mt-3 flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+          <Icons.Clock />
         </div>
-        <button
-          onClick={() => setCurrentView('schedule')}
-          style={{
-            marginTop: 16, padding: '8px 12px', borderRadius: 9,
-            border: `1px solid ${tone(C.accent, 0.3)}`, background: C.surface,
-            color: C.accent, fontFamily: 'inherit', fontWeight: 600, fontSize: 12.5,
-            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
-            transition: 'all .15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = C.accentSoft; e.currentTarget.style.borderColor = C.accent; }}
-          onMouseLeave={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = tone(C.accent, 0.3); }}
-        >Ver plantões <Icons.ArrowR /></button>
+        <div>
+          <div className="text-[17px] font-bold tracking-tight text-foreground">{dateStr}</div>
+          <div className="mt-0.5 text-[12.5px] text-faint">{timeStr}</div>
+        </div>
       </div>
-    </BentoCard>
+      <button
+        onClick={() => setCurrentView('schedule')}
+        className={`${ACTION_BTN} text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]`}
+      >
+        Ver plantões <Icons.ArrowR />
+      </button>
+    </div>
   );
 }
 
-function OsBento({ C, osCount, osLoading, setCurrentView }) {
+function OsBento({ osCount, osLoading, setCurrentView }) {
   const allGood = !osLoading && osCount === 0;
-  const accent = allGood ? 'success' : 'warning';
-  const accentColor = allGood ? C.success : C.warning;
 
   return (
-    <BentoCard C={C} accent={accent}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5, letterSpacing: '0.15em', color: C.muted, textTransform: 'uppercase', fontWeight: 600 }}>OS no meu nome</div>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: allGood ? C.successSoft : C.warningSoft, color: accentColor, fontSize: 11, fontWeight: 700, border: `1px solid ${tone(accentColor, 0.2)}` }}>
+    <div className={CARD}>
+      <div className="flex items-start justify-between gap-2">
+        <div className={LABEL_MONO}>OS no meu nome</div>
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-[var(--warning-soft)] text-[var(--warning-bento)]'}`}>
           {allGood ? <><Icons.Check /> Tudo em dia</> : `${osCount} pendente${osCount !== 1 ? 's' : ''}`}
         </span>
       </div>
-      <div style={{ fontSize: 48, fontWeight: 800, color: C.ink, letterSpacing: '-0.04em', lineHeight: 1, marginTop: 4 }}>
+      <div className="mt-1 text-5xl font-extrabold leading-none tracking-tight text-foreground">
         {osLoading ? '...' : osCount}
       </div>
-      <div style={{ fontSize: 12.5, color: C.ink2 }}>
+      <div className="mt-1 text-[12.5px] text-faint">
         {allGood ? 'Nenhuma ordem de serviço pendente atribuída a você.' : 'Ordens de serviço aguardando ação.'}
       </div>
       {osCount > 0 && (
         <button
           onClick={() => setCurrentView('tickets')}
-          style={{
-            padding: '8px 12px', borderRadius: 9, border: `1px solid ${tone(C.warning, 0.3)}`,
-            background: C.surface, color: C.warning, fontFamily: 'inherit', fontWeight: 600,
-            fontSize: 12.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center',
-            gap: 4, alignSelf: 'flex-start', transition: 'all .15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = C.warningSoft; e.currentTarget.style.borderColor = C.warning; }}
-          onMouseLeave={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = tone(C.warning, 0.3); }}
-        >Ver OS <Icons.ArrowR /></button>
+          className={`${ACTION_BTN} text-[var(--warning-bento)] hover:border-[var(--warning-bento)] hover:bg-[var(--warning-soft)]`}
+        >
+          Ver OS <Icons.ArrowR />
+        </button>
       )}
-    </BentoCard>
+    </div>
   );
 }
 
-function ComunicadosCard({ C, setCurrentView }) {
+function ComunicadosCard({ setCurrentView }) {
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -226,16 +225,18 @@ function ComunicadosCard({ C, setCurrentView }) {
       .finally(() => setLoading(false));
   }, []);
 
-  function tagStyle(tipo) {
-    const map = {
-      Urgente: { bg: C.dangerSoft, color: C.danger, label: 'URGENTE' },
-      Importante: { bg: C.warningSoft, color: C.warning, label: 'IMPORTANTE' },
-      Aviso: { bg: C.warningSoft, color: C.warning, label: 'AVISO' },
-      Geral: { bg: C.successSoft, color: C.success, label: 'GERAL' },
-      Info: { bg: C.accentSoft, color: C.accentDeep, label: 'INFO' },
-    };
-    return map[tipo] || { bg: C.surfaceSoft, color: C.ink2, label: (tipo || 'OK').toUpperCase() };
-  }
+  const TAG_STYLES = {
+    Urgente:    { chip: 'bg-[var(--danger-soft)] text-[var(--danger-bento)]',   border: 'border-l-[var(--danger-bento)]' },
+    Importante: { chip: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]', border: 'border-l-[var(--warning-bento)]' },
+    Aviso:      { chip: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]', border: 'border-l-[var(--warning-bento)]' },
+    Geral:      { chip: 'bg-[var(--success-soft)] text-[var(--success-bento)]', border: 'border-l-[var(--success-bento)]' },
+    Info:       { chip: 'bg-[var(--accent-soft)] text-[var(--accent-deep)]',     border: 'border-l-[var(--accent)]' },
+  };
+  const TAG_FALLBACK = { chip: 'bg-surface-raised text-faint', border: 'border-l-[var(--border)]' };
+  const TAG_LABELS = { Urgente: 'URGENTE', Importante: 'IMPORTANTE', Aviso: 'AVISO', Geral: 'GERAL', Info: 'INFO' };
+
+  function tagFor(tipo) { return TAG_STYLES[tipo] || TAG_FALLBACK; }
+  function tagLabel(tipo) { return TAG_LABELS[tipo] || (tipo || 'OK').toUpperCase(); }
 
   function relativeTime(dateStr) {
     try {
@@ -262,7 +263,6 @@ function ComunicadosCard({ C, setCurrentView }) {
     } catch (_) { return ''; }
   }
 
-  // Remove formatação WhatsApp/Markdown do preview do card bento
   function stripMarkdown(text) {
     if (!text) return '';
     return text
@@ -273,138 +273,122 @@ function ComunicadosCard({ C, setCurrentView }) {
       .trim();
   }
 
+  const featured = comunicados[0] || null;
+  const rest = comunicados.slice(1);
+
   return (
-    <div className="bento-hover-border" style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 24, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+    <div className="bento-hover-border flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+      {/* Featured announcement */}
+      <div
+        onClick={() => !loading && setCurrentView('announcements')}
+        className={`relative shrink-0 bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent)] px-6 pt-5 pb-4 text-white ${!loading ? 'cursor-pointer' : ''}`}
+      >
+        {loading ? (
+          <div className="h-14 animate-pulse rounded-lg bg-white/15" />
+        ) : featured ? (
+          <div className="relative z-10">
+            <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest ${tagFor(featured.tipo).chip}`}>
+              {tagLabel(featured.tipo)}
+            </span>
+            <div className="mt-1.5 truncate text-[15px] font-bold">{featured.titulo}</div>
+            <div className="mt-0.5 text-[11px] text-white/75">{relativeTime(featured.criado_em)}</div>
+          </div>
+        ) : (
+          <div className="relative z-10 flex items-center gap-2 text-sm text-white/85">
+            <Icons.Megaphone /> Nenhum comunicado em destaque
+          </div>
+        )}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/25 to-transparent" />
+      </div>
+
+      {/* Header da lista */}
+      <div className="flex items-center justify-between px-6 pt-4">
         <div>
-          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Comunicados</h2>
-          <div style={{ fontSize: 12.5, color: C.ink2, marginTop: 3 }}>Atualizações do setor</div>
+          <h2 className={CARD_TITLE}>Comunicados</h2>
+          <div className="mt-0.5 text-[12.5px] text-faint">Atualizações do setor</div>
         </div>
-        <button onClick={() => setCurrentView('announcements')} style={{ fontSize: 13, fontWeight: 600, color: C.accent, background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
+        <button onClick={() => setCurrentView('announcements')} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)] hover:underline">
           Ver todos <Icons.ArrowR />
         </button>
       </div>
-      {/* Wrapper relativo para o fade gradient funcionar */}
-      <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-        <div
-          className="custom-scrollbar"
-          style={{ display: 'flex', flexDirection: 'column', gap: 8, height: '100%', overflowY: 'auto', paddingRight: 2 }}
-        >
-          {loading ? [1, 2, 3].map(i => (
-            <div key={i} style={{ height: 72, borderRadius: 12, background: C.surfaceSoft, animation: 'pulse 1.5s ease-in-out infinite', flexShrink: 0 }} />
-          )) :
-            comunicados.length === 0 ? <div style={{ padding: '24px 0', textAlign: 'center', color: C.muted, fontSize: 13 }}>Nenhum comunicado recente.</div> :
-              comunicados.map((it, i) => {
-                const tag = tagStyle(it.tipo);
-                const preview = stripMarkdown(it.descricao);
-                return (
-                  <div key={it.id || i}
-                    onClick={() => setCurrentView('announcements')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'stretch',
-                      borderRadius: 12,
-                      cursor: 'pointer',
-                      transition: 'background .12s',
-                      borderLeft: `3px solid ${tag.color}`,
-                      minHeight: 72,
-                      maxHeight: 72,
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    {/* Conteúdo principal */}
-                    <div style={{ flex: 1, minWidth: 0, padding: '10px 12px 10px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
-                      {/* Linha 1: badge + título */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, overflow: 'hidden' }}>
-                        <span style={{
-                          fontFamily: '"JetBrains Mono", monospace', fontSize: 9, letterSpacing: '0.10em',
-                          fontWeight: 700, padding: '2px 6px', borderRadius: 5,
-                          background: tag.bg, color: tag.color, flexShrink: 0, lineHeight: 1.6,
-                        }}>{tag.label}</span>
-                        <span style={{
-                          fontSize: 13.5, fontWeight: 600, color: C.ink,
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>{it.titulo}</span>
-                      </div>
-                      {/* Linha 2: preview limpo */}
-                      <div style={{
-                        fontSize: 12, color: C.ink2,
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>{preview}</div>
-                    </div>
 
-                    {/* Coluna direita: tempo + autor */}
-                    <div style={{
-                      flexShrink: 0, maxWidth: 88, padding: '10px 12px 10px 0',
-                      display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-                      justifyContent: 'center', gap: 3,
-                    }}>
-                      <div title={formatFullDate(it.criado_em)} style={{
-                        fontFamily: '"JetBrains Mono", monospace', fontSize: 10.5,
-                        color: C.muted, cursor: 'help', whiteSpace: 'nowrap',
-                      }}>{relativeTime(it.criado_em)}</div>
-                      <div style={{
-                        fontSize: 11, color: C.ink2,
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        maxWidth: 88, textAlign: 'right',
-                      }}>{it.departamento_autor || ''}</div>
-                    </div>
+      {/* Lista */}
+      <div className="relative mt-3 min-h-0 flex-1 px-6 pb-5">
+        <div className="custom-scrollbar flex h-full flex-col gap-2 overflow-y-auto pr-0.5">
+          {loading ? [1, 2, 3].map(i => (
+            <div key={i} className="h-16 shrink-0 animate-pulse rounded-xl bg-surface-raised" />
+          )) : rest.length === 0 ? (
+            <div className="py-6 text-center text-[13px] text-muted">
+              {comunicados.length === 0 ? 'Nenhum comunicado recente.' : 'Nenhum outro comunicado.'}
+            </div>
+          ) : rest.map((it, i) => {
+            const tag = tagFor(it.tipo);
+            const preview = stripMarkdown(it.descricao);
+            return (
+              <div
+                key={it.id || i}
+                onClick={() => setCurrentView('announcements')}
+                className={`flex min-h-16 max-h-16 shrink-0 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised ${tag.border}`}
+              >
+                <div className="flex flex-1 flex-col justify-center gap-1 min-w-0 px-3 py-2">
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                    <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest leading-relaxed ${tag.chip}`}>
+                      {tagLabel(it.tipo)}
+                    </span>
+                    <span className="truncate text-[13.5px] font-semibold text-foreground">{it.titulo}</span>
                   </div>
-                );
-              })
-          }
+                  <div className="truncate text-[12px] text-faint">{preview}</div>
+                </div>
+                <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[88px]">
+                  <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[10.5px] text-muted">
+                    {relativeTime(it.criado_em)}
+                  </div>
+                  <div className="truncate max-w-[88px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-        {/* Fade gradient — indica que há mais conteúdo abaixo */}
-        {comunicados.length > 3 && (
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
-            background: `linear-gradient(to bottom, transparent, ${C.surface})`,
-            pointerEvents: 'none',
-          }} />
+        {rest.length > 3 && (
+          <div className="pointer-events-none absolute inset-x-6 bottom-5 h-10 bg-gradient-to-t from-[var(--surface)] to-transparent" />
         )}
       </div>
     </div>
   );
 }
 
-function AtalhosCard({ C, setCurrentView, onSuporteTIClick }) {
+function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   const atalhos = [
-    { icon: 'Room', label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento', accent: C.accent },
-    { icon: 'Headset', label: 'Suporte TI', hint: 'Tempo médio: ~12 min', id: 'tickets', accent: C.accent },
-    { icon: 'Badge', label: 'Meu Perfil', hint: 'Dados e segurança', id: 'settings', accent: C.accentDeep },
-    { icon: 'Lightning', label: 'Comunicados', hint: 'Avisos e urgentes', id: 'announcements', accent: C.warning },
+    { icon: 'Room', label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento' },
+    { icon: 'Headset', label: 'Suporte TI', hint: 'Tempo médio: ~12 min', id: 'tickets' },
+    { icon: 'Badge', label: 'Meu Perfil', hint: 'Dados e segurança', id: 'settings' },
+    { icon: 'Lightning', label: 'Comunicados', hint: 'Avisos e urgentes', id: 'announcements' },
+    { icon: 'Doc', label: 'Holerite', hint: 'Portal do colaborador', id: 'holerite', url: '#' },
+    { icon: 'Clock', label: 'Ponto Eletrônico', hint: 'Registro de ponto', id: 'ponto', url: '#' },
+    { icon: 'Calendar', label: 'Férias', hint: 'Solicitação e saldo', id: 'ferias', url: '#' },
   ];
 
   return (
-    <div className="bento-hover-border" style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <h2 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Atalhos Rápidos</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 10 }}>
+    <div className={CARD}>
+      <h2 className={`${CARD_TITLE} mb-3.5`}>Atalhos Rápidos</h2>
+      <div className="custom-scrollbar flex flex-col gap-2 overflow-y-auto">
         {atalhos.map(a => {
           const IconC = Icons[a.icon];
           return (
-            <button key={a.id} onClick={() => {
-              if (a.url) {
-                window.open(a.url, '_blank');
-              } else if (a.id === 'tickets') {
-                onSuporteTIClick();
-              } else {
-                setCurrentView(a.id);
-              }
-            }}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px', borderRadius: 14, border: `1px solid ${C.line}`, background: C.surface, cursor: 'pointer', textAlign: 'left', transition: 'all .15s', fontFamily: 'inherit' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 10px 24px ${tone(C.accentDeep, 0.10)}`; e.currentTarget.style.borderColor = tone(a.accent, 0.4); }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = C.line; }}
+            <button
+              key={a.id}
+              onClick={() => {
+                if (a.url) window.open(a.url, '_blank');
+                else if (a.id === 'tickets') onSuporteTIClick();
+                else setCurrentView(a.id);
+              }}
+              className="flex min-h-[44px] w-full shrink-0 items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md"
             >
-              <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: tone(a.accent, 0.12), color: a.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
                 {IconC && <IconC />}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.label}</div>
-                <div style={{ fontSize: 11, color: C.muted, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.hint}</div>
-              </div>
+              <div className="min-w-0 flex-1 truncate text-[13px] font-bold text-foreground">{a.label}</div>
+              <div className="shrink-0 truncate text-[11px] text-muted">{a.hint}</div>
             </button>
           );
         })}
@@ -413,7 +397,106 @@ function AtalhosCard({ C, setCurrentView, onSuporteTIClick }) {
   );
 }
 
-function TeamBento({ C }) {
+function diasAteAniversario(dataNascimento) {
+  if (!dataNascimento) return null;
+  const iso = String(dataNascimento).slice(0, 10);
+  const partes = iso.split('-').map(Number);
+  if (partes.length !== 3 || !partes[1] || !partes[2]) return null;
+  const [, mes, dia] = partes;
+  const hoje = new Date();
+  const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  let proximo = new Date(hoje.getFullYear(), mes - 1, dia);
+  if (proximo < inicioHoje) proximo = new Date(hoje.getFullYear() + 1, mes - 1, dia);
+  return Math.round((proximo - inicioHoje) / 86400000);
+}
+
+function iniciais(nome) {
+  const partes = String(nome || '').trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return '?';
+  return (partes[0][0] + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase();
+}
+
+function AniversariantesCard() {
+  const [aniversariantes, setAniversariantes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deptoMap, setDeptoMap] = useState({});
+
+  useEffect(() => {
+    fetch('/api/departamentos-empresa')
+      .then(r => r.json())
+      .then(d => {
+        if (d.sucesso) {
+          const map = {};
+          (d.departamentos || []).forEach(dep => { map[String(dep.id)] = dep.departamento; });
+          setDeptoMap(map);
+        }
+      })
+      .catch(() => { });
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/colaboradores')
+      .then(r => r.json())
+      .then(d => {
+        if (!d.sucesso) return;
+        const proximos = (d.colaboradores || [])
+          .map(c => ({ ...c, dias: diasAteAniversario(c.data_nascimento) }))
+          .filter(c => c.dias !== null && c.dias <= 7)
+          .sort((a, b) => a.dias - b.dias);
+        setAniversariantes(proximos);
+      })
+      .catch(() => { })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const rotuloData = (c) => {
+    if (c.dias === 0) return 'Hoje';
+    if (c.dias === 1) return 'Amanhã';
+    const [, mes, dia] = String(c.data_nascimento).slice(0, 10).split('-');
+    return `${dia}/${mes}`;
+  };
+
+  return (
+    <div className={CARD}>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className={CARD_TITLE}>Aniversariantes</h2>
+          <div className="mt-0.5 text-[12.5px] text-faint">Próximos 7 dias</div>
+        </div>
+        <span className="text-lg">🎂</span>
+      </div>
+      <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
+        {loading ? [1, 2, 3].map(i => (
+          <div key={i} className="flex animate-pulse items-center gap-3 py-1.5">
+            <div className="h-9 w-9 rounded-full bg-surface-raised" />
+            <div className="flex-1">
+              <div className="h-3 w-2/3 rounded bg-surface-raised" />
+              <div className="mt-1.5 h-2.5 w-1/3 rounded bg-surface-raised" />
+            </div>
+            <div className="h-5 w-14 rounded bg-surface-raised" />
+          </div>
+        )) : aniversariantes.length === 0 ? (
+          <div className="py-4 text-center text-[13px] text-muted">Nenhum aniversariante nos próximos 7 dias</div>
+        ) : aniversariantes.map(c => (
+          <div key={c.funcionario_id} className="flex items-center gap-3 rounded-lg px-1 py-1.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[13px] font-bold text-[var(--accent)]">
+              {iniciais(c.funcionario_nome)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13px] font-semibold text-foreground">{c.funcionario_nome}</div>
+              <div className="truncate text-[11.5px] text-muted">{deptoMap[String(c.id_departamento)] || ''}</div>
+            </div>
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${c.dias === 0 ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-surface-raised text-faint'}`}>
+              {c.dias === 0 ? 'Hoje' : rotuloData(c)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TeamBento() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deptoMap, setDeptoMap] = useState({});
@@ -455,38 +538,34 @@ function TeamBento({ C }) {
   }, [deptoMap]);
 
   return (
-    <div className="bento-hover-border" style={{ background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`, padding: 22, boxShadow: `0 1px 2px ${tone(C.accentDeep, 0.04)}`, height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+    <div className={CARD}>
+      <div className="mb-4 flex items-start justify-between">
         <div>
-          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>Disponibilidade</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 4, background: C.success, display: 'inline-block' }} />
-            <span style={{ fontSize: 12.5, color: C.ink2 }}>
-              <strong style={{ color: C.ink }}>{members.length}</strong> online agora
-            </span>
+          <h2 className={CARD_TITLE}>Disponibilidade</h2>
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-full bg-[var(--success-bento)]" />
+            <span className="text-[12.5px] text-faint"><strong className="font-semibold text-foreground">{members.length}</strong> online agora</span>
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {loading ? [1, 2, 3, 4].map(i => <div key={i} style={{ height: 44, borderRadius: 8, background: C.surfaceSoft }} />) :
-          members.length === 0 ? <div style={{ padding: '16px 0', textAlign: 'center', color: C.muted, fontSize: 13 }}>Nenhum colaborador online.</div> :
-            members.map(m => (
-              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', borderRadius: 8 }}>
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <img src={m.foto} alt={m.name}
-                    style={{ width: 32, height: 32, borderRadius: 16, objectFit: 'cover', background: C.surfaceSoft, display: 'block' }}
-                    onError={e => { e.target.style.display = 'none'; }}
-                  />
-                  <span style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: 5, background: C.success, border: '2px solid white' }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                  <div style={{ fontSize: 11.5, color: C.muted }}>{m.role}</div>
-                </div>
-                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, color: C.success }}>Online</span>
-              </div>
-            ))
-        }
+      <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
+        {loading ? [1, 2, 3, 4].map(i => (
+          <div key={i} className="h-11 animate-pulse rounded-lg bg-surface-raised" />
+        )) : members.length === 0 ? (
+          <div className="py-4 text-center text-[13px] text-muted">Nenhum colaborador online.</div>
+        ) : members.map(m => (
+          <div key={m.id} className="flex items-center gap-2.5 rounded-lg px-1 py-1.5">
+            <div className="relative shrink-0">
+              <img src={m.foto} alt={m.name} className="block h-8 w-8 rounded-full bg-surface-raised object-cover" onError={e => { e.target.style.display = 'none'; }} />
+              <span className="absolute -bottom-px -right-px h-2.5 w-2.5 rounded-full border-2 border-[var(--surface)] bg-[var(--success-bento)]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13px] font-semibold text-foreground">{m.name}</div>
+              <div className="text-[11.5px] text-muted">{m.role}</div>
+            </div>
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--success-bento)]">Online</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -498,11 +577,11 @@ const DEFAULT_LAYOUT_LG = [
   { i: 'plantao', x: 6, y: 2, w: 3, h: 2 },
   { i: 'os', x: 9, y: 2, w: 3, h: 2 },
   { i: 'comunicados', x: 0, y: 4, w: 8, h: 3 },
-  { i: 'atalhos', x: 8, y: 4, w: 4, h: 2 },
-  { i: 'team', x: 8, y: 6, w: 4, h: 2 }
+  { i: 'atalhos', x: 8, y: 4, w: 4, h: 4 },
+  { i: 'aniversariantes', x: 0, y: 7, w: 8, h: 2 },
+  { i: 'team', x: 8, y: 8, w: 4, h: 2 }
 ];
 
-// Layouts por breakpoint para react-grid-layout
 const DEFAULT_LAYOUTS = {
   lg: DEFAULT_LAYOUT_LG,
   md: [
@@ -511,8 +590,9 @@ const DEFAULT_LAYOUTS = {
     { i: 'plantao', x: 6, y: 2, w: 3, h: 2 },
     { i: 'os', x: 9, y: 2, w: 3, h: 2 },
     { i: 'comunicados', x: 0, y: 4, w: 7, h: 3 },
-    { i: 'atalhos', x: 7, y: 4, w: 5, h: 2 },
-    { i: 'team', x: 7, y: 6, w: 5, h: 2 }
+    { i: 'atalhos', x: 7, y: 4, w: 5, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 7, w: 7, h: 2 },
+    { i: 'team', x: 7, y: 8, w: 5, h: 2 }
   ],
   sm: [
     { i: 'hero', x: 0, y: 0, w: 6, h: 2, static: true },
@@ -520,8 +600,9 @@ const DEFAULT_LAYOUTS = {
     { i: 'plantao', x: 0, y: 4, w: 3, h: 2 },
     { i: 'os', x: 3, y: 4, w: 3, h: 2 },
     { i: 'comunicados', x: 0, y: 6, w: 6, h: 3 },
-    { i: 'atalhos', x: 0, y: 9, w: 3, h: 2 },
-    { i: 'team', x: 3, y: 9, w: 3, h: 2 }
+    { i: 'atalhos', x: 0, y: 9, w: 3, h: 4 },
+    { i: 'aniversariantes', x: 3, y: 9, w: 3, h: 3 },
+    { i: 'team', x: 3, y: 12, w: 3, h: 2 }
   ],
   xs: [
     { i: 'hero', x: 0, y: 0, w: 4, h: 2, static: true },
@@ -529,8 +610,9 @@ const DEFAULT_LAYOUTS = {
     { i: 'plantao', x: 0, y: 4, w: 4, h: 2 },
     { i: 'os', x: 0, y: 6, w: 4, h: 2 },
     { i: 'comunicados', x: 0, y: 8, w: 4, h: 3 },
-    { i: 'atalhos', x: 0, y: 11, w: 4, h: 2 },
-    { i: 'team', x: 0, y: 13, w: 4, h: 2 }
+    { i: 'atalhos', x: 0, y: 11, w: 4, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 15, w: 4, h: 2 },
+    { i: 'team', x: 0, y: 17, w: 4, h: 2 }
   ],
   xxs: [
     { i: 'hero', x: 0, y: 0, w: 2, h: 2, static: true },
@@ -538,14 +620,17 @@ const DEFAULT_LAYOUTS = {
     { i: 'plantao', x: 0, y: 4, w: 2, h: 2 },
     { i: 'os', x: 0, y: 6, w: 2, h: 2 },
     { i: 'comunicados', x: 0, y: 8, w: 2, h: 3 },
-    { i: 'atalhos', x: 0, y: 11, w: 2, h: 2 },
-    { i: 'team', x: 0, y: 13, w: 2, h: 2 }
+    { i: 'atalhos', x: 0, y: 11, w: 2, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 15, w: 2, h: 2 },
+    { i: 'team', x: 0, y: 17, w: 2, h: 2 }
   ]
 };
 
 export default function Dashboard({ setCurrentView, user }) {
-  const C = useBentoTheme();
   const [currentDateTime, setCurrentDateTime] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
+  const [location, setLocation] = useState({ city: 'São Paulo', temp: '24°C' });
   const [cargoName, setCargoName] = useState('');
   const [osCount, setOsCount] = useState(0);
   const [osStatusCount, setOsStatusCount] = useState(null);
@@ -555,7 +640,6 @@ export default function Dashboard({ setCurrentView, user }) {
   const [eficiencia, setEficiencia] = useState(null);
   const [eficienciaLoading, setEficienciaLoading] = useState(true);
 
-  // Estados do react-grid-layout
   const [layouts, setLayouts] = useState(DEFAULT_LAYOUTS);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -576,11 +660,9 @@ export default function Dashboard({ setCurrentView, user }) {
 
         let userLayouts;
         if (Array.isArray(d.layout)) {
-          // Formato legado: array único usado como lg
           const normalized = d.layout.map(item => item.i === 'hero' ? { ...item, static: true } : item);
           userLayouts = { ...DEFAULT_LAYOUTS, lg: normalized };
         } else if (typeof d.layout === 'object') {
-          // Novo formato: objeto com layouts por breakpoint
           userLayouts = { ...DEFAULT_LAYOUTS };
           Object.keys(d.layout).forEach(bp => {
             if (Array.isArray(d.layout[bp])) {
@@ -653,6 +735,13 @@ export default function Dashboard({ setCurrentView, user }) {
       const dia = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'short' }).format(now);
       const data = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short', year: 'numeric' }).format(now).replace(/ de /g, ' ').replace(/\./g, '');
       const hora = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }).format(now);
+      const parts = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short', year: 'numeric' }).formatToParts(now);
+      const d = parts.find(p => p.type === 'day')?.value;
+      let m = parts.find(p => p.type === 'month')?.value.replace('.', '');
+      const y = parts.find(p => p.type === 'year')?.value;
+      if (m) m = m.charAt(0).toUpperCase() + m.slice(1);
+      setCurrentTime(hora);
+      setCurrentDate(`${d} ${m}, ${y}`);
       setCurrentDateTime(`${dia.charAt(0).toUpperCase() + dia.slice(1).replace('.', '')} · ${data} · ${hora}`);
     };
     update();
@@ -660,29 +749,40 @@ export default function Dashboard({ setCurrentView, user }) {
     return () => clearInterval(id);
   }, []);
 
+  // Detecta cidade aproximada pelo IP (fallback: São Paulo)
+  useEffect(() => {
+    fetch('https://ipapi.co/json/')
+      .then(r => r.json())
+      .then(data => {
+        if (data.city) {
+          setLocation(prev => ({ ...prev, city: `${data.city}${data.region_code ? `, ${data.region_code}` : ''}` }));
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   const safeName = func.funcionario || user?.nome || 'Usuário';
   const firstName = safeName.split(' ')[0] || 'Usuário';
 
   return (
-    <main style={{ flex: 1, overflowY: 'auto', background: C.bg, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: C.ink }}>
-      <div style={{
-        padding: '28px 32px 40px',
-        maxWidth: 1400,
-        margin: '0 auto',
-      }}>
+    <main className="flex-1 overflow-y-auto bg-background text-foreground">
+      <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-7 md:px-8">
 
-        {/* Cabeçalho da Dashboard (Personalizar) */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <DashboardHeader firstName={firstName} cargoName={cargoName} currentTime={currentTime} currentDate={currentDate} city={location.city} />
+
+        <div className="mb-4 flex justify-end">
           {isEditing ? (
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div className="flex gap-2.5">
               <button
                 onClick={() => setIsEditing(false)}
-                style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: C.surface, color: C.ink2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
-              >Cancelar</button>
+                className="rounded-lg border border-border bg-surface px-4 py-2 text-[13px] font-semibold text-faint transition hover:bg-surface-raised"
+              >
+                Cancelar
+              </button>
               <button
                 onClick={handleSaveLayout}
                 disabled={isSaving}
-                style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: C.accent, color: 'white', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
+                className="flex items-center gap-1.5 rounded-lg border-none bg-primary px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:opacity-60"
               >
                 {isSaving ? 'Salvando...' : <><Icons.Check /> Salvar Layout</>}
               </button>
@@ -690,16 +790,13 @@ export default function Dashboard({ setCurrentView, user }) {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.line}`, background: C.surface, color: C.ink2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}
-              onMouseEnter={e => e.currentTarget.style.background = C.surfaceSoft}
-              onMouseLeave={e => e.currentTarget.style.background = C.surface}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-[13px] font-semibold text-faint transition hover:bg-surface-raised"
             >
               <Icons.Sparkle /> Personalizar Dashboard
             </button>
           )}
         </div>
 
-        {/* Grid Interativa */}
         <ResponsiveReactGridLayout
           className={`layout ${isEditing ? 'is-editing' : ''}`}
           layouts={layouts}
@@ -714,41 +811,37 @@ export default function Dashboard({ setCurrentView, user }) {
           useCSSTransforms={true}
         >
           <div key="hero" className={isEditing ? 'widget-editable' : ''}>
-            <HeroCard C={C} firstName={firstName} cargoName={cargoName} currentDateTime={currentDateTime} setCurrentView={setCurrentView} />
+            <HeroCard firstName={firstName} cargoName={cargoName} currentDateTime={currentDateTime} />
           </div>
           <div key="setor" className={isEditing ? 'widget-editable' : ''}>
-            <SetorBento C={C} eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} />
+            <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} />
           </div>
           <div key="plantao" className={isEditing ? 'widget-editable' : ''}>
-            <PlantaoBento C={C} proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} setCurrentView={setCurrentView} />
+            <PlantaoBento proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} setCurrentView={setCurrentView} />
           </div>
           <div key="os" className={isEditing ? 'widget-editable' : ''}>
-            <OsBento C={C} osCount={osCount} osLoading={osLoading} osStatusCount={osStatusCount} setCurrentView={setCurrentView} />
+            <OsBento osCount={osCount} osLoading={osLoading} setCurrentView={setCurrentView} />
           </div>
           <div key="comunicados" className={isEditing ? 'widget-editable' : ''}>
-            <ComunicadosCard C={C} setCurrentView={setCurrentView} />
+            <ComunicadosCard setCurrentView={setCurrentView} />
           </div>
           <div key="atalhos" className={isEditing ? 'widget-editable' : ''}>
-            <AtalhosCard C={C} setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
+            <AtalhosCard setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
+          </div>
+          <div key="aniversariantes" className={isEditing ? 'widget-editable' : ''}>
+            <AniversariantesCard />
           </div>
           <div key="team" className={isEditing ? 'widget-editable' : ''}>
-            <TeamBento C={C} />
+            <TeamBento />
           </div>
         </ResponsiveReactGridLayout>
 
-        {/* Rodapé */}
-        <div style={{
-          marginTop: 24, paddingTop: 18, borderTop: `1px solid ${C.line}`,
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          fontSize: 11.5, color: C.muted,
-          fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em',
-          flexWrap: 'wrap', gap: 8,
-        }}>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-[11.5px] tracking-wide text-muted">
           <span>© 2026 Prestek Inc. · Portal Interno · Confidencial.</span>
-          <div style={{ display: 'flex', gap: 22 }}>
-            <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Política de Privacidade</a>
-            <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Diretrizes Internas</a>
-            <span style={{ color: C.success }}>● v1.1.0</span>
+          <div className="flex gap-5">
+            <a href="#" className="text-inherit no-underline hover:text-foreground">Política de Privacidade</a>
+            <a href="#" className="text-inherit no-underline hover:text-foreground">Diretrizes Internas</a>
+            <span className="text-[var(--success-bento)]">● v1.1.0</span>
           </div>
         </div>
       </div>
