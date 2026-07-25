@@ -223,11 +223,18 @@ function HeroBgModal({ isOpen, images, onSave, onClose }) {
   );
 }
 
-function HeroCard({ firstName, cargoName, currentDateTime, bgImages, onChangeBg }) {
+function HeroCard({ firstName, cargoName, currentDateTime, bgImages, onChangeBg, onAbrirChamadoTI }) {
   const count = bgImages.length;
   // Dois layers empilhados: o inativo recebe o próximo src e vai de opacity 0→1
   const [current, setCurrent] = useState({ index: 0, layer: 0 });
   const [layerSrc, setLayerSrc] = useState([bgImages[0], bgImages[0]]);
+
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return 'Bom dia';
+    if (h >= 12 && h < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
 
   useEffect(() => {
     setCurrent({ index: 0, layer: 0 });
@@ -277,6 +284,9 @@ function HeroCard({ firstName, cargoName, currentDateTime, bgImages, onChangeBg 
           />
         ))
       )}
+      {count > 0 && (
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/35 backdrop-blur-[1px]" />
+      )}
       <button
         onClick={onChangeBg}
         title="Gerenciar imagens de fundo"
@@ -285,25 +295,35 @@ function HeroCard({ firstName, cargoName, currentDateTime, bgImages, onChangeBg 
       >
         <Icons.Image />
       </button>
-      {count === 0 && (
-        <div className="relative z-10 flex h-full flex-wrap items-start justify-between gap-6">
+
+      <div className="relative z-10 flex h-full flex-col justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
+            {currentDateTime || '...'}
+          </div>
+          <div className="hidden sm:inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-[11.5px] font-bold text-amber-200 backdrop-blur-sm border border-amber-400/30">
+            <span>⚠️ Central de Suporte Online</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-xl">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-              {currentDateTime || '...'}
-            </div>
-            <h2 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight md:text-3xl">
-              Olá, {firstName} 👋
+            <h2 className="text-2xl font-extrabold leading-tight tracking-tight md:text-3xl">
+              {getGreeting()}, {firstName} 👋
             </h2>
             <p className="mt-1 text-sm text-white/85">
-              Bem-vindo ao seu painel, setor <strong>{cargoName || '...'}</strong>.
+              Setor <strong className="font-semibold text-white">{cargoName || 'Colaborador'}</strong> · Prestek Telecom
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">
-            <Icons.Sparkle /> Assistente
+          <button
+            onClick={onAbrirChamadoTI}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[var(--accent-deep)] shadow-lg transition hover:bg-amber-50 hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Icons.Plus /> Abrir Chamado TI
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -383,27 +403,34 @@ function OsBento({ osCount, osLoading, setCurrentView }) {
   const allGood = !osLoading && osCount === 0;
 
   return (
-    <div className={CARD}>
-      <div className="flex items-start justify-between gap-2">
-        <div className={LABEL_MONO}>OS no meu nome</div>
-        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-[var(--warning-soft)] text-[var(--warning-bento)]'}`}>
-          {allGood ? <><Icons.Check /> Tudo em dia</> : `${osCount} pendente${osCount !== 1 ? 's' : ''}`}
-        </span>
+    <div className={`${CARD} justify-between backdrop-blur-md border border-border/70`}>
+      <div>
+        <div className="flex items-start justify-between gap-2">
+          <div className={LABEL_MONO}>OS no meu nome</div>
+          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-[var(--warning-soft)] text-[var(--warning-bento)] animate-pulse'}`}>
+            {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
+          </span>
+        </div>
+        <div className="mt-3 flex items-baseline gap-3">
+          <div className="text-5xl font-extrabold leading-none tracking-tight text-foreground tabular-nums">
+            {osLoading ? '...' : osCount}
+          </div>
+          <span className="text-xs font-semibold text-faint">
+            Ordens de serviço sob sua resposta
+          </span>
+        </div>
+        <p className="mt-2 text-[12.5px] text-faint leading-relaxed">
+          {allGood
+            ? 'Nenhuma ordem de serviço pendente atribuída a você no momento.'
+            : 'Acesse o gerenciador para visualizar detalhes e registrar atualizações.'}
+        </p>
       </div>
-      <div className="mt-1 text-5xl font-extrabold leading-none tracking-tight text-foreground">
-        {osLoading ? '...' : osCount}
-      </div>
-      <div className="mt-1 text-[12.5px] text-faint">
-        {allGood ? 'Nenhuma ordem de serviço pendente atribuída a você.' : 'Ordens de serviço aguardando ação.'}
-      </div>
-      {osCount > 0 && (
-        <button
-          onClick={() => setCurrentView('tickets')}
-          className={`${ACTION_BTN} text-[var(--warning-bento)] hover:border-[var(--warning-bento)] hover:bg-[var(--warning-soft)]`}
-        >
-          Ver OS <Icons.ArrowR />
-        </button>
-      )}
+      <button
+        onClick={() => setCurrentView('tickets')}
+        className={`${ACTION_BTN} text-white bg-primary hover:bg-[var(--primary-hover)] border-none font-bold shadow-md hover:shadow-lg transition-transform active:scale-[0.98]`}
+      >
+        Gerenciar Minhas OS <Icons.ArrowR />
+      </button>
     </div>
   );
 }
@@ -769,57 +796,52 @@ function TeamBento() {
 }
 
 const DEFAULT_LAYOUT_LG = [
-  { i: 'hero', x: 0, y: 0, w: 12, h: 2, static: true },
-  { i: 'setor', x: 0, y: 2, w: 6, h: 2 },
-  { i: 'plantao', x: 6, y: 2, w: 3, h: 2 },
-  { i: 'os', x: 9, y: 2, w: 3, h: 2 },
-  { i: 'comunicados', x: 0, y: 4, w: 8, h: 3 },
-  { i: 'atalhos', x: 8, y: 4, w: 4, h: 4 },
-  { i: 'aniversariantes', x: 0, y: 7, w: 8, h: 2 },
-  { i: 'team', x: 8, y: 8, w: 4, h: 2 }
+  { i: 'os', x: 0, y: 0, w: 6, h: 3 },
+  { i: 'comunicados', x: 6, y: 0, w: 6, h: 3 },
+  { i: 'setor', x: 0, y: 3, w: 6, h: 2 },
+  { i: 'plantao', x: 6, y: 3, w: 3, h: 2 },
+  { i: 'atalhos', x: 9, y: 3, w: 3, h: 4 },
+  { i: 'aniversariantes', x: 0, y: 5, w: 5, h: 2 },
+  { i: 'team', x: 5, y: 5, w: 4, h: 2 }
 ];
 
 const DEFAULT_LAYOUTS = {
   lg: DEFAULT_LAYOUT_LG,
   md: [
-    { i: 'hero', x: 0, y: 0, w: 12, h: 2, static: true },
-    { i: 'setor', x: 0, y: 2, w: 6, h: 2 },
-    { i: 'plantao', x: 6, y: 2, w: 3, h: 2 },
-    { i: 'os', x: 9, y: 2, w: 3, h: 2 },
-    { i: 'comunicados', x: 0, y: 4, w: 7, h: 3 },
-    { i: 'atalhos', x: 7, y: 4, w: 5, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 7, w: 7, h: 2 },
-    { i: 'team', x: 7, y: 8, w: 5, h: 2 }
+    { i: 'os', x: 0, y: 0, w: 6, h: 3 },
+    { i: 'comunicados', x: 6, y: 0, w: 6, h: 3 },
+    { i: 'setor', x: 0, y: 3, w: 6, h: 2 },
+    { i: 'plantao', x: 6, y: 3, w: 3, h: 2 },
+    { i: 'atalhos', x: 9, y: 3, w: 3, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 5, w: 5, h: 2 },
+    { i: 'team', x: 5, y: 5, w: 4, h: 2 }
   ],
   sm: [
-    { i: 'hero', x: 0, y: 0, w: 6, h: 2, static: true },
-    { i: 'setor', x: 0, y: 2, w: 6, h: 2 },
-    { i: 'plantao', x: 0, y: 4, w: 3, h: 2 },
-    { i: 'os', x: 3, y: 4, w: 3, h: 2 },
-    { i: 'comunicados', x: 0, y: 6, w: 6, h: 3 },
-    { i: 'atalhos', x: 0, y: 9, w: 3, h: 4 },
-    { i: 'aniversariantes', x: 3, y: 9, w: 3, h: 3 },
-    { i: 'team', x: 3, y: 12, w: 3, h: 2 }
+    { i: 'os', x: 0, y: 0, w: 6, h: 3 },
+    { i: 'comunicados', x: 0, y: 3, w: 6, h: 3 },
+    { i: 'setor', x: 0, y: 6, w: 6, h: 2 },
+    { i: 'plantao', x: 0, y: 8, w: 3, h: 2 },
+    { i: 'atalhos', x: 3, y: 8, w: 3, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 10, w: 3, h: 2 },
+    { i: 'team', x: 0, y: 12, w: 3, h: 2 }
   ],
   xs: [
-    { i: 'hero', x: 0, y: 0, w: 4, h: 2, static: true },
-    { i: 'setor', x: 0, y: 2, w: 4, h: 2 },
-    { i: 'plantao', x: 0, y: 4, w: 4, h: 2 },
-    { i: 'os', x: 0, y: 6, w: 4, h: 2 },
-    { i: 'comunicados', x: 0, y: 8, w: 4, h: 3 },
-    { i: 'atalhos', x: 0, y: 11, w: 4, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 15, w: 4, h: 2 },
-    { i: 'team', x: 0, y: 17, w: 4, h: 2 }
+    { i: 'os', x: 0, y: 0, w: 4, h: 3 },
+    { i: 'comunicados', x: 0, y: 3, w: 4, h: 3 },
+    { i: 'setor', x: 0, y: 6, w: 4, h: 2 },
+    { i: 'plantao', x: 0, y: 8, w: 4, h: 2 },
+    { i: 'atalhos', x: 0, y: 10, w: 4, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 14, w: 4, h: 2 },
+    { i: 'team', x: 0, y: 16, w: 4, h: 2 }
   ],
   xxs: [
-    { i: 'hero', x: 0, y: 0, w: 2, h: 2, static: true },
-    { i: 'setor', x: 0, y: 2, w: 2, h: 2 },
-    { i: 'plantao', x: 0, y: 4, w: 2, h: 2 },
-    { i: 'os', x: 0, y: 6, w: 2, h: 2 },
-    { i: 'comunicados', x: 0, y: 8, w: 2, h: 3 },
-    { i: 'atalhos', x: 0, y: 11, w: 2, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 15, w: 2, h: 2 },
-    { i: 'team', x: 0, y: 17, w: 2, h: 2 }
+    { i: 'os', x: 0, y: 0, w: 2, h: 3 },
+    { i: 'comunicados', x: 0, y: 3, w: 2, h: 3 },
+    { i: 'setor', x: 0, y: 6, w: 2, h: 2 },
+    { i: 'plantao', x: 0, y: 8, w: 2, h: 2 },
+    { i: 'atalhos', x: 0, y: 10, w: 2, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 14, w: 2, h: 2 },
+    { i: 'team', x: 0, y: 16, w: 2, h: 2 }
   ]
 };
 
@@ -848,61 +870,12 @@ export default function Dashboard({ setCurrentView, user }) {
   const [plantaoLoading, setPlantaoLoading] = useState(true);
   const [eficiencia, setEficiencia] = useState(null);
   const [eficienciaLoading, setEficienciaLoading] = useState(true);
-
-  const [layouts, setLayouts] = useState(DEFAULT_LAYOUTS);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isTiModalOpen, setIsTiModalOpen] = useState(false);
 
   const func = user?.funcionario ?? {};
   const safeRole = func.id_funcao || 'Colaborador';
   const safeDepto = func.id_departamento || '';
   const funcId = func.id || user?.id;
-
-  // Carrega o layout salvo do usuário (suporta formato legado array e novo objeto por breakpoint)
-  useEffect(() => {
-    if (!user?.id) return;
-    fetch(`/api/user/dashboard-layout?userId=${user.id}`)
-      .then(r => r.json())
-      .then(d => {
-        if (!d.sucesso || !d.layout) return;
-
-        let userLayouts;
-        if (Array.isArray(d.layout)) {
-          const normalized = d.layout.map(item => item.i === 'hero' ? { ...item, static: true } : item);
-          userLayouts = { ...DEFAULT_LAYOUTS, lg: normalized };
-        } else if (typeof d.layout === 'object') {
-          userLayouts = { ...DEFAULT_LAYOUTS };
-          Object.keys(d.layout).forEach(bp => {
-            if (Array.isArray(d.layout[bp])) {
-              userLayouts[bp] = d.layout[bp].map(item => item.i === 'hero' ? { ...item, static: true } : item);
-            }
-          });
-        }
-        if (userLayouts) setLayouts(userLayouts);
-      })
-      .catch(err => console.error('Erro ao carregar layout:', err));
-  }, [user?.id]);
-
-  const handleLayoutChange = (currentLayout, allLayouts) => {
-    setLayouts(allLayouts);
-  };
-
-  const handleSaveLayout = async () => {
-    setIsSaving(true);
-    try {
-      await fetch('/api/user/dashboard-layout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, layout: layouts })
-      });
-      setIsEditing(false);
-    } catch (err) {
-      console.error('Erro ao salvar layout:', err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   useEffect(() => {
     resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo).then(setCargoName).catch(() => { });
@@ -988,68 +961,37 @@ export default function Dashboard({ setCurrentView, user }) {
 
         <DashboardHeader firstName={firstName} cargoName={cargoName} currentTime={currentTime} currentDate={currentDate} city={location.city} />
 
-        <div className="mb-4 flex justify-end">
-          {isEditing ? (
-            <div className="flex gap-2.5">
-              <button
-                onClick={() => setIsEditing(false)}
-                className="rounded-lg border border-border bg-surface px-4 py-2 text-[13px] font-semibold text-faint transition hover:bg-surface-raised"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveLayout}
-                disabled={isSaving}
-                className="flex items-center gap-1.5 rounded-lg border-none bg-primary px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:opacity-60"
-              >
-                {isSaving ? 'Salvando...' : <><Icons.Check /> Salvar Layout</>}
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-[13px] font-semibold text-faint transition hover:bg-surface-raised"
-            >
-              <Icons.Sparkle /> Personalizar Dashboard
-            </button>
-          )}
-        </div>
-
         <ResponsiveReactGridLayout
-          className={`layout ${isEditing ? 'is-editing' : ''}`}
-          layouts={layouts}
+          className="layout"
+          layouts={DEFAULT_LAYOUTS}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 12, sm: 6, xs: 4, xxs: 2 }}
           rowHeight={100}
           containerPadding={[0, 0]}
           margin={[18, 18]}
-          isDraggable={isEditing}
-          isResizable={isEditing}
-          onLayoutChange={handleLayoutChange}
+          isDraggable={false}
+          isResizable={false}
           useCSSTransforms={true}
         >
-          <div key="hero" className={isEditing ? 'widget-editable' : ''}>
-            <HeroCard firstName={firstName} cargoName={cargoName} currentDateTime={currentDateTime} bgImages={heroBgImages} onChangeBg={() => setIsHeroBgModalOpen(true)} />
-          </div>
-          <div key="setor" className={isEditing ? 'widget-editable' : ''}>
-            <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} />
-          </div>
-          <div key="plantao" className={isEditing ? 'widget-editable' : ''}>
-            <PlantaoBento proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} setCurrentView={setCurrentView} />
-          </div>
-          <div key="os" className={isEditing ? 'widget-editable' : ''}>
+          <div key="os">
             <OsBento osCount={osCount} osLoading={osLoading} setCurrentView={setCurrentView} />
           </div>
-          <div key="comunicados" className={isEditing ? 'widget-editable' : ''}>
+          <div key="comunicados">
             <ComunicadosCard setCurrentView={setCurrentView} />
           </div>
-          <div key="atalhos" className={isEditing ? 'widget-editable' : ''}>
+          <div key="setor">
+            <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} />
+          </div>
+          <div key="plantao">
+            <PlantaoBento proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} setCurrentView={setCurrentView} />
+          </div>
+          <div key="atalhos">
             <AtalhosCard setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
           </div>
-          <div key="aniversariantes" className={isEditing ? 'widget-editable' : ''}>
+          <div key="aniversariantes">
             <AniversariantesCard />
           </div>
-          <div key="team" className={isEditing ? 'widget-editable' : ''}>
+          <div key="team">
             <TeamBento />
           </div>
         </ResponsiveReactGridLayout>
@@ -1065,15 +1007,6 @@ export default function Dashboard({ setCurrentView, user }) {
       </div>
 
       <TiSupportModal isOpen={isTiModalOpen} onClose={() => setIsTiModalOpen(false)} user={user} />
-      <HeroBgModal
-        isOpen={isHeroBgModalOpen}
-        images={heroBgImages}
-        onSave={(newImages) => {
-          setHeroBgImages(newImages);
-          setIsHeroBgModalOpen(false);
-        }}
-        onClose={() => setIsHeroBgModalOpen(false)}
-      />
     </main>
   );
 }
