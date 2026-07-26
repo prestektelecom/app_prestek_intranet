@@ -15,14 +15,18 @@
     "openspec:list": "node scripts/openspec-cli.mjs list"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
     "lottie-react": "^2.4.1",
+    "lucide-react": "^1.27.0",
+    "motion": "^12.42.2",
     "pdf-parse": "^2.4.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-grid-layout": "^2.2.3",
     "react-leaflet": "^4.2.1",
-    "react-resizable": "^3.2.0"
+    "react-resizable": "^3.2.0",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

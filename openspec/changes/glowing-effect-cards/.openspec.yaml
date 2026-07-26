@@ -1,0 +1,6 @@
+schema: spec-driven
+status: draft
+created: 2026-07-26
+title: glowing-effect-cards
+description: Integrar GlowingEffect nos cards com suporte a Shadcn, Motion e Tailwind
+specs: []

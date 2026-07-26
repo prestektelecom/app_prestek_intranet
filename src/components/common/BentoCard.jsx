@@ -1,6 +1,10 @@
 import { tone } from '../../utils/tone';
+import { GlowingEffect } from '../ui/glowing-effect';
+import { useTouchOnly } from '../../hooks/useTouchOnly';
 
 export function BentoCard({ C, children, accent, glow = false, className = '', hoverBorder = true }) {
+  const isTouchOnly = useTouchOnly();
+
   return (
     <div
       className={`${className} ${hoverBorder ? 'bento-hover-border' : ''}`.trim()}
@@ -18,6 +22,14 @@ export function BentoCard({ C, children, accent, glow = false, className = '', h
         height: '100%',
       }}
     >
+      <GlowingEffect
+        spread={40}
+        glow={true}
+        disabled={isTouchOnly}
+        proximity={64}
+        inactiveZone={0.01}
+        borderWidth={2}
+      />
       {glow && accent && (
         <div
           style={{
@@ -33,7 +45,9 @@ export function BentoCard({ C, children, accent, glow = false, className = '', h
           }}
         />
       )}
-      {children}
+      <div className="relative z-10 flex flex-1 flex-col gap-3.5">
+        {children}
+      </div>
     </div>
   );
 }

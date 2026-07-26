@@ -5,13 +5,15 @@ import Sparkline from './common/Sparkline'
 import { Icons } from './common/Icons'
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs'
 import TiSupportModal from './TiSupportModal'
+import { GlowingEffect } from './ui/glowing-effect'
+import { useTouchOnly } from '../hooks/useTouchOnly'
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 /* ── Tokens utilitários do design system semântico (vars em index.css) ── */
 const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-muted'
 const CARD_TITLE = 'text-[17px] font-bold tracking-tight text-foreground'
-const CARD = 'bento-hover-border flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-sm'
+const CARD = 'bento-hover-border flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm'
 const ACTION_BTN = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
 
 const HERO_SLIDE_INTERVAL = 8000;
@@ -44,6 +46,7 @@ function resizeImageToDataUrl(file, maxPx = HERO_MAX_PX, quality = HERO_JPEG_QUA
 }
 
 function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
+  const isTouchOnly = useTouchOnly();
   const toneClasses = {
     success: 'bg-[var(--success-soft)] text-[var(--success-bento)]',
     danger: 'bg-[var(--danger-soft)] text-[var(--danger-bento)]',
@@ -53,23 +56,33 @@ function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor
   const subClass = toneClasses[subTone] || toneClasses.muted;
 
   return (
-    <div className="bento-hover-border flex h-full flex-col gap-3.5 overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-2">
-        <div className={LABEL_MONO}>{label}</div>
-        {sub && (
-          <div title={subTooltip} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${subClass} ${subTooltip ? 'cursor-help' : ''}`}>
-            {subTone === 'danger' && <Icons.TrendDown />}
-            {subTone === 'success' && <Icons.Check />}
-            {sub}
+    <div className="relative h-full rounded-[1.25rem] border border-border p-2 bg-surface shadow-sm">
+      <GlowingEffect
+        spread={40}
+        glow={true}
+        disabled={isTouchOnly}
+        proximity={64}
+        inactiveZone={0.01}
+        borderWidth={3}
+      />
+      <div className="relative z-10 flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-border bg-background p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-2">
+          <div className={LABEL_MONO}>{label}</div>
+          {sub && (
+            <div title={subTooltip} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${subClass} ${subTooltip ? 'cursor-help' : ''}`}>
+              {subTone === 'danger' && <Icons.TrendDown />}
+              {subTone === 'success' && <Icons.Check />}
+              {sub}
+            </div>
+          )}
+        </div>
+        <div className="text-3xl font-extrabold leading-none tracking-tight text-foreground">{value}</div>
+        {sparkData && (
+          <div className="mt-auto">
+            <Sparkline data={sparkData} color={sparkColor || 'var(--accent)'} height={44} />
           </div>
         )}
       </div>
-      <div className="text-3xl font-extrabold leading-none tracking-tight text-foreground">{value}</div>
-      {sparkData && (
-        <div className="mt-auto">
-          <Sparkline data={sparkData} color={sparkColor || 'var(--accent)'} height={44} />
-        </div>
-      )}
     </div>
   );
 }
@@ -370,6 +383,7 @@ function SetorBento({ eficiencia, eficienciaLoading }) {
 }
 
 function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
+  const isTouchOnly = useTouchOnly();
   const dateStr = plantaoLoading ? '...' : (proximoPlantao
     ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Nenhum agendado');
@@ -378,7 +392,9 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
     : 'Sem cobertura ativa';
 
   return (
-    <div className={CARD}>
+    <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
+      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div className={LABEL_MONO}>Próximo Plantão</div>
       <div className="mt-3 flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
@@ -395,11 +411,13 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
       >
         Ver plantões <Icons.ArrowR />
       </button>
+      </div>
     </div>
   );
 }
 
 function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
+  const isTouchOnly = useTouchOnly();
   const allGood = !osLoading && osCount === 0;
 
   const assumidas = osStatusCount ? (osStatusCount.AS || 0) : 0;
@@ -408,7 +426,9 @@ function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
   const abertas = osStatusCount ? ((osStatusCount.A || 0) + (osStatusCount.AN || 0)) : 0;
 
   return (
-    <div className={`${CARD} justify-between backdrop-blur-md border border-border/70`}>
+    <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
+      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div>
         <div className="flex items-start justify-between gap-2">
           <div className={LABEL_MONO}>OS no meu nome</div>
@@ -481,6 +501,7 @@ function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
       >
         Gerenciar Minhas OS <Icons.ArrowR />
       </button>
+      </div>
     </div>
   );
 }
@@ -657,6 +678,7 @@ function ComunicadoBanner({ setCurrentView }) {
 }
 
 function ComunicadosCard({ setCurrentView }) {
+  const isTouchOnly = useTouchOnly();
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -726,7 +748,9 @@ function ComunicadosCard({ setCurrentView }) {
   const rest = comunicados.filter(c => c.id !== featured?.id);
 
   return (
-    <div className="bento-hover-border flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+    <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
+      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
       {/* Header da lista */}
       <div className="flex items-center justify-between px-6 pt-5">
         <div>
@@ -779,11 +803,13 @@ function ComunicadosCard({ setCurrentView }) {
           <div className="pointer-events-none absolute inset-x-6 bottom-5 h-10 bg-gradient-to-t from-[var(--surface)] to-transparent" />
         )}
       </div>
+      </div>
     </div>
   );
 }
 
 function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
+  const isTouchOnly = useTouchOnly();
   const atalhos = [
     { icon: 'Room', label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento' },
     { icon: 'Headset', label: 'Suporte TI', hint: 'Tempo médio: ~12 min', id: 'tickets' },
@@ -795,7 +821,9 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   ];
 
   return (
-    <div className={CARD}>
+    <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
+      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <h2 className={`${CARD_TITLE} mb-3.5`}>Atalhos Rápidos</h2>
       <div className="custom-scrollbar flex flex-col gap-2 overflow-y-auto">
         {atalhos.map(a => {
@@ -818,6 +846,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
             </button>
           );
         })}
+      </div>
       </div>
     </div>
   );
@@ -843,6 +872,7 @@ function iniciais(nome) {
 }
 
 function AniversariantesCard() {
+  const isTouchOnly = useTouchOnly();
   const [aniversariantes, setAniversariantes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deptoMap, setDeptoMap] = useState({});
@@ -883,7 +913,9 @@ function AniversariantesCard() {
   };
 
   return (
-    <div className={CARD}>
+    <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
+      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className={CARD_TITLE}>Aniversariantes</h2>
@@ -918,11 +950,13 @@ function AniversariantesCard() {
           </div>
         ))}
       </div>
+      </div>
     </div>
   );
 }
 
 function TeamBento() {
+  const isTouchOnly = useTouchOnly();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deptoMap, setDeptoMap] = useState({});
@@ -964,7 +998,9 @@ function TeamBento() {
   }, [deptoMap]);
 
   return (
-    <div className={CARD}>
+    <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
+      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div className="mb-4 flex items-start justify-between">
         <div>
           <h2 className={CARD_TITLE}>Disponibilidade</h2>
@@ -992,6 +1028,7 @@ function TeamBento() {
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--success-bento)]">Online</span>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
