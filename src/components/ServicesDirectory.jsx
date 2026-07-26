@@ -3,6 +3,7 @@ import PlanoBentoCard from './services/PlanoBentoCard';
 import TechBentoCard from './services/TechBentoCard';
 import StreamingBentoCard from './services/StreamingBentoCard';
 import PlanoComparador from './services/PlanoComparador';
+import ServiceDetailModal from './services/ServiceDetailModal';
 import { AVATAR_PNGS, resolveAvatarUrl } from '../utils/avatarPngs';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 
@@ -23,6 +24,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
     const C = useBentoTheme();
     const isAdmin = user?.is_admin;
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '', type: '' });
+    const [detailModal, setDetailModal] = useState({ isOpen: false, data: null, type: 'plan' });
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [plans, setPlans] = useState([]);
     const [comparingIds, setComparingIds] = useState([]);
@@ -607,6 +609,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                     maxVendas={maxVendas}
                                     isComparing={comparingIds.includes(plan.id)}
                                     onToggleCompare={handleToggleCompare}
+                                    onSelect={(item, type) => setDetailModal({ isOpen: true, data: item, type })}
                                 />
                             ))}
                         </div>
@@ -647,6 +650,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                 isAdmin={isAdmin}
                                 onEditClick={handleEditTechClick}
                                 onDeleteClick={handleDeleteTechClick}
+                                onSelect={(item, type) => setDetailModal({ isOpen: true, data: item, type })}
                             />
                         ))}
                     </div>
@@ -685,6 +689,7 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                                 isAdmin={isAdmin}
                                 onEditClick={handleEditStreamingClick}
                                 onDeleteClick={handleDeleteStreamingClick}
+                                onSelect={(item, type) => setDetailModal({ isOpen: true, data: item, type })}
                             />
                         ))}
                     </div>
@@ -1370,6 +1375,23 @@ export default function ServicesDirectory({ setCurrentView, user, searchQuery })
                     </div>
                 </div>
             )}
+
+            {/* Modal de Detalhes do Serviço / Plano */}
+            <ServiceDetailModal
+                isOpen={detailModal.isOpen}
+                onClose={() => setDetailModal({ isOpen: false, data: null, type: 'plan' })}
+                data={detailModal.data}
+                type={detailModal.type}
+                formatCurrency={formatCurrency}
+                onToggleCompare={handleToggleCompare}
+                isComparing={detailModal.data ? comparingIds.includes(detailModal.data.id) : false}
+                isAdmin={isAdmin}
+                onEditClick={(item) => {
+                    if (detailModal.type === 'plan') handleEditClick(item);
+                    else if (detailModal.type === 'tech') handleEditTechClick(item);
+                    else if (detailModal.type === 'streaming') handleEditStreamingClick(item);
+                }}
+            />
 
         </main>
     )
