@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import { resolveNomeSetor } from '../utils/resolveSetor'
 import Sparkline from './common/Sparkline'
@@ -435,6 +435,177 @@ function OsBento({ osCount, osLoading, setCurrentView }) {
   );
 }
 
+function ComunicadoBanner({ setCurrentView }) {
+  const [comunicados, setComunicados] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/comunicados')
+      .then(r => r.json())
+      .then(d => {
+        if (d.sucesso && d.comunicados) {
+          setComunicados(d.comunicados.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)));
+        }
+      })
+      .catch(() => { })
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Seleciona até 3 comunicados de alta prioridade (Urgente > Importante > recentes)
+  const slides = useMemo(() => {
+    if (!comunicados.length) return [];
+    const urgentes = comunicados.filter(c => c.tipo === 'Urgente');
+    const importantes = comunicados.filter(c => c.tipo === 'Importante');
+    const outros = comunicados.filter(c => c.tipo !== 'Urgente' && c.tipo !== 'Importante');
+    
+    const unicos = [];
+    [...urgentes, ...importantes, ...outros].forEach(c => {
+      if (unicos.length < 3 && !unicos.some(item => item.id === c.id)) {
+        unicos.push(c);
+      }
+    });
+    return unicos;
+  }, [comunicados]);
+
+  // Auto-play a cada 6 segundos quando não estiver em hover
+  useEffect(() => {
+    if (slides.length <= 1 || isHovered) return;
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % slides.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [slides.length, isHovered]);
+
+  const TAG_STYLES = {
+    Urgente:    { chip: 'bg-red-500/90 text-white', label: 'URGENTE', bgFallback: 'bg-gradient-to-r from-red-950 via-rose-900 to-stone-900' },
+    Importante: { chip: 'bg-amber-500/90 text-stone-950', label: 'IMPORTANTE', bgFallback: 'bg-gradient-to-r from-amber-950 via-amber-900 to-stone-900' },
+    Aviso:      { chip: 'bg-amber-500/90 text-stone-950', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-amber-950 via-slate-900 to-stone-900' },
+    Geral:      { chip: 'bg-emerald-500/90 text-white', label: 'GERAL', bgFallback: 'bg-gradient-to-r from-emerald-950 via-slate-900 to-stone-900' },
+    Info:       { chip: 'bg-blue-500/90 text-white', label: 'INFO', bgFallback: 'bg-gradient-to-r from-blue-950 via-slate-900 to-stone-900' },
+  };
+
+  const TAG_DEFAULT = { chip: 'bg-primary text-white', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-slate-900 via-slate-800 to-stone-900' };
+
+  function relativeTime(dateStr) {
+    try {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const h = Math.floor(diff / 3600000);
+      if (h < 1) return 'agora';
+      if (h < 24) return `há ${h}h`;
+      const d = Math.floor(h / 24);
+      if (d < 7) return `${d}d`;
+      return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(dateStr));
+    } catch (_) { return ''; }
+  }
+
+  function stripMarkdown(text) {
+    if (!text) return '';
+    return text
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/_(.*?)_/g, '$1')
+      .replace(/[🔹🔸→←•➡️]/gu, '')
+      .replace(/\n+/g, ' ')
+      .trim();
+  }
+
+  if (loading) {
+    return (
+      <div className="mb-6 h-48 md:h-56 lg:h-64 w-full animate-pulse rounded-2xl bg-surface-raised border border-border" />
+    );
+  }
+
+  if (!slides.length) return null;
+
+  const activeSlide = slides[currentIndex % slides.length] || slides[0];
+  const tagInfo = TAG_STYLES[activeSlide.tipo] || TAG_DEFAULT;
+  const description = stripMarkdown(activeSlide.descricao);
+
+  return (
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => setCurrentView && setCurrentView('announcements')}
+      className="group relative mb-6 h-48 md:h-56 lg:h-64 w-full cursor-pointer overflow-hidden rounded-2xl border border-border/40 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.002]"
+    >
+      {/* Background Image / Fallback Gradient com Fade suave */}
+      {slides.map((slide, idx) => {
+        const isCurrent = idx === (currentIndex % slides.length);
+        const sTag = TAG_STYLES[slide.tipo] || TAG_DEFAULT;
+        const sImg = slide.imagem_url || slide.imagem || slide.foto || slide.capa || null;
+        return (
+          <div
+            key={slide.id || idx}
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${isCurrent ? 'opacity-100 z-0' : 'opacity-0 z-[-1]'}`}
+          >
+            {sImg ? (
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+                style={{ backgroundImage: `url(${sImg})` }}
+              />
+            ) : (
+              <div className={`absolute inset-0 ${sTag.bgFallback}`} />
+            )}
+          </div>
+        );
+      })}
+
+      {/* Dark Overlay para legibilidade */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10 transition-opacity duration-300 group-hover:from-black/95 group-hover:via-black/50" />
+
+      {/* Conteúdo do Slide Ativo */}
+      <div className="relative z-10 flex h-full flex-col justify-between p-6 text-white md:p-8">
+        {/* Top bar com Badge e Indicador de Slides/Dots */}
+        <div className="flex items-center justify-between">
+          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 font-mono text-[10px] font-extrabold uppercase tracking-widest shadow-sm ${tagInfo.chip}`}>
+            {tagInfo.label}
+          </span>
+          
+          <div className="flex items-center gap-3">
+            {activeSlide.criado_em && (
+              <span className="font-mono text-[11px] font-semibold text-white/70 backdrop-blur-sm bg-black/30 px-2.5 py-1 rounded-full border border-white/10">
+                {relativeTime(activeSlide.criado_em)}
+              </span>
+            )}
+            
+            {/* Dots de Navegação */}
+            {slides.length > 1 && (
+              <div className="flex items-center gap-1.5 backdrop-blur-sm bg-black/40 px-2 py-1 rounded-full border border-white/10">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentIndex(i);
+                    }}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      i === (currentIndex % slides.length) ? 'w-5 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+                    }`}
+                    title={`Slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Título e Subtítulo */}
+        <div className="max-w-3xl">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white line-clamp-2 drop-shadow-md group-hover:text-white/95">
+            {activeSlide.titulo}
+          </h1>
+          {description && (
+            <p className="mt-2 text-xs md:text-sm font-medium text-white/80 line-clamp-2 drop-shadow">
+              {description}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ComunicadosCard({ setCurrentView }) {
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -497,36 +668,17 @@ function ComunicadosCard({ setCurrentView }) {
       .trim();
   }
 
-  const featured = comunicados[0] || null;
-  const rest = comunicados.slice(1);
+  const featured = comunicados.find(c => c.tipo === 'Urgente')
+    || comunicados.find(c => c.tipo === 'Importante')
+    || comunicados[0]
+    || null;
+
+  const rest = comunicados.filter(c => c.id !== featured?.id);
 
   return (
     <div className="bento-hover-border flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-      {/* Featured announcement */}
-      <div
-        onClick={() => !loading && setCurrentView('announcements')}
-        className={`relative shrink-0 bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent)] px-6 pt-5 pb-4 text-white ${!loading ? 'cursor-pointer' : ''}`}
-      >
-        {loading ? (
-          <div className="h-14 animate-pulse rounded-lg bg-white/15" />
-        ) : featured ? (
-          <div className="relative z-10">
-            <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest ${tagFor(featured.tipo).chip}`}>
-              {tagLabel(featured.tipo)}
-            </span>
-            <div className="mt-1.5 truncate text-[15px] font-bold">{featured.titulo}</div>
-            <div className="mt-0.5 text-[11px] text-white/75">{relativeTime(featured.criado_em)}</div>
-          </div>
-        ) : (
-          <div className="relative z-10 flex items-center gap-2 text-sm text-white/85">
-            <Icons.Megaphone /> Nenhum comunicado em destaque
-          </div>
-        )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/25 to-transparent" />
-      </div>
-
       {/* Header da lista */}
-      <div className="flex items-center justify-between px-6 pt-4">
+      <div className="flex items-center justify-between px-6 pt-5">
         <div>
           <h2 className={CARD_TITLE}>Comunicados</h2>
           <div className="mt-0.5 text-[12.5px] text-faint">Atualizações do setor</div>
@@ -542,7 +694,7 @@ function ComunicadosCard({ setCurrentView }) {
           {loading ? [1, 2, 3].map(i => (
             <div key={i} className="h-16 shrink-0 animate-pulse rounded-xl bg-surface-raised" />
           )) : rest.length === 0 ? (
-            <div className="py-6 text-center text-[13px] text-muted">
+            <div className="py-8 text-center text-[13px] text-muted">
               {comunicados.length === 0 ? 'Nenhum comunicado recente.' : 'Nenhum outro comunicado.'}
             </div>
           ) : rest.map((it, i) => {
@@ -960,6 +1112,8 @@ export default function Dashboard({ setCurrentView, user }) {
       <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-7 md:px-8">
 
         <DashboardHeader firstName={firstName} cargoName={cargoName} currentTime={currentTime} currentDate={currentDate} city={location.city} />
+
+        <ComunicadoBanner setCurrentView={setCurrentView} />
 
         <ResponsiveReactGridLayout
           className="layout"

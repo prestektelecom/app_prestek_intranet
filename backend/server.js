@@ -309,7 +309,7 @@ app.get('/api/comunicados', async (req, res) => {
 });
 
 app.post('/api/comunicados', async (req, res) => {
-    const { titulo, descricao, tipo, departamento_autor, link_opcional, criado_por } = req.body;
+    const { titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url, criado_por } = req.body;
 
     if (!titulo || !descricao || !tipo || !departamento_autor) {
         return res.status(400).json({ sucesso: false, erro: 'Preencha os campos obrigatórios.' });
@@ -317,11 +317,11 @@ app.post('/api/comunicados', async (req, res) => {
 
     try {
         const query = `
-            INSERT INTO comunicados (titulo, descricao, tipo, departamento_autor, link_opcional, criado_por)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO comunicados (titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url, criado_por)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *;
         `;
-        const result = await pool.query(query, [titulo, descricao, tipo, departamento_autor, link_opcional, criado_por]);
+        const result = await pool.query(query, [titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url || null, criado_por]);
         return res.status(201).json({ sucesso: true, comunicado: result.rows[0] });
     } catch (err) {
         console.error('Erro ao inserir comunicado:', err.message);
@@ -331,15 +331,15 @@ app.post('/api/comunicados', async (req, res) => {
 
 app.put('/api/comunicados/:id', async (req, res) => {
     const { id } = req.params;
-    const { titulo, descricao, tipo, departamento_autor, link_opcional } = req.body;
+    const { titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url } = req.body;
 
     try {
         const query = `
             UPDATE comunicados 
-            SET titulo = $1, descricao = $2, tipo = $3, departamento_autor = $4, link_opcional = $5
-            WHERE id = $6 RETURNING *;
+            SET titulo = $1, descricao = $2, tipo = $3, departamento_autor = $4, link_opcional = $5, imagem_url = $6
+            WHERE id = $7 RETURNING *;
         `;
-        const result = await pool.query(query, [titulo, descricao, tipo, departamento_autor, link_opcional, id]);
+        const result = await pool.query(query, [titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url || null, id]);
         if (result.rows.length === 0) return res.status(404).json({ sucesso: false, erro: 'Comunicado não encontrado.' });
         return res.json({ sucesso: true, comunicado: result.rows[0] });
     } catch (err) {

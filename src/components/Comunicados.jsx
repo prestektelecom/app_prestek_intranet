@@ -84,7 +84,8 @@ export default function Comunicados({ user, setCurrentView }) {
         descricao: '',
         tipo: 'Geral',
         departamento_autor: '',
-        link_opcional: ''
+        link_opcional: '',
+        imagem_url: ''
     });
 
     const fetchComunicados = async () => {
@@ -113,11 +114,12 @@ export default function Comunicados({ user, setCurrentView }) {
                 descricao: item.descricao,
                 tipo: item.tipo,
                 departamento_autor: item.departamento_autor,
-                link_opcional: item.link_opcional || ''
+                link_opcional: item.link_opcional || '',
+                imagem_url: item.imagem_url || ''
             });
             setEditingId(item.id);
         } else {
-            setFormData({ titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '' });
+            setFormData({ titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '', imagem_url: '' });
             setEditingId(null);
         }
         setIsModalOpen(true);
@@ -125,7 +127,7 @@ export default function Comunicados({ user, setCurrentView }) {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setFormData({ titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '' });
+        setFormData({ titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '', imagem_url: '' });
         setEditingId(null);
     };
 
@@ -996,6 +998,21 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                                 lineHeight: 1.5
                             }}
                             placeholder="Detalhes completos do comunicado..."
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            URL da Imagem de Capa (Opcional)
+                        </label>
+                        <input
+                            type="url"
+                            value={formData.imagem_url}
+                            onChange={e => setFormData({ ...formData, imagem_url: e.target.value })}
+                            onFocus={() => setFocusedInput('imagem_url')}
+                            onBlur={() => setFocusedInput(null)}
+                            style={getInputStyle('imagem_url')}
+                            placeholder="https://exemplo.com/imagem-destaque.jpg"
                         />
                     </div>
 
