@@ -614,7 +614,7 @@ app.get('/api/os-chamados/:funcionarioId', async (req, res) => {
         const dados = await resposta.json();
         const registros = dados.registros || [];
 
-        const statusCount = { A: 0, AG: 0, AS: 0, EN: 0, AN: 0, EX: 0, OUTROS: 0 };
+        const statusCount = { A: 0, AG: 0, AS: 0, EN: 0, AN: 0, EX: 0, F: 0, C: 0, OUTROS: 0 };
         const openStatuses = ['A', 'AG', 'AS', 'EN', 'AN', 'EX'];
         let abertas = 0;
 

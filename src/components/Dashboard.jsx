@@ -399,8 +399,13 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
   );
 }
 
-function OsBento({ osCount, osLoading, setCurrentView }) {
+function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
   const allGood = !osLoading && osCount === 0;
+
+  const assumidas = osStatusCount ? (osStatusCount.AS || 0) : 0;
+  const encaminhadas = osStatusCount ? ((osStatusCount.EN || 0) + (osStatusCount.EX || 0)) : 0;
+  const agendadas = osStatusCount ? (osStatusCount.AG || 0) : 0;
+  const abertas = osStatusCount ? ((osStatusCount.A || 0) + (osStatusCount.AN || 0)) : 0;
 
   return (
     <div className={`${CARD} justify-between backdrop-blur-md border border-border/70`}>
@@ -411,23 +416,68 @@ function OsBento({ osCount, osLoading, setCurrentView }) {
             {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
           </span>
         </div>
+
         <div className="mt-3 flex items-baseline gap-3">
           <div className="text-5xl font-extrabold leading-none tracking-tight text-foreground tabular-nums">
             {osLoading ? '...' : osCount}
           </div>
-          <span className="text-xs font-semibold text-faint">
-            Ordens de serviço sob sua resposta
-          </span>
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-foreground">Ordens de Serviço</span>
+            <span className="text-[11.5px] text-faint">sob sua responsabilidade direta</span>
+          </div>
         </div>
-        <p className="mt-2 text-[12.5px] text-faint leading-relaxed">
-          {allGood
-            ? 'Nenhuma ordem de serviço pendente atribuída a você no momento.'
-            : 'Acesse o gerenciador para visualizar detalhes e registrar atualizações.'}
-        </p>
+
+        {/* Detalhamento por Status (4 Mini KPIs) */}
+        {!osLoading && !allGood && (
+          <div className="mt-4 grid grid-cols-4 gap-1.5">
+            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-deep)] truncate" title="Assumidas">
+                ⚡ Assumidas
+              </span>
+              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
+                {assumidas}
+              </span>
+            </div>
+
+            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-blue-500 dark:text-blue-400 truncate" title="Encaminhadas">
+                ➡️ Encaminhadas
+              </span>
+              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
+                {encaminhadas}
+              </span>
+            </div>
+
+            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--warning-bento)] truncate" title="Agendadas">
+                📅 Agendadas
+              </span>
+              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
+                {agendadas}
+              </span>
+            </div>
+
+            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-muted truncate" title="Abertas">
+                📋 Abertas
+              </span>
+              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
+                {abertas}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {allGood && (
+          <p className="mt-3 text-[12.5px] text-faint leading-relaxed">
+            Nenhuma ordem de serviço pendente atribuída a você no momento.
+          </p>
+        )}
       </div>
+
       <button
         onClick={() => setCurrentView('tickets')}
-        className={`${ACTION_BTN} text-white bg-primary hover:bg-[var(--primary-hover)] border-none font-bold shadow-md hover:shadow-lg transition-transform active:scale-[0.98]`}
+        className={`${ACTION_BTN} text-white bg-primary hover:bg-[var(--primary-hover)] border-none font-bold shadow-md hover:shadow-lg transition-transform active:scale-[0.98] mt-4`}
       >
         Gerenciar Minhas OS <Icons.ArrowR />
       </button>
@@ -1128,7 +1178,7 @@ export default function Dashboard({ setCurrentView, user }) {
           useCSSTransforms={true}
         >
           <div key="os">
-            <OsBento osCount={osCount} osLoading={osLoading} setCurrentView={setCurrentView} />
+            <OsBento osCount={osCount} osStatusCount={osStatusCount} osLoading={osLoading} setCurrentView={setCurrentView} />
           </div>
           <div key="comunicados">
             <ComunicadosCard setCurrentView={setCurrentView} />
