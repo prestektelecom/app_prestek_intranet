@@ -825,7 +825,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
       <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <h2 className={`${CARD_TITLE} mb-3.5`}>Atalhos Rápidos</h2>
-      <div className="custom-scrollbar flex flex-col gap-2 overflow-y-auto">
+      <div className="custom-scrollbar flex flex-col gap-2 overflow-y-auto pr-1.5 py-0.5">
         {atalhos.map(a => {
           const IconC = Icons[a.icon];
           return (
@@ -836,13 +836,15 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
                 else if (a.id === 'tickets') onSuporteTIClick();
                 else setCurrentView(a.id);
               }}
-              className="flex min-h-[44px] w-full shrink-0 items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md"
+              className="flex min-h-[48px] w-full shrink-0 items-center gap-3.5 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md"
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
                 {IconC && <IconC />}
               </div>
-              <div className="min-w-0 flex-1 truncate text-[13px] font-bold text-foreground">{a.label}</div>
-              <div className="shrink-0 truncate text-[11px] text-muted">{a.hint}</div>
+              <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                <span className="text-[13px] font-semibold text-foreground leading-tight">{a.label}</span>
+                <span className="text-[11px] text-muted leading-tight">{a.hint}</span>
+              </div>
             </button>
           );
         })}
