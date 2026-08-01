@@ -854,7 +854,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   );
 }
 
-function diasAteAniversario(dataNascimento) {
+function proximoAniversario(dataNascimento) {
   if (!dataNascimento) return null;
   const iso = String(dataNascimento).slice(0, 10);
   const partes = iso.split('-').map(Number);
@@ -864,13 +864,72 @@ function diasAteAniversario(dataNascimento) {
   const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
   let proximo = new Date(hoje.getFullYear(), mes - 1, dia);
   if (proximo < inicioHoje) proximo = new Date(hoje.getFullYear() + 1, mes - 1, dia);
+  return proximo;
+}
+
+function diasAteAniversario(dataNascimento) {
+  const proximo = proximoAniversario(dataNascimento);
+  if (!proximo) return null;
+  const hoje = new Date();
+  const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
   return Math.round((proximo - inicioHoje) / 86400000);
 }
 
-function iniciais(nome) {
+const DIAS_SEMANA_CURTO = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+
+// Data do próximo aniversário por extenso, ex: "seg, 04/08"
+function dataAniversarioExtenso(dataNascimento) {
+  const proximo = proximoAniversario(dataNascimento);
+  if (!proximo) return '';
+  const dia = String(proximo.getDate()).padStart(2, '0');
+  const mes = String(proximo.getMonth() + 1).padStart(2, '0');
+  return `${DIAS_SEMANA_CURTO[proximo.getDay()]}, ${dia}/${mes}`;
+}
+
+// Partículas de ligação não contam como sobrenome ("Vitor Santos da Silva" -> "Vitor Silva")
+const PARTICULAS_NOME = new Set(['da', 'de', 'do', 'das', 'dos', 'e']);
+
+function palavrasNome(nome) {
   const partes = String(nome || '').trim().split(/\s+/).filter(Boolean);
+  const significativas = partes.filter(p => !PARTICULAS_NOME.has(p.toLowerCase()));
+  return significativas.length > 0 ? significativas : partes;
+}
+
+function capitalizar(palavra) {
+  return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+}
+
+// Nomes chegam do IXC em CAIXA ALTA
+function nomeFormatado(nome) {
+  return String(nome || '').trim().split(/\s+/).filter(Boolean)
+    .map(p => (PARTICULAS_NOME.has(p.toLowerCase()) ? p.toLowerCase() : capitalizar(p)))
+    .join(' ');
+}
+
+function nomeCurto(nome) {
+  const partes = palavrasNome(nome);
+  if (partes.length === 0) return '';
+  if (partes.length === 1) return capitalizar(partes[0]);
+  return `${capitalizar(partes[0])} ${capitalizar(partes[partes.length - 1])}`;
+}
+
+function iniciais(nome) {
+  const partes = palavrasNome(nome);
   if (partes.length === 0) return '?';
   return (partes[0][0] + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase();
+}
+
+// Foto real do colaborador; cai para as iniciais quando não há foto ou ela falha ao carregar
+function AvatarAniversariante({ nome, foto }) {
+  const [erro, setErro] = useState(false);
+  const src = erro ? null : resolveAvatarUrl(foto);
+  return (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-soft)] text-[13px] font-bold text-[var(--accent)]">
+      {src
+        ? <img src={src} alt="" className="h-full w-full object-cover" onError={() => setErro(true)} />
+        : iniciais(nome)}
+    </div>
+  );
 }
 
 function AniversariantesCard() {
@@ -910,9 +969,11 @@ function AniversariantesCard() {
   const rotuloData = (c) => {
     if (c.dias === 0) return 'Hoje';
     if (c.dias === 1) return 'Amanhã';
-    const [, mes, dia] = String(c.data_nascimento).slice(0, 10).split('-');
-    return `${dia}/${mes}`;
+    return `em ${c.dias} dias`;
   };
+
+  // Departamento é complementar: só aparece quando resolve, senão some sem deixar espaço
+  const departamento = (c) => deptoMap[String(c.id_departamento)] || deptoMap[String(c.id_funcao)] || '';
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
@@ -927,7 +988,7 @@ function AniversariantesCard() {
       </div>
       <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
         {loading ? [1, 2, 3].map(i => (
-          <div key={i} className="flex animate-pulse items-center gap-3 py-1.5">
+          <div key={i} className="flex animate-pulse items-center gap-3 border-l-2 border-l-transparent px-2 py-1.5">
             <div className="h-9 w-9 rounded-full bg-surface-raised" />
             <div className="flex-1">
               <div className="h-3 w-2/3 rounded bg-surface-raised" />
@@ -937,20 +998,28 @@ function AniversariantesCard() {
           </div>
         )) : aniversariantes.length === 0 ? (
           <div className="py-4 text-center text-[13px] text-muted">Nenhum aniversariante nos próximos 7 dias</div>
-        ) : aniversariantes.map(c => (
-          <div key={c.funcionario_id} className="flex items-center gap-3 rounded-lg px-1 py-1.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[13px] font-bold text-[var(--accent)]">
-              {iniciais(c.funcionario_nome)}
+        ) : aniversariantes.map(c => {
+          const iminente = c.dias <= 1;
+          const depto = departamento(c);
+          return (
+            <div
+              key={c.funcionario_id}
+              title={nomeFormatado(c.funcionario_nome)}
+              className={`flex items-center gap-3 rounded-lg border-l-2 px-2 py-1.5 transition-colors ${iminente ? 'border-l-[var(--success-bento)] bg-surface-raised' : 'border-l-transparent hover:bg-surface-raised'}`}
+            >
+              <AvatarAniversariante nome={c.funcionario_nome} foto={c.foto_perfil} />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[13px] font-semibold text-foreground">{nomeCurto(c.funcionario_nome)}</div>
+                <div className="truncate text-[11.5px] text-muted">
+                  {dataAniversarioExtenso(c.data_nascimento)}{depto ? ` · ${depto}` : ''}
+                </div>
+              </div>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${iminente ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-surface-raised text-faint'}`}>
+                {rotuloData(c)}
+              </span>
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-semibold text-foreground">{c.funcionario_nome}</div>
-              <div className="truncate text-[11.5px] text-muted">{deptoMap[String(c.id_departamento)] || ''}</div>
-            </div>
-            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${c.dias === 0 ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-surface-raised text-faint'}`}>
-              {c.dias === 0 ? 'Hoje' : rotuloData(c)}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
       </div>
     </div>
