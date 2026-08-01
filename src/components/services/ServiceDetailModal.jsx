@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, X, Check, ShieldCheck, Zap, Clock, CreditCard, BarChart2 } from 'lucide-react';
+import { isTopSeller as calcTopSeller } from '../../utils/planTaxonomy';
 
-export default function ServiceDetailModal({ isOpen, onClose, data, type, formatCurrency, onToggleCompare, isComparing, isAdmin, onEditClick }) {
+export default function ServiceDetailModal({ isOpen, onClose, data, type, formatCurrency, onToggleCompare, isComparing, isAdmin, onEditClick, maxVendas = 0 }) {
   if (!isOpen || !data) return null;
 
   const isPlan = type === 'plan';
@@ -10,7 +11,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
   const isStreaming = type === 'streaming';
 
   const vendas = data.vendas_mes || 0;
-  const isTopSeller = vendas > 5;
+  const isTopSeller = calcTopSeller(vendas, maxVendas);
 
   return (
     <AnimatePresence>

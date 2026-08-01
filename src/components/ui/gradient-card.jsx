@@ -2,30 +2,9 @@ import * as React from "react";
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const GRADIENT_VARIANTS = {
-  orange:
-    "bg-gradient-to-br from-[#FDE8D0] via-[#F7D3A6] to-[#E5B574] text-amber-950 border-amber-300/70 dark:from-[#3D2206] dark:via-[#4A2C0A] dark:to-[#2A1603] dark:text-amber-100 dark:border-amber-700/50 shadow-amber-500/5",
-  gray:
-    "bg-gradient-to-br from-[#E2E8F0] via-[#CBD5E1] to-[#94A3B8] text-slate-900 border-slate-300/70 dark:from-[#0F172A] dark:via-[#1E293B] dark:to-[#090D16] dark:text-slate-100 dark:border-slate-700/50 shadow-slate-500/5",
-  purple:
-    "bg-gradient-to-br from-[#E9D5FF] via-[#D8B4FE] to-[#C084FC] text-purple-950 border-purple-300/70 dark:from-[#2E1065] dark:via-[#3B0764] dark:to-[#1E0542] dark:text-purple-100 dark:border-purple-700/50 shadow-purple-500/5",
-  green:
-    "bg-gradient-to-br from-[#D1FAE5] via-[#A7F3D0] to-[#6EE7B7] text-emerald-950 border-emerald-300/70 dark:from-[#022C22] dark:via-[#064E3B] dark:to-[#011B14] dark:text-emerald-100 dark:border-emerald-700/50 shadow-emerald-500/5",
-  blue:
-    "bg-gradient-to-br from-[#E0F2FE] via-[#BAE6FD] to-[#7DD3FC] text-sky-950 border-sky-300/70 dark:from-[#0C4A6E] dark:via-[#075985] dark:to-[#032B42] dark:text-sky-100 dark:border-sky-700/50 shadow-sky-500/5",
-  rose:
-    "bg-gradient-to-br from-[#FFE4E6] via-[#FECDD3] to-[#FDA4AF] text-rose-950 border-rose-300/70 dark:from-[#4C0519] dark:via-[#881337] dark:to-[#2B020D] dark:text-rose-100 dark:border-rose-700/50 shadow-rose-500/5",
-};
-
-// 3D Illustration Graphic Presets
-const ILLUSTRATIONS_3D = {
-  wifi: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-5i9EDsbgEZk9k7NBeKt3ImNXkx0F66.png&w=320&q=75", // 3D Shield / Builders
-  shield: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-5i9EDsbgEZk9k7NBeKt3ImNXkx0F66.png&w=320&q=75",
-  company: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-CVv0qK2DYZbOAQP2LboVFgQGt0UMfB.png&w=320&q=75",
-  cubes: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-5WJZLkaCfLUnCYpgNz89tPx5C4KYgJ.png&w=320&q=75",
-  globe: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-Q24CTBwBqnBrGujxuykBW9GfOYTdeE.png&w=320&q=75",
-};
+import { useCardGradient } from "../../hooks/useCardGradient";
+import { resolveIllustration } from "../../utils/serviceIllustrations";
+import useTouchOnly from "../../hooks/useTouchOnly";
 
 const GradientCard = React.forwardRef(
   (
@@ -35,32 +14,35 @@ const GradientCard = React.forwardRef(
       badgeText,
       badgeColor,
       title,
+      subtitle,
       description,
       ctaText = "Ver detalhes",
-      ctaHref,
       onCtaClick,
       onClick,
       imageUrl,
       illustrationType = "wifi",
-      iconName,
       children,
       topRightContent,
+      footerRight,
       ...props
     },
     ref
   ) => {
+    const isTouchOnly = useTouchOnly();
+    const { style: gradientStyle } = useCardGradient(gradient);
+
     const cardAnimation = {
       rest: { scale: 1, y: 0 },
-      hover: { scale: 1.03, y: -4 },
+      // Em touch o hover "gruda" depois do toque, então não anima.
+      hover: isTouchOnly ? { scale: 1, y: 0 } : { scale: 1.03, y: -4 },
     };
 
     const imageAnimation = {
       rest: { scale: 1, rotate: 0 },
-      hover: { scale: 1.1, rotate: 3 },
+      hover: isTouchOnly ? { scale: 1, rotate: 0 } : { scale: 1.1, rotate: 3 },
     };
 
-    const gradientClass = GRADIENT_VARIANTS[gradient] || GRADIENT_VARIANTS.gray;
-    const graphicSrc = imageUrl || ILLUSTRATIONS_3D[illustrationType] || ILLUSTRATIONS_3D.wifi;
+    const graphicSrc = imageUrl || resolveIllustration(illustrationType);
 
     const handleClick = (e) => {
       if (onClick) onClick(e);
@@ -80,30 +62,36 @@ const GradientCard = React.forwardRef(
       >
         <div
           className={cn(
-            "relative flex flex-col justify-between h-full w-full overflow-hidden rounded-2xl p-5 sm:p-6 border shadow-md transition-shadow duration-300 hover:shadow-xl",
-            gradientClass,
+            "group relative flex flex-col justify-between h-full w-full overflow-hidden rounded-2xl p-5 sm:p-6 border shadow-md transition-shadow duration-300 hover:shadow-xl",
             className
           )}
+          style={gradientStyle}
           {...props}
         >
-          {/* Decorative 3D background image with animation */}
+          {/* Ilustração decorativa de fundo */}
           {graphicSrc && (
             <motion.img
               src={graphicSrc}
-              alt={`${title} graphic`}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              width={400}
+              height={400}
               variants={imageAnimation}
               transition={{ type: "spring", stiffness: 350, damping: 18 }}
-              className="absolute -right-8 -bottom-8 w-44 sm:w-52 h-44 sm:h-52 opacity-85 dark:opacity-75 pointer-events-none select-none object-contain drop-shadow-md"
+              // Menor e mais discreta que antes: com o card mais denso, a arte
+              // de 208px cobria a barra de vendas e o botão de comparar.
+              className="absolute -right-6 -bottom-6 w-28 sm:w-32 h-28 sm:h-32 opacity-40 dark:opacity-30 pointer-events-none select-none object-contain"
             />
           )}
 
-          {/* Top Header */}
-          <div className="z-10 flex items-center justify-between gap-2 mb-3">
+          {/* Cabeçalho */}
+          <div className="relative z-10 flex items-start justify-between gap-2 mb-3">
             {badgeText ? (
               <div className="inline-flex items-center gap-2 rounded-full bg-black/10 dark:bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-md shadow-xs">
                 <span
                   className="h-2 w-2 rounded-full shrink-0"
-                  style={{ backgroundColor: badgeColor || "#4A9EF5" }}
+                  style={{ backgroundColor: badgeColor || "var(--accent)" }}
                 />
                 <span className="truncate">{badgeText}</span>
               </div>
@@ -116,28 +104,41 @@ const GradientCard = React.forwardRef(
             )}
           </div>
 
-          {/* Card Content */}
-          <div className="z-10 flex flex-col flex-grow justify-between pr-8">
+          {/* Conteúdo */}
+          <div className="relative z-10 flex flex-col flex-grow justify-between">
             <div>
               {title && (
-                <h3 className="text-xl sm:text-2xl font-black tracking-tight leading-tight mb-1.5 drop-shadow-xs">
+                <h3 className="text-xl sm:text-2xl font-black tracking-tight leading-tight drop-shadow-xs">
                   {title}
                 </h3>
               )}
+              {subtitle && (
+                <p className="mt-1 text-[12px] font-semibold opacity-75 line-clamp-2 leading-snug">
+                  {subtitle}
+                </p>
+              )}
               {description && (
-                <p className="text-xs sm:text-sm font-medium opacity-90 line-clamp-2 max-w-[85%] leading-snug">
+                <p className="mt-1.5 text-xs sm:text-sm font-medium opacity-90 line-clamp-2 max-w-[85%] leading-snug">
                   {description}
                 </p>
               )}
             </div>
 
-            {/* Custom Content Slot */}
             {children && <div className="my-2">{children}</div>}
 
-            {/* Call to Action */}
-            <div className="mt-4 inline-flex items-center gap-2 text-xs sm:text-sm font-bold opacity-95 group">
-              <span>{ctaText}</span>
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            {/* Rodapé: CTA + slot opcional */}
+            <div className="mt-4 flex items-center justify-between gap-2">
+              <div className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-xs sm:text-sm font-bold opacity-95">
+                <span>{ctaText}</span>
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </div>
+              {footerRight && (
+                // Sem este stopPropagation, clicar no slot também dispara o
+                // onClick do card e abre o modal de detalhes.
+                <div className="z-20 shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {footerRight}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -148,4 +149,4 @@ const GradientCard = React.forwardRef(
 
 GradientCard.displayName = "GradientCard";
 
-export { GradientCard, GRADIENT_VARIANTS };
+export { GradientCard };

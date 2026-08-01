@@ -1,52 +1,77 @@
 import React from 'react';
 import { GradientCard } from '../ui/gradient-card';
+import {
+    CATEGORIA,
+    classificarPlano,
+    parseVelocidade,
+    parseStreaming,
+    isTopSeller as calcTopSeller,
+    vendasRatio as calcVendasRatio,
+} from '../../utils/planTaxonomy';
+
+const MAX_STREAMING_CHIPS = 3;
 
 export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurrency, maxVendas, isComparing = false, onToggleCompare, onSelect }) {
     const vendas = plan.vendas_mes || 0;
-    const maxVendasLocal = Math.max(maxVendas, 10);
-    const vendasRatio = Math.min((vendas / maxVendasLocal) * 100, 100);
-    
-    const isTopSeller = vendas >= maxVendasLocal * 0.6 && vendas > 0;
-    
-    const desc = (plan.descricao || '').toUpperCase();
-    const isPJ = desc.includes('PJ') || desc.includes('JURIDICA');
-    const isLink = desc.includes('LINK');
+    const vendasRatio = calcVendasRatio(vendas, maxVendas);
+    const isTopSeller = calcTopSeller(vendas, maxVendas);
 
-    // Rich gradient matching the reference card style
-    const gradient = isLink ? 'orange' : isPJ ? 'green' : isTopSeller ? 'blue' : 'gray';
-    const badgeColor = isTopSeller ? '#10B981' : isLink ? '#D97706' : isPJ ? '#059669' : '#2563EB';
-    const badgeText = isTopSeller ? 'MAIS VENDIDO' : isLink ? 'LINK DEDICADO' : isPJ ? 'INTERNET PJ' : 'INTERNET PF';
-    const illustrationType = isLink ? 'company' : isPJ ? 'globe' : isTopSeller ? 'wifi' : 'wifi';
+    const categoria = classificarPlano(plan.descricao);
+    const isPJ = categoria === CATEGORIA.PJ;
+    const isLink = categoria === CATEGORIA.LINK;
+
+    // A cor codifica apenas a categoria. "Mais vendido" vira sinal ortogonal
+    // (estrela + ring), senão a informação PF/PJ se perde nos campeões de venda.
+    const gradient = isLink ? 'orange' : isPJ ? 'green' : 'blue';
+    const badgeColor = isLink ? '#D97706' : isPJ ? '#059669' : '#2563EB';
+    const badgeText = isLink ? 'LINK DEDICADO' : isPJ ? 'INTERNET PJ' : 'INTERNET PF';
+    const illustrationType = isLink || isPJ ? 'company' : 'wifi';
+
+    // Nomes de plano chegam com até ~70 caracteres. Em vez de truncar, rebaixa:
+    // a velocidade vira o título e o nome completo vira subtítulo com clamp.
+    const velocidade = parseVelocidade(plan.descricao);
+    const title = velocidade ? `${velocidade} Mega` : plan.descricao;
+    const subtitle = velocidade ? plan.descricao : null;
+
+    const streamings = parseStreaming(plan.descricao);
+    const streamingsVisiveis = streamings.slice(0, MAX_STREAMING_CHIPS);
+    const streamingsRestantes = streamings.length - streamingsVisiveis.length;
+
+    // taxa_instalacao é texto livre no backend — vem tanto como 'Grátis'
+    // quanto como '50'. Formata só quando for puramente numérico.
+    const taxaRaw = String(plan.taxa_instalacao ?? '').trim();
+    const taxa = taxaRaw === ''
+        ? 'Grátis'
+        : /^\d+([.,]\d+)?$/.test(taxaRaw)
+            ? formatCurrency(taxaRaw.replace(',', '.'))
+            : taxaRaw;
+
+    const meta = [`Instalação ${taxa}`, plan.prazo_instalacao].filter(Boolean).join(' · ');
 
     return (
         <GradientCard
             gradient={gradient}
             badgeText={badgeText}
             badgeColor={badgeColor}
-            title={plan.descricao}
-            description={`Velocidade e estabilidade garantidas. R$ ${formatCurrency(plan.valor_mensal)}/mês com instalação ${plan.taxa_instalacao ? formatCurrency(plan.taxa_instalacao) : 'grátis'}.`}
+            title={title}
+            subtitle={subtitle}
             ctaText="Ver detalhes"
             illustrationType={illustrationType}
             onClick={() => onSelect && onSelect(plan, 'plan')}
-            className={`transition-all duration-300 ${
-                isComparing ? 'ring-2 ring-[#4A9EF5] shadow-lg shadow-[#4A9EF5]/30' : ''
-            }`}
+            className={`transition-all duration-300 ${isComparing ? 'ring-2 ring-[var(--accent)] shadow-lg' : ''}`}
             topRightContent={
-                <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-1.5 cursor-pointer select-none px-2 py-1 rounded-full bg-black/10 dark:bg-white/10 backdrop-blur-md">
-                        <input 
-                            type="checkbox" 
-                            checked={isComparing} 
-                            onChange={(e) => {
-                                e.stopPropagation();
-                                onToggleCompare(plan.id);
-                            }}
-                            className="w-3.5 h-3.5 rounded border-slate-300 text-[#4A9EF5] focus:ring-[#4A9EF5] cursor-pointer"
-                        />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Comparar</span>
-                    </label>
+                <div className="flex items-center gap-1.5">
+                    {isTopSeller && (
+                        <span
+                            title="Entre os mais vendidos do mês"
+                            className="inline-flex items-center gap-1 rounded-full bg-black/10 dark:bg-white/10 px-2 py-1 backdrop-blur-md"
+                        >
+                            <span className="material-symbols-outlined text-[13px] font-bold">star</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Top</span>
+                        </span>
+                    )}
                     {isAdmin && (
-                        <button 
+                        <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onEditClick(plan);
@@ -59,14 +84,63 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
                     )}
                 </div>
             }
+            footerRight={
+                <button
+                    type="button"
+                    onClick={() => onToggleCompare(plan.id)}
+                    aria-pressed={isComparing}
+                    title={isComparing ? 'Remover da comparação' : 'Adicionar à comparação'}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md transition-colors cursor-pointer ${
+                        isComparing ? 'bg-current/20 ring-1 ring-current/40' : 'bg-black/10 dark:bg-white/10 hover:bg-black/20'
+                    }`}
+                >
+                    <span className="material-symbols-outlined text-[14px] font-bold">
+                        {isComparing ? 'check' : 'compare_arrows'}
+                    </span>
+                    {isComparing ? 'Comparando' : 'Comparar'}
+                </button>
+            }
         >
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-col gap-2">
+                {streamingsVisiveis.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1">
+                        {streamingsVisiveis.map(s => (
+                            <span
+                                key={s}
+                                className="rounded-md bg-black/10 dark:bg-white/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide backdrop-blur-md"
+                            >
+                                {s}
+                            </span>
+                        ))}
+                        {streamingsRestantes > 0 && (
+                            <span className="text-[10px] font-bold opacity-70">+{streamingsRestantes}</span>
+                        )}
+                    </div>
+                )}
+
                 <div className="flex items-baseline gap-1">
                     <span className="text-2xl sm:text-3xl font-black tracking-tight">
                         {formatCurrency(plan.valor_mensal)}
                     </span>
                     <span className="text-xs font-semibold opacity-80">/mês</span>
                 </div>
+
+                {/* Prazos do IXC são longos ("Até 2 dias úteis (cidade), até 3
+                    dias úteis (povoados)") — uma linha só, resto no title. */}
+                <div className="truncate font-mono text-[10.5px] tracking-[0.04em] opacity-70" title={meta}>
+                    {meta}
+                </div>
+
+                {vendas > 0 && (
+                    <div className="flex items-center gap-2">
+                        <div className="h-1 flex-1 max-w-[90px] overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+                            <div className="h-full rounded-full bg-current opacity-60" style={{ width: `${vendasRatio}%` }} />
+                        </div>
+                        <span className="font-mono text-[10.5px] font-semibold opacity-70">
+                            {vendas} {vendas === 1 ? 'venda' : 'vendas'}
+                        </span>
+                    </div>
+                )}
             </div>
         </GradientCard>
     );

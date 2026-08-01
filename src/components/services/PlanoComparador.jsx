@@ -1,27 +1,5 @@
 import React, { useMemo } from 'react';
-
-// ─── Funções de parsing do nome do plano ──────────────────────────────────────
-
-/**
- * Extrai a velocidade em Mbps do nome do plano.
- * Ex: "500 MEGA + WATCH - AL" → 500
- */
-function parseVelocidade(descricao = '') {
-    const match = descricao.match(/(\d+)\s*MEGA/i);
-    return match ? parseInt(match[1], 10) : null;
-}
-
-/**
- * Extrai palavras-chave de streaming do nome do plano.
- * Ex: "500 MEGA + WATCH + PARAMOUNT + ITTV 32c - AL"
- *   → ["WATCH", "PARAMOUNT", "ITTV"]
- */
-const STREAMING_KEYWORDS = ['WATCH', 'PARAMOUNT', 'MAX', 'PREMIERE', 'ITTV', 'LEVEDUCA', 'NETFLIX', 'DISNEY', 'STAR', 'HBO'];
-
-function parseStreaming(descricao = '') {
-    const upper = descricao.toUpperCase();
-    return STREAMING_KEYWORDS.filter(kw => upper.includes(kw));
-}
+import { parseVelocidade, parseStreaming } from '../../utils/planTaxonomy';
 
 /**
  * Tenta estimar o valor dos streamings inclusos cruzando

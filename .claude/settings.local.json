@@ -6,7 +6,23 @@
       "Bash(openspec list *)",
       "Bash(dir /s /b \"login-b*\")",
       "Bash(dir /s /b \"nova_tela*\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(grep -iE \"^\\(sharp|imagemin|jimp\\)$\")",
+      "Bash(node -e \"console.log\\(process.version\\)\")",
+      "Bash(npx --yes sharp-cli@5 -i \"src/image/services/wifi.png\" -o src/image/services/ resize 400 400 --fit inside)",
+      "Bash(npx --yes sharp-cli@5 -i \"src/image/services/company.png\" -o src/image/services/ resize 400 400 --fit inside)",
+      "Bash(npx --yes sharp-cli@5 -i \"src/image/services/cubes.png\" -o src/image/services/ resize 400 400 --fit inside)",
+      "Bash(npx --yes sharp-cli@5 -i \"src/image/services/globe.png\" -o src/image/services/ resize 400 400 --fit inside)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")",
+      "Bash(echo \"exit=$?\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
+      "Bash(netstat -ano)",
+      "Bash(git check-ignore *)",
+      "Bash(python -c ' *)"
+    ],
+    "additionalDirectories": [
+      "F:\\Projetos em Dev\\prestek_intranet\\src\\image\\services"
     ]
   }
 }

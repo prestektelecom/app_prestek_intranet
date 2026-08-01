@@ -64,3 +64,15 @@ export function resolveAvatarUrl(raw) {
     if (typeof raw === 'string') return raw;
     return null;
 }
+
+/**
+ * Avatar estável para quem não tem foto cadastrada: o mesmo id sempre resolve
+ * para a mesma ilustração. Os índices 32+ são os avatares femininos.
+ */
+export function getDeterministicAvatar(pessoa) {
+    if (!pessoa) return null;
+    const id = pessoa.id || 0;
+    const primeiroNome = String(pessoa.nome || '').trim().split(' ')[0].toLowerCase();
+    const isFeminino = /[aei]$/.test(primeiroNome);
+    return isFeminino ? AVATAR_PNGS[32 + (id % 16)] : AVATAR_PNGS[id % 32];
+}
