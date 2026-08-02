@@ -7,20 +7,20 @@ export default function Login({ onLogin, setCurrentView }) {
     const loginProps = useLogin(onLogin)
 
     return (
-        <div className="min-h-screen w-full relative overflow-hidden flex flex-col justify-between bg-gradient-to-br from-[#EAF4FF] via-[#F0F8FF] to-[#FAFCFF] font-sans selection:bg-[#4A9EF5]/20">
+        <div className="min-h-screen w-full relative overflow-hidden flex flex-col justify-between bg-gradient-to-br from-[#FFF7ED] via-[#F0F8FF] to-[#FAFCFF] font-sans selection:bg-[#EC7D23]/20">
             {/* Dotted backdrop */}
             <svg className="absolute inset-0 opacity-[0.25] pointer-events-none" width="100%" height="100%">
                 <defs>
                     <pattern id="dots-bg" width="32" height="32" patternUnits="userSpaceOnUse">
-                        <circle cx="2" cy="2" r="1.1" fill="#4A9EF5" opacity="0.25" />
+                        <circle cx="2" cy="2" r="1.1" fill="#EC7D23" opacity="0.25" />
                     </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#dots-bg)" />
             </svg>
 
             {/* Soft Ambient Blobs */}
-            <div className="absolute -top-40 -left-28 w-[460px] h-[460px] rounded-full bg-[#4A9EF5]/15 filter blur-[80px] pointer-events-none" />
-            <div className="absolute -bottom-40 -right-24 w-[420px] h-[420px] rounded-full bg-[#4A9EF5]/10 filter blur-[80px] pointer-events-none" />
+            <div className="absolute -top-40 -left-28 w-[460px] h-[460px] rounded-full bg-[#EC7D23]/15 filter blur-[80px] pointer-events-none" />
+            <div className="absolute -bottom-40 -right-24 w-[420px] h-[420px] rounded-full bg-[#EC7D23]/10 filter blur-[80px] pointer-events-none" />
 
             {/* Header / Top Bar */}
             <header className="relative z-10 flex justify-between items-center px-6 md:px-12 py-7 select-none">
@@ -32,13 +32,13 @@ export default function Login({ onLogin, setCurrentView }) {
                 <div className="flex gap-7 text-[13.5px] text-[#475467] font-medium items-center">
                     <button 
                         onClick={() => setCurrentView('status')} 
-                        className="hover:text-[#4A9EF5] transition-colors text-[13.5px] text-[#475467] font-medium"
+                        className="hover:text-[#C2410C] transition-colors text-[13.5px] text-[#475467] font-medium"
                     >
                         Status
                     </button>
                     <button 
                         onClick={() => setCurrentView('docs')} 
-                        className="hover:text-[#4A9EF5] transition-colors text-[13.5px] text-[#475467] font-medium"
+                        className="hover:text-[#C2410C] transition-colors text-[13.5px] text-[#475467] font-medium"
                     >
                         Docs
                     </button>
@@ -46,7 +46,7 @@ export default function Login({ onLogin, setCurrentView }) {
                         href="https://prestek.com.br" 
                         target="_blank" 
                         rel="noreferrer" 
-                        className="text-[#4A9EF5] font-semibold hover:opacity-80 transition-opacity inline-flex items-center gap-1"
+                        className="text-[#C2410C] font-semibold hover:opacity-80 transition-opacity inline-flex items-center gap-1"
                     >
                         Suporte <ArrowIcon />
                     </a>
@@ -56,7 +56,7 @@ export default function Login({ onLogin, setCurrentView }) {
             {/* Centered Dual Card */}
             <main className="relative z-10 flex-grow flex items-center justify-center px-4 py-8 md:py-16">
                 <div
-                    className="w-full max-w-[980px] grid grid-cols-1 lg:grid-cols-2 bg-gradient-to-br from-[#EAF4FF] via-[#F0F8FF] to-[rgba(74,158,245,0.05)] rounded-3xl overflow-hidden shadow-[0_50px_100px_-30px_rgba(74,158,245,0.22),_0_0_0_1px_rgba(255,255,255,0.8)] border border-[#EAF4FF] transition-all duration-300"
+                    className="w-full max-w-[980px] grid grid-cols-1 lg:grid-cols-2 bg-gradient-to-br from-[#FFF7ED] via-[#F0F8FF] to-[rgba(236,125,35,0.05)] rounded-3xl overflow-hidden shadow-[0_50px_100px_-30px_rgba(236,125,35,0.22),_0_0_0_1px_rgba(255,255,255,0.8)] border border-[#FFF7ED] transition-all duration-300"
                 >
                     {/* Painel Esquerdo: Ilustração */}
                     <div className="hidden lg:block h-full">
@@ -64,7 +64,7 @@ export default function Login({ onLogin, setCurrentView }) {
                     </div>
 
                     {/* Painel Direito: Formulário */}
-                    <div className="h-full bg-white rounded-none lg:rounded-tl-[80px] shadow-[-8px_0_32px_rgba(74,158,245,0.08)]">
+                    <div className="h-full bg-white rounded-none lg:rounded-tl-[80px] shadow-[-8px_0_32px_rgba(236,125,35,0.08)]">
                         <LoginForm {...loginProps} />
                     </div>
                 </div>

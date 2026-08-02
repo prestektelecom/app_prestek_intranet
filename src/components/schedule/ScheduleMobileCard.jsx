@@ -33,7 +33,7 @@ export default function ScheduleMobileCard({
       aria-label={isAdmin ? `Editar plantão do dia ${date}` : undefined}
       className={`rounded-2xl border p-4 transition-all ${
         isAdmin ? 'cursor-pointer active:scale-[0.99]' : ''
-      } ${isToday ? 'border-[#4A9EF5] bg-[#4A9EF5]/[0.04]' : 'border-[#E4ECF5] bg-white'}`}
+      } ${isToday ? 'border-[#EC7D23] bg-[#EC7D23]/[0.04]' : 'border-[#E4ECF5] bg-white'}`}
       style={{ borderColor: isToday ? C.accent : C.line }}
     >
       <div className="flex items-start justify-between gap-3 mb-4">
@@ -41,7 +41,7 @@ export default function ScheduleMobileCard({
           <div
             className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center font-black text-sm ${
               isToday
-                ? 'bg-[#4A9EF5] text-white shadow-md shadow-[#4A9EF5]/30'
+                ? 'bg-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/30'
                 : isWeekend
                 ? 'bg-[#F7FAFD] text-[#475467]/70'
                 : 'bg-[#F7FAFD] text-[#0B1B2E]'
@@ -51,7 +51,7 @@ export default function ScheduleMobileCard({
             <span className="text-lg leading-none mt-0.5">{date.split('/')[0]}</span>
           </div>
           <div>
-            <div className={`font-black text-base ${isToday ? 'text-[#4A9EF5]' : 'text-[#0B1B2E]'}`}>
+            <div className={`font-black text-base ${isToday ? 'text-[#C2410C]' : 'text-[#0B1B2E]'}`}>
               {date}
             </div>
             <div className={`text-xs font-bold ${isWeekend ? 'text-[#475467]/70' : 'text-[#475467]'}`}>
@@ -64,7 +64,7 @@ export default function ScheduleMobileCard({
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            className="w-9 h-9 rounded-full bg-[#EAF4FF] text-[#4A9EF5] flex items-center justify-center shadow-sm shrink-0"
+            className="w-9 h-9 rounded-full bg-[#FFF7ED] text-[#C2410C] flex items-center justify-center shadow-sm shrink-0"
             aria-label={`Editar plantão ${date}`}
           >
             <span className="material-symbols-outlined text-[18px]">edit</span>
@@ -86,13 +86,13 @@ export default function ScheduleMobileCard({
           <div className="flex flex-col gap-2">
             {Array.isArray(mgr) ? (
               mgr.map((u, i) => (
-                <div key={i} className="flex items-center gap-2 bg-[#EAF4FF]/60 rounded-full pl-1.5 pr-3 py-1 border border-[#4A9EF5]/10 w-fit">
+                <div key={i} className="flex items-center gap-2 bg-[#FFF7ED]/60 rounded-full pl-1.5 pr-3 py-1 border border-[#EC7D23]/10 w-fit">
                   <UserAvatar user={u} hideName className="!gap-0 !size-8" />
                   <span className="font-bold text-[#0B1B2E] text-xs whitespace-nowrap">{u.name}</span>
                 </div>
               ))
             ) : (
-              <div className="flex items-center gap-2 bg-[#EAF4FF]/60 rounded-full pl-1.5 pr-3 py-1 border border-[#4A9EF5]/10 w-fit">
+              <div className="flex items-center gap-2 bg-[#FFF7ED]/60 rounded-full pl-1.5 pr-3 py-1 border border-[#EC7D23]/10 w-fit">
                 <UserAvatar user={mgr} hideName className="!gap-0" />
                 <span className="font-bold text-[#0B1B2E] text-xs whitespace-nowrap">{mgr.name}</span>
               </div>

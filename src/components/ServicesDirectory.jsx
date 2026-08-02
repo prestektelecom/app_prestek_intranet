@@ -458,7 +458,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                                         setEditingTechService({ id: null });
                                         setEditTechForm({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
                                     }}
-                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)] transition-all hover:opacity-90"
+                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#9A3412] to-[#EC7D23] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">add</span>
                                     Novo Serviço
@@ -495,7 +495,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                                         setEditingStreamingService({ id: null });
                                         setEditStreamingForm({ service: '', value: '', deadline: 'Mensal', icon: 'play_circle' });
                                     }}
-                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)] transition-all hover:opacity-90"
+                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#9A3412] to-[#EC7D23] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">add</span>
                                     Novo Pacote

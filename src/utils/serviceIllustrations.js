@@ -1,21 +1,28 @@
 // Ilustrações decorativas dos cards de serviço.
 //
-// Antes eram hotlink de thiings.co (proxy do Next sobre um blob do Vercel de
-// terceiros). Numa intranet isso significa que um bloqueio de rede derruba a
-// arte de todos os cards de uma vez. Agora são servidas do próprio bundle:
-// imports ESM, então o Vite versiona com hash e falha o build se um arquivo
-// sumir. Redimensionadas para 400px (renderizam a ~208px no maior breakpoint).
+// Origem: 3dicons (https://3dicons.co) — CC0, uso comercial livre e sem
+// exigência de atribuição. Variante "color", ângulo "dynamic".
+//
+// Substituíram um conjunto do thiings.co que era hotlink externo (bloqueio de
+// rede derrubava a arte de todos os cards) e cuja licença comercial é paga.
+// Aquelas imagens também não tinham relação com o conteúdo: o card de
+// Internet PJ era decorado com uma palheta de guitarra.
+//
+// Servidas do bundle: imports ESM, então o Vite versiona com hash e o build
+// falha se um arquivo sumir.
 
 import wifi from '../image/services/wifi.png';
-import company from '../image/services/company.png';
-import cubes from '../image/services/cubes.png';
-import globe from '../image/services/globe.png';
+import computer from '../image/services/computer.png';
+import link from '../image/services/link.png';
+import tool from '../image/services/tool.png';
+import play from '../image/services/play.png';
 
 export const SERVICE_ILLUSTRATIONS = {
-    wifi,     // planos PF
-    company,  // planos PJ e Link Dedicado
-    cubes,    // serviços técnicos
-    globe,    // pacotes de streaming
+    wifi,      // planos de Internet PF — as próprias ondas de sinal
+    computer,  // planos de Internet PJ
+    link,      // Link Dedicado
+    tool,      // serviços técnicos
+    play,      // pacotes de streaming
 };
 
 export const DEFAULT_ILLUSTRATION = 'wifi';

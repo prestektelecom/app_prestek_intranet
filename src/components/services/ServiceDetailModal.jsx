@@ -1,146 +1,337 @@
-import React from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, X, Check, ShieldCheck, Zap, Clock, CreditCard, BarChart2 } from 'lucide-react';
-import { isTopSeller as calcTopSeller } from '../../utils/planTaxonomy';
+import { X, Clock, CreditCard, BarChart2, Star, ArrowLeftRight, Check, Pencil } from 'lucide-react';
+import {
+    CATEGORIA,
+    classificarPlano,
+    parseVelocidade,
+    parseStreaming,
+    isTopSeller as calcTopSeller,
+    vendasRatio as calcVendasRatio,
+} from '../../utils/planTaxonomy';
+import { resolveIllustration } from '../../utils/serviceIllustrations';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
+import { useCardGradient } from '../../hooks/useCardGradient';
+import { tone } from '../../utils/tone';
+
+// taxa_instalacao é texto livre no backend — vem tanto como 'Grátis' quanto
+// como '50'. Mesmo guard do PlanoBentoCard: formata só se for puramente numérico.
+function formatarTaxa(valor, formatCurrency) {
+    const raw = String(valor ?? '').trim();
+    if (raw === '') return 'Grátis';
+    return /^\d+([.,]\d+)?$/.test(raw) ? formatCurrency(raw.replace(',', '.')) : raw;
+}
+
+// O modal é o card em tamanho maior: deriva a mesma apresentação a partir dos
+// mesmos helpers, senão card e detalhe passam a discordar de badge e de cor.
+function derivarApresentacao(data, type, maxVendas, formatCurrency) {
+    if (type === 'plan') {
+        const categoria = classificarPlano(data.descricao);
+        const isPJ = categoria === CATEGORIA.PJ;
+        const isLink = categoria === CATEGORIA.LINK;
+        const velocidade = parseVelocidade(data.descricao);
+        const vendas = data.vendas_mes || 0;
+
+        return {
+            variant: isLink ? 'orange' : isPJ ? 'green' : 'blue',
+            badgeText: isLink ? 'LINK DEDICADO' : isPJ ? 'INTERNET PJ' : 'INTERNET PF',
+            badgeColor: isLink ? '#D97706' : isPJ ? '#059669' : '#2563EB',
+            illustrationType: isLink ? 'link' : isPJ ? 'computer' : 'wifi',
+            titulo: velocidade ? `${velocidade} Mega` : data.descricao,
+            subtitulo: velocidade ? data.descricao : null,
+            valor: formatCurrency(data.valor_mensal),
+            sufixoValor: '/mês',
+            specs: [
+                { icon: Clock, label: 'Prazo de Entrega', value: data.prazo_instalacao || 'A consultar' },
+                { icon: CreditCard, label: 'Taxa de Instalação', value: formatarTaxa(data.taxa_instalacao, formatCurrency) },
+            ],
+            streamings: parseStreaming(data.descricao),
+            temVendas: typeof data.vendas_mes !== 'undefined',
+            vendas,
+            ratio: calcVendasRatio(vendas, maxVendas),
+            isTopSeller: calcTopSeller(vendas, maxVendas),
+        };
+    }
+
+    const base = {
+        titulo: data.service || 'Detalhes do Serviço',
+        subtitulo: null,
+        valor: data.value || 'R$ 0,00',
+        sufixoValor: null,
+        streamings: [],
+        temVendas: false,
+        vendas: 0,
+        ratio: 0,
+        isTopSeller: false,
+        specs: [
+            { icon: Clock, label: 'Prazo de Entrega', value: data.deadline || 'A consultar' },
+            { icon: CreditCard, label: 'Pagamento', value: data.payment || 'À vista / Boleto' },
+        ],
+    };
+
+    if (type === 'tech') {
+        return {
+            ...base,
+            variant: 'purple',
+            illustrationType: 'tool',
+            badgeText: data.isFree ? 'GRÁTIS' : data.isSpecial ? 'INFORMATIVO' : 'SERVIÇO TÉCNICO',
+            badgeColor: data.isFree ? '#10B981' : data.isSpecial ? '#8B5CF6' : '#6366F1',
+            valor: data.isFree ? 'Isento de cobrança' : base.valor,
+        };
+    }
+
+    return {
+        ...base,
+        variant: 'rose',
+        illustrationType: 'play',
+        badgeText: 'STREAMING & MÍDIA',
+        badgeColor: '#E11D48',
+    };
+}
 
 export default function ServiceDetailModal({ isOpen, onClose, data, type, formatCurrency, onToggleCompare, isComparing, isAdmin, onEditClick, maxVendas = 0 }) {
-  if (!isOpen || !data) return null;
+    const C = useBentoTheme();
+    const tituloId = useId();
+    const fecharRef = useRef(null);
 
-  const isPlan = type === 'plan';
-  const isTech = type === 'tech';
-  const isStreaming = type === 'streaming';
+    // Hooks antes de qualquer return — a condição mora dentro do efeito.
+    useEffect(() => {
+        if (!isOpen) return undefined;
 
-  const vendas = data.vendas_mes || 0;
-  const isTopSeller = calcTopSeller(vendas, maxVendas);
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', onKeyDown);
 
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          transition={{ duration: 0.2 }}
-          className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white dark:bg-[#0B1B2E] border border-slate-200 dark:border-slate-800 shadow-2xl"
-        >
-          {/* Header Banner */}
-          <div className="relative p-6 bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white">
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+        const overflowAnterior = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        fecharRef.current?.focus();
+
+        return () => {
+            document.removeEventListener('keydown', onKeyDown);
+            document.body.style.overflow = overflowAnterior;
+        };
+    }, [isOpen, onClose]);
+
+    const isPlan = type === 'plan';
+    // derivarApresentacao roda antes do early-return porque useCardGradient é hook
+    // e precisa da variante; com data ausente cai no fallback vazio.
+    const p = data ? derivarApresentacao(data, type, maxVendas, formatCurrency) : null;
+    const { base } = useCardGradient(p ? p.variant : 'blue');
+
+    if (!isOpen || !data) return null;
+    const ilustracao = resolveIllustration(p.illustrationType);
+
+    // Fundo opaco em accentDeep (escuro nos 5 temas) com a cor da variante por
+    // cima como tinta: garante texto branco legível mesmo quando o token da
+    // variante é claro (warning no AMOLED, success no Cyber).
+    const heroStyle = {
+        backgroundColor: C.accentDeep,
+        backgroundImage: [
+            'linear-gradient(160deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.04) 65%)',
+            `linear-gradient(125deg, ${tone(base, 0.85)} 0%, ${tone(C.accentDark, 0.55)} 55%, ${tone(base, 0.35)} 100%)`,
+        ].join(', '),
+    };
+
+    return (
+        <AnimatePresence>
+            <div
+                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-6 backdrop-blur-md"
+                onClick={onClose}
             >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
-                {isPlan ? (isTopSeller ? '★ MAIS VENDIDO' : 'PLANO DE INTERNET') : isTech ? 'SERVIÇO TÉCNICO' : 'STREAMING & MÍDIA'}
-              </span>
-              {data.id && (
-                <span className="text-xs font-mono opacity-80">
-                  ID: #{data.id}
-                </span>
-              )}
-            </div>
-
-            <h2 className="text-2xl font-black leading-tight">
-              {data.descricao || data.service || 'Detalhes do Serviço'}
-            </h2>
-          </div>
-
-          {/* Body */}
-          <div className="p-6 space-y-6">
-            {/* Pricing Section */}
-            <div className="flex items-baseline justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
-                  Valor / Mensalidade
-                </span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-[#1F5BA8] dark:text-[#7FD4E8]">
-                    {isPlan ? formatCurrency(data.valor_mensal) : (data.value || 'R$ 0,00')}
-                  </span>
-                  {isPlan && <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">/mês</span>}
-                </div>
-              </div>
-
-              {isPlan && onToggleCompare && (
-                <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isComparing}
-                    onChange={() => onToggleCompare(data.id)}
-                    className="w-4 h-4 text-[#4A9EF5] rounded border-slate-300 focus:ring-[#4A9EF5]"
-                  />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Comparar</span>
-                </label>
-              )}
-            </div>
-
-            {/* Specifications Grid */}
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80">
-                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold text-xs mb-1">
-                  <Clock className="w-3.5 h-3.5 text-[#4A9EF5]" />
-                  <span>Prazo de Entrega</span>
-                </div>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {data.prazo_instalacao || data.deadline || 'A consultar'}
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80">
-                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-semibold text-xs mb-1">
-                  <CreditCard className="w-3.5 h-3.5 text-[#4A9EF5]" />
-                  <span>Taxa / Pagamento</span>
-                </div>
-                <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">
-                  {isPlan ? (data.taxa_instalacao ? formatCurrency(data.taxa_instalacao) : 'Isento (R$ 0)') : (data.payment || 'À vista / Boleto')}
-                </span>
-              </div>
-            </div>
-
-            {/* Performance Stats (If available) */}
-            {typeof data.vendas_mes !== 'undefined' && (
-              <div className="p-4 rounded-xl bg-[#EAF4FF] dark:bg-slate-900/80 border border-[#4A9EF5]/20">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
-                  <span className="flex items-center gap-1.5">
-                    <BarChart2 className="w-4 h-4 text-[#4A9EF5]" />
-                    Vendas no Mês Vigente
-                  </span>
-                  <span className="text-sm font-black text-[#1F5BA8] dark:text-[#7FD4E8]">{vendas} contratações</span>
-                </div>
-              </div>
-            )}
-
-            {/* Footer Buttons */}
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                onClick={() => {
-                  alert(`Solicitação registrada para: ${data.descricao || data.service}`);
-                  onClose();
-                }}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white font-bold text-sm shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
-              >
-                <span>Solicitar Serviço</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              {isAdmin && onEditClick && (
-                <button
-                  onClick={() => {
-                    onClose();
-                    onEditClick(data);
-                  }}
-                  className="py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                    transition={{ duration: 0.2 }}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby={tituloId}
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl sm:rounded-3xl border border-border bg-surface shadow-2xl"
                 >
-                  Editar
-                </button>
-              )}
+                    {/* Hero */}
+                    <div className="relative shrink-0 overflow-hidden p-6 pb-7 text-white" style={heroStyle}>
+                        <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none' }}>
+                            <defs>
+                                <pattern id="svc-detail-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#svc-detail-grid)" />
+                        </svg>
+
+                        <img
+                            src={ilustracao}
+                            alt=""
+                            aria-hidden="true"
+                            className="pointer-events-none absolute -bottom-7 -right-5 h-32 w-32 object-contain opacity-40"
+                        />
+
+                        <button
+                            onClick={onClose}
+                            aria-label="Fechar"
+                            className="absolute right-4 top-4 z-10 cursor-pointer rounded-full bg-white/15 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+
+                        <div className="relative flex flex-col gap-3 pr-14">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span
+                                    className="inline-flex items-center gap-2 rounded-full bg-black/25 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] backdrop-blur-md"
+                                >
+                                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.badgeColor }} />
+                                    {p.badgeText}
+                                </span>
+
+                                {p.isTopSeller && (
+                                    <span
+                                        title="Entre os mais vendidos do mês"
+                                        className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md"
+                                    >
+                                        <Star className="h-3 w-3 fill-current" />
+                                        Top
+                                    </span>
+                                )}
+
+                                {data.id && (
+                                    <span className="font-mono text-[10.5px] tracking-[0.15em] text-white/70">
+                                        ID #{data.id}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div>
+                                <h2 id={tituloId} className="text-2xl font-black leading-tight tracking-tight sm:text-3xl">
+                                    {p.titulo}
+                                </h2>
+                                {p.subtitulo && (
+                                    <p className="mt-1.5 line-clamp-2 text-[12px] font-semibold leading-snug text-white/80">
+                                        {p.subtitulo}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Corpo */}
+                    <div className="flex flex-col gap-4 overflow-y-auto p-6">
+                        {/* Preço */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface-raised p-4">
+                            <div>
+                                <span className="mb-1 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted">
+                                    {isPlan ? 'Valor / Mensalidade' : 'Valor'}
+                                </span>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-black tracking-tight text-[var(--accent)]">
+                                        {p.valor}
+                                    </span>
+                                    {p.sufixoValor && (
+                                        <span className="text-sm font-semibold text-muted">{p.sufixoValor}</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {isPlan && onToggleCompare && (
+                                <button
+                                    type="button"
+                                    onClick={() => onToggleCompare(data.id)}
+                                    aria-pressed={isComparing}
+                                    title={isComparing ? 'Remover da comparação' : 'Adicionar à comparação'}
+                                    className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                                        isComparing
+                                            ? 'bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-[var(--accent)]'
+                                            : 'border border-border bg-surface text-muted hover:bg-surface-raised'
+                                    }`}
+                                >
+                                    {isComparing ? <Check className="h-3.5 w-3.5" /> : <ArrowLeftRight className="h-3.5 w-3.5" />}
+                                    {isComparing ? 'Comparando' : 'Comparar'}
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Especificações */}
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {p.specs.map(({ icon: Icon, label, value }) => (
+                                <div key={label} className="rounded-xl border border-border bg-surface-raised p-3.5">
+                                    <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-muted">
+                                        <Icon className="h-3.5 w-3.5 text-[var(--accent)]" />
+                                        <span>{label}</span>
+                                    </div>
+                                    <span className="block text-sm font-bold leading-snug text-foreground" title={value}>
+                                        {value}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Streamings inclusos */}
+                        {p.streamings.length > 0 && (
+                            <div className="rounded-xl border border-border bg-surface-raised p-4">
+                                <span className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted">
+                                    Streamings inclusos
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {p.streamings.map(s => (
+                                        <span
+                                            key={s}
+                                            className="rounded-md bg-[var(--accent-soft)] px-2 py-1 text-[10.5px] font-bold tracking-wide text-[var(--accent)]"
+                                        >
+                                            {s}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Vendas */}
+                        {p.temVendas && (
+                            <div className="rounded-xl border border-[var(--accent)]/25 bg-[var(--accent-soft)] p-4">
+                                <div className="mb-2 flex items-center justify-between gap-2">
+                                    <span className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                                        <BarChart2 className="h-4 w-4 text-[var(--accent)]" />
+                                        Vendas no mês vigente
+                                    </span>
+                                    <span className="font-mono text-sm font-black text-[var(--accent)]">
+                                        {p.vendas} {p.vendas === 1 ? 'contratação' : 'contratações'}
+                                    </span>
+                                </div>
+                                <div className="h-1.5 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+                                    <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${p.ratio}%` }} />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Rodapé */}
+                    <div className="flex shrink-0 items-center gap-3 border-t border-border bg-background p-6">
+                        <button
+                            type="button"
+                            ref={fecharRef}
+                            onClick={onClose}
+                            className="flex-1 cursor-pointer rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-muted transition-all hover:bg-surface-raised focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                        >
+                            Fechar
+                        </button>
+
+                        {isAdmin && onEditClick && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onClose();
+                                    onEditClick(data);
+                                }}
+                                className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#9A3412] to-[#EC7D23] px-5 py-3 text-sm font-bold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                            >
+                                <Pencil className="h-4 w-4" />
+                                Editar
+                            </button>
+                        )}
+                    </div>
+                </motion.div>
             </div>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
+        </AnimatePresence>
+    );
 }

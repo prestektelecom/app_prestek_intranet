@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-export default function Sparkline({ data, color = '#4A9EF5', height = 56, fill = true }) {
+export default function Sparkline({ data, color = '#EC7D23', height = 56, fill = true }) {
   // ID único por instância: permite cores em var(--token) sem quebrar a referência do gradiente
   const gradientId = `spark-fill-${useId().replace(/:/g, '')}`
   if (!data || data.length < 2) return null;

@@ -431,7 +431,7 @@ export default function Schedule({ setCurrentView, user }) {
                 )}
 
                 {/* Tab switcher */}
-                <div className="flex gap-1 p-1 bg-[#EAF4FF] rounded-xl border border-[#E4ECF5] self-start">
+                <div className="flex gap-1 p-1 bg-[#FFF7ED] rounded-xl border border-[#E4ECF5] self-start">
                     <button
                         type="button"
                         onClick={() => setActiveTab('escala')}
@@ -465,13 +465,13 @@ export default function Schedule({ setCurrentView, user }) {
                         <div className="bg-white rounded-[20px] p-6 shadow-sm flex flex-col gap-5 border border-[#E4ECF5] animate-in fade-in slide-in-from-left-4 duration-500 hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between border-b border-[#E4ECF5] pb-4">
                                 <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#4A9EF5]">tune</span>
+                                    <span className="material-symbols-outlined text-[#C2410C]">tune</span>
                                     <h2 className="text-lg font-black text-[#0B1B2E] tracking-tight">Filtros</h2>
                                 </div>
                                 {filtrosAtivos && (
                                     <button
                                         onClick={limparFiltros}
-                                        className="text-[10px] uppercase font-bold tracking-widest text-[#475467] hover:text-[#4A9EF5] transition-colors flex items-center gap-1 bg-[#EAF4FF] px-2 py-1 rounded-md"
+                                        className="text-[10px] uppercase font-bold tracking-widest text-[#475467] hover:text-[#C2410C] transition-colors flex items-center gap-1 bg-[#FFF7ED] px-2 py-1 rounded-md"
                                         aria-label="Limpar filtros"
                                     >
                                         <span className="material-symbols-outlined text-[14px]">close_small</span> Limpar
@@ -481,12 +481,12 @@ export default function Schedule({ setCurrentView, user }) {
                             <div className="flex flex-col gap-4">
                                 <div className="grid grid-cols-2 gap-3">
                                     <label className="flex flex-col gap-1.5 cursor-pointer group">
-                                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#4A9EF5] transition-colors">Mês</span>
+                                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#C2410C] transition-colors">Mês</span>
                                         <div className="relative">
                                             <select
                                                 value={filterMonth}
                                                 onChange={(e) => setFilterMonth(e.target.value)}
-                                                className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-[#0B1B2E] focus:border-[#4A9EF5] focus:ring-1 focus:ring-[#4A9EF5] focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-[#EAF4FF]/80"
+                                                className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-[#0B1B2E] focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-[#FFF7ED]/80"
                                                 aria-label="Selecionar Mês"
                                             >
                                                 <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
@@ -494,42 +494,42 @@ export default function Schedule({ setCurrentView, user }) {
                                                 <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
                                                 <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
                                             </select>
-                                            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#475467] group-focus-within:text-[#4A9EF5] text-[18px] transition-colors">expand_more</span>
+                                            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#475467] group-focus-within:text-[#C2410C] text-[18px] transition-colors">expand_more</span>
                                         </div>
                                     </label>
                                     <label className="flex flex-col gap-1.5 cursor-pointer group">
-                                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#4A9EF5] transition-colors">Ano</span>
+                                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#C2410C] transition-colors">Ano</span>
                                         <div className="relative">
                                             <select
                                                 value={filterYear}
                                                 onChange={(e) => setFilterYear(e.target.value)}
-                                                className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-[#0B1B2E] focus:border-[#4A9EF5] focus:ring-1 focus:ring-[#4A9EF5] focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-[#EAF4FF]/80"
+                                                className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-[#0B1B2E] focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-[#FFF7ED]/80"
                                                 aria-label="Selecionar Ano"
                                             >
                                                 <option value="2024">2024</option>
                                                 <option value="2025">2025</option>
                                                 <option value="2026">2026</option>
                                             </select>
-                                            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#475467] group-focus-within:text-[#4A9EF5] text-[18px] transition-colors">expand_more</span>
+                                            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#475467] group-focus-within:text-[#C2410C] text-[18px] transition-colors">expand_more</span>
                                         </div>
                                     </label>
                                 </div>
                                 <label className="flex flex-col gap-1.5 group cursor-pointer">
-                                    <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#4A9EF5] transition-colors block mb-0.5">Atendente</span>
+                                    <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#C2410C] transition-colors block mb-0.5">Atendente</span>
                                     <div className="relative">
-                                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#475467] text-lg group-focus-within:text-[#4A9EF5] transition-colors">search</span>
+                                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#475467] text-lg group-focus-within:text-[#C2410C] transition-colors">search</span>
                                         <input
                                             type="text"
                                             placeholder="Buscar nome..."
                                             value={filterSearch}
                                             onChange={e => setFilterSearch(e.target.value)}
-                                            className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-10 pr-10 text-[#0B1B2E] focus:border-[#4A9EF5] focus:ring-1 focus:ring-[#4A9EF5] focus:outline-none font-bold text-sm placeholder-[#475467]/50 transition-all hover:bg-[#EAF4FF]/80"
+                                            className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-10 pr-10 text-[#0B1B2E] focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] focus:outline-none font-bold text-sm placeholder-[#475467]/50 transition-all hover:bg-[#FFF7ED]/80"
                                             aria-label="Buscar Atendente"
                                         />
                                         {filterSearch && (
                                             <button
                                                 onClick={(e) => { e.preventDefault(); setFilterSearch(''); }}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-[#EAF4FF] text-[#475467] hover:text-[#0B1B2E] transition-colors"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-[#FFF7ED] text-[#475467] hover:text-[#0B1B2E] transition-colors"
                                                 aria-label="Limpar busca"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">close</span>
@@ -543,14 +543,14 @@ export default function Schedule({ setCurrentView, user }) {
                                     type="button"
                                     onClick={() => setFilterMeusPlantoes(v => !v)}
                                     className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-bold transition-all border ${filterMeusPlantoes
-                                        ? 'bg-[#EAF4FF] text-[#4A9EF5] border-[#4A9EF5]/30'
+                                        ? 'bg-[#FFF7ED] text-[#C2410C] border-[#EC7D23]/30'
                                         : 'bg-[#F7FAFD] text-[#475467] border-transparent hover:border-[#E4ECF5]'
                                     }`}
                                 >
                                     <span className="material-symbols-outlined text-[18px]">person</span>
                                     Meus Plantões
                                     {filterMeusPlantoes && (
-                                        <span className="ml-auto w-2 h-2 rounded-full bg-[#4A9EF5]" />
+                                        <span className="ml-auto w-2 h-2 rounded-full bg-[#EC7D23]" />
                                     )}
                                 </button>
                             </div>
@@ -560,7 +560,7 @@ export default function Schedule({ setCurrentView, user }) {
                         <div className="bg-white rounded-[20px] p-6 shadow-sm border border-[#E4ECF5] animate-in fade-in slide-in-from-left-4 duration-700 hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between mb-5">
                                 <h3 className="text-base font-black text-[#0B1B2E] capitalize tracking-tight flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#4A9EF5] text-[20px]">calendar_month</span>
+                                    <span className="material-symbols-outlined text-[#C2410C] text-[20px]">calendar_month</span>
                                     {new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                                 </h3>
                             </div>
@@ -589,8 +589,8 @@ export default function Schedule({ setCurrentView, user }) {
                                 })}
                             </div>
                             <div className="mt-5 flex gap-4 text-[10px] font-black text-[#475467] uppercase tracking-widest">
-                                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[#4A9EF5] rounded-full shadow-sm shadow-[#4A9EF5]/20"></div> Hoje</div>
-                                <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[#4A9EF5] rounded-full"></div> Plantão</div>
+                                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[#EC7D23] rounded-full shadow-sm shadow-[#EC7D23]/20"></div> Hoje</div>
+                                <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[#EC7D23] rounded-full"></div> Plantão</div>
                             </div>
                         </div>
 
@@ -605,7 +605,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     {filteredPlantoes.length} <span className="text-sm font-bold text-[#475467] uppercase tracking-widest ml-1">Plantões Filtrados</span>
                                 </div>
                             </div>
-                            <div className="size-10 rounded-full bg-[#EAF4FF] flex items-center justify-center text-[#4A9EF5] shrink-0 transition-transform hover:scale-110 duration-300">
+                            <div className="size-10 rounded-full bg-[#FFF7ED] flex items-center justify-center text-[#C2410C] shrink-0 transition-transform hover:scale-110 duration-300">
                                 <span className="material-symbols-outlined">event_available</span>
                             </div>
                         </div>
@@ -651,7 +651,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     <p className="text-sm font-medium text-[#475467] mt-1">Clique nas linhas {user?.is_admin ? "ou no calendário" : ""} para ver detalhes.</p>
                                 </div>
                                 {user?.is_admin && (
-                                    <div className="bg-[#EAF4FF] text-[#4A9EF5] text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[#4A9EF5]/20 animate-pulse">
+                                    <div className="bg-[#FFF7ED] text-[#C2410C] text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[#EC7D23]/20 animate-pulse">
                                         <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
                                         Gestão Ativa
                                     </div>
@@ -686,7 +686,7 @@ export default function Schedule({ setCurrentView, user }) {
                                                         {filtrosAtivos && (
                                                             <button
                                                                 onClick={limparFiltros}
-                                                                className="flex items-center gap-2 px-4 py-2 bg-[#EAF4FF] text-[#4A9EF5] rounded-lg font-bold text-sm hover:bg-[#EAF4FF]/80 transition-colors"
+                                                                className="flex items-center gap-2 px-4 py-2 bg-[#FFF7ED] text-[#C2410C] rounded-lg font-bold text-sm hover:bg-[#FFF7ED]/80 transition-colors"
                                                             >
                                                                 <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
                                                                 Limpar filtros
@@ -741,7 +741,7 @@ export default function Schedule({ setCurrentView, user }) {
                                         {filtrosAtivos && (
                                             <button
                                                 onClick={limparFiltros}
-                                                className="flex items-center gap-2 px-4 py-2 bg-[#EAF4FF] text-[#4A9EF5] rounded-lg font-bold text-sm hover:bg-[#EAF4FF]/80 transition-colors"
+                                                className="flex items-center gap-2 px-4 py-2 bg-[#FFF7ED] text-[#C2410C] rounded-lg font-bold text-sm hover:bg-[#FFF7ED]/80 transition-colors"
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
                                                 Limpar filtros
@@ -814,7 +814,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     type="button"
                                     onClick={() => setConfirmDeleteOpen(false)}
                                     disabled={deletando}
-                                    className="flex-1 px-3 py-2 bg-[#F7FAFD] text-[#0B1B2E] font-bold rounded-xl hover:bg-[#EAF4FF] transition-colors text-sm disabled:opacity-60"
+                                    className="flex-1 px-3 py-2 bg-[#F7FAFD] text-[#0B1B2E] font-bold rounded-xl hover:bg-[#FFF7ED] transition-colors text-sm disabled:opacity-60"
                                 >
                                     Cancelar
                                 </button>
@@ -883,8 +883,8 @@ export default function Schedule({ setCurrentView, user }) {
                 <footer className="mt-8 pt-8 border-t border-[#E4ECF5] pb-4 flex flex-col md:flex-row justify-between items-center text-xs text-[#8896A8] font-bold gap-4 uppercase tracking-widest">
                     <p>© 2026 Prestek Intranet • Portal Interno</p>
                     <div className="flex gap-6">
-                        <a className="hover:text-[#4A9EF5] transition-colors" href="#">Políticas</a>
-                        <a className="hover:text-[#4A9EF5] transition-colors" href="#">Suporte</a>
+                        <a className="hover:text-[#C2410C] transition-colors" href="#">Políticas</a>
+                        <a className="hover:text-[#C2410C] transition-colors" href="#">Suporte</a>
                     </div>
                 </footer>
             </main>

@@ -48,7 +48,7 @@ export default function RankingsSection({ topPlans, topVendors, topTicket, loadi
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white sm:text-xl">
-                        <span className="material-symbols-outlined text-[#4A9EF5]">emoji_events</span>
+                        <span className="material-symbols-outlined text-[#C2410C]">emoji_events</span>
                         Rankings do Mês
                     </h2>
                     <p className="mt-0.5 text-xs text-muted sm:text-sm">Destaques de vendas da equipe — atualizado automaticamente</p>
@@ -62,8 +62,8 @@ export default function RankingsSection({ topPlans, topVendors, topTicket, loadi
                             aria-pressed={activeSlide === idx}
                             className={`inline-flex min-h-[44px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-xs font-medium transition-all duration-300 sm:px-4 sm:text-sm ${
                                 activeSlide === idx
-                                    ? 'scale-[1.02] bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-[0_4px_12px_rgba(74,158,245,0.25)]'
-                                    : 'bg-[#EAF4FF] text-[#1F5BA8] hover:bg-[#D6E9FF] dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8] dark:hover:bg-[#1F5BA8]/30'
+                                    ? 'scale-[1.02] bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)]'
+                                    : 'bg-[#FFF7ED] text-[#9A3412] hover:bg-[#D6E9FF] dark:bg-[#9A3412]/20 dark:text-[#FDBA74] dark:hover:bg-[#9A3412]/30'
                             }`}
                         >
                             <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>

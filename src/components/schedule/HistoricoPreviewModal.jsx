@@ -72,13 +72,13 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                 {/* Header */}
                 <div className="px-5 py-4 border-b border-[#E4ECF5] flex items-center justify-between bg-[#F7FAFD] rounded-t-2xl shrink-0">
                     <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-[#4A9EF5] text-[22px]">manage_history</span>
+                        <span className="material-symbols-outlined text-[#C2410C] text-[22px]">manage_history</span>
                         <div>
                             <h2 className="text-base font-black text-[#0B1B2E] leading-tight">Histórico de Alterações</h2>
                             <p className="text-[11px] text-[#475467] font-medium capitalize">{monthLabel}</p>
                         </div>
                         {!loading && total > 0 && (
-                            <span className="text-[11px] bg-[#EAF4FF] text-[#4A9EF5] px-2 py-0.5 rounded-full font-black">
+                            <span className="text-[11px] bg-[#FFF7ED] text-[#C2410C] px-2 py-0.5 rounded-full font-black">
                                 {total} registro{total !== 1 ? 's' : ''}
                             </span>
                         )}
@@ -86,7 +86,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => handleExportarHistoricoCSV(filterMonth, filterYear, showToast, adminEmail)}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white font-bold text-sm hover:brightness-110 transition-colors shadow-md shadow-[#4A9EF5]/20"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white font-bold text-sm hover:brightness-110 transition-colors shadow-md shadow-[#EC7D23]/20"
                         >
                             <span className="material-symbols-outlined text-[16px]">download</span>
                             Exportar CSV
@@ -113,7 +113,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                             <p className="text-sm text-[#E84545] font-medium">{erro}</p>
                             <button
                                 onClick={() => fetchPage(page)}
-                                className="text-sm text-[#4A9EF5] font-bold hover:underline"
+                                className="text-sm text-[#C2410C] font-bold hover:underline"
                             >
                                 Tentar novamente
                             </button>
@@ -153,12 +153,12 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                     return (
                                         <tr
                                             key={h.id}
-                                            className={`border-b border-[#E4ECF5]/50 hover:bg-[#EAF4FF] transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-[#F7FAFD]/50'}`}
+                                            className={`border-b border-[#E4ECF5]/50 hover:bg-[#FFF7ED] transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-[#F7FAFD]/50'}`}
                                         >
                                             <td className="px-3 py-2.5 font-bold text-[#0B1B2E] whitespace-nowrap">{plantaoData}</td>
                                             <td className="px-3 py-2.5 text-[#0B1B2E] whitespace-nowrap">
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="material-symbols-outlined text-[13px] text-[#4A9EF5]">manage_accounts</span>
+                                                    <span className="material-symbols-outlined text-[13px] text-[#C2410C]">manage_accounts</span>
                                                     <span className="font-medium">{h.admin_nome || '—'}</span>
                                                 </div>
                                             </td>
@@ -197,7 +197,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                 <button
                                     onClick={() => goToPage(1)}
                                     disabled={page === 1}
-                                    className="p-1.5 rounded-lg hover:bg-[#EAF4FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    className="p-1.5 rounded-lg hover:bg-[#FFF7ED] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                     title="Primeira página"
                                 >
                                     <span className="material-symbols-outlined text-[16px] text-[#475467]">first_page</span>
@@ -205,7 +205,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                 <button
                                     onClick={() => goToPage(page - 1)}
                                     disabled={page === 1}
-                                    className="p-1.5 rounded-lg hover:bg-[#EAF4FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    className="p-1.5 rounded-lg hover:bg-[#FFF7ED] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                     title="Página anterior"
                                 >
                                     <span className="material-symbols-outlined text-[16px] text-[#475467]">chevron_left</span>
@@ -224,7 +224,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                             <button
                                                 key={p}
                                                 onClick={() => goToPage(p)}
-                                                className={`w-7 h-7 rounded-lg text-[12px] font-bold transition-colors ${p === page ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-sm' : 'hover:bg-[#EAF4FF] text-[#475467]'}`}
+                                                className={`w-7 h-7 rounded-lg text-[12px] font-bold transition-colors ${p === page ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-sm' : 'hover:bg-[#FFF7ED] text-[#475467]'}`}
                                             >
                                                 {p}
                                             </button>
@@ -234,7 +234,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                 <button
                                     onClick={() => goToPage(page + 1)}
                                     disabled={page === totalPages}
-                                    className="p-1.5 rounded-lg hover:bg-[#EAF4FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    className="p-1.5 rounded-lg hover:bg-[#FFF7ED] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                     title="Próxima página"
                                 >
                                     <span className="material-symbols-outlined text-[16px] text-[#475467]">chevron_right</span>
@@ -242,7 +242,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                 <button
                                     onClick={() => goToPage(totalPages)}
                                     disabled={page === totalPages}
-                                    className="p-1.5 rounded-lg hover:bg-[#EAF4FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    className="p-1.5 rounded-lg hover:bg-[#FFF7ED] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                     title="Última página"
                                 >
                                     <span className="material-symbols-outlined text-[16px] text-[#475467]">last_page</span>

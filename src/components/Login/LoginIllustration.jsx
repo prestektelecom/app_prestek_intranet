@@ -41,21 +41,21 @@ export default function LoginIllustration() {
             <svg className="absolute inset-0 opacity-45 pointer-events-none" width="100%" height="100%">
                 <defs>
                     <pattern id="dots-panel" width="28" height="28" patternUnits="userSpaceOnUse">
-                        <circle cx="2" cy="2" r="1.1" fill="#4A9EF5" opacity="0.3" />
+                        <circle cx="2" cy="2" r="1.1" fill="#EC7D23" opacity="0.3" />
                     </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#dots-panel)" />
             </svg>
 
             {/* Glowing blur background blobs */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-[#4A9EF5]/10 blur-[90px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-[#EC7D23]/10 blur-[90px] rounded-full pointer-events-none"></div>
 
             {/* Top Row: Brand & Status Pill */}
             <div className="relative z-10 flex items-center justify-between gap-4">
                 <Brand />
                 
                 {/* 
-                <div className="inline-flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full text-[12px] font-semibold text-[#2D7BD4] shadow-[0_4px_12px_rgba(74,158,245,0.08)] border border-[#EAF4FF]">
+                <div className="inline-flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full text-[12px] font-semibold text-[#C2410C] shadow-[0_4px_12px_rgba(236,125,35,0.08)] border border-[#FFF7ED]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#1F8A5B] animate-pulse" />
                     Sistemas operacionais
                 </div>
@@ -68,7 +68,7 @@ export default function LoginIllustration() {
                     // Premium Skeleton Loader
                     <div className="w-full aspect-square flex flex-col items-center justify-center gap-4">
                         <div className="relative w-48 h-48 flex items-center justify-center">
-                            <div className="absolute inset-0 rounded-full border-4 border-[#4A9EF5]/10 border-t-[#4A9EF5] animate-spin"></div>
+                            <div className="absolute inset-0 rounded-full border-4 border-[#EC7D23]/10 border-t-[#EC7D23] animate-spin"></div>
                             <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center shadow-lg">
                                 <PrestekMark size={40} />
                             </div>
@@ -98,7 +98,7 @@ export default function LoginIllustration() {
                 </p>
 
                 {/* 
-                <div className="flex gap-8 border-t border-[#4A9EF5]/10 pt-5">
+                <div className="flex gap-8 border-t border-[#EC7D23]/10 pt-5">
                     <div>
                         <div className="text-xl font-bold text-[#1C2B3A]">99.99%</div>
                         <div className="font-mono text-[9px] tracking-wider text-[#9AA5B4] uppercase mt-0.5">Uptime SLA</div>

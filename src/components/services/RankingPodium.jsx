@@ -4,15 +4,15 @@ import React from 'react';
 // quase idênticas, incluindo três cópias byte a byte deste mapa de cores.
 // Diferem em quatro coisas: identidade, rótulo, formatação e denominador.
 const RANK_STYLES = {
-    1: { border: 'border border-[#4A9EF5]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] via-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-2xl shadow-[#4A9EF5]/30 animate-glow-gold', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#1F5BA8]', badgeColor: 'bg-white/20 text-white' },
-    2: { border: 'border border-[#1F5BA8]/30', label: '2º Lugar', bg: 'bg-gradient-to-br from-[#1F5BA8] to-[#2D7BD4]', glow: 'shadow-lg shadow-[#1F5BA8]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#1F5BA8]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
-    3: { border: 'border border-[#2D7BD4]/30', label: '3º Lugar', bg: 'bg-gradient-to-br from-[#2D7BD4] to-[#4A9EF5]', glow: 'shadow-lg shadow-[#4A9EF5]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#2D7BD4]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
+    1: { border: 'border border-[#EC7D23]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#9A3412] via-[#C2410C] to-[#EC7D23]', glow: 'shadow-2xl shadow-[#EC7D23]/30 animate-glow-gold', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#9A3412]', badgeColor: 'bg-white/20 text-white' },
+    2: { border: 'border border-[#9A3412]/30', label: '2º Lugar', bg: 'bg-gradient-to-br from-[#9A3412] to-[#C2410C]', glow: 'shadow-lg shadow-[#9A3412]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#9A3412]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
+    3: { border: 'border border-[#C2410C]/30', label: '3º Lugar', bg: 'bg-gradient-to-br from-[#C2410C] to-[#EC7D23]', glow: 'shadow-lg shadow-[#EC7D23]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#C2410C]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
 };
 
 const LEGENDA = [
-    { label: '1º Lugar', cls: 'text-[#1F5BA8] dark:bg-[#1F5BA8]/20 dark:text-[#7FD4E8]' },
-    { label: '2º Lugar', cls: 'text-[#2D7BD4] dark:bg-[#2D7BD4]/20 dark:text-[#E4ECF5]' },
-    { label: '3º Lugar', cls: 'text-[#4A9EF5] dark:bg-[#4A9EF5]/20 dark:text-[#7FD4E8]' },
+    { label: '1º Lugar', cls: 'text-[#9A3412] dark:bg-[#9A3412]/20 dark:text-[#FDBA74]' },
+    { label: '2º Lugar', cls: 'text-[#C2410C] dark:bg-[#C2410C]/20 dark:text-[#E4ECF5]' },
+    { label: '3º Lugar', cls: 'text-[#C2410C] dark:bg-[#EC7D23]/20 dark:text-[#FDBA74]' },
 ];
 
 export default function RankingPodium({
@@ -40,7 +40,7 @@ export default function RankingPodium({
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
                 <div className="hidden items-center gap-1.5 sm:flex">
                     {LEGENDA.map(l => (
-                        <span key={l.label} className={`inline-flex items-center gap-1 rounded-full bg-[#EAF4FF] px-2.5 py-0.5 text-[10px] font-bold ${l.cls}`}>
+                        <span key={l.label} className={`inline-flex items-center gap-1 rounded-full bg-[#FFF7ED] px-2.5 py-0.5 text-[10px] font-bold ${l.cls}`}>
                             <span className="material-symbols-outlined text-[12px]">workspace_premium</span> {l.label}
                         </span>
                     ))}
@@ -50,7 +50,7 @@ export default function RankingPodium({
             <div className="flex items-end justify-center gap-3 sm:gap-5">
                 {isLoading ? (
                     <div className="flex w-full justify-center py-10">
-                        <span className="material-symbols-outlined animate-spin text-3xl text-[#4A9EF5]">autorenew</span>
+                        <span className="material-symbols-outlined animate-spin text-3xl text-[#C2410C]">autorenew</span>
                     </div>
                 ) : items.length === 0 ? (
                     <div className="flex w-full flex-col items-center justify-center py-10 text-center">
@@ -85,7 +85,7 @@ export default function RankingPodium({
 
                                 {isGold && (
                                     <div className="absolute -top-5 left-1/2 z-20 -translate-x-1/2">
-                                        <div className="flex h-8 w-8 animate-float-crown items-center justify-center rounded-full bg-white text-[#1F5BA8] shadow-lg shadow-[#4A9EF5]/30">
+                                        <div className="flex h-8 w-8 animate-float-crown items-center justify-center rounded-full bg-white text-[#9A3412] shadow-lg shadow-[#EC7D23]/30">
                                             <span className="material-symbols-outlined text-xl">crown</span>
                                         </div>
                                     </div>

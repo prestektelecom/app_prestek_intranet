@@ -467,10 +467,10 @@ export default function Configuracoes({ user, setCurrentView }) {
 
                     {/* Setor e Função */}
                     <div style={sCard}>
-                        <div style={{ height: 4, background: `linear-gradient(90deg, #7FD4E8, ${tone('#7FD4E8', 0.3)})` }} />
+                        <div style={{ height: 4, background: `linear-gradient(90deg, #FDBA74, ${tone('#FDBA74', 0.3)})` }} />
                         <div style={sSection}>
                             <div style={sSectionHead}>
-                                <div style={sIconBox('#7FD4E8', '#EEF9FC')}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>work</span></div>
+                                <div style={sIconBox('#FDBA74', '#EEF9FC')}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>work</span></div>
                                 <h3 style={sH3}>Setor e Função</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 18 }}>
@@ -513,7 +513,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                                         <label style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
                                             <input type="checkbox" defaultChecked={defaultChecked} className="sr-only peer" />
                                             <div style={{ width: 36, height: 20, borderRadius: 999, background: '#D0D7E1', position: 'relative', transition: 'background .2s' }}
-                                                className="peer-checked:!bg-[#4A9EF5] after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-[2px] after:left-[2px] peer-checked:after:translate-x-4 after:transition-all after:shadow-sm" />
+                                                className="peer-checked:!bg-[#EC7D23] after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-[2px] after:left-[2px] peer-checked:after:translate-x-4 after:transition-all after:shadow-sm" />
                                         </label>
                                     </div>
                                 ))}

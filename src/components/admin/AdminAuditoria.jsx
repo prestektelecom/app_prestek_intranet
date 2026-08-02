@@ -6,7 +6,7 @@ const ICONES_ACAO = {
     grant_admin:       { icon: 'verified_user', cor: 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30' },
     revoke_admin:      { icon: 'person_off',    cor: 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30' },
     update_comunicado: { icon: 'edit_document', cor: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' },
-    create_comunicado: { icon: 'add_circle',    cor: 'text-[#4A9EF5] bg-[#EAF4FF]' },
+    create_comunicado: { icon: 'add_circle',    cor: 'text-[#C2410C] bg-[#FFF7ED]' },
     delete_comunicado: { icon: 'delete',        cor: 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30' },
     update_config:     { icon: 'settings',      cor: 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30' },
 };
@@ -89,7 +89,7 @@ export default function AdminAuditoria({ adminEmail }) {
                     </select>
                 </div>
                 <div className="flex gap-2">
-                    <button type="submit" className="px-4 py-2 bg-[#4A9EF5] text-white rounded-lg text-sm font-medium hover:bg-[#2D7BD4] transition-colors">
+                    <button type="submit" className="px-4 py-2 bg-[#EC7D23] text-white rounded-lg text-sm font-medium hover:bg-[#C2410C] transition-colors">
                         Filtrar
                     </button>
                     {(filtroEmail || filtroAcao) && (

@@ -16,7 +16,7 @@ export default function ThemeSwitcher() {
                         checked={theme === 'light'}
                         onChange={() => setTheme('light')}
                     />
-                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#4A9EF5] peer-checked:ring-2 peer-checked:ring-[#4A9EF5] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
+                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#EC7D23] peer-checked:ring-2 peer-checked:ring-[#EC7D23] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
                         <div className="h-20 rounded bg-[#F5F9FF] border border-[#E4ECF5] flex flex-col overflow-hidden">
                             <div className="h-4 w-full bg-white dark:bg-[#0F1724] border-b border-[#E4ECF5] dark:border-[#1E3A5F]"></div>
                             <div className="flex-1 p-2 flex gap-1">
@@ -36,7 +36,7 @@ export default function ThemeSwitcher() {
                         checked={theme === 'dark'}
                         onChange={() => setTheme('dark')}
                     />
-                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#4A9EF5] peer-checked:ring-2 peer-checked:ring-[#4A9EF5] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
+                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#EC7D23] peer-checked:ring-2 peer-checked:ring-[#EC7D23] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
                         <div className="h-20 rounded bg-[#0B1B2E] border border-[#1E3A5F] flex flex-col overflow-hidden">
                             <div className="h-4 w-full bg-[#0F1724] border-b border-[#1E3A5F]"></div>
                             <div className="flex-1 p-2 flex gap-1">
@@ -56,7 +56,7 @@ export default function ThemeSwitcher() {
                         checked={theme === 'system'}
                         onChange={() => setTheme('system')}
                     />
-                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#4A9EF5] peer-checked:ring-2 peer-checked:ring-[#4A9EF5] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
+                    <div className="flex flex-col gap-2 p-3 rounded-lg border border-[#E4ECF5] dark:border-gray-800 peer-checked:border-[#EC7D23] peer-checked:ring-2 peer-checked:ring-[#EC7D23] bg-[#F7FAFD] dark:bg-[#0B1B2E] transition-all">
                         <div className="h-20 rounded bg-gradient-to-br from-[#F5F9FF] to-[#0B1B2E] border border-[#E4ECF5] flex items-center justify-center dark:border-[#1E3A5F]">
                             <span className="material-symbols-outlined text-[#8896A8]">settings_brightness</span>
                         </div>
@@ -75,14 +75,14 @@ export default function ThemeSwitcher() {
                             onClick={() => setDarkVariant('cyber')}
                             className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition-all cursor-pointer ${
                                 darkVariant === 'cyber'
-                                    ? 'border-[#00F2FE] bg-slate-900/30 dark:bg-sky-950/20 ring-2 ring-[#00F2FE]/30 text-[#00F2FE] font-semibold'
+                                    ? 'border-[#F97316] bg-slate-900/30 dark:bg-orange-950/20 ring-2 ring-[#F97316]/30 text-[#F97316] font-semibold'
                                     : 'border-[#E4ECF5] dark:border-gray-800 bg-[#F7FAFD] dark:bg-[#162231]/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                         >
                             <span className="text-xs">Cyber-Obsidian</span>
                             <div className="flex gap-1.5 mt-1 justify-center">
                                 <span className="w-3.5 h-3.5 rounded-full bg-[#070B13] border border-[#1E2E4A]" title="Fundo" />
-                                <span className="w-3.5 h-3.5 rounded-full bg-[#00F2FE]" title="Destaque" />
+                                <span className="w-3.5 h-3.5 rounded-full bg-[#F97316]" title="Destaque" />
                                 <span className="w-3.5 h-3.5 rounded-full bg-[#00F5D4]" title="Sucesso" />
                             </div>
                         </button>
@@ -99,7 +99,7 @@ export default function ThemeSwitcher() {
                             <span className="text-xs">Space Aurora</span>
                             <div className="flex gap-1.5 mt-1 justify-center">
                                 <span className="w-3.5 h-3.5 rounded-full bg-[#0F0C20] border border-[#2E2254]" title="Fundo" />
-                                <span className="w-3.5 h-3.5 rounded-full bg-[#8A2BE2]" title="Destaque" />
+                                <span className="w-3.5 h-3.5 rounded-full bg-[#FB923C]" title="Destaque" />
                                 <span className="w-3.5 h-3.5 rounded-full bg-[#00FF87]" title="Sucesso" />
                             </div>
                         </button>
@@ -116,7 +116,7 @@ export default function ThemeSwitcher() {
                             <span className="text-xs">AMOLED Pure</span>
                             <div className="flex gap-1.5 mt-1 justify-center">
                                 <span className="w-3.5 h-3.5 rounded-full bg-black border border-[#222222]" title="Fundo" />
-                                <span className="w-3.5 h-3.5 rounded-full bg-[#4A9EF5]" title="Destaque" />
+                                <span className="w-3.5 h-3.5 rounded-full bg-[#F97316]" title="Destaque" />
                                 <span className="w-3.5 h-3.5 rounded-full bg-[#00C853]" title="Sucesso" />
                             </div>
                         </button>

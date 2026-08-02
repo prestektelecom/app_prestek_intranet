@@ -50,7 +50,7 @@ export default function MultiSelectEmployee({
                     placeholder="Buscar nome..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-1.5 pl-7 pr-7 text-xs text-[#0B1B2E] focus:border-[#4A9EF5] focus:ring-1 focus:ring-[#4A9EF5] focus:outline-none placeholder-[#8896A8]/50 transition-all"
+                    className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-1.5 pl-7 pr-7 text-xs text-[#0B1B2E] focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] focus:outline-none placeholder-[#8896A8]/50 transition-all"
                 />
                 {search && (
                     <button
@@ -69,7 +69,7 @@ export default function MultiSelectEmployee({
                     <button
                         type="button"
                         onClick={selectFiltered}
-                        className="text-[10px] text-[#4A9EF5] font-bold hover:underline"
+                        className="text-[10px] text-[#C2410C] font-bold hover:underline"
                     >
                         Selecionar {filtered.length} resultado{filtered.length > 1 ? 's' : ''}
                     </button>
@@ -95,12 +95,12 @@ export default function MultiSelectEmployee({
                             const id = getId(opt);
                             const name = getName(opt);
                             return (
-                                <label key={id} className="flex items-center gap-2 cursor-pointer hover:bg-[#EAF4FF] px-1.5 py-1 rounded-md transition-colors">
+                                <label key={id} className="flex items-center gap-2 cursor-pointer hover:bg-[#FFF7ED] px-1.5 py-1 rounded-md transition-colors">
                                     <input
                                         type="checkbox"
                                         checked={values.includes(id)}
                                         onChange={() => toggleValue(id)}
-                                        className="w-4 h-4 rounded border-[#E4ECF5] text-[#4A9EF5] focus:ring-[#4A9EF5] shrink-0"
+                                        className="w-4 h-4 rounded border-[#E4ECF5] text-[#C2410C] focus:ring-[#EC7D23] shrink-0"
                                     />
                                     <span className="font-medium text-[#0B1B2E] text-xs leading-tight">{name}</span>
                                 </label>
@@ -120,7 +120,7 @@ export default function MultiSelectEmployee({
                         const parts = name.split(' ');
                         const shortName = parts.length > 1 ? `${parts[0]} ${parts[1][0]}.` : parts[0];
                         return (
-                            <span key={val} className="text-[10px] bg-[#EAF4FF] text-[#4A9EF5] px-2 py-0.5 rounded-full font-bold">
+                            <span key={val} className="text-[10px] bg-[#FFF7ED] text-[#C2410C] px-2 py-0.5 rounded-full font-bold">
                                 {shortName}
                             </span>
                         );

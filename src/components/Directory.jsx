@@ -6,8 +6,8 @@ import { useBentoTheme } from '../hooks/useBentoTheme';
 
 // ── Sistema de cores por departamento ────────────────────────────────────────
 const DEPT_COLORS = [
-  { keys: ['atendimento', 'suporte', 'relacionamento', 'helpdesk', 'client'],    color: '#4A9EF5' },
-  { keys: ['ti', ' t.i', 't.i.', 'tecnologia', 'noc', 'sistema', 'infraestr'],   color: '#7FD4E8' },
+  { keys: ['atendimento', 'suporte', 'relacionamento', 'helpdesk', 'client'],    color: '#C2410C' },
+  { keys: ['ti', ' t.i', 't.i.', 'tecnologia', 'noc', 'sistema', 'infraestr'],   color: '#FDBA74' },
   { keys: ['comercial', 'venda', 'marketing', 'passivo', 'mkt'],                  color: '#D97706' },
   { keys: ['financeiro', 'financ', 'cobrança', 'cobranc', 'jurídico', 'fiscal'],  color: '#1F8A5B' },
   { keys: ['rh', 'recursos humanos', 'gestão de pessoas', 'gente'],               color: '#8B5CF6' },

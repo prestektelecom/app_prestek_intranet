@@ -1,9 +1,9 @@
 export function PrestekMark({ size = 28 }) {
     return (
         <svg width={size} height={size} viewBox="0 0 32 32" className="block">
-            <rect x="3" y="3" width="18" height="18" rx="4" fill="#4A9EF5" />
-            <rect x="11" y="11" width="18" height="18" rx="4" fill="#4A9EF5" opacity="0.45" />
-            <rect x="11" y="11" width="10" height="10" rx="2" fill="#4A9EF5" />
+            <rect x="3" y="3" width="18" height="18" rx="4" fill="#EC7D23" />
+            <rect x="11" y="11" width="18" height="18" rx="4" fill="#EC7D23" opacity="0.45" />
+            <rect x="11" y="11" width="10" height="10" rx="2" fill="#EC7D23" />
         </svg>
     )
 }

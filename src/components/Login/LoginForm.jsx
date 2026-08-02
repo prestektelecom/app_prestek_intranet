@@ -10,11 +10,11 @@ function Field({ label, icon, type = 'text', placeholder, value, onChange, trail
                 className="flex items-center gap-3 h-[50px] px-3.5 rounded-xl transition-all duration-150"
                 style={{
                     background: focused ? 'white' : '#F7FAFD',
-                    border: `1.5px solid ${focused ? '#4A9EF5' : '#E4ECF5'}`,
-                    boxShadow: focused ? '0 0 0 4px rgba(74,158,245,0.12)' : 'none',
+                    border: `1.5px solid ${focused ? '#EC7D23' : '#E4ECF5'}`,
+                    boxShadow: focused ? '0 0 0 4px rgba(236,125,35,0.12)' : 'none',
                 }}
             >
-                <span className="flex shrink-0 transition-colors" style={{ color: focused ? '#4A9EF5' : '#9AA5B4' }}>
+                <span className="flex shrink-0 transition-colors" style={{ color: focused ? '#EC7D23' : '#9AA5B4' }}>
                     {icon}
                 </span>
                 <input
@@ -49,7 +49,7 @@ export default function LoginForm({
             <h1 className="text-[30px] font-bold text-[#1C2B3A] m-0 tracking-tight leading-tight">
                 Bem-vindo à Prestek Inc.
             </h1>
-            <div className="w-12 h-[3px] bg-[#4A9EF5] rounded mt-3.5" />
+            <div className="w-12 h-[3px] bg-[#EC7D23] rounded mt-3.5" />
             <p className="text-[14.5px] text-[#475467] mt-4 mb-8 leading-relaxed">
                 Insira suas credenciais para acessar o sistema.
             </p>
@@ -99,8 +99,8 @@ export default function LoginForm({
                         <span
                             className="w-[18px] h-[18px] rounded-[5px] flex items-center justify-center transition-all shrink-0"
                             style={{
-                                background: (lembrar || credValida) ? '#4A9EF5' : 'transparent',
-                                border: `1.5px solid ${(lembrar || credValida) ? '#4A9EF5' : '#9AA5B4'}`,
+                                background: (lembrar || credValida) ? '#EC7D23' : 'transparent',
+                                border: `1.5px solid ${(lembrar || credValida) ? '#EC7D23' : '#9AA5B4'}`,
                             }}
                         >
                             {(lembrar || credValida) && (
@@ -111,7 +111,7 @@ export default function LoginForm({
                         </span>
                         <span className="text-[13.5px] text-[#475467]">Lembrar senha</span>
                     </label>
-                    <a href="#" className="text-[13.5px] text-[#4A9EF5] font-semibold no-underline hover:opacity-80 transition-opacity">
+                    <a href="#" className="text-[13.5px] text-[#C2410C] font-semibold no-underline hover:opacity-80 transition-opacity">
                         Problemas ao acessar?
                     </a>
                 </div>
@@ -121,8 +121,8 @@ export default function LoginForm({
                     disabled={carregando || verificandoBackend || !backendPronto}
                     className="mt-4 w-full h-[52px] border-none rounded-xl cursor-pointer text-white font-semibold text-[15px] tracking-wide flex items-center justify-center gap-2.5 transition-all duration-150 active:translate-y-px disabled:opacity-70 disabled:cursor-wait"
                     style={{
-                        background: 'linear-gradient(180deg, #4A9EF5, #2D7BD4)',
-                        boxShadow: '0 10px 24px rgba(74,158,245,0.32)',
+                        background: 'linear-gradient(180deg, #EC7D23, #C2410C)',
+                        boxShadow: '0 10px 24px rgba(236,125,35,0.32)',
                     }}
                 >
                     {verificandoBackend || !backendPronto ? (

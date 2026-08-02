@@ -121,7 +121,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
         grant_admin: { icon: 'verified_user', cor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' },
         revoke_admin: { icon: 'person_off', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
         update_comunicado: { icon: 'edit_document', cor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' },
-        create_comunicado: { icon: 'add_circle', cor: 'bg-[#EAF4FF] text-[#4A9EF5]' },
+        create_comunicado: { icon: 'add_circle', cor: 'bg-[#FFF7ED] text-[#C2410C]' },
         delete_comunicado: { icon: 'delete', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
         update_config: { icon: 'settings', cor: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' },
     };
@@ -258,7 +258,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     {[
                                         { label: 'Usuários Ativos', valor: stats?.total_usuarios, icon: 'group', stripe: C.accent, iconCor: C.accent, iconBg: C.accentSoft },
-                                        { label: 'Comunicações', valor: stats?.total_comunicados, icon: 'campaign', stripe: C.cyan, iconCor: '#187B91', iconBg: C.cyanSoft },
+                                        { label: 'Comunicações', valor: stats?.total_comunicados, icon: 'campaign', stripe: C.cyan, iconCor: '#9A3412', iconBg: C.cyanSoft },
                                         { label: 'Ações (g)', valor: stats?.acoes_recentes, icon: 'edit_document', stripe: C.success, iconCor: C.success, iconBg: C.successSoft },
                                     ].map(kpi => (
                                         <div
@@ -368,7 +368,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                         <div style={sIconBox(C.accent, C.accentSoft)} className="mb-4">
                                             <span className="material-symbols-outlined">campaign</span>
                                         </div>
-                                        <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#4A9EF5]" style={{ color: C.ink }}>Comunicados</h3>
+                                        <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Comunicados</h3>
                                         <p className="text-sm" style={{ color: C.muted }}>Criar, editar e excluir comunicados da intranet.</p>
                                     </div>
 
@@ -383,7 +383,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                         <div style={sIconBox('#8B5CF6', '#F5F3FF')} className="mb-4">
                                             <span className="material-symbols-outlined">description</span>
                                         </div>
-                                        <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#4A9EF5]" style={{ color: C.ink }}>Logs de Auditoria</h3>
+                                        <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Logs de Auditoria</h3>
                                         <p className="text-sm" style={{ color: C.muted }}>Histórico completo de ações administrativas.</p>
                                     </div>
                                 </div>

@@ -512,7 +512,7 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
                     title="Cyber-Obsidian"
                     style={{
                       width: 16, height: 16, borderRadius: '50%',
-                      background: '#00F2FE', border: darkVariant === 'cyber' ? `2px solid ${C.ink}` : '2px solid transparent',
+                      background: '#FB923C', border: darkVariant === 'cyber' ? `2px solid ${C.ink}` : '2px solid transparent',
                       cursor: 'pointer', padding: 0,
                     }}
                   />

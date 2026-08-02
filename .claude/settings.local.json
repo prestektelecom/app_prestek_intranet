@@ -19,7 +19,17 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
       "Bash(netstat -ano)",
       "Bash(git check-ignore *)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "WebSearch",
+      "WebFetch(domain:3dicons.co)",
+      "WebFetch(domain:github.com)",
+      "PowerShell(npm run build 2>&1)",
+      "PowerShell(npx eslint src/components/services/ServiceDetailModal.jsx)",
+      "Bash(openspec validate *)",
+      "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/fix-rgba.mjs\")",
+      "Bash(node -e ' *)",
+      "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/achar-azuis.mjs\")",
+      "Bash(rm -rf openspec/changes/migrar-accent-azul-teal)"
     ],
     "additionalDirectories": [
       "F:\\Projetos em Dev\\prestek_intranet\\src\\image\\services"

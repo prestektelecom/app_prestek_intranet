@@ -16,7 +16,7 @@ export default function TechBentoCard({ service, isAdmin, onEditClick, onDeleteC
             title={service.service}
             description={`Prazo: ${service.deadline || 'A consultar'}. Pagamento: ${service.payment || 'À vista ou boleto'}.`}
             ctaText="Ver detalhes"
-            illustrationType="cubes"
+            illustrationType="tool"
             onClick={() => onSelect && onSelect(service, 'tech')}
             topRightContent={
                 isAdmin && (

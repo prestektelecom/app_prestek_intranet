@@ -166,7 +166,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                             {registro.cidade} — {registro.bairro}
                         </p>
                     </div>
-                    <button onClick={onFechar} className="text-slate-400 dark:text-slate-500 hover:text-[#1F5BA8] dark:hover:text-[#4A9EF5] p-1.5 rounded-xl hover:bg-[#F5F9FF] dark:hover:bg-[#0B1B2E] transition-all">
+                    <button onClick={onFechar} className="text-slate-400 dark:text-slate-500 hover:text-[#9A3412] dark:hover:text-[#C2410C] p-1.5 rounded-xl hover:bg-[#F5F9FF] dark:hover:bg-[#0B1B2E] transition-all">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -174,12 +174,12 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                 <form onSubmit={handleSubmit} className="px-6 py-5 grid grid-cols-2 gap-4">
                     {/* Info somente leitura */}
                     <div className="col-span-2 bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 rounded-xl px-4 py-3 flex items-center gap-3 border border-[#E4ECF5] dark:border-[var(--border)]">
-                        <span className="material-symbols-outlined text-[#1F5BA8] dark:text-[#4A9EF5]">info</span>
+                        <span className="material-symbols-outlined text-[#9A3412] dark:text-[#C2410C]">info</span>
                         <div>
                             <p className="text-xs text-slate-500 dark:text-slate-400">
                                 Cidade e bairro são gerados automaticamente pelo IXC.
                             </p>
-                            <p className="text-xs text-[#1F5BA8] dark:text-[#4A9EF5] font-semibold mt-0.5">
+                            <p className="text-xs text-[#9A3412] dark:text-[#C2410C] font-semibold mt-0.5">
                                 {registro.total_contratos} contrato(s) ativo(s) neste bairro
                             </p>
                         </div>
@@ -189,7 +189,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tecnologia</label>
                         <select
-                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all"
                             value={form.tecnologia}
                             onChange={e => handleChange('tecnologia', e.target.value)}
                         >
@@ -201,7 +201,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Veloc. Máxima</label>
                         <select
-                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all"
                             value={form.velocidade_maxima}
                             onChange={e => handleChange('velocidade_maxima', e.target.value)}
                         >
@@ -213,7 +213,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</label>
                         <select
-                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all"
+                            className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all"
                             value={form.status}
                             onChange={e => handleChange('status', e.target.value)}
                         >
@@ -224,11 +224,11 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                     {/* Percentual */}
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                            Cobertura: <span className="text-[#1F5BA8] dark:text-[#4A9EF5] font-bold">{form.percentual_cobertura}%</span>
+                            Cobertura: <span className="text-[#9A3412] dark:text-[#C2410C] font-bold">{form.percentual_cobertura}%</span>
                         </label>
                         <input
                             type="range" min={0} max={100} step={1}
-                            className="accent-[#1F5BA8] dark:accent-[#4A9EF5] mt-2 cursor-pointer"
+                            className="accent-[#9A3412] dark:accent-[#EC7D23] mt-2 cursor-pointer"
                             value={form.percentual_cobertura}
                             onChange={e => handleChange('percentual_cobertura', e.target.value)}
                         />
@@ -239,7 +239,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                         <button
                             type="button"
                             onClick={() => setMapaAberto(v => !v)}
-                            className="flex items-center gap-2 text-sm font-semibold text-[#1F5BA8] dark:text-[#4A9EF5] hover:text-[#4A9EF5] dark:hover:text-[#F5F9FF] transition-colors mb-3"
+                            className="flex items-center gap-2 text-sm font-semibold text-[#9A3412] dark:text-[#C2410C] hover:text-[#C2410C] dark:hover:text-[#F5F9FF] transition-colors mb-3"
                         >
                             <span className="material-symbols-outlined text-[18px]">pin_drop</span>
                             Localização do Bairro
@@ -259,7 +259,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                                     type="text"
                                     inputMode="decimal"
                                     placeholder="-9.9170800"
-                                    className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent font-mono transition-all"
+                                    className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent font-mono transition-all"
                                     value={form.latitude}
                                     onChange={e => handleCoordChange('latitude', e.target.value)}
                                 />
@@ -270,7 +270,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                                     type="text"
                                     inputMode="decimal"
                                     placeholder="-36.5560000"
-                                    className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent font-mono transition-all"
+                                    className="border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[#0B1B2E] dark:text-[var(--foreground)] bg-white dark:bg-[#0B1B2E]/50 focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent font-mono transition-all"
                                     value={form.longitude}
                                     onChange={e => handleCoordChange('longitude', e.target.value)}
                                 />
@@ -303,7 +303,7 @@ function OverrideModal({ registro, onFechar, onSalvar }) {
                         <button type="button" onClick={onFechar} className="px-4 py-2.5 text-sm font-semibold border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl text-slate-600 dark:text-[#8896A8] bg-white dark:bg-[#0B1B2E] hover:bg-[#F5F9FF] dark:hover:bg-[#1E3A5F] active:scale-[0.98] transition-all cursor-pointer">
                             Cancelar
                         </button>
-                        <button type="submit" disabled={salvando} className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:opacity-90 active:scale-[0.98] rounded-xl shadow-[0_4px_12px_rgba(74,158,245,0.25)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60">
+                        <button type="submit" disabled={salvando} className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:opacity-90 active:scale-[0.98] rounded-xl shadow-[0_4px_12px_rgba(236,125,35,0.25)] focus:outline-none focus:ring-2 focus:ring-[#EC7D23] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60">
                             {salvando && <span className="material-symbols-outlined text-[16px] animate-spin">autorenew</span>}
                             Salvar Configuração
                         </button>
@@ -323,13 +323,13 @@ function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) 
             onClick={() => onSelecionar(`${row.cidade_ixc_id}::${row.bairro}`)}
             className={`p-3 rounded-xl cursor-pointer transition-all duration-200 flex flex-col gap-2 border ${
                 selecionada 
-                    ? 'bg-[#1F5BA8]/10 border-[#1F5BA8]/30' 
+                    ? 'bg-[#9A3412]/10 border-[#9A3412]/30' 
                     : 'border-transparent hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/70'
             }`}
         >
             <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                    <div className="size-6 rounded bg-[#1F5BA8]/10 flex items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] font-bold shrink-0 text-[10px]">
+                    <div className="size-6 rounded bg-[#9A3412]/10 flex items-center justify-center text-[#9A3412] dark:text-[#C2410C] font-bold shrink-0 text-[10px]">
                         {row.estado}
                     </div>
                     <div className="truncate">
@@ -347,8 +347,8 @@ function RowCompacto({ row, onConfigurar, selecionada, onSelecionar, isAdmin }) 
                         title={row.tem_override ? 'Editar configuração' : 'Configurar dados de cobertura'}
                         className={`p-1 rounded-lg shrink-0 transition-all duration-200 ${
                             row.tem_override
-                                ? 'text-slate-400 dark:text-slate-500 hover:text-[#1F5BA8] dark:hover:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]'
-                                : 'text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#1F5BA8]/10'
+                                ? 'text-slate-400 dark:text-slate-500 hover:text-[#9A3412] dark:hover:text-[#C2410C] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]'
+                                : 'text-[#9A3412] dark:text-[#C2410C] hover:bg-[#9A3412]/10'
                         }`}
                     >
                         <span className="material-symbols-outlined text-[16px]">
@@ -415,7 +415,7 @@ function PainelCidades({
             <div className="px-4 py-3 border-b border-[#E4ECF5]/40 dark:border-[var(--border)]/40 flex justify-between items-center">
                 <span className="text-[#0B1B2E] dark:text-[var(--foreground)] font-bold text-xs">Cidades e Bairros ({dadosFiltrados.length})</span>
                 {carregando && (
-                    <span className="material-symbols-outlined text-[#1F5BA8] text-[14px] animate-spin">autorenew</span>
+                    <span className="material-symbols-outlined text-[#9A3412] text-[14px] animate-spin">autorenew</span>
                 )}
             </div>
 
@@ -572,7 +572,7 @@ export default function Coverage({ user }) {
                     {/* Barra de Controle Superior Flutuante */}
                     <div className="absolute top-4 left-4 right-4 z-[10] bg-white/80 dark:bg-[#0B1B2E]/80 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-lg rounded-2xl px-4 md:px-5 py-3 flex flex-col md:flex-row md:flex-wrap md:justify-between gap-3 md:gap-4 transition-all duration-300 max-h-[70vh] md:max-h-none overflow-y-auto md:overflow-visible">
                         <div className="flex items-center gap-3 min-w-0">
-                            <div className="p-2 bg-[#1F5BA8]/10 text-[#1F5BA8] dark:text-[#4A9EF5] rounded-xl flex items-center justify-center shrink-0">
+                            <div className="p-2 bg-[#9A3412]/10 text-[#9A3412] dark:text-[#C2410C] rounded-xl flex items-center justify-center shrink-0">
                                 <span className="material-symbols-outlined text-[24px]">map</span>
                             </div>
                             <div className="min-w-0">
@@ -587,8 +587,8 @@ export default function Coverage({ user }) {
 
                         {/* Filtros Integrados */}
                         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                            <div className="flex items-center gap-2 bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-2.5 h-8.5 focus-within:ring-2 focus-within:ring-[#4A9EF5] focus-within:border-transparent transition-all">
-                                <span className="material-symbols-outlined text-[#1F5BA8] dark:text-[#4A9EF5] text-[16px]">search</span>
+                            <div className="flex items-center gap-2 bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] rounded-xl px-2.5 h-8.5 focus-within:ring-2 focus-within:ring-[#EC7D23] focus-within:border-transparent transition-all">
+                                <span className="material-symbols-outlined text-[#9A3412] dark:text-[#C2410C] text-[16px]">search</span>
                                 <input
                                     className="bg-transparent text-xs text-[#0B1B2E] dark:text-[var(--foreground)] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none w-28 md:w-40"
                                     placeholder="Buscar cidade/bairro"
@@ -599,7 +599,7 @@ export default function Coverage({ user }) {
                             </div>
 
                             <select
-                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all flex-1 md:flex-none"
+                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#EC7D23] transition-all flex-1 md:flex-none"
                                 value={filtroTec}
                                 onChange={e => setFiltroTec(e.target.value)}
                             >
@@ -608,7 +608,7 @@ export default function Coverage({ user }) {
                             </select>
 
                             <select
-                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] transition-all flex-1 md:flex-none"
+                                className="flex h-8.5 items-center rounded-xl bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5] dark:border-[var(--border)] px-2.5 text-xs text-[#0B1B2E] dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#EC7D23] transition-all flex-1 md:flex-none"
                                 value={filtroStatus}
                                 onChange={e => setFiltroStatus(e.target.value)}
                             >
@@ -617,7 +617,7 @@ export default function Coverage({ user }) {
                             </select>
 
                             {(busca || filtroTec || filtroStatus) && (
-                                <button onClick={limparFiltros} className="text-[#1F5BA8] dark:text-[#4A9EF5] hover:text-[#4A9EF5] dark:hover:text-[#F5F9FF] text-xs font-bold uppercase transition-colors">
+                                <button onClick={limparFiltros} className="text-[#9A3412] dark:text-[#C2410C] hover:text-[#C2410C] dark:hover:text-[#F5F9FF] text-xs font-bold uppercase transition-colors">
                                     Limpar
                                 </button>
                             )}
@@ -627,7 +627,7 @@ export default function Coverage({ user }) {
                         <button
                             onClick={carregar}
                             disabled={carregando}
-                            className="flex items-center justify-center gap-2 h-8.5 px-4 bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:opacity-90 active:scale-[0.98] transition-all duration-200 rounded-xl text-white text-xs font-bold shadow-[0_4px_12px_rgba(74,158,245,0.25)] disabled:opacity-60 w-full md:w-auto"
+                            className="flex items-center justify-center gap-2 h-8.5 px-4 bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:opacity-90 active:scale-[0.98] transition-all duration-200 rounded-xl text-white text-xs font-bold shadow-[0_4px_12px_rgba(236,125,35,0.25)] disabled:opacity-60 w-full md:w-auto"
                         >
                             <span className={`material-symbols-outlined text-[16px] ${carregando ? 'animate-spin' : ''}`}>sync</span>
                             <span>{carregando ? 'Sincronizando...' : 'Sincronizar'}</span>
@@ -637,7 +637,7 @@ export default function Coverage({ user }) {
                     {/* Botão Toggle da Sidebar (desktop) */}
                     <button
                         onClick={() => setSidebarAberta(!sidebarAberta)}
-                        className="hidden md:flex absolute top-[88px] z-[20] size-9 rounded-xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-lg items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 transition-all duration-300"
+                        className="hidden md:flex absolute top-[88px] z-[20] size-9 rounded-xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-lg items-center justify-center text-[#9A3412] dark:text-[#C2410C] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 transition-all duration-300"
                         style={{ transform: sidebarAberta ? 'translateX(326px)' : 'translateX(16px)' }}
                         title={sidebarAberta ? 'Recolher Painel' : 'Expandir Painel'}
                     >
@@ -649,7 +649,7 @@ export default function Coverage({ user }) {
                     {/* Botão Toggle da Sidebar (mobile) */}
                     <button
                         onClick={() => setSidebarMobileAberta(true)}
-                        className="md:hidden absolute top-[88px] left-4 z-[20] size-9 rounded-xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-lg flex items-center justify-center text-[#1F5BA8] dark:text-[#4A9EF5] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 transition-all duration-300"
+                        className="md:hidden absolute top-[88px] left-4 z-[20] size-9 rounded-xl bg-white dark:bg-[#0B1B2E] border border-[#E4ECF5] dark:border-[var(--border)] shadow-lg flex items-center justify-center text-[#9A3412] dark:text-[#C2410C] hover:bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 transition-all duration-300"
                         title="Abrir lista de cidades"
                     >
                         <span className="material-symbols-outlined text-[18px]">list</span>
@@ -709,7 +709,7 @@ export default function Coverage({ user }) {
                     {/* Resumo Bento Flutuante (Bottom-Right) */}
                     {isAdmin && !carregando && dados.length > 0 && (
                         <div className="absolute bottom-4 right-4 z-[10] bg-white/95 dark:bg-[#0B1B2E]/95 backdrop-blur-md border border-[#E4ECF5]/30 dark:border-[var(--border)]/30 shadow-2xl rounded-2xl p-3 md:p-4 flex flex-col gap-2 max-w-[180px] md:max-w-[220px] transition-all duration-300">
-                            <span className="text-[9px] font-bold text-[#1F5BA8] dark:text-[#4A9EF5] uppercase tracking-wider">Estatísticas Gerais</span>
+                            <span className="text-[9px] font-bold text-[#9A3412] dark:text-[#C2410C] uppercase tracking-wider">Estatísticas Gerais</span>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div className="bg-[#F5F9FF] dark:bg-[#0B1B2E]/50 border border-[#E4ECF5]/50 dark:border-[var(--border)]/50 rounded-xl p-2 flex flex-col">
                                     <span className="text-[9px] text-slate-400 font-medium">Cidades</span>

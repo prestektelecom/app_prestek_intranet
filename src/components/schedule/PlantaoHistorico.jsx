@@ -163,7 +163,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                             type="date"
                             value={filtroDataInicio}
                             onChange={e => setFiltroDataInicio(e.target.value)}
-                            className="bg-[#F7FAFD] border border-transparent rounded-lg px-3 py-2.5 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#4A9EF5] focus:ring-1 focus:ring-[#4A9EF5] font-bold transition-all"
+                            className="bg-[#F7FAFD] border border-transparent rounded-lg px-3 py-2.5 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] font-bold transition-all"
                         />
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -172,7 +172,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                             type="date"
                             value={filtroDataFim}
                             onChange={e => setFiltroDataFim(e.target.value)}
-                            className="bg-[#F7FAFD] border border-transparent rounded-lg px-3 py-2.5 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#4A9EF5] focus:ring-1 focus:ring-[#4A9EF5] font-bold transition-all"
+                            className="bg-[#F7FAFD] border border-transparent rounded-lg px-3 py-2.5 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] font-bold transition-all"
                         />
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -184,14 +184,14 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                                 placeholder="Buscar por nome..."
                                 value={filtroAdmin}
                                 onChange={e => setFiltroAdmin(e.target.value)}
-                                className="bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-10 pr-3 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#4A9EF5] focus:ring-1 focus:ring-[#4A9EF5] font-bold placeholder-[#475467]/50 transition-all w-52"
+                                className="bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-10 pr-3 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] font-bold placeholder-[#475467]/50 transition-all w-52"
                             />
                         </div>
                     </div>
                     <div className="flex gap-2 items-end">
                         <button
                             type="submit"
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-[#4A9EF5]/20"
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-[#EC7D23]/20"
                         >
                             <span className="material-symbols-outlined text-[18px]">filter_alt</span>
                             Filtrar
@@ -263,7 +263,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                             {filtrosAtivos && (
                                 <button
                                     onClick={limparFiltros}
-                                    className="flex items-center gap-2 px-4 py-2 bg-[#EAF4FF] text-[#4A9EF5] rounded-lg font-bold text-sm hover:bg-[#EAF4FF]/80 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#FFF7ED] text-[#C2410C] rounded-lg font-bold text-sm hover:bg-[#FFF7ED]/80 transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
                                     Limpar filtros
@@ -289,7 +289,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-2 pl-4 md:pl-0">
-                                                <div className="w-7 h-7 rounded-full bg-[#EAF4FF] text-[#4A9EF5] flex items-center justify-center text-xs font-black shrink-0">
+                                                <div className="w-7 h-7 rounded-full bg-[#FFF7ED] text-[#C2410C] flex items-center justify-center text-xs font-black shrink-0">
                                                     {(h.admin_nome || '?').charAt(0).toUpperCase()}
                                                 </div>
                                                 <span className="text-sm text-[#0B1B2E] font-medium truncate max-w-[180px]">{h.admin_nome || '—'}</span>
@@ -344,7 +344,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                             <button
                                 disabled={pagina === 1 || carregando}
                                 onClick={() => setPagina(p => p - 1)}
-                                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-[#E4ECF5] text-sm font-bold text-[#475467] hover:bg-[#EAF4FF] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-[#E4ECF5] text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                                 Anterior
@@ -355,7 +355,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                             <button
                                 disabled={pagina === totalPaginas || carregando}
                                 onClick={() => setPagina(p => p + 1)}
-                                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-[#E4ECF5] text-sm font-bold text-[#475467] hover:bg-[#EAF4FF] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-[#E4ECF5] text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 Próxima
                                 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -367,8 +367,8 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                 <footer className="mt-4 pt-8 border-t border-[#E4ECF5] pb-4 flex flex-col md:flex-row justify-between items-center text-xs text-[#8896A8] font-bold gap-4 uppercase tracking-widest">
                     <p>© 2026 Prestek Intranet • Portal Interno</p>
                     <div className="flex gap-6">
-                        <a className="hover:text-[#4A9EF5] transition-colors" href="#">Políticas</a>
-                        <a className="hover:text-[#4A9EF5] transition-colors" href="#">Suporte</a>
+                        <a className="hover:text-[#C2410C] transition-colors" href="#">Políticas</a>
+                        <a className="hover:text-[#C2410C] transition-colors" href="#">Suporte</a>
                     </div>
                 </footer>
             </main>

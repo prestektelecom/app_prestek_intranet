@@ -362,7 +362,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             {/* Indicador de geocodificação */}
             {geocodando && (
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 backdrop-blur-sm text-slate-600 text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-slate-200 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
                     Carregando cidades…
                 </div>
             )}
@@ -392,7 +392,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                             const v = Math.max(500, Math.min(50000, Number(e.target.value) || 500));
                             setRaioMax(v);
                         }}
-                        className="w-16 text-xs font-semibold text-slate-700 border border-slate-200 rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        className="w-16 text-xs font-semibold text-slate-700 border border-slate-200 rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-teal-400"
                     />
                     <span className="text-[10px] text-slate-400 shrink-0">m</span>
                 </div>

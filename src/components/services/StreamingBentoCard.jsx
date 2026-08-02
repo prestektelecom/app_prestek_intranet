@@ -10,7 +10,7 @@ export default function StreamingBentoCard({ service, isAdmin, onEditClick, onDe
             title={service.service}
             description={`Pacote de entretenimento incluso ou adicional. Assinatura ${service.deadline || 'Mensal'}.`}
             ctaText="Ver detalhes"
-            illustrationType="globe"
+            illustrationType="play"
             onClick={() => onSelect && onSelect(service, 'streaming')}
             topRightContent={
                 isAdmin && (

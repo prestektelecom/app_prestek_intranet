@@ -1,5 +1,6 @@
 import React from 'react';
 import ChipButton from '../ui/ChipButton';
+import { useBentoTheme, BENTO_LIGHT } from '../../hooks/useBentoTheme';
 
 const CATEGORIAS = [
     { value: 'All', label: 'Todos os Serviços', icon: null },
@@ -17,6 +18,14 @@ const ORDENACOES = [
 ];
 
 export default function ServicesFilterBar({ filter, onFilterChange, counts, sortConfig, onSort, showSort }) {
+    const C = useBentoTheme();
+
+    // O segmento ativo era `bg-[var(--accent)] text-white`: no Cyber isso é branco
+    // sobre ciano quase-branco (1.4:1). Texto na cor do accent também não serve —
+    // no Aurora seria violeta sobre violeta. A tinta tem que virar com o tema.
+    const isDark = C.bg !== BENTO_LIGHT.bg;
+    const tintaAtiva = isDark ? C.ink : C.accentDeep;
+
     return (
         // Chips e ordenação em linhas separadas: lado a lado, os 6 chips ficavam
         // espremidos e os três últimos saíam da área visível em 1280px.
@@ -48,9 +57,12 @@ export default function ServicesFilterBar({ filter, onFilterChange, counts, sort
                                     type="button"
                                     onClick={() => onSort(opt.key)}
                                     aria-pressed={active}
+                                    style={active ? { color: tintaAtiva } : undefined}
                                     className={`inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold transition-all sm:text-sm ${
                                         active
-                                            ? 'bg-[var(--accent)] text-white shadow-sm'
+                                            // No claro, --accent-soft e o tray --surface-raised
+                                            // são quase iguais; o anel é o que marca o ativo.
+                                            ? 'bg-[var(--accent-soft)] ring-1 ring-inset ring-[var(--accent)]/50'
                                             : 'bg-transparent text-muted hover:bg-background'
                                     }`}
                                 >

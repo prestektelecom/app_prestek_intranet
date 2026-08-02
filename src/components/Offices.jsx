@@ -39,16 +39,16 @@ function popupHTML(office) {
             </span>
             <div style="font-size:11px;color:#475467;line-height:1.5">
                 <div>📍 ${office.endereco}</div>
-                ${office.cep ? `<div style="color:#1F5BA8;font-weight:600">CEP: ${office.cep}</div>` : ''}
+                ${office.cep ? `<div style="color:#9A3412;font-weight:600">CEP: ${office.cep}</div>` : ''}
                 <div style="margin-top:2px;color:#8896A8">${office.cidade} — ${office.estado}</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:10px">
                 <a href="${streetViewUrl}" target="_blank" rel="noopener noreferrer"
-                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#1F5BA8;color:white;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#9A3412;color:white;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
                     🔭 Street View
                 </a>
                 <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer"
-                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#EAF4FF;color:#1F5BA8;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;background:#FFF7ED;color:#9A3412;font-size:10px;font-weight:600;padding:5px 8px;border-radius:6px;text-decoration:none">
                     🗺️ Ver no Maps
                 </a>
             </div>
@@ -218,7 +218,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
         }
     }
 
-    const inputCls = "w-full px-3 py-2 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all";
+    const inputCls = "w-full px-3 py-2 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
     const labelCls = "block text-[10px] font-black text-[#475467] uppercase tracking-widest mb-1.5";
 
     return (
@@ -228,8 +228,8 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] bg-[#F7FAFD]">
                     <div className="flex items-center gap-3">
-                        <div className="bg-[#EAF4FF] p-2 rounded-lg">
-                            <span className="material-symbols-outlined text-[#4A9EF5] text-xl">
+                        <div className="bg-[#FFF7ED] p-2 rounded-lg">
+                            <span className="material-symbols-outlined text-[#C2410C] text-xl">
                                 {isEdicao ? 'edit_location' : 'add_location'}
                             </span>
                         </div>
@@ -300,7 +300,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                                     onClick={extrairCoordenadas}
                                     disabled={!linkMaps.trim() || extraindo}
                                     title="Extrair latitude e longitude do link"
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:brightness-110 disabled:opacity-50 text-white text-sm font-bold whitespace-nowrap transition-colors shadow-md shadow-[#4A9EF5]/20"
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 disabled:opacity-50 text-white text-sm font-bold whitespace-nowrap transition-colors shadow-md shadow-[#EC7D23]/20"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">
                                         {extraindo ? 'sync' : 'my_location'}
@@ -344,7 +344,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                     <button
                         onClick={handleSubmit}
                         disabled={salvando}
-                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:brightness-110 disabled:opacity-60 text-white rounded-lg shadow-md shadow-[#4A9EF5]/30 transition-colors flex items-center gap-2"
+                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 disabled:opacity-60 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[18px]">{isEdicao ? 'save' : 'add_location'}</span>
                         {salvando ? 'Salvando…' : isEdicao ? 'Salvar Alterações' : 'Criar Escritório'}
@@ -606,8 +606,8 @@ export default function Offices({ user, setCurrentView }) {
                                 onClick={() => setFiltro(label === 'AL' ? 'AL' : label === 'SE' ? 'SE' : 'Todos')}
                                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                                     filtro === (label === 'Todos' ? 'Todos' : label)
-                                        ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-md shadow-[#4A9EF5]/20'
-                                        : 'bg-white border border-[#E4ECF5] text-[#475467] hover:border-[#4A9EF5] hover:text-[#4A9EF5]'
+                                        ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20'
+                                        : 'bg-white border border-[#E4ECF5] text-[#475467] hover:border-[#EC7D23] hover:text-[#C2410C]'
                                 }`}
                             >
                                 {label} <span className="opacity-70">({count})</span>
@@ -623,7 +623,7 @@ export default function Offices({ user, setCurrentView }) {
                                 value={busca}
                                 onChange={e => setBusca(e.target.value)}
                                 placeholder="Buscar unidade..."
-                                className="pl-9 pr-3 py-1.5 text-xs rounded-full border border-[#E4ECF5] bg-white text-[#0B1B2E] placeholder-[#8896A8] focus:outline-none focus:border-[#4A9EF5] focus:ring-2 focus:ring-[#4A9EF5]/20 w-44 transition-all"
+                                className="pl-9 pr-3 py-1.5 text-xs rounded-full border border-[#E4ECF5] bg-white text-[#0B1B2E] placeholder-[#8896A8] focus:outline-none focus:border-[#EC7D23] focus:ring-2 focus:ring-[#EC7D23]/20 w-44 transition-all"
                             />
                         </div>
                     </div>
@@ -649,8 +649,8 @@ export default function Offices({ user, setCurrentView }) {
                                         onClick={() => flyToOffice(office)}
                                         className={`w-full text-left rounded-xl p-3 border transition-all duration-150 ${
                                             isSel
-                                                ? 'border-[#4A9EF5] bg-[#EAF4FF] shadow-sm'
-                                                : 'border-[#E4ECF5] bg-white hover:border-[#4A9EF5]/50 hover:bg-[#F7FAFD]'
+                                                ? 'border-[#EC7D23] bg-[#FFF7ED] shadow-sm'
+                                                : 'border-[#E4ECF5] bg-white hover:border-[#EC7D23]/50 hover:bg-[#F7FAFD]'
                                         } ${isAdmin ? 'pr-16' : ''}`}
                                     >
                                         <div className="flex items-start justify-between gap-2">
@@ -680,7 +680,7 @@ export default function Offices({ user, setCurrentView }) {
                                             <button
                                                 onClick={e => { e.stopPropagation(); setModal({ modo: 'editar', escritorio: office }); }}
                                                 title="Editar escritório"
-                                                className="p-1 rounded text-[#8896A8] hover:text-[#4A9EF5] hover:bg-[#EAF4FF] transition-colors"
+                                                className="p-1 rounded text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">edit</span>
                                             </button>
@@ -716,9 +716,9 @@ export default function Offices({ user, setCurrentView }) {
                     onMouseDown={startResize}
                     onTouchStart={startResize}
                     title="Arrastar para redimensionar"
-                    className="hidden md:flex w-1.5 shrink-0 cursor-col-resize group relative items-center justify-center bg-[#E4ECF5] hover:bg-[#4A9EF5]/40 transition-colors duration-150"
+                    className="hidden md:flex w-1.5 shrink-0 cursor-col-resize group relative items-center justify-center bg-[#E4ECF5] hover:bg-[#EC7D23]/40 transition-colors duration-150"
                 >
-                    <div className="w-0.5 h-8 rounded-full bg-[#8896A8]/50 group-hover:bg-[#4A9EF5] group-hover:h-12 transition-all duration-150" />
+                    <div className="w-0.5 h-8 rounded-full bg-[#8896A8]/50 group-hover:bg-[#EC7D23] group-hover:h-12 transition-all duration-150" />
                 </div>
 
                 {/* Mapa */}

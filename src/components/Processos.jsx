@@ -190,7 +190,7 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
         onSalvar(payload);
     }
 
-    const inputCls = "w-full px-3 py-2 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent transition-all";
+    const inputCls = "w-full px-3 py-2 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
     const labelCls = "block text-[10px] font-black text-[#475467] uppercase tracking-widest mb-1.5";
 
     return (
@@ -200,8 +200,8 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                 {/* Header do modal */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] bg-[#F7FAFD]">
                     <div className="flex items-center gap-3">
-                        <div className="bg-[#EAF4FF] p-2 rounded-lg">
-                            <span className="material-symbols-outlined text-[#4A9EF5] text-xl">
+                        <div className="bg-[#FFF7ED] p-2 rounded-lg">
+                            <span className="material-symbols-outlined text-[#C2410C] text-xl">
                                 {isEdicao ? 'edit' : 'add_circle'}
                             </span>
                         </div>
@@ -296,7 +296,7 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#4A9EF5]/30 transition-colors flex items-center gap-2"
+                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[18px]">{isEdicao ? 'save' : 'add'}</span>
                         {isEdicao ? 'Salvar Alterações' : 'Criar Processo'}
@@ -406,7 +406,7 @@ export default function Processos({ setCurrentView }) {
                             <span className="material-symbols-outlined">search</span>
                         </div>
                         <input
-                            className="block w-full pl-10 pr-3 py-2.5 border border-[#E4ECF5] rounded-lg leading-5 bg-[#F7FAFD] text-[#0B1B2E] placeholder:text-[#8896A8] focus:outline-none focus:ring-2 focus:ring-[#4A9EF5] focus:border-transparent sm:text-sm transition-all"
+                            className="block w-full pl-10 pr-3 py-2.5 border border-[#E4ECF5] rounded-lg leading-5 bg-[#F7FAFD] text-[#0B1B2E] placeholder:text-[#8896A8] focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent sm:text-sm transition-all"
                             placeholder="Buscar por Nome, ID (ex: TI-001) ou tag..."
                             type="text"
                             value={busca}
@@ -421,8 +421,8 @@ export default function Processos({ setCurrentView }) {
                                     onClick={() => handleCategoria(cat.id)}
                                     className={`snap-start shrink-0 lg:shrink flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all ${
                                         categoriaAtiva === cat.id
-                                            ? 'bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white shadow-md shadow-[#4A9EF5]/20'
-                                            : 'bg-[#F7FAFD] border border-[#E4ECF5] text-[#475467] hover:border-[#4A9EF5] hover:text-[#4A9EF5]'
+                                            ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20'
+                                            : 'bg-[#F7FAFD] border border-[#E4ECF5] text-[#475467] hover:border-[#EC7D23] hover:text-[#C2410C]'
                                     }`}
                                 >
                                     <span className={`material-symbols-outlined text-[18px] ${categoriaAtiva === cat.id ? 'text-white' : 'text-[#8896A8]'}`}>
@@ -451,7 +451,7 @@ export default function Processos({ setCurrentView }) {
                             className="p-4 border-b border-[#E4ECF5] last:border-b-0 cursor-pointer hover:bg-[#F7FAFD] transition-colors"
                         >
                             <div className="flex justify-between items-start mb-1">
-                                <span className="font-mono font-bold text-[#4A9EF5] text-sm">{p.id}</span>
+                                <span className="font-mono font-bold text-[#C2410C] text-sm">{p.id}</span>
                                 <StatusBadge status={p.status} />
                             </div>
                             <h3 className="font-black text-[#0B1B2E] text-base leading-snug">{p.nome}</h3>
@@ -461,7 +461,7 @@ export default function Processos({ setCurrentView }) {
                                 <button
                                     onClick={() => abrirEditar(p)}
                                     title="Editar processo"
-                                    className="p-1.5 rounded-md text-[#8896A8] hover:text-[#4A9EF5] hover:bg-[#EAF4FF] transition-colors"
+                                    className="p-1.5 rounded-md text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">edit</span>
                                 </button>
@@ -471,7 +471,7 @@ export default function Processos({ setCurrentView }) {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         title="Abrir POP no Google Docs"
-                                        className="p-1.5 rounded-md text-[#4A9EF5] hover:bg-[#EAF4FF] transition-colors"
+                                        className="p-1.5 rounded-md text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                     </a>
@@ -490,8 +490,8 @@ export default function Processos({ setCurrentView }) {
                         {processosFiltrados.length === 0 ? 0 : inicio + 1}–{Math.min(inicio + ROWS_PER_PAGE, processosFiltrados.length)} de {processosFiltrados.length}
                     </span>
                     <div className="flex gap-2">
-                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#EAF4FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Anterior</button>
-                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#EAF4FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Próximo</button>
+                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Anterior</button>
+                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Próximo</button>
                     </div>
                 </div>
             </div>
@@ -523,9 +523,9 @@ export default function Processos({ setCurrentView }) {
                                     <tr
                                         key={p.id}
                                         onClick={() => abrirEditar(p)}
-                                        className="hover:bg-[#EAF4FF] transition-colors cursor-pointer"
+                                        className="hover:bg-[#FFF7ED] transition-colors cursor-pointer"
                                     >
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-[#4A9EF5]">{p.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-[#C2410C]">{p.id}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-bold text-[#0B1B2E]">{p.nome}</div>
                                             <div className="text-xs text-[#475467] mt-0.5">{p.responsavel.setor}</div>
@@ -544,7 +544,7 @@ export default function Processos({ setCurrentView }) {
                                                 <button
                                                     onClick={() => abrirEditar(p)}
                                                     title="Editar processo"
-                                                    className="p-1.5 rounded-md text-[#8896A8] hover:text-[#4A9EF5] hover:bg-[#EAF4FF] transition-colors"
+                                                    className="p-1.5 rounded-md text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
                                                 >
                                                     <span className="material-symbols-outlined text-[20px]">edit</span>
                                                 </button>
@@ -554,7 +554,7 @@ export default function Processos({ setCurrentView }) {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         title="Abrir POP no Google Docs"
-                                                        className="p-1.5 rounded-md text-[#4A9EF5] hover:bg-[#EAF4FF] transition-colors"
+                                                        className="p-1.5 rounded-md text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                                     </a>
@@ -591,14 +591,14 @@ export default function Processos({ setCurrentView }) {
                         <button
                             onClick={() => setPagina(p => Math.max(1, p - 1))}
                             disabled={paginaSegura === 1}
-                            className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#EAF4FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                             Anterior
                         </button>
                         <button
                             onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
                             disabled={paginaSegura === totalPaginas}
-                            className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#EAF4FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                             Próximo
                         </button>
@@ -618,7 +618,7 @@ export default function Processos({ setCurrentView }) {
                             className="bg-white p-6 rounded-[20px] border border-[#E4ECF5] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-left"
                         >
                             <div className="flex items-start justify-between mb-4">
-                                <div className="bg-[#EAF4FF] p-3 rounded-[14px] text-[#4A9EF5] group-hover:bg-gradient-to-br group-hover:from-[#1F5BA8] group-hover:to-[#4A9EF5] group-hover:text-white transition-all">
+                                <div className="bg-[#FFF7ED] p-3 rounded-[14px] text-[#C2410C] group-hover:bg-gradient-to-br group-hover:from-[#9A3412] group-hover:to-[#EC7D23] group-hover:text-white transition-all">
                                     <span className="material-symbols-outlined text-3xl">{cat.icon}</span>
                                 </div>
                                 <span className="text-3xl font-black text-[#0B1B2E]">{total}</span>
@@ -628,7 +628,7 @@ export default function Processos({ setCurrentView }) {
                                 {total === 0 ? 'Nenhum processo cadastrado' : `${total} processo${total !== 1 ? 's' : ''} cadastrado${total !== 1 ? 's' : ''}`}
                             </p>
                             <div className="mt-4 w-full bg-[#F7FAFD] rounded-full h-1.5">
-                                <div className="bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] h-1.5 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                <div className="bg-gradient-to-r from-[#9A3412] to-[#EC7D23] h-1.5 rounded-full transition-all" style={{ width: `${pct}%` }} />
                             </div>
                             <p className="text-xs text-[#475467] mt-2 text-right">{pct}% Ativos</p>
                         </button>

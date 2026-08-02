@@ -12,9 +12,9 @@ export default function CalendarDay({ day, isToday, active, onClick, isAdmin }) 
     }
 
     if (isToday) {
-        classes += "bg-[#4A9EF5] text-white shadow-md shadow-[#4A9EF5]/40 z-10 ";
+        classes += "bg-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/40 z-10 ";
     } else if (active) {
-        classes += "text-[#0B1B2E] hover:bg-[#EAF4FF] border border-[#E4ECF5] bg-white ";
+        classes += "text-[#0B1B2E] hover:bg-[#FFF7ED] border border-[#E4ECF5] bg-white ";
     } else {
         classes += "text-[#0B1B2E]/40 hover:text-[#0B1B2E] hover:bg-[#F7FAFD] ";
     }
@@ -24,7 +24,7 @@ export default function CalendarDay({ day, isToday, active, onClick, isAdmin }) 
             {isAdmin && <div className="absolute inset-0 bg-[#0B1B2E] opacity-0 group-hover:opacity-[0.04] transition-opacity"></div>}
             <span className="relative z-10">{day}</span>
             {active && !isToday && (
-                <div className="w-1.5 h-1.5 bg-[#4A9EF5] rounded-full absolute bottom-1.5 left-1/2 -translate-x-1/2 shadow-sm"></div>
+                <div className="w-1.5 h-1.5 bg-[#EC7D23] rounded-full absolute bottom-1.5 left-1/2 -translate-x-1/2 shadow-sm"></div>
             )}
         </button>
     );

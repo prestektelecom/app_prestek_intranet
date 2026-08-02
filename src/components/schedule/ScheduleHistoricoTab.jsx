@@ -78,7 +78,7 @@ export default function ScheduleHistoricoTab({ filterMonth, filterYear, user, on
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h2 className="text-xl font-black text-[#0B1B2E] tracking-tight flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#4A9EF5] text-[22px]">history</span>
+                        <span className="material-symbols-outlined text-[#C2410C] text-[22px]">history</span>
                         Alterações Recentes
                     </h2>
                     <p className="text-sm text-[#475467] font-medium mt-0.5">
@@ -155,7 +155,7 @@ export default function ScheduleHistoricoTab({ filterMonth, filterYear, user, on
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2 pl-4 md:pl-0">
-                                            <div className="w-7 h-7 rounded-full bg-[#EAF4FF] text-[#4A9EF5] flex items-center justify-center text-xs font-black shrink-0">
+                                            <div className="w-7 h-7 rounded-full bg-[#FFF7ED] text-[#C2410C] flex items-center justify-center text-xs font-black shrink-0">
                                                 {(h.admin_nome || '?').charAt(0).toUpperCase()}
                                             </div>
                                             <span className="text-sm text-[#0B1B2E] font-medium truncate max-w-[180px]">{h.admin_nome || '—'}</span>
@@ -199,7 +199,7 @@ export default function ScheduleHistoricoTab({ filterMonth, filterYear, user, on
                     <div className="px-6 py-3 border-t border-[#E4ECF5]/50 bg-[#F7FAFD]/30 text-center text-xs text-[#475467] font-bold">
                         Exibindo as {LIMITE} alterações mais recentes de {total} no total.
                         {user?.is_admin && onViewFullAudit && (
-                            <button onClick={onViewFullAudit} className="ml-1 text-[#4A9EF5] hover:underline">Ver todas na auditoria completa.</button>
+                            <button onClick={onViewFullAudit} className="ml-1 text-[#C2410C] hover:underline">Ver todas na auditoria completa.</button>
                         )}
                     </div>
                 )}

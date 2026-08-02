@@ -25,7 +25,7 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
     const gradient = isLink ? 'orange' : isPJ ? 'green' : 'blue';
     const badgeColor = isLink ? '#D97706' : isPJ ? '#059669' : '#2563EB';
     const badgeText = isLink ? 'LINK DEDICADO' : isPJ ? 'INTERNET PJ' : 'INTERNET PF';
-    const illustrationType = isLink || isPJ ? 'company' : 'wifi';
+    const illustrationType = isLink ? 'link' : isPJ ? 'computer' : 'wifi';
 
     // Nomes de plano chegam com até ~70 caracteres. Em vez de truncar, rebaixa:
     // a velocidade vira o título e o nome completo vira subtítulo com clamp.

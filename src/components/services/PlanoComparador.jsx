@@ -283,7 +283,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                 {/* Header do Drawer */}
                 <div className="flex items-center justify-between mb-4 border-b border-[#E4ECF5] dark:border-[var(--border)] pb-3">
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#4A9EF5] dark:text-[#7FD4E8]">compare_arrows</span>
+                        <span className="material-symbols-outlined text-[#C2410C] dark:text-[#FDBA74]">compare_arrows</span>
                         <h3 className="text-sm font-bold text-[#0B1B2E] dark:text-[var(--foreground)]">
                             Comparador de Planos <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">({plans.length} selecionados)</span>
                         </h3>

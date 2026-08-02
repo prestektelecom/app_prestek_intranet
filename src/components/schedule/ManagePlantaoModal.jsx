@@ -49,12 +49,12 @@ export default function ManagePlantaoModal({
                 <span className="material-symbols-outlined text-[14px] text-[#8896A8]">{icon}</span>
                 <span className="text-[10px] font-black uppercase text-[#8896A8] tracking-widest">{label}</span>
                 {count > 0 && (
-                    <span className="text-[9px] bg-[#EAF4FF] text-[#4A9EF5] px-1.5 py-0.5 rounded-full font-black">
+                    <span className="text-[9px] bg-[#FFF7ED] text-[#C2410C] px-1.5 py-0.5 rounded-full font-black">
                         {count} selecionado{count > 1 ? 's' : ''}
                     </span>
                 )}
             </div>
-            <span className="material-symbols-outlined text-[16px] text-[#8896A8] group-hover:text-[#4A9EF5] transition-colors">
+            <span className="material-symbols-outlined text-[16px] text-[#8896A8] group-hover:text-[#C2410C] transition-colors">
                 {open ? 'expand_less' : 'expand_more'}
             </span>
         </button>
@@ -72,7 +72,7 @@ export default function ManagePlantaoModal({
                 {/* Header */}
                 <div className="px-5 py-4 border-b border-[#E4ECF5] flex justify-between items-center bg-[#F7FAFD] shrink-0 rounded-t-3xl">
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#4A9EF5] text-[20px]">edit_calendar</span>
+                        <span className="material-symbols-outlined text-[#C2410C] text-[20px]">edit_calendar</span>
                         <h2 className="text-base font-black text-[#0B1B2E]">Gerenciar Plantão</h2>
                     </div>
                     <button
@@ -86,7 +86,7 @@ export default function ManagePlantaoModal({
                 <form onSubmit={handleSubmit} className="flex flex-col overflow-y-auto flex-1 min-h-0">
                     <div className="p-3 flex flex-col gap-3">
                         {/* Data */}
-                        <div className="flex gap-2 items-center bg-[#EAF4FF] text-[#1F5BA8] px-3 py-2 rounded-lg font-black text-xs border border-[#4A9EF5]/20">
+                        <div className="flex gap-2 items-center bg-[#FFF7ED] text-[#9A3412] px-3 py-2 rounded-lg font-black text-xs border border-[#EC7D23]/20">
                             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
                             <span>Data: {selectedDate?.split('-').reverse().join('/')}</span>
                         </div>
@@ -188,12 +188,12 @@ export default function ManagePlantaoModal({
                                         Histórico de Alterações
                                     </span>
                                     {historico.length > 0 && (
-                                        <span className="text-[9px] bg-[#EAF4FF] text-[#4A9EF5] px-1.5 py-0.5 rounded-full font-black">
+                                        <span className="text-[9px] bg-[#FFF7ED] text-[#C2410C] px-1.5 py-0.5 rounded-full font-black">
                                             {historico.length}
                                         </span>
                                     )}
                                 </div>
-                                <span className="material-symbols-outlined text-[16px] text-[#8896A8] group-hover:text-[#4A9EF5] transition-colors">
+                                <span className="material-symbols-outlined text-[16px] text-[#8896A8] group-hover:text-[#C2410C] transition-colors">
                                     {historicoOpen ? 'expand_less' : 'expand_more'}
                                 </span>
                             </button>
@@ -214,7 +214,7 @@ export default function ManagePlantaoModal({
                                                 <div key={h.id} className="bg-[#F7FAFD] rounded-lg border border-[#E4ECF5]/60 p-2 flex flex-col gap-1">
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-1">
-                                                            <span className="material-symbols-outlined text-[12px] text-[#4A9EF5]">manage_accounts</span>
+                                                            <span className="material-symbols-outlined text-[12px] text-[#C2410C]">manage_accounts</span>
                                                             <span className="text-[10px] font-black text-[#0B1B2E]">{h.admin_nome || 'Desconhecido'}</span>
                                                         </div>
                                                         <span className="text-[9px] text-[#8896A8] font-medium">{fmt}</span>
@@ -222,11 +222,11 @@ export default function ManagePlantaoModal({
                                                     <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px] text-[#8896A8] mt-0.5">
                                                         <div className="col-span-2 font-black text-[9px] uppercase tracking-wider text-[#8896A8]/70 mb-0.5">Antes → Depois</div>
                                                         <div><span className="font-black text-[#0B1B2E]/60">N1:</span> {h.n1_anterior || '—'}</div>
-                                                        <div><span className="font-black text-[#4A9EF5]">N1:</span> {h.n1_novo || '—'}</div>
+                                                        <div><span className="font-black text-[#C2410C]">N1:</span> {h.n1_novo || '—'}</div>
                                                         <div><span className="font-black text-[#0B1B2E]/60">N2:</span> {h.n2_anterior || '—'}</div>
-                                                        <div><span className="font-black text-[#4A9EF5]">N2:</span> {h.n2_novo || '—'}</div>
+                                                        <div><span className="font-black text-[#C2410C]">N2:</span> {h.n2_novo || '—'}</div>
                                                         <div><span className="font-black text-[#0B1B2E]/60">Sup:</span> {h.gerente_anterior || '—'}</div>
-                                                        <div><span className="font-black text-[#4A9EF5]">Sup:</span> {h.gerente_novo || '—'}</div>
+                                                        <div><span className="font-black text-[#C2410C]">Sup:</span> {h.gerente_novo || '—'}</div>
                                                     </div>
                                                 </div>
                                             );
@@ -253,14 +253,14 @@ export default function ManagePlantaoModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-3 py-2 bg-[#F7FAFD] text-[#0B1B2E] font-bold rounded-xl hover:bg-[#EAF4FF] transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="flex-1 px-3 py-2 bg-[#F7FAFD] text-[#0B1B2E] font-bold rounded-xl hover:bg-[#FFF7ED] transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={salvando || deletando}
-                            className="flex-1 px-3 py-2 bg-gradient-to-r from-[#1F5BA8] to-[#4A9EF5] text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[#4A9EF5]/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="flex-1 px-3 py-2 bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[#EC7D23]/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             <span className="material-symbols-outlined text-[18px]">save</span>
                             <span>{salvando ? 'Salvando...' : 'Salvar'}</span>
