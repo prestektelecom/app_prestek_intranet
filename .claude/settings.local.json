@@ -29,7 +29,9 @@
       "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/fix-rgba.mjs\")",
       "Bash(node -e ' *)",
       "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/achar-azuis.mjs\")",
-      "Bash(rm -rf openspec/changes/migrar-accent-azul-teal)"
+      "Bash(rm -rf openspec/changes/migrar-accent-azul-teal)",
+      "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/testar-agregacao.mjs\")",
+      "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/testar-serie-dia.mjs\")"
     ],
     "additionalDirectories": [
       "F:\\Projetos em Dev\\prestek_intranet\\src\\image\\services"

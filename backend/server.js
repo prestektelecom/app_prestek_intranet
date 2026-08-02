@@ -2586,6 +2586,10 @@ app.get('/api/planos-negociacoes', async (req, res) => {
         
         let planCounts = {};
         let statusCounts = {};
+        // Vendas por dia do mês corrente. Sai de graça: o loop abaixo já percorre
+        // todos os contratos do mês e cada registro traz data_cadastro_sistema —
+        // só faltava não descartá-la.
+        let vendasPorDia = {};
         try {
             const urlContratos = `https://${host}/webservice/v1/cliente_contrato`;
             const bodyContratos = JSON.stringify({
@@ -2610,6 +2614,12 @@ app.get('/api/planos-negociacoes', async (req, res) => {
                             const stInt = reg.status_internet || '';
                             const comp = `${st}_${stInt}`;
                             statusCounts[comp] = (statusCounts[comp] || 0) + 1;
+
+                            // IXC devolve 'YYYY-MM-DD HH:mm:ss'; a chave é só a data.
+                            const dia = String(reg.data_cadastro_sistema || '').slice(0, 10);
+                            if (/^\d{4}-\d{2}-\d{2}$/.test(dia)) {
+                                vendasPorDia[dia] = (vendasPorDia[dia] || 0) + 1;
+                            }
                         }
                     });
                 }
@@ -2630,7 +2640,7 @@ app.get('/api/planos-negociacoes', async (req, res) => {
             };
         });
 
-        return res.json({ sucesso: true, planos, status_counts: statusCounts });
+        return res.json({ sucesso: true, planos, status_counts: statusCounts, vendas_por_dia: vendasPorDia });
     } catch (err) {
         console.error('Erro ao buscar planos de negociação no IXC:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar planos de negociação.' });

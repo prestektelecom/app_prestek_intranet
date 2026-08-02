@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-export default function Sparkline({ data, color = '#EC7D23', height = 56, fill = true }) {
+export default function Sparkline({ data, color = '#EC7D23', height = 56, fill = true, highlightIndex = null }) {
   // ID único por instância: permite cores em var(--token) sem quebrar a referência do gradiente
   const gradientId = `spark-fill-${useId().replace(/:/g, '')}`
   if (!data || data.length < 2) return null;
@@ -19,7 +19,7 @@ export default function Sparkline({ data, color = '#EC7D23', height = 56, fill =
   const linePath = points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x} ${y}`).join(' ');
   const fillPath = `${linePath} L ${points[points.length - 1][0]} ${height} L 0 ${height} Z`;
 
-  return (
+  const svg = (
     <svg
       viewBox={`0 0 ${w} ${height}`}
       width="100%"
@@ -51,5 +51,31 @@ export default function Sparkline({ data, color = '#EC7D23', height = 56, fill =
         vectorEffect="non-scaling-stroke"
       />
     </svg>
+  );
+
+  const destaque = highlightIndex != null ? points[highlightIndex] : null;
+  if (!destaque) return svg;
+
+  // O marcador fica em HTML, não em <circle>: com preserveAspectRatio="none" o eixo x é
+  // esticado e qualquer círculo dentro do SVG sairia achatado em elipse.
+  const [hx, hy] = destaque;
+
+  return (
+    <div className="relative" style={{ height }}>
+      {svg}
+      <span
+        className="pointer-events-none absolute block h-2.5 w-2.5"
+        style={{ left: `${hx}%`, top: `${(hy / height) * 100}%`, transform: 'translate(-50%, -50%)' }}
+      >
+        <span
+          className="absolute inset-0 rounded-full animate-ping"
+          style={{ backgroundColor: color, opacity: 0.55 }}
+        />
+        <span
+          className="absolute inset-0 rounded-full border-2 bg-surface"
+          style={{ borderColor: color }}
+        />
+      </span>
+    </div>
   );
 }

@@ -48,13 +48,34 @@ export function vendasRatio(vendas, maxVendas) {
     return Math.min((v / max) * 100, 100);
 }
 
+const UNIDADE_MBPS = { MEGA: 1, GIGA: 1000 };
+
 /**
  * Extrai a velocidade em Mbps do nome do plano.
- * Ex: "500 MEGA + WATCH - AL" → 500
+ * Ex: "500 MEGA + WATCH - AL" → 500 · "1 GIGA (P. JURIDICA)" → 1000
+ *
+ * GIGA precisa entrar aqui: antes só MEGA casava, então todo plano GIGA valia
+ * null — ordenava como o mais lento da lista, sumia da comparação de velocidade
+ * e caía no fallback de título.
  */
 export function parseVelocidade(descricao = '') {
-    const match = String(descricao || '').match(/(\d+)\s*MEGA/i);
-    return match ? parseInt(match[1], 10) : null;
+    const match = String(descricao || '').match(/(\d+)\s*(MEGA|GIGA)/i);
+    if (!match) return null;
+    return parseInt(match[1], 10) * UNIDADE_MBPS[match[2].toUpperCase()];
+}
+
+/**
+ * Rótulo humano da velocidade. Existe porque `${mbps} Mega` passaria a render
+ * "1000 Mega" agora que GIGA é reconhecido.
+ * Ex: 500 → "500 Mega" · 1000 → "1 Giga"
+ */
+export function formatarVelocidade(mbps) {
+    if (!mbps) return null;
+    if (mbps >= 1000 && mbps % 1000 === 0) {
+        const g = mbps / 1000;
+        return `${g} Giga`;
+    }
+    return `${mbps} Mega`;
 }
 
 export const STREAMING_KEYWORDS = ['WATCH', 'PARAMOUNT', 'MAX', 'PREMIERE', 'ITTV', 'LEVEDUCA', 'NETFLIX', 'DISNEY', 'STAR', 'HBO'];

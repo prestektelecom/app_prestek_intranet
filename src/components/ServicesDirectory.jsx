@@ -36,6 +36,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
     const [plans, setPlans] = useState([]);
     const [comparingIds, setComparingIds] = useState([]);
     const [statusCounts, setStatusCounts] = useState({});
+    const [vendasPorDiaRaw, setVendasPorDiaRaw] = useState({});
     const [filter, setFilter] = useState('All');
     // Sem chave inicial, nenhum botão de ordenação aparecia ativo e a lista
     // vinha na ordem crua do IXC. "Mais vendidos" é o padrão útil.
@@ -79,6 +80,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 const data = await response.json();
                 setPlans(data.planos || data);
                 if (data.status_counts) setStatusCounts(data.status_counts);
+                if (data.vendas_por_dia) setVendasPorDiaRaw(data.vendas_por_dia);
             } else {
                 console.error('Failed to fetch plans');
             }
@@ -392,6 +394,49 @@ export default function ServicesDirectory({ user, searchQuery }) {
         [plans]
     );
 
+    // Série do gráfico do hero. Não existe histórico temporal no backend — todas as
+    // consultas de contrato são do mês corrente — então o eixo é a faixa de velocidade,
+    // não o tempo. PF e PJ da mesma velocidade somam: a pergunta é "qual faixa vende mais".
+    const vendasPorVelocidade = useMemo(() => {
+        const porFaixa = new Map();
+        plans.forEach(p => {
+            const mbps = parseVelocidade(p.descricao);
+            if (!mbps) return; // Link dedicado e afins não têm velocidade no nome
+            porFaixa.set(mbps, (porFaixa.get(mbps) || 0) + (p.vendas_mes || 0));
+        });
+        return [...porFaixa.entries()]
+            .sort((a, b) => a[0] - b[0])
+            .map(([mbps, vendas]) => ({ mbps, vendas }));
+    }, [plans]);
+
+    // vendasTotais ≠ totalContratos: ambos contam só id_motivo_inclusao === '1', mas
+    // vendas_mes só existe para planos com ativo='S'. Contrato de plano desativado entra
+    // no status e some daqui. Por isso o ticket médio divide por vendasTotais.
+    const vendasTotais = useMemo(
+        () => plans.reduce((acc, p) => acc + (p.vendas_mes || 0), 0),
+        [plans]
+    );
+
+    const receitaNova = useMemo(
+        () => plans.reduce((acc, p) => acc + (p.vendas_mes || 0) * (parseFloat(p.valor_mensal) || 0), 0),
+        [plans]
+    );
+
+    const ticketMedio = vendasTotais ? receitaNova / vendasTotais : 0;
+
+    // Série densa do 1º ao dia corrente. Dia sem venda é 0, não é buraco —
+    // um gap faria a linha pular e sugerir continuidade que não houve.
+    const vendasPorDia = useMemo(() => {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        return Array.from({ length: hoje.getDate() }, (_, i) => {
+            const dia = i + 1;
+            const chave = `${ano}-${mes}-${String(dia).padStart(2, '0')}`;
+            return { dia, vendas: vendasPorDiaRaw[chave] || 0 };
+        });
+    }, [vendasPorDiaRaw]);
+
     const getStatusCount = (prefix) => Object.entries(statusCounts || {}).reduce(
         (acc, [key, count]) => (key.startsWith(prefix + '_') ? acc + count : acc), 0
     );
@@ -416,6 +461,13 @@ export default function ServicesDirectory({ user, searchQuery }) {
                     isLoading={loading.plans}
                     busca={busca}
                     onBuscaChange={setBusca}
+                    vendasPorVelocidade={vendasPorVelocidade}
+                    vendasPorDia={vendasPorDia}
+                    vendasTotais={vendasTotais}
+                    receitaNova={receitaNova}
+                    ticketMedio={ticketMedio}
+                    planoCampeao={topPlans[0] || null}
+                    formatCurrency={formatCurrency}
                 />
 
                 <ServicesFilterBar

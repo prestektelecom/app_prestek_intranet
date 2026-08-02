@@ -4,6 +4,7 @@ import {
     CATEGORIA,
     classificarPlano,
     parseVelocidade,
+    formatarVelocidade,
     parseStreaming,
     isTopSeller as calcTopSeller,
     vendasRatio as calcVendasRatio,
@@ -30,7 +31,7 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
     // Nomes de plano chegam com até ~70 caracteres. Em vez de truncar, rebaixa:
     // a velocidade vira o título e o nome completo vira subtítulo com clamp.
     const velocidade = parseVelocidade(plan.descricao);
-    const title = velocidade ? `${velocidade} Mega` : plan.descricao;
+    const title = formatarVelocidade(velocidade) || plan.descricao;
     const subtitle = velocidade ? plan.descricao : null;
 
     const streamings = parseStreaming(plan.descricao);
