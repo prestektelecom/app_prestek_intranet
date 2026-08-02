@@ -585,3 +585,22 @@
   color: var(--primary) !important;
 }
 
+/* ── Movimento reduzido ──────────────────────────────────────
+   O projeto tem 23 animações infinitas (animate-ping, animate-pulse,
+   bento-aurora-spin, glow-pulse, login-pulse, bell-ring, float-gentle) e
+   nenhuma respeitava a preferência do sistema. Regra global em vez de caso a
+   caso: qualquer animação nova já nasce coberta.
+
+   Não usa `animation: none` — isso impediria estados finais de keyframes de
+   serem aplicados. Duração quase zero preserva o resultado sem o movimento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

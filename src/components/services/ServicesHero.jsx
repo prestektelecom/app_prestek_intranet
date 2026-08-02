@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { tone } from '../../utils/tone';
 import Sparkline from '../common/Sparkline';
@@ -16,7 +16,15 @@ const KPI_SECUNDARIOS = [
     { key: 'desistiu', label: 'Desistiu', icon: 'cancel' },
 ];
 
-const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55';
+// Opacidades do painel têm piso em /70. Sobre bg-black/55, /70 dá 5,6:1 e /75
+// dá 6,2:1; os valores anteriores (/45 e /55) davam 2,1:1 e 2,5:1, reprovados
+// em AA — e não dava para consertar só subindo opacidade, o fundo é que estava claro.
+const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
+
+const ABAS = [
+    { key: 'velocidade', label: 'Velocidade', icon: 'speed' },
+    { key: 'dia', label: 'Dia', icon: 'calendar_month' },
+];
 
 const MAX_ROTULOS_EIXO = 7;
 
@@ -40,66 +48,18 @@ function indiceDoPico(serie) {
     return serie.reduce((melhor, v, i) => (v > serie[melhor] ? i : melhor), 0);
 }
 
-function KpiTile({ label, valor, sub, title }) {
+const plural = (n, um, muitos) => `${n} ${n === 1 ? um : muitos}`;
+
+function KpiTile({ label, valor, sub, descricaoCompleta }) {
     return (
-        <div className="min-w-0" title={title}>
+        // title serve o mouse, aria-label serve teclado e leitor de tela — o
+        // nome do plano tem ~70 caracteres e não cabe visível no tile.
+        <div className="min-w-0" title={descricaoCompleta} aria-label={descricaoCompleta || undefined}>
             <div className={LABEL_MONO}>{label}</div>
             <div className="mt-1 truncate text-[15px] font-extrabold leading-none tracking-tight text-white tabular-nums">
                 {valor}
             </div>
-            {sub && <div className="mt-1 truncate font-mono text-[9.5px] text-white/45">{sub}</div>}
-        </div>
-    );
-}
-
-// Painel de instrumentos: cabeçalho, gráfico com marcador de pico, eixo e tiles.
-// Extraído porque velocidade e dia compartilham a casca inteira — só mudam os dados.
-function PainelGrafico({ titulo, competencia, serie, rotulos, isLoading, mensagemVazia, tiles, className = '' }) {
-    const idxPico = indiceDoPico(serie);
-    const temGrafico = serie.length >= 2;
-
-    return (
-        <div className={`rounded-2xl border border-white/15 bg-black/25 p-4 backdrop-blur-sm ${className}`}>
-            <div className="flex items-center justify-between gap-2 border-b border-white/[0.12] pb-2">
-                <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/80" />
-                    <span className="truncate text-[11px] font-bold text-white/90">{titulo}</span>
-                </span>
-                <span className="shrink-0 font-mono text-[10px] text-white/50">{competencia}</span>
-            </div>
-
-            <div className="mt-3">
-                {isLoading ? (
-                    <div className="h-20 animate-pulse rounded-lg bg-white/10" />
-                ) : temGrafico ? (
-                    <>
-                        <Sparkline data={serie} color="#FFFFFF" height={80} highlightIndex={idxPico} />
-                        <div className="mt-1.5 flex justify-between font-mono text-[9px] text-white/45">
-                            {rotulos.map(({ i, texto }) => (
-                                <span key={i} className={i === idxPico ? 'font-bold text-white/90' : undefined}>
-                                    {texto}
-                                </span>
-                            ))}
-                        </div>
-                    </>
-                ) : (
-                    // Sparkline retorna null com menos de 2 pontos — sem isso viraria um buraco.
-                    <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-white/20 px-3 text-center text-[11.5px] text-white/55">
-                        {mensagemVazia}
-                    </div>
-                )}
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-3 border-t border-white/[0.12] pt-3 sm:grid-cols-4">
-                {isLoading
-                    ? [1, 2, 3, 4].map(i => (
-                        <div key={i} className="space-y-1.5">
-                            <div className="h-2 w-2/3 animate-pulse rounded bg-white/10" />
-                            <div className="h-3.5 w-1/2 animate-pulse rounded bg-white/10" />
-                        </div>
-                    ))
-                    : tiles}
-            </div>
+            {sub && <div className="mt-1 truncate font-mono text-[11px] text-white/70">{sub}</div>}
         </div>
     );
 }
@@ -119,6 +79,7 @@ export default function ServicesHero({
     formatCurrency = (v) => v,
 }) {
     const C = useBentoTheme();
+    const [aba, setAba] = useState('velocidade');
 
     const visiveis = KPI_SECUNDARIOS.filter(k => (counts[k.key] || 0) > 0);
     const semDados = !isLoading && total === 0;
@@ -129,37 +90,58 @@ export default function ServicesHero({
         return s.charAt(0).toUpperCase() + s.slice(1);
     }, []);
 
-    // ── Painel 1: velocidade ──
-    const serieVel = vendasPorVelocidade.map(v => v.vendas);
-    const rotulosVel = amostrarIndices(vendasPorVelocidade.length).map(i => ({
-        i,
-        texto: rotuloVelocidade(vendasPorVelocidade[i].mbps),
-    }));
+    // O gráfico troca com a aba; os tiles de KPI não. Contratos, receita e ticket
+    // são os números de cabeçalho e sumir com eles ao trocar de aba seria perda.
+    const grafico = useMemo(() => {
+        if (aba === 'dia') {
+            const serie = vendasPorDia.map(d => d.vendas);
+            const idxPico = indiceDoPico(serie);
+            const soma = serie.reduce((a, v) => a + v, 0);
+            const diasComVenda = serie.filter(v => v > 0).length;
+            const media = serie.length ? soma / serie.length : 0;
+
+            return {
+                serie,
+                idxPico,
+                rotulos: amostrarIndices(vendasPorDia.length).map(i => ({
+                    i,
+                    texto: String(vendasPorDia[i].dia).padStart(2, '0'),
+                })),
+                vazio: 'Mês recém-iniciado: ainda não há dias suficientes para a curva.',
+                resumo: !serie.length || !soma
+                    ? 'Nenhuma venda registrada nos dias decorridos.'
+                    : `Melhor: dia ${vendasPorDia[idxPico].dia} com ${vendasPorDia[idxPico].vendas} · `
+                      + `média ${media.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/dia · `
+                      + `${diasComVenda} de ${plural(serie.length, 'dia', 'dias')} com venda`,
+            };
+        }
+
+        const serie = vendasPorVelocidade.map(v => v.vendas);
+        const idxPico = indiceDoPico(serie);
+        const soma = serie.reduce((a, v) => a + v, 0);
+
+        return {
+            serie,
+            idxPico,
+            rotulos: amostrarIndices(vendasPorVelocidade.length).map(i => ({
+                i,
+                texto: rotuloVelocidade(vendasPorVelocidade[i].mbps),
+            })),
+            vazio: 'Vendas insuficientes neste mês para traçar a curva.',
+            resumo: !serie.length || !soma
+                ? 'Nenhuma venda por faixa de velocidade neste mês.'
+                : `Pico em ${rotuloVelocidade(vendasPorVelocidade[idxPico].mbps)} `
+                  + `com ${plural(vendasPorVelocidade[idxPico].vendas, 'venda', 'vendas')} · `
+                  + `${plural(soma, 'venda', 'vendas')} no total`,
+        };
+    }, [aba, vendasPorVelocidade, vendasPorDia]);
+
+    const temGrafico = grafico.serie.length >= 2;
 
     const campeaoVelocidade = planoCampeao ? parseVelocidade(planoCampeao.descricao) : null;
     const campeaoLabel = !planoCampeao || !planoCampeao.vendas_mes
         ? '—'
         : campeaoVelocidade ? rotuloVelocidade(campeaoVelocidade) : planoCampeao.descricao;
-
-    // ── Painel 2: dia ──
-    const serieDia = vendasPorDia.map(d => d.vendas);
-    const rotulosDia = amostrarIndices(vendasPorDia.length).map(i => ({
-        i,
-        texto: String(vendasPorDia[i].dia).padStart(2, '0'),
-    }));
-
-    const metricasDia = useMemo(() => {
-        if (!vendasPorDia.length) return null;
-        const idxMelhor = indiceDoPico(serieDia);
-        const somaDia = serieDia.reduce((a, v) => a + v, 0);
-        return {
-            melhor: vendasPorDia[idxMelhor],
-            media: somaDia / vendasPorDia.length,
-            diasComVenda: serieDia.filter(v => v > 0).length,
-            diasDecorridos: vendasPorDia.length,
-            hoje: vendasPorDia[vendasPorDia.length - 1].vendas,
-        };
-    }, [vendasPorDia]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div
@@ -180,20 +162,20 @@ export default function ServicesHero({
             <div aria-hidden="true" style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)', pointerEvents: 'none' }} />
             <div aria-hidden="true" style={{ position: 'absolute', bottom: -100, right: 120, width: 220, height: 220, borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)', pointerEvents: 'none' }} />
 
-            <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+            <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-center lg:gap-8">
                 {/* ─── Identidade + busca ─── */}
-                <div className="flex flex-col justify-center gap-5 lg:col-span-6">
+                <div className="flex flex-col gap-5 lg:col-span-6">
                     <div>
-                        <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-black/20 px-3 py-1 backdrop-blur-sm">
+                        <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-black/25 px-3 py-1 backdrop-blur-sm">
                             <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/85">
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white">
                                 Ao vivo
                             </span>
                         </div>
                         <h1 className="m-0 text-[26px] font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:text-[30px] lg:text-[34px]">
                             Central de Vendas
                         </h1>
-                        <p className="mt-2 text-sm leading-relaxed text-white/80 sm:text-[15px]">
+                        <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">
                             Consulte planos de internet, serviços técnicos e pacotes de streaming.
                         </p>
                     </div>
@@ -205,8 +187,8 @@ export default function ServicesHero({
                             placeholder="Buscar plano, velocidade ou valor..."
                         />
                         {preContratos > 0 && (
-                            <div className="inline-flex shrink-0 items-center justify-center gap-2 rounded-[14px] border border-white/25 bg-black/20 px-4 py-3 backdrop-blur-sm">
-                                <span className="material-symbols-outlined text-[18px] text-white/80">schedule</span>
+                            <div className="inline-flex shrink-0 items-center justify-center gap-2 rounded-[14px] border border-white/25 bg-black/25 px-4 py-3 backdrop-blur-sm">
+                                <span className="material-symbols-outlined text-[18px] text-white/85">schedule</span>
                                 <span className="text-[13px] font-bold text-white">
                                     {preContratos} {preContratos === 1 ? 'pré-contrato' : 'pré-contratos'}
                                 </span>
@@ -215,7 +197,7 @@ export default function ServicesHero({
                     </div>
 
                     {semDados ? (
-                        <p className="text-[12.5px] text-white/70">Sem contratos registrados neste mês.</p>
+                        <p className="text-[12.5px] text-white/85">Sem contratos registrados neste mês.</p>
                     ) : (
                         <div className="flex flex-wrap gap-2">
                             {(isLoading ? KPI_SECUNDARIOS : visiveis).map(kpi => (
@@ -223,92 +205,119 @@ export default function ServicesHero({
                                     key={kpi.key}
                                     className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-white"
                                     style={{
-                                        background: 'rgba(255,255,255,0.15)',
+                                        background: 'rgba(0,0,0,0.22)',
                                         backdropFilter: 'blur(6px)',
                                         border: '1px solid rgba(255,255,255,0.22)',
                                     }}
                                 >
                                     <span className="material-symbols-outlined text-[14px] leading-none">{kpi.icon}</span>
                                     <span className="text-[13px] font-bold tabular-nums">{isLoading ? '···' : counts[kpi.key]}</span>
-                                    <span className="font-mono text-[10.5px] tracking-[0.06em] opacity-75">{kpi.label}</span>
+                                    <span className="font-mono text-[10.5px] tracking-[0.06em] text-white/85">{kpi.label}</span>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
 
-                {/* ─── Painel: vendas por velocidade ─── */}
-                <PainelGrafico
-                    className="lg:col-span-6"
-                    titulo="Vendas por velocidade"
-                    competencia={competencia}
-                    serie={serieVel}
-                    rotulos={rotulosVel}
-                    isLoading={isLoading}
-                    mensagemVazia="Vendas insuficientes neste mês para traçar a curva."
-                    tiles={
-                        <>
-                            <KpiTile label="Contratos" valor={total} sub={`${counts.ativo || 0} ativos`} />
-                            <KpiTile
-                                label="Receita nova"
-                                valor={formatCurrency(receitaNova)}
-                                sub="mensalidade somada"
-                            />
-                            {/* O subtítulo expõe o denominador: vendasTotais só conta planos
-                                ativos, então pode ser menor que "Contratos". */}
-                            <KpiTile
-                                label="Ticket médio"
-                                valor={formatCurrency(ticketMedio)}
-                                sub={`${vendasTotais} ${vendasTotais === 1 ? 'venda' : 'vendas'}`}
-                            />
-                            {/* Nomes de plano chegam com ~70 caracteres; a velocidade cabe
-                                no tile e o nome inteiro fica no title. */}
-                            <KpiTile
-                                label="Plano campeão"
-                                valor={campeaoLabel}
-                                sub={planoCampeao ? `${planoCampeao.vendas_mes || 0} ${(planoCampeao.vendas_mes || 0) === 1 ? 'venda' : 'vendas'}` : 'sem vendas'}
-                                title={planoCampeao?.descricao}
-                            />
-                        </>
-                    }
-                />
+                {/* ─── Painel de instrumentos ─── */}
+                <div className="rounded-2xl border border-white/15 bg-black/55 p-4 backdrop-blur-sm lg:col-span-6">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.15] pb-2">
+                        <span className="flex min-w-0 items-center gap-1.5">
+                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+                            <span className="truncate text-[11px] font-bold text-white">Vendas</span>
+                        </span>
 
-                {/* ─── Painel: vendas por dia (largura cheia — até 31 pontos) ─── */}
-                <PainelGrafico
-                    className="lg:col-span-12"
-                    titulo="Vendas por dia"
-                    competencia={competencia}
-                    serie={serieDia}
-                    rotulos={rotulosDia}
-                    isLoading={isLoading}
-                    mensagemVazia="Mês recém-iniciado: ainda não há dias suficientes para a curva."
-                    tiles={metricasDia && (
-                        <>
-                            <KpiTile
-                                label="Melhor dia"
-                                valor={metricasDia.melhor.vendas > 0 ? `Dia ${metricasDia.melhor.dia}` : '—'}
-                                sub={metricasDia.melhor.vendas > 0
-                                    ? `${metricasDia.melhor.vendas} ${metricasDia.melhor.vendas === 1 ? 'venda' : 'vendas'}`
-                                    : 'sem vendas no mês'}
-                            />
-                            <KpiTile
-                                label="Média por dia"
-                                valor={metricasDia.media.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}
-                                sub={`em ${metricasDia.diasDecorridos} ${metricasDia.diasDecorridos === 1 ? 'dia' : 'dias'}`}
-                            />
-                            <KpiTile
-                                label="Dias com venda"
-                                valor={metricasDia.diasComVenda}
-                                sub={`de ${metricasDia.diasDecorridos} decorridos`}
-                            />
-                            <KpiTile
-                                label="Hoje"
-                                valor={metricasDia.hoje}
-                                sub={metricasDia.hoje === 1 ? 'venda registrada' : 'vendas registradas'}
-                            />
-                        </>
-                    )}
-                />
+                        <div className="flex items-center gap-2">
+                            <div className="inline-flex items-center gap-1 rounded-xl bg-white/10 p-0.5">
+                                {ABAS.map(opt => {
+                                    const ativo = aba === opt.key;
+                                    return (
+                                        <button
+                                            key={opt.key}
+                                            type="button"
+                                            onClick={() => setAba(opt.key)}
+                                            aria-pressed={ativo}
+                                            className={`inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+                                                ativo ? 'bg-white/25 text-white' : 'text-white/70 hover:bg-white/10'
+                                            }`}
+                                        >
+                                            <span className="material-symbols-outlined text-[14px]">{opt.icon}</span>
+                                            {opt.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <span className="shrink-0 font-mono text-[10px] text-white/70">{competencia}</span>
+                        </div>
+                    </div>
+
+                    {/* Uma string só alimenta o resumo visível e o aria-label do SVG:
+                        assim o que o vidente lê e o que o leitor de tela anuncia não divergem. */}
+                    <p className="mt-2 text-[11px] leading-snug text-white/75">
+                        {isLoading ? '···' : grafico.resumo}
+                    </p>
+
+                    <div className="mt-2">
+                        {isLoading ? (
+                            <div className="h-20 animate-pulse rounded-lg bg-white/10" />
+                        ) : temGrafico ? (
+                            <>
+                                <Sparkline
+                                    data={grafico.serie}
+                                    color="#FFFFFF"
+                                    height={80}
+                                    highlightIndex={grafico.idxPico}
+                                    ariaLabel={grafico.resumo}
+                                />
+                                <div className="mt-1.5 flex justify-between font-mono text-[10px] text-white/70">
+                                    {grafico.rotulos.map(({ i, texto }) => (
+                                        <span key={i} className={i === grafico.idxPico ? 'font-bold text-white' : undefined}>
+                                            {texto}
+                                        </span>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            // Sparkline retorna null com menos de 2 pontos — sem isso viraria um buraco.
+                            <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-white/25 px-3 text-center text-[11.5px] text-white/75">
+                                {grafico.vazio}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-3 border-t border-white/[0.15] pt-3 sm:grid-cols-4">
+                        {isLoading ? (
+                            [1, 2, 3, 4].map(i => (
+                                <div key={i} className="space-y-1.5">
+                                    <div className="h-2 w-2/3 animate-pulse rounded bg-white/10" />
+                                    <div className="h-3.5 w-1/2 animate-pulse rounded bg-white/10" />
+                                </div>
+                            ))
+                        ) : (
+                            <>
+                                <KpiTile label="Contratos" valor={total} sub={`${counts.ativo || 0} ativos`} />
+                                <KpiTile
+                                    label="Receita nova"
+                                    valor={formatCurrency(receitaNova)}
+                                    sub="mensalidade somada"
+                                />
+                                {/* O subtítulo expõe o denominador: vendasTotais só conta planos
+                                    ativos, então pode ser menor que "Contratos". */}
+                                <KpiTile
+                                    label="Ticket médio"
+                                    valor={formatCurrency(ticketMedio)}
+                                    sub={plural(vendasTotais, 'venda', 'vendas')}
+                                />
+                                <KpiTile
+                                    label="Plano campeão"
+                                    valor={campeaoLabel}
+                                    sub={planoCampeao ? plural(planoCampeao.vendas_mes || 0, 'venda', 'vendas') : 'sem vendas'}
+                                    descricaoCompleta={planoCampeao?.descricao}
+                                />
+                            </>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

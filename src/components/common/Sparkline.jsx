@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-export default function Sparkline({ data, color = '#EC7D23', height = 56, fill = true, highlightIndex = null }) {
+export default function Sparkline({ data, color = '#EC7D23', height = 56, fill = true, highlightIndex = null, ariaLabel = null }) {
   // ID único por instância: permite cores em var(--token) sem quebrar a referência do gradiente
   const gradientId = `spark-fill-${useId().replace(/:/g, '')}`
   if (!data || data.length < 2) return null;
@@ -26,6 +26,9 @@ export default function Sparkline({ data, color = '#EC7D23', height = 56, fill =
       height={height}
       preserveAspectRatio="none"
       style={{ display: 'block', overflow: 'visible' }}
+      // Sem ariaLabel o gráfico é decorativo (caso do KpiCard, onde o número já
+      // está ao lado em texto) e some do leitor de tela em vez de virar ruído.
+      {...(ariaLabel ? { role: 'img', 'aria-label': ariaLabel } : { 'aria-hidden': 'true' })}
     >
       {fill && (
         <defs>
