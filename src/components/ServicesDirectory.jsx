@@ -12,6 +12,7 @@ import TechServiceModal from './services/modals/TechServiceModal';
 import StreamingServiceModal from './services/modals/StreamingServiceModal';
 import { FALLBACK_TECH_SERVICES, FALLBACK_STREAMING_PACKAGES } from './services/seedData';
 import { CATEGORIA, classificarPlano, parseVelocidade } from '../utils/planTaxonomy';
+import { COMPARADOR_PLANOS_ATIVO } from '../config/features';
 
 const GRID = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
 
@@ -489,7 +490,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                             onEditClick={handleEditClick}
                             formatCurrency={formatCurrency}
                             maxVendas={maxVendas}
-                            onToggleCompare={handleToggleCompare}
+                            onToggleCompare={COMPARADOR_PLANOS_ATIVO ? handleToggleCompare : undefined}
                             onSelect={(item, type) => setDetailModal({ isOpen: true, data: item, type })}
                             comparingIds={comparingIds}
                         />
@@ -646,13 +647,15 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 </div>
             )}
 
-            <PlanoComparador
-                plans={comparingPlans}
-                isOpen={comparingIds.length >= 2 && !isAbaDeServico(filter)}
-                onClear={() => setComparingIds([])}
-                formatCurrency={formatCurrency}
-                streamingServices={streamingServices}
-            />
+            {COMPARADOR_PLANOS_ATIVO && (
+                <PlanoComparador
+                    plans={comparingPlans}
+                    isOpen={comparingIds.length >= 2 && !isAbaDeServico(filter)}
+                    onClear={() => setComparingIds([])}
+                    formatCurrency={formatCurrency}
+                    streamingServices={streamingServices}
+                />
+            )}
 
             {toast.show && (
                 <div className="fixed right-4 top-4 z-[1120] duration-300 animate-in fade-in slide-in-from-top-4 sm:right-8 sm:top-8">
@@ -675,7 +678,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 data={detailModal.data}
                 type={detailModal.type}
                 formatCurrency={formatCurrency}
-                onToggleCompare={handleToggleCompare}
+                onToggleCompare={COMPARADOR_PLANOS_ATIVO ? handleToggleCompare : undefined}
                 isComparing={detailModal.data ? comparingIds.includes(detailModal.data.id) : false}
                 isAdmin={isAdmin}
                 maxVendas={maxVendas}

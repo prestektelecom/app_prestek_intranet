@@ -85,7 +85,10 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
                     )}
                 </div>
             }
-            footerRight={
+            // Sem handler, o botão de comparar não aparece — mesma convenção do
+            // ServiceDetailModal. É assim que a flag COMPARADOR_PLANOS_ATIVO
+            // chega até aqui sem o card precisar conhecê-la.
+            footerRight={!onToggleCompare ? undefined : (
                 <button
                     type="button"
                     onClick={() => onToggleCompare(plan.id)}
@@ -100,7 +103,7 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
                     </span>
                     {isComparing ? 'Comparando' : 'Comparar'}
                 </button>
-            }
+            )}
         >
             <div className="flex flex-col gap-2">
                 {streamingsVisiveis.length > 0 && (
