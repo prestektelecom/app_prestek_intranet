@@ -138,7 +138,8 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
     return (
         <AnimatePresence>
             <div
-                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-6 backdrop-blur-md"
+                // z-[1100] fica acima do Header e da Sidebar (ambos z-1000).
+                className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-6 backdrop-blur-md"
                 onClick={onClose}
             >
                 <motion.div

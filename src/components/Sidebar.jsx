@@ -148,6 +148,13 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [isSidebarCollapsed]);
 
+  // A sidebar é sticky dentro do flex, mas overlays `fixed` (o comparador de
+  // planos) se posicionam pela viewport e ficariam por baixo dela. Publicar a
+  // largura permite que eles se afastem sem duplicar o número.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--sidebar-w', isSidebarCollapsed ? '72px' : '248px');
+  }, [isSidebarCollapsed]);
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {

@@ -32,7 +32,13 @@
       "Bash(rm -rf openspec/changes/migrar-accent-azul-teal)",
       "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/testar-agregacao.mjs\")",
       "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/testar-serie-dia.mjs\")",
-      "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/contraste.mjs\")"
+      "Bash(node \"C:/Users/Felix/AppData/Local/Temp/claude/f--Projetos-em-Dev-prestek-intranet/52a3e01b-1a2d-463f-a487-01b0f26fafa1/scratchpad/contraste.mjs\")",
+      "Bash(python -)",
+      "Bash(echo \"BUILD_EXIT=$?\")",
+      "Bash(curl -s -o /dev/null -w \"server=%{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(npm install *)",
+      "Bash(grep -viE \"browserslist|update-db|caniuse|lottie|leaflet|chunks|dynamic import|manualChunks|chunkSizeWarning|^\\\\s*$|^-|^\\\\\\(!\\\\\\)\")",
+      "Bash(node -e \"console.log\\('tailwind', require\\('./node_modules/tailwindcss/package.json'\\).version\\)\")"
     ],
     "additionalDirectories": [
       "F:\\Projetos em Dev\\prestek_intranet\\src\\image\\services"

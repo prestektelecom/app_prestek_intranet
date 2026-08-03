@@ -614,7 +614,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
             )}
 
             {deleteModal.isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[1110] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })} />
                     <div className="relative w-full max-w-sm transform overflow-hidden rounded-2xl border border-border bg-surface p-6 text-left align-middle shadow-2xl transition-all">
                         <div className="flex flex-col items-center text-center">
@@ -655,7 +655,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
             />
 
             {toast.show && (
-                <div className="fixed right-4 top-4 z-[110] duration-300 animate-in fade-in slide-in-from-top-4 sm:right-8 sm:top-8">
+                <div className="fixed right-4 top-4 z-[1120] duration-300 animate-in fade-in slide-in-from-top-4 sm:right-8 sm:top-8">
                     <div className={`flex items-center gap-3 rounded-2xl border px-6 py-4 shadow-2xl backdrop-blur-md ${
                         toast.type === 'success'
                             ? 'border-emerald-400 bg-emerald-500/90 text-white'

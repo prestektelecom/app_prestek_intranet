@@ -20,7 +20,9 @@ export function ModalField({ label, hint, children }) {
 
 export default function ModalShell({ title, onClose, onSave, isSaving = false, saveLabel = 'Salvar Alterações', children }) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        // z-[1100] fica acima do Header e da Sidebar (ambos z-1000), senão o
+        // header continua opaco por cima do overlay como uma barra solta.
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
             <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl duration-200 animate-in fade-in zoom-in">
                 <div className="border-b border-border p-6">
                     <div className="flex items-center justify-between">
