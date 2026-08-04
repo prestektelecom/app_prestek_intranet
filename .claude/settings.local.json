@@ -38,7 +38,12 @@
       "Bash(curl -s -o /dev/null -w \"server=%{http_code}\\\\n\" http://localhost:5173/)",
       "Bash(npm install *)",
       "Bash(grep -viE \"browserslist|update-db|caniuse|lottie|leaflet|chunks|dynamic import|manualChunks|chunkSizeWarning|^\\\\s*$|^-|^\\\\\\(!\\\\\\)\")",
-      "Bash(node -e \"console.log\\('tailwind', require\\('./node_modules/tailwindcss/package.json'\\).version\\)\")"
+      "Bash(node -e \"console.log\\('tailwind', require\\('./node_modules/tailwindcss/package.json'\\).version\\)\")",
+      "Bash(node scripts/validate_palette.js \"#16A34A,#2563EB,#DC2626,#64748B\" --mode light)",
+      "Bash(node scripts/validate_palette.js \"#16A34A,#2563EB,#DC2626\" --mode light)",
+      "Bash(node scripts/validate_palette.js \"#16A34A,#2563EB,#DC2626\" --mode dark)",
+      "Bash(npx eslint *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\(Object.keys\\({...p.dependencies,...p.devDependencies}\\).filter\\(d=>/playwright|puppeteer|cypress|vitest|jest/i.test\\(d\\)\\).join\\(', '\\)||'nenhum'\\)\")"
     ],
     "additionalDirectories": [
       "F:\\Projetos em Dev\\prestek_intranet\\src\\image\\services"

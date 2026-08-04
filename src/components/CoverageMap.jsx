@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { corDoStatus } from './coverage/constants';
 
 // Fix ícones padrão do Leaflet com Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -14,28 +15,38 @@ L.Icon.Default.mergeOptions({
 if (!document.getElementById('noc-popup-styles')) {
     const s = document.createElement('style');
     s.id = 'noc-popup-styles';
+    // Tokens do tema em vez de #ffffff fixo: nos temas escuros o popup era um
+    // cartão branco puro saindo do marcador, o único elemento claro da tela.
     s.textContent = `
         .noc-popup .leaflet-popup-content-wrapper {
-            background: #ffffff;
+            background: var(--surface, #ffffff);
+            color: var(--foreground, #0f172a);
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border: 1px solid var(--border, #e2e8f0);
             padding: 0;
         }
         .noc-popup .leaflet-popup-content { margin: 12px 14px; }
-        .noc-popup .leaflet-popup-tip { background: #ffffff; }
-        .noc-popup .leaflet-popup-close-button { color: #64748b !important; top: 6px !important; right: 8px !important; }
+        .noc-popup .leaflet-popup-tip {
+            background: var(--surface, #ffffff);
+            border: 1px solid var(--border, #e2e8f0);
+        }
+        .noc-popup .leaflet-popup-close-button {
+            color: var(--foreground-muted, #64748b) !important;
+            top: 6px !important; right: 8px !important;
+        }
+        .noc-popup .noc-titulo { color: var(--foreground, #0f172a); }
+        .noc-popup .noc-sub    { color: var(--foreground-muted, #475569); }
+        .noc-popup .noc-pill   {
+            background: var(--surface-raised, #f1f5f9);
+            border-radius: 4px; padding: 2px 6px; font-weight: 600;
+        }
     `;
     document.head.appendChild(s);
 }
 
-// ─── Cores saturadas por status ───────────────────────────────────
-const COR_STATUS = {
-    Ativo:    '#16a34a',
-    Expansão: '#2563eb',
-    Inativo:  '#dc2626',
-};
-const COR_PADRAO = '#64748b';
+// Cores por status vêm de coverage/constants — a legenda, os chips da lista e
+// estes marcadores precisam pintar "Expansão" do mesmo azul.
 
 // ─── Raio do círculo de cobertura (em metros) ────────────────────
 function raioCirculo(totalContratos, raioMax = 8000) {
@@ -101,29 +112,29 @@ function criarIconeBairro(cor, selecionado) {
 // ─── Popup HTML (tema claro) ──────────────────────────────────────
 function popupCidadeHtml(nome, contratos, status, cor) {
     return `
-    <div style="font-family:sans-serif;min-width:160px;padding:2px 0;">
+    <div style="font-family:inherit;min-width:160px;padding:2px 0;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${cor};flex-shrink:0;box-shadow:0 0 0 2px white,0 0 0 3px ${cor}55"></span>
-            <strong style="font-size:13px;color:#0f172a;font-weight:700;">${nome}</strong>
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${cor};flex-shrink:0;"></span>
+            <strong class="noc-titulo" style="font-size:13px;font-weight:700;">${nome}</strong>
         </div>
-        <div style="font-size:11px;color:#475569;margin-top:2px;">
-            <span style="background:#f1f5f9;border-radius:4px;padding:2px 6px;font-weight:600;">${contratos} contrato(s)</span>
-            <span style="margin-left:6px;color:${cor};font-weight:600;">${status}</span>
+        <div class="noc-sub" style="font-size:11px;margin-top:2px;">
+            <span class="noc-pill">${contratos} contrato(s)</span>
+            <span style="margin-left:6px;color:${cor};font-weight:700;">${status || 'sem status'}</span>
         </div>
     </div>`;
 }
 
 function popupBairroHtml(cidade, bairro, cor, status, contratos) {
     return `
-    <div style="font-family:sans-serif;min-width:160px;padding:2px 0;">
-        <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:2px;">${cidade}</div>
+    <div style="font-family:inherit;min-width:160px;padding:2px 0;">
+        <div class="noc-sub" style="font-size:12px;font-weight:600;margin-bottom:2px;">${cidade}</div>
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">
             <span style="display:inline-block;width:8px;height:8px;transform:rotate(45deg);background:${cor};flex-shrink:0;"></span>
-            <strong style="font-size:13px;color:#0f172a;">${bairro}</strong>
+            <strong class="noc-titulo" style="font-size:13px;">${bairro}</strong>
         </div>
-        <div style="font-size:11px;color:#475569;">
-            <span style="background:#f1f5f9;border-radius:4px;padding:2px 6px;font-weight:600;">${contratos} contrato(s)</span>
-            <span style="margin-left:6px;color:${cor};font-weight:600;">${status}</span>
+        <div class="noc-sub" style="font-size:11px;">
+            <span class="noc-pill">${contratos} contrato(s)</span>
+            <span style="margin-left:6px;color:${cor};font-weight:700;">${status || 'sem status'}</span>
         </div>
     </div>`;
 }
@@ -172,6 +183,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     const [mapPronto, setMapPronto]   = useState(false);
     const [geocodando, setGeocodando] = useState(false);
     const [raioMax, setRaioMax]       = useState(() => parseInt(localStorage.getItem('coverageRaioMax')) || 8000);
+    const [raioAberto, setRaioAberto] = useState(false);
     const raioMaxRef                  = useRef(parseInt(localStorage.getItem('coverageRaioMax')) || 8000);
 
     // ── Inicializa o mapa (síncrono — sem dynamic import) ────────
@@ -199,7 +211,18 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         mapRef.current = { map };
         setMapPronto(true);
 
+        // O Leaflet guarda o tamanho do container em cache e só o recalcula no
+        // resize da janela — o que não cobre este layout: o mapa fica em
+        // display:none quando o mobile alterna para a lista, e volta com largura
+        // diferente ao cruzar o breakpoint lg. Sem isto ele reabre com tiles
+        // cinza até o usuário arrastar o mapa.
+        const ro = new ResizeObserver(() => {
+            if (containerRef.current?.offsetParent !== null) map.invalidateSize();
+        });
+        ro.observe(containerRef.current);
+
         return () => {
+            ro.disconnect();
             setMapPronto(false); // garante re-render ao remontar (StrictMode / HMR)
             map.remove();
             mapRef.current = null;
@@ -220,7 +243,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         dados.forEach(d => {
             if (d.latitude == null || d.longitude == null) return;
             const chave = `${d.cidade_ixc_id}::${d.bairro}`;
-            const cor   = COR_STATUS[d.status] || COR_PADRAO;
+            const cor   = corDoStatus(d.status);
 
             if (marcBairroRef.current[chave]) {
                 marcBairroRef.current[chave].setPopupContent(
@@ -270,7 +293,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 const coords = await geocodificar(cidade.nome, cidade.estado);
                 if (!coords || cancelado) { await sleep(300); continue; }
 
-                const cor  = COR_STATUS[cidade.status] || COR_PADRAO;
+                const cor  = corDoStatus(cidade.status);
                 const raio = raioCirculo(cidade.contratos, raioMaxRef.current);
 
                 const circle = L.circle([coords.lat, coords.lng], {
@@ -360,42 +383,66 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     return (
         <div className="absolute inset-0 w-full h-full z-0">
             {/* Indicador de geocodificação */}
+            {/* Encostado à esquerda, não centralizado: em 360px a pílula
+                centralizada cruzava o controle de raio no canto direito. */}
             {geocodando && (
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 backdrop-blur-sm text-slate-600 text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-slate-200 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-                    Carregando cidades…
+                <div className="absolute left-3 top-3 z-[1000] flex items-center gap-1.5 rounded-full border border-border bg-surface/95 px-3 py-1.5 text-[12px] font-semibold text-foreground shadow-md backdrop-blur-sm">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--accent)]" />
+                    Localizando cidades…
                 </div>
             )}
 
-            {/* Controle de raio máximo */}
-            <div className="absolute bottom-10 left-3 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 px-3 py-2 flex flex-col gap-1 min-w-[160px]">
-                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                    Raio máx. dos círculos
-                </label>
-                <div className="flex items-center gap-2">
-                    <input
-                        type="range"
-                        min={500}
-                        max={50000}
-                        step={500}
-                        value={raioMax}
-                        onChange={e => setRaioMax(Number(e.target.value))}
-                        className="flex-1 accent-blue-600 h-1.5"
-                    />
-                    <input
-                        type="number"
-                        min={500}
-                        max={50000}
-                        step={500}
-                        value={raioMax}
-                        onChange={e => {
-                            const v = Math.max(500, Math.min(50000, Number(e.target.value) || 500));
-                            setRaioMax(v);
-                        }}
-                        className="w-16 text-xs font-semibold text-slate-700 border border-slate-200 rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-teal-400"
-                    />
-                    <span className="text-[10px] text-slate-400 shrink-0">m</span>
-                </div>
+            {/* Controle de raio — canto superior direito, longe da legenda
+                (inferior esquerdo) e do zoom do Leaflet (inferior direito).
+                Recolhido por padrão: é ajuste fino, não controle primário. */}
+            <div className="absolute right-3 top-3 z-[1000] overflow-hidden rounded-xl border border-border bg-surface/95 shadow-md backdrop-blur-sm">
+                <button
+                    type="button"
+                    onClick={() => setRaioAberto(v => !v)}
+                    aria-expanded={raioAberto}
+                    className="flex w-full cursor-pointer items-center gap-1.5 px-3 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-surface-raised"
+                >
+                    <span className="material-symbols-outlined text-[15px] text-[var(--accent)]">radio_button_unchecked</span>
+                    Raio {(raioMax / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km
+                    <span className="material-symbols-outlined text-[15px] text-muted">
+                        {raioAberto ? 'expand_less' : 'expand_more'}
+                    </span>
+                </button>
+
+                {raioAberto && (
+                    <div className="flex flex-col gap-1.5 border-t border-border px-3 py-2.5">
+                        <label htmlFor="raio-max" className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+                            Raio máx. dos círculos
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                id="raio-max"
+                                type="range"
+                                min={500}
+                                max={50000}
+                                step={500}
+                                value={raioMax}
+                                onChange={e => setRaioMax(Number(e.target.value))}
+                                className="h-1.5 flex-1 cursor-pointer accent-[var(--accent)]"
+                            />
+                            {/* Alternativa sem arrasto ao slider (WCAG 2.2 SC 2.5.7) */}
+                            <input
+                                type="number"
+                                min={500}
+                                max={50000}
+                                step={500}
+                                aria-label="Raio máximo em metros"
+                                value={raioMax}
+                                onChange={e => {
+                                    const v = Math.max(500, Math.min(50000, Number(e.target.value) || 500));
+                                    setRaioMax(v);
+                                }}
+                                className="w-[68px] rounded-md border border-border bg-surface px-1.5 py-0.5 text-right font-mono text-[12px] font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                            />
+                            <span className="shrink-0 text-[11px] text-muted">m</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div
