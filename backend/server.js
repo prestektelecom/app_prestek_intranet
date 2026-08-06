@@ -3849,28 +3849,26 @@ function iniciarServidor() {
     })
 }
 
-pool.connect((err, client, release) => {
-    if (err) {
-        console.error('❌ Falha ao conectar com PostgreSQL:', err.message)
-        // Mesmo com erro no banco, inicia o servidor para que /api/health responda
-        // e outras rotas possam degradar graciosamente.
-        const server = app.listen(PORT, () => {
-            console.log(`⚠️ Backend rodando em http://localhost:${PORT} (sem conexão com banco)`)
-        })
-
-        server.on('error', (errSrv) => {
-            if (errSrv.code === 'EADDRINUSE') {
-                console.error(`❌ Porta ${PORT} já está em uso.`)
-            } else {
-                console.error('❌ Erro ao iniciar servidor:', errSrv.message)
-            }
-            process.exit(1)
-        })
-        return
-    }
-
-    release()
+try {
+    const client = await pool.connect()
+    client.release()
     console.log('✅ Conectado ao banco PostgreSQL com sucesso.')
     iniciarServidor()
-})
+} catch (err) {
+    console.error('❌ Falha ao conectar com PostgreSQL:', err.message)
+    // Mesmo com erro no banco, inicia o servidor para que /api/health responda
+    // e outras rotas possam degradar graciosamente.
+    const server = app.listen(PORT, () => {
+        console.log(`⚠️ Backend rodando em http://localhost:${PORT} (sem conexão com banco)`)
+    })
+
+    server.on('error', (errSrv) => {
+        if (errSrv.code === 'EADDRINUSE') {
+            console.error(`❌ Porta ${PORT} já está em uso.`)
+        } else {
+            console.error('❌ Erro ao iniciar servidor:', errSrv.message)
+        }
+        process.exit(1)
+    })
+}
 // trigger restart
