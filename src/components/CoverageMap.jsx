@@ -37,22 +37,12 @@ if (!document.getElementById('noc-popup-styles')) {
         }
         .noc-popup .noc-titulo { color: var(--foreground, #0f172a); }
         .noc-popup .noc-sub    { color: var(--foreground-muted, #475569); }
-        .noc-popup .noc-pill   {
-            background: var(--surface-raised, #f1f5f9);
-            border-radius: 4px; padding: 2px 6px; font-weight: 600;
-        }
     `;
     document.head.appendChild(s);
 }
 
 // Cores por status vêm de coverage/constants — a legenda, os chips da lista e
 // estes marcadores precisam pintar "Expansão" do mesmo azul.
-
-// ─── Raio do círculo de cobertura (em metros) ────────────────────
-function raioCirculo(totalContratos, raioMax = 8000) {
-    const n = parseInt(totalContratos) || 0;
-    return Math.min(raioMax, Math.max(Math.round(raioMax * 0.25), n * 120));
-}
 
 // ─── Ícone SVG: cidade (apenas pino, sem rótulo) ──────────────────
 function criarIconeCidade(cor, selecionado) {
@@ -110,7 +100,7 @@ function criarIconeBairro(cor, selecionado) {
 }
 
 // ─── Popup HTML (tema claro) ──────────────────────────────────────
-function popupCidadeHtml(nome, contratos, status, cor) {
+function popupCidadeHtml(nome, status, cor) {
     return `
     <div style="font-family:inherit;min-width:160px;padding:2px 0;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
@@ -118,13 +108,12 @@ function popupCidadeHtml(nome, contratos, status, cor) {
             <strong class="noc-titulo" style="font-size:13px;font-weight:700;">${nome}</strong>
         </div>
         <div class="noc-sub" style="font-size:11px;margin-top:2px;">
-            <span class="noc-pill">${contratos} contrato(s)</span>
-            <span style="margin-left:6px;color:${cor};font-weight:700;">${status || 'sem status'}</span>
+            <span style="color:${cor};font-weight:700;">${status || 'sem status'}</span>
         </div>
     </div>`;
 }
 
-function popupBairroHtml(cidade, bairro, cor, status, contratos) {
+function popupBairroHtml(cidade, bairro, cor, status) {
     return `
     <div style="font-family:inherit;min-width:160px;padding:2px 0;">
         <div class="noc-sub" style="font-size:12px;font-weight:600;margin-bottom:2px;">${cidade}</div>
@@ -133,8 +122,7 @@ function popupBairroHtml(cidade, bairro, cor, status, contratos) {
             <strong class="noc-titulo" style="font-size:13px;">${bairro}</strong>
         </div>
         <div class="noc-sub" style="font-size:11px;">
-            <span class="noc-pill">${contratos} contrato(s)</span>
-            <span style="margin-left:6px;color:${cor};font-weight:700;">${status || 'sem status'}</span>
+            <span style="color:${cor};font-weight:700;">${status || 'sem status'}</span>
         </div>
     </div>`;
 }
@@ -178,13 +166,8 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     const mapRef        = useRef(null);
     const marcCidadeRef = useRef({});
     const marcBairroRef = useRef({});
-    const circCidadeRef = useRef({});
-    const circBairroRef = useRef({});
     const [mapPronto, setMapPronto]   = useState(false);
     const [geocodando, setGeocodando] = useState(false);
-    const [raioMax, setRaioMax]       = useState(() => parseInt(localStorage.getItem('coverageRaioMax')) || 8000);
-    const [raioAberto, setRaioAberto] = useState(false);
-    const raioMaxRef                  = useRef(parseInt(localStorage.getItem('coverageRaioMax')) || 8000);
 
     // ── Inicializa o mapa (síncrono — sem dynamic import) ────────
     useEffect(() => {
@@ -228,8 +211,6 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             mapRef.current = null;
             marcCidadeRef.current = {};
             marcBairroRef.current = {};
-            circCidadeRef.current = {};
-            circBairroRef.current = {};
         };
     }, []);
 
@@ -247,26 +228,18 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
 
             if (marcBairroRef.current[chave]) {
                 marcBairroRef.current[chave].setPopupContent(
-                    popupBairroHtml(d.cidade, d.bairro, cor, d.status, d.total_contratos)
+                    popupBairroHtml(d.cidade, d.bairro, cor, d.status)
                 );
                 return;
             }
 
-            const raio = raioCirculo(d.total_contratos, raioMaxRef.current);
-            const circle = L.circle([d.latitude, d.longitude], {
-                radius: raio, color: cor, weight: 1.5, opacity: 0.45,
-                fillColor: cor, fillOpacity: 0.12, interactive: false,
-            }).addTo(map);
-            circBairroRef.current[chave] = circle;
-
             const marker = L.marker([d.latitude, d.longitude], { icon: criarIconeBairro(cor, false) })
                 .addTo(map)
-                .bindPopup(popupBairroHtml(d.cidade, d.bairro, cor, d.status, d.total_contratos), { className: 'noc-popup', maxWidth: 240 });
+                .bindPopup(popupBairroHtml(d.cidade, d.bairro, cor, d.status), { className: 'noc-popup', maxWidth: 240 });
             marker.on('click', () => onCidadeClick(`${d.cidade_ixc_id}::${d.bairro}`));
             marker._cidadeId  = d.cidade_ixc_id;
             marker._cor       = cor;
             marker._coords    = { lat: d.latitude, lng: d.longitude };
-            marker._contratos = d.total_contratos;
             marcBairroRef.current[chave] = marker;
         });
 
@@ -274,12 +247,8 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         const cidadesUnicas = {};
         dados.forEach(d => {
             if (!cidadesUnicas[d.cidade_ixc_id]) {
-                const totalContratos = dados
-                    .filter(x => x.cidade_ixc_id === d.cidade_ixc_id)
-                    .reduce((acc, x) => acc + (parseInt(x.total_contratos) || 0), 0);
                 cidadesUnicas[d.cidade_ixc_id] = {
                     nome: d.cidade, estado: d.estado, status: d.status,
-                    contratos: totalContratos,
                 };
             }
         });
@@ -293,23 +262,15 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 const coords = await geocodificar(cidade.nome, cidade.estado);
                 if (!coords || cancelado) { await sleep(300); continue; }
 
-                const cor  = corDoStatus(cidade.status);
-                const raio = raioCirculo(cidade.contratos, raioMaxRef.current);
-
-                const circle = L.circle([coords.lat, coords.lng], {
-                    radius: raio, color: cor, weight: 2, opacity: 0.5,
-                    fillColor: cor, fillOpacity: 0.1, interactive: false,
-                }).addTo(map);
-                circCidadeRef.current[id] = circle;
+                const cor = corDoStatus(cidade.status);
 
                 const marker = L.marker([coords.lat, coords.lng], { icon: criarIconeCidade(cor, false) })
                     .addTo(map)
-                    .bindPopup(popupCidadeHtml(cidade.nome, cidade.contratos, cidade.status, cor), { className: 'noc-popup', maxWidth: 240 });
+                    .bindPopup(popupCidadeHtml(cidade.nome, cidade.status, cor), { className: 'noc-popup', maxWidth: 240 });
                 marker.on('click', () => onCidadeClick(id));
                 marker._cidadeId  = id;
                 marker._cor       = cor;
                 marker._coords    = coords;
-                marker._contratos = cidade.contratos;
                 marker._nome      = cidade.nome;
                 marcCidadeRef.current[id] = marker;
                 await sleep(300);
@@ -325,17 +286,10 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         if (!mapRef.current) return;
         const { map } = mapRef.current;
 
-        // Marcadores e círculos de CIDADE
+        // Marcadores de CIDADE
         Object.entries(marcCidadeRef.current).forEach(([id, marker]) => {
             const sel = id === String(cidadeSelecionada).split('::')[0] && !String(cidadeSelecionada).includes('::');
             marker.setIcon(criarIconeCidade(marker._cor, sel));
-
-            const circle = circCidadeRef.current[id];
-            if (circle) {
-                circle.setStyle(sel
-                    ? { fillOpacity: 0.22, opacity: 0.8,  weight: 2.5 }
-                    : { fillOpacity: 0.1,  opacity: 0.5,  weight: 2   });
-            }
 
             if (sel) {
                 map.flyTo([marker._coords.lat, marker._coords.lng], 12, { duration: 0.9 });
@@ -343,19 +297,12 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             }
         });
 
-        // Marcadores e círculos de BAIRRO
+        // Marcadores de BAIRRO
         Object.entries(marcBairroRef.current).forEach(([chave, marker]) => {
             const clicouNoBairro = chave === cidadeSelecionada;
             const clicouNaCidade = marker._cidadeId === cidadeSelecionada;
             const sel = clicouNoBairro || clicouNaCidade;
             marker.setIcon(criarIconeBairro(marker._cor, sel));
-
-            const circle = circBairroRef.current[chave];
-            if (circle) {
-                circle.setStyle(sel
-                    ? { fillOpacity: 0.22, opacity: 0.75, weight: 2   }
-                    : { fillOpacity: 0.12, opacity: 0.45, weight: 1.5 });
-            }
 
             if (clicouNoBairro) {
                 map.flyTo([marker._coords.lat, marker._coords.lng], 14, { duration: 0.9 });
@@ -364,86 +311,16 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         });
     }, [cidadeSelecionada]);
 
-    // ── Atualiza raios ao mudar raioMax ───────────────────────────
-    useEffect(() => {
-        raioMaxRef.current = raioMax;
-        localStorage.setItem('coverageRaioMax', raioMax);
-        // Círculos de cidade
-        Object.entries(circCidadeRef.current).forEach(([id, circle]) => {
-            const marker = marcCidadeRef.current[id];
-            if (marker) circle.setRadius(raioCirculo(marker._contratos, raioMax));
-        });
-        // Círculos de bairro
-        Object.entries(circBairroRef.current).forEach(([chave, circle]) => {
-            const marker = marcBairroRef.current[chave];
-            if (marker) circle.setRadius(raioCirculo(marker._contratos, raioMax));
-        });
-    }, [raioMax]);
-
     return (
         <div className="absolute inset-0 w-full h-full z-0">
-            {/* Indicador de geocodificação */}
-            {/* Encostado à esquerda, não centralizado: em 360px a pílula
-                centralizada cruzava o controle de raio no canto direito. */}
+            {/* Indicador de geocodificação — encostado à esquerda para não
+                disputar o canto com a legenda nem com o zoom do Leaflet. */}
             {geocodando && (
                 <div className="absolute left-3 top-3 z-[1000] flex items-center gap-1.5 rounded-full border border-border bg-surface/95 px-3 py-1.5 text-[12px] font-semibold text-foreground shadow-md backdrop-blur-sm">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--accent)]" />
                     Localizando cidades…
                 </div>
             )}
-
-            {/* Controle de raio — canto superior direito, longe da legenda
-                (inferior esquerdo) e do zoom do Leaflet (inferior direito).
-                Recolhido por padrão: é ajuste fino, não controle primário. */}
-            <div className="absolute right-3 top-3 z-[1000] overflow-hidden rounded-xl border border-border bg-surface/95 shadow-md backdrop-blur-sm">
-                <button
-                    type="button"
-                    onClick={() => setRaioAberto(v => !v)}
-                    aria-expanded={raioAberto}
-                    className="flex w-full cursor-pointer items-center gap-1.5 px-3 py-2 text-[11px] font-bold text-foreground transition-colors hover:bg-surface-raised"
-                >
-                    <span className="material-symbols-outlined text-[15px] text-[var(--accent)]">radio_button_unchecked</span>
-                    Raio {(raioMax / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km
-                    <span className="material-symbols-outlined text-[15px] text-muted">
-                        {raioAberto ? 'expand_less' : 'expand_more'}
-                    </span>
-                </button>
-
-                {raioAberto && (
-                    <div className="flex flex-col gap-1.5 border-t border-border px-3 py-2.5">
-                        <label htmlFor="raio-max" className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
-                            Raio máx. dos círculos
-                        </label>
-                        <div className="flex items-center gap-2">
-                            <input
-                                id="raio-max"
-                                type="range"
-                                min={500}
-                                max={50000}
-                                step={500}
-                                value={raioMax}
-                                onChange={e => setRaioMax(Number(e.target.value))}
-                                className="h-1.5 flex-1 cursor-pointer accent-[var(--accent)]"
-                            />
-                            {/* Alternativa sem arrasto ao slider (WCAG 2.2 SC 2.5.7) */}
-                            <input
-                                type="number"
-                                min={500}
-                                max={50000}
-                                step={500}
-                                aria-label="Raio máximo em metros"
-                                value={raioMax}
-                                onChange={e => {
-                                    const v = Math.max(500, Math.min(50000, Number(e.target.value) || 500));
-                                    setRaioMax(v);
-                                }}
-                                className="w-[68px] rounded-md border border-border bg-surface px-1.5 py-0.5 text-right font-mono text-[12px] font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-                            />
-                            <span className="shrink-0 text-[11px] text-muted">m</span>
-                        </div>
-                    </div>
-                )}
-            </div>
 
             <div
                 ref={containerRef}

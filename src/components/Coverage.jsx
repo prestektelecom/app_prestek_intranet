@@ -91,8 +91,24 @@ export default function Coverage({ user }) {
         // sobrava abaixo da dobra enquanto sobrava espaço morto no hero.
         // Agora é coluna de altura total — o mapa recebe exatamente o que resta.
         // Abaixo de lg volta a rolar, porque lá lista e mapa se empilham.
-        <main className="flex h-full min-h-0 flex-col overflow-y-auto bg-background px-4 py-4 text-foreground md:px-6 lg:overflow-hidden">
-            <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 lg:min-h-0 lg:flex-1">
+        //
+        // O <main> era o único da aplicação sem flex-1. Como o shell é um flex
+        // row, ele encolhia até o max-content (~1188px) e parava, colado na
+        // sidebar — toda a sobra virava faixa morta à direita, e mx-auto e
+        // max-w ficavam inertes (não há o que centralizar num container que já
+        // tem o tamanho do conteúdo). Em zoom 100% o defeito se esconde, porque
+        // o espaço disponível é ≈ o max-content; só aparece ao reduzir o zoom.
+        <main className="flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto bg-background px-4 py-4 text-foreground md:px-10 xl:overflow-hidden">
+            {/* Mesmo sistema da Central de Vendas (ServicesDirectory.jsx): md:px-10
+                e teto de 1200px. Contraintuitivamente a cap menor é a que resolve
+                a queixa de "muito espaço em branco" — o incômodo não era a
+                quantidade de margem (a Central de Vendas tem mais), era ela estar
+                toda de um lado só. Simetria acima de largura.
+
+                gap-6 e não o gap-8 de lá: a Central de Vendas é documento rolável,
+                esta página tem altura travada, e cada pixel aqui sai da altura do
+                mapa. O orçamento é o que o corte da BarraStatus liberou. */}
+            <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 xl:min-h-0 xl:flex-1">
 
                 <CoverageHero
                     dados={dados}
@@ -127,8 +143,10 @@ export default function Coverage({ user }) {
                     onLimpar={limparFiltros}
                 />
 
-                {/* Alternância mapa/lista — só abaixo de lg, onde não cabem lado a lado */}
-                <div className="inline-flex shrink-0 items-center gap-1 self-start rounded-2xl bg-surface-raised p-1 lg:hidden">
+                {/* Alternância mapa/lista — abaixo de xl, onde não cabem lado a
+                    lado. De 1024 a 1279 este controle deixa de ser "coisa de
+                    mobile": é o único acesso à lista em notebook. */}
+                <div className="inline-flex shrink-0 items-center gap-1 self-start rounded-2xl bg-surface-raised p-1 xl:hidden">
                     {[
                         { key: 'mapa', label: 'Mapa', icon: 'map' },
                         { key: 'lista', label: 'Lista', icon: 'format_list_bulleted' },
@@ -153,15 +171,18 @@ export default function Coverage({ user }) {
                     })}
                 </div>
 
-                {/* A coluna da lista só ganha largura em xl. Em lg ela fica no
-                    piso de 288px — abaixo disso o card de região perde o nome do
-                    bairro para o truncate. */}
-                <div className="grid gap-3 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(288px,320px)_1fr] xl:grid-cols-[minmax(320px,380px)_1fr]">
+                {/* O split é em xl, não em lg. Os breakpoints do Tailwind medem a
+                    viewport, mas o conteúdo vive num container ~330px mais estreito
+                    (sidebar de 248px + px-10). Em lg isso fazia duas coisas ao
+                    mesmo tempo — revelar a sidebar e dividir em duas colunas — e o
+                    mapa despencava de 975px para 396px ao aumentar a janela em 1px.
+                    Em xl o conteúdo já tem ~950px: lista 320 + mapa 620. */}
+                <div className="grid gap-3 xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(320px,380px)_1fr]">
                     {/* Lista de regiões */}
                     <section
-                        className={`h-[58vh] min-h-[380px] overflow-hidden rounded-2xl border border-border bg-surface lg:h-full lg:min-h-0 ${
+                        className={`h-[58vh] min-h-[380px] overflow-hidden rounded-2xl border border-border bg-surface xl:h-full xl:min-h-0 ${
                             vistaMobile === 'lista' ? 'flex' : 'hidden'
-                        } lg:flex`}
+                        } xl:flex`}
                         aria-label="Regiões de cobertura"
                     >
                         <RegionPanel
@@ -178,9 +199,9 @@ export default function Coverage({ user }) {
 
                     {/* Mapa */}
                     <section
-                        className={`relative h-[58vh] min-h-[380px] overflow-hidden rounded-2xl border border-border bg-slate-900 lg:h-full lg:min-h-0 ${
+                        className={`relative h-[58vh] min-h-[380px] overflow-hidden rounded-2xl border border-border bg-slate-900 xl:h-full xl:min-h-0 ${
                             vistaMobile === 'mapa' ? 'block' : 'hidden'
-                        } lg:block`}
+                        } xl:block`}
                         aria-label="Mapa de cobertura"
                     >
                         {carregando ? (

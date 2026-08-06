@@ -35,10 +35,12 @@ export default function CoverageFilters({
     const contaStatus = (s) => dados.filter(d => d.status === s).length;
 
     return (
-        // Os dois grupos só ficam lado a lado em xl. Somados eles pedem ~960px
-        // e em lg sobram 976px — cabia por 16px, e qualquer contagem de dois
-        // dígitos nos chips quebrava a linha de forma imprevisível.
-        <div className="flex shrink-0 flex-col gap-2 xl:flex-row xl:items-center xl:gap-6">
+        // Os dois grupos só ficam lado a lado em 2xl. Somados eles pedem ~960px,
+        // e o espaço real aqui dentro é a viewport menos a sidebar (248px) e o
+        // px-10 do main: em xl isso dá 952px — falta por 8px, e qualquer contagem
+        // de dois dígitos nos chips quebrava a linha de forma imprevisível. Só a
+        // partir de 2xl o conteúdo bate no teto de 1200px e sobra folga.
+        <div className="flex shrink-0 flex-col gap-2 2xl:flex-row 2xl:items-center 2xl:gap-6">
             <Grupo titulo="Tecnologia">
                 <ChipButton
                     label="Todas"
@@ -83,7 +85,7 @@ export default function CoverageFilters({
                 <button
                     type="button"
                     onClick={onLimpar}
-                    className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-xl px-2.5 py-1.5 text-xs font-bold text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] xl:ml-auto xl:self-auto"
+                    className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-xl px-2.5 py-1.5 text-xs font-bold text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] 2xl:ml-auto 2xl:self-auto"
                 >
                     <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
                     Limpar filtros

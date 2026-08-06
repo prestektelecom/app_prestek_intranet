@@ -176,7 +176,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                   border: `1px solid ${C.line}`,
                   borderRadius: 16,
                   padding: '16px 20px',
-                  maxWidth: 280,
+                  maxWidth: 380,
                   margin: '0 auto 24px',
                 }}>
                   <div style={{
@@ -189,8 +189,9 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                   </div>
                   <div style={{
                     fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: 24, fontWeight: 800,
+                    fontSize: 19, fontWeight: 800,
                     color: C.accent, letterSpacing: '-0.02em',
+                    wordBreak: 'break-all',
                   }}>
                     {protocoloData}
                   </div>

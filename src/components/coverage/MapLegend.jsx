@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { STATUS_META } from './constants';
 
-// O mapa pintava círculos verde/azul/vermelho sem dizer o que cada cor
-// significava em lugar nenhum da tela — cor como único sinal, e sem chave.
-// Colapsável porque em telas pequenas a legenda competia com o próprio mapa.
+// O mapa pinta marcadores verde/azul/vermelho sem dizer o que cada cor
+// significa em lugar nenhum da tela — cor como único sinal, e sem chave.
+// Colapsável porque a legenda competia com o próprio mapa.
 export default function MapLegend() {
-    // Recolhida por padrão no mobile: expandida ela ocupa ~250×120px, o que num
-    // mapa de 360px de largura come metade da área útil.
-    const [aberta, setAberta] = useState(
-        () => typeof window !== 'undefined' && window.innerWidth >= 1024
-    );
+    // Sempre recolhida ao abrir a tela. Expandida ela ocupa ~250×120px sobre o
+    // mapa, e é consulta pontual: uma vez entendido o código de cores, ela vira
+    // obstrução permanente. Quem precisar, clica.
+    const [aberta, setAberta] = useState(false);
 
     return (
         <div className="pointer-events-auto absolute bottom-3 left-3 z-[500] max-w-[calc(100%-1.5rem)] overflow-hidden rounded-xl border border-border bg-surface/95 shadow-lg backdrop-blur-sm">
@@ -21,8 +20,10 @@ export default function MapLegend() {
             >
                 <span className="material-symbols-outlined text-[15px] text-[var(--accent)]">legend_toggle</span>
                 Legenda
+                {/* Aberta → seta para cima (recolher); fechada → para baixo
+                    (expandir). Estava invertido. */}
                 <span className="material-symbols-outlined text-[15px] text-muted">
-                    {aberta ? 'expand_more' : 'expand_less'}
+                    {aberta ? 'expand_less' : 'expand_more'}
                 </span>
             </button>
 
@@ -48,7 +49,6 @@ export default function MapLegend() {
                             <span className="inline-block size-2 rotate-45 bg-current" />
                             Bairro
                         </span>
-                        <span className="w-full">O raio do círculo cresce com o nº de contratos.</span>
                     </span>
                 </div>
             )}
