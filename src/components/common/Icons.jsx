@@ -31,6 +31,9 @@ export const Icons = {
   CloudSun: () => <svg width="22" height="22" viewBox="0 0 24 24" {...sk}><circle cx="17" cy="7" r="3"/><path d="M18 10h.5A4.5 4.5 0 0 1 23 14.5c0 2.5-2 4.5-4.5 4.5h-12C3.6 19 2 17.4 2 15.5S3.6 12 5.5 12c.4 0 .7 0 1.1.1A6 6 0 0 1 18 10z"/></svg>,
   Image: () => <svg width="16" height="16" viewBox="0 0 24 24" {...sk}><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M3 16l5-5 4 4 6-7 3 3"/></svg>,
   Calendar: () => <svg width="14" height="14" viewBox="0 0 24 24" {...sk}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>,
+  // Chip/CPU — aba do setor de TI. Deliberadamente distinto de Tools (chave
+  // inglesa, Serviços) e de Settings (engrenagem, Configurações).
+  Chip: () => <svg width="20" height="20" viewBox="0 0 24 24" {...sk}><rect x="5" y="5" width="14" height="14" rx="2.5"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>,
 };
 
 export default Icons;

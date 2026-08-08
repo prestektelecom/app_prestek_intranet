@@ -46,8 +46,9 @@ export default function MobileMoreSheet({ isOpen, onClose, currentView, setCurre
     { id: 'settings', icon: 'Settings', label: 'Configurações' },
   ];
 
-  // Adiciona o painel admin se for administrador
+  // Adiciona a aba TI e o painel admin se for administrador
   if (user?.is_admin) {
+    secondaryItems.push({ id: 'ti', icon: 'Chip', label: 'TI' });
     secondaryItems.push({ id: 'admin', icon: 'Admin', label: 'Painel Admin' });
   }
 

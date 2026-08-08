@@ -8,96 +8,10 @@ import crypto from 'crypto'
 import pool from './db.js'
 import fs from 'fs'
 import { cacheGet, cacheSet, cacheInvalidate, TTL } from './cache.js'
-
-// ─── Helper: fetch IXC com timeout (15s) e 1 retry automático ─────────────────
-// Evita que chamadas lentas ou travadas bloqueiem o servidor indefinidamente.
-async function fetchIXC(url, options = {}, timeoutMs = 15000) {
-    const tentar = async () => {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
-        try {
-            const res = await fetch(url, { ...options, signal: controller.signal });
-            clearTimeout(timer);
-            return res;
-        } catch (err) {
-            clearTimeout(timer);
-            throw err;
-        }
-    };
-    try {
-        return await tentar();
-    } catch (err) {
-        // 1 retry automático em caso de falha/timeout
-        console.warn(`[fetchIXC] Retry após erro em ${url}: ${err.message}`);
-        return await tentar();
-    }
-}
-
-// ─── Helper: cabeçalhos padrão de listagem do IXC ────────────────────────────
-function ixcHeaders() {
-    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
-    return {
-        'Content-Type': 'application/json',
-        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
-        ixcsoft: 'listar'
-    };
-}
-
-// ─── Helper: paginação completa de um recurso IXC ────────────────────────────
-// A API tem teto de 9.999 registros por página e não suporta operador `in`, então
-// busca em lote é sempre "traz tudo e filtra em memória". A página 1 revela o
-// total; as demais seguem com concorrência limitada. Uma página que falhe entra
-// como vazia em vez de derrubar a coleta inteira — o chamador compara
-// `registros.length` com `total` para saber se veio completo.
-//
-// Três parâmetros existem por causa de limites reais que já nos morderam:
-//  - timeoutMs: listagem de milhares de registros não cabe nos 15s padrão do
-//    fetchIXC; o abort disparava retry e multiplicava a carga.
-//  - projetar: aplicado por página, descarta o registro bruto na hora. Sem isso,
-//    5 páginas de cliente (166 campos cada) estouram o heap.
-//  - concorrencia: várias páginas gigantes simultâneas derrubam o processo.
-const IXC_RP_MAX = 9999;
-
-async function paginarIXC(endpoint, baseBody, opts = {}) {
-    const {
-        rp = IXC_RP_MAX,
-        timeoutMs = 120000,
-        projetar = null,
-        concorrencia = 3,
-    } = opts;
-
-    const url     = `https://${process.env.IXC_HOST}/webservice/v1/${endpoint}`;
-    const headers = ixcHeaders();
-    const corpo   = (page) => JSON.stringify({ ...baseBody, page: String(page), rp: String(rp) });
-    const aplicar = (lista) => projetar ? lista.map(projetar) : lista;
-
-    const res1 = await fetchIXC(url, { method: 'POST', headers, body: corpo(1) }, timeoutMs);
-    if (!res1.ok) throw new Error(`IXC HTTP ${res1.status} em ${endpoint} (pág. 1)`);
-    const pg1 = await res1.json();
-
-    const total   = parseInt(pg1.total || 0);
-    const paginas = Math.max(1, Math.ceil(total / rp));
-    const registros = aplicar(pg1.registros || []);
-
-    // Lotes de `concorrencia` páginas por vez: paralelo o bastante para não
-    // serializar 10 requisições, contido o bastante para não estourar memória.
-    const restantes = Array.from({ length: paginas - 1 }, (_, i) => i + 2);
-    for (let i = 0; i < restantes.length; i += concorrencia) {
-        const lote = restantes.slice(i, i + concorrencia);
-        const respostas = await Promise.all(lote.map(pg =>
-            fetchIXC(url, { method: 'POST', headers, body: corpo(pg) }, timeoutMs)
-                .then(r => r.ok ? r.json() : { registros: [] })
-                .catch(err => {
-                    console.warn(`[paginarIXC] ${endpoint} pág. ${pg} falhou: ${err.message}`);
-                    return { registros: [] };
-                })
-        ));
-        respostas.forEach(d => {
-            for (const reg of aplicar(d.registros || [])) registros.push(reg);
-        });
-    }
-    return { registros, total, paginas };
-}
+// Cliente IXC — fetchIXC/ixcHeaders/paginarIXC saíram daqui para services/ixc.js
+// sem alteração de comportamento; ixcListar é novo.
+import { fetchIXC, ixcHeaders, paginarIXC, ixcListar } from './services/ixc.js'
+import { carregarTaxonomias } from './services/ixcTaxonomias.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -3226,6 +3140,10 @@ async function getMapaUF() {
 // abreviação (JD. → JARDIM) nem fuzzy, que fundiriam bairros distintos sem
 // supervisão. Precisa ser idêntica a chaveRegiao() no front, senão mapa e lista
 // deixam de casar. Ver src/components/coverage/constants.js.
+// Rótulo para contrato sem bairro. Escrito em caixa alta e sem acento de
+// propósito: passa por normalizarBairro() sem mudar, então serve como chave.
+const SEM_BAIRRO = '(SEM BAIRRO)';
+
 function normalizarBairro(valor) {
     return String(valor || '')
         .trim()
@@ -3265,8 +3183,7 @@ async function getIndiceClientes() {
         const { registros, total } = await paginarIXC('cliente', {
             qtype: 'cliente.id', query: '0', oper: '>', sortname: 'cliente.id', sortorder: 'asc'
         }, {
-            rp: 5000,
-            concorrencia: 2,
+            concorrencia: 1,
             projetar: (c) => ({
                 id:        String(c.id || ''),
                 cidade:    String(c.cidade || '').trim(),
@@ -3375,7 +3292,10 @@ app.get('/api/cobertura-ixc', async (req, res) => {
                 totalViaCliente++;
             }
 
-            const bairro = normalizarBairro(bairroRaw);
+            // Placeholder já em caixa alta e sem acento: ele entra na chave, e se
+            // não sobrevivesse à normalizarBairro() do front a chave do mapa
+            // deixaria de bater com a do backend.
+            const bairro = normalizarBairro(bairroRaw) || SEM_BAIRRO;
             cidadeIdsSet.add(cidId);
 
             const chave = `${cidId}::${bairro}`;
@@ -3467,7 +3387,7 @@ app.get('/api/cobertura-ixc', async (req, res) => {
                 cidade_ixc_id: grupo.cidade_ixc_id,
                 cidade:        cidInfo.nome,
                 estado:        cidInfo.uf,
-                bairro:        grupo.bairro || '(sem bairro)',
+                bairro:        grupo.bairro,
                 total_contratos: grupo.total_contratos,
                 contratos_ids:   grupo.contratos_ids || [],
                 origem_endereco: grupo.origem_endereco,
@@ -3998,6 +3918,137 @@ app.post('/api/user/dashboard-layout', async (req, res) => {
     } catch (err) {
         console.error('[dashboard-layout POST] Erro:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao salvar layout.' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ─── Setor de TI — Cadastro de Colaborador ──────────────────────────
+// Ver openspec/changes/ti-hub-cadastro-colaborador/
+//
+// Todas as rotas exigem adminAuth: criar pessoa no ERP não é ação para
+// qualquer usuário logado.
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── Funções (fl_funcoes) ───────────────────────────────────────────
+// Esta rota CORRIGE UM 404 EXISTENTE: Configuracoes.jsx e utils/resolveSetor.js
+// já a chamavam, e ela nunca existiu — as chamadas falhavam em silêncio dentro
+// de um `.catch(() => null)`.
+//
+// Por isso ela NUNCA retorna 500: passar a devolver erro onde antes havia
+// silêncio faria a tela de Configurações exibir falha em algo que hoje
+// simplesmente não aparece. Recurso indisponível vira lista vazia + aviso.
+app.get('/api/funcoes', async (_req, res) => {
+    const CHAVE = 'ixc:funcoes';
+    const cache = cacheGet(CHAVE);
+    if (cache.hit) return res.json({ sucesso: true, funcoes: cache.data });
+
+    try {
+        const registros = await ixcListar('fl_funcoes', {
+            qtype: 'fl_funcoes.id',
+            sortname: 'fl_funcoes.id',
+        });
+        const funcoes = registros.map(f => ({
+            id: String(f.id),
+            // O nome do campo descritivo varia entre instalações do IXC; aceita
+            // as três formas conhecidas antes de cair no id.
+            funcao: f.funcao || f.descricao || f.nome || `Função ${f.id}`,
+        }));
+        cacheSet(CHAVE, funcoes, TTL.SETORES);
+        return res.json({ sucesso: true, funcoes });
+    } catch (e) {
+        console.warn('[funcoes] fl_funcoes indisponível no IXC:', e.message);
+        return res.json({
+            sucesso: true,
+            funcoes: [],
+            aviso: 'O recurso fl_funcoes não está acessível pela API do IXC.',
+        });
+    }
+});
+
+// ─── Taxonomias do formulário de cadastro ───────────────────────────
+// Um round-trip para o formulário inteiro. A montagem e o motivo de cada fonte
+// estão em services/ixcTaxonomias.js — resumo: três dos cinco FKs obrigatórios
+// não têm recurso próprio acessível nesta instalação, e são derivados do uso
+// real em `funcionarios`/`usuarios`.
+app.get('/api/ti/colaborador/taxonomias', adminAuth, async (_req, res) => {
+    try {
+        const payload = await carregarTaxonomias(pool);
+        return res.json({ sucesso: true, ...payload });
+    } catch (e) {
+        console.error('[ti/taxonomias] Erro:', e.message);
+        return res.status(502).json({ sucesso: false, erro: `Falha ao carregar taxonomias do IXC: ${e.message}` });
+    }
+});
+
+// ─── Busca de cidade (type-ahead) ───────────────────────────────────
+// `funcionarios.cidade` é FK numérica, e a ficha em PDF traz o nome por extenso.
+// Estratégia: puxar a tabela inteira UMA vez (é cadastro estático) e filtrar em
+// memória. Custo: um request frio lento por dia. Benefício: busca instantânea e
+// zero chamada ao IXC por tecla digitada.
+//
+// `cidade.uf` é o ID numérico da UF, não a sigla — é dele que sai
+// `funcionarios.uf`. Nunca do texto da ficha.
+const semAcento = (s) => String(s || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim();
+
+async function carregarCidadesIXC() {
+    const CHAVE = 'ixc:cidades';
+    const cache = cacheGet(CHAVE);
+    if (cache.hit) return cache.data;
+
+    const { registros } = await paginarIXC(
+        'cidade',
+        { qtype: 'cidade.id', query: '0', oper: '>' },
+        {
+            // concorrencia 1 e timeout largo: é uma tabela grande, e páginas
+            // grandes em paralelo é o que faz o IXC cortar a conexão.
+            concorrencia: 1,
+            timeoutMs: 120000,
+            projetar: c => ({
+                id: String(c.id),
+                nome: c.nome,
+                uf: String(c.uf ?? ''),
+                cod_ibge: c.cod_ibge || '',
+            }),
+        }
+    );
+    cacheSet(CHAVE, registros, TTL.IXC_CIDADES);
+    return registros;
+}
+
+app.get('/api/ti/colaborador/cidades', adminAuth, async (req, res) => {
+    const termo = semAcento(req.query.q);
+    const uf = String(req.query.uf || '').trim();
+    const limite = Math.min(parseInt(req.query.limite) || 20, 100);
+
+    try {
+        const cidades = await carregarCidadesIXC();
+        if (!termo) return res.json({ sucesso: true, cidades: [], total: cidades.length });
+
+        const candidatas = cidades.filter(c => {
+            if (uf && String(c.uf) !== uf) return false;
+            return semAcento(c.nome).includes(termo);
+        });
+
+        // Quem começa com o termo vem primeiro: digitar "penedo" deve trazer
+        // Penedo antes de qualquer "Vila Penedo".
+        candidatas.sort((a, b) => {
+            const pa = semAcento(a.nome).startsWith(termo) ? 0 : 1;
+            const pb = semAcento(b.nome).startsWith(termo) ? 0 : 1;
+            return pa !== pb ? pa - pb : a.nome.localeCompare(b.nome, 'pt-BR');
+        });
+
+        return res.json({
+            sucesso: true,
+            cidades: candidatas.slice(0, limite),
+            total: candidatas.length,
+        });
+    } catch (e) {
+        console.error('[ti/cidades] Erro:', e.message);
+        return res.status(502).json({ sucesso: false, erro: `Falha ao consultar cidades no IXC: ${e.message}` });
     }
 });
 

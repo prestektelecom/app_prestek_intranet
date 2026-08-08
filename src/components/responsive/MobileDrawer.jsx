@@ -13,6 +13,7 @@ const menuItems = [
   { id: 'offices', icon: 'Building', label: 'Escritórios' },
   { id: 'processes', icon: 'Doc', label: 'Processos' },
   { id: 'tickets', icon: 'Ticket', label: 'Meus Chamados' },
+  { id: 'ti', icon: 'Chip', label: 'TI', somenteAdmin: true },
   { id: 'announcements', icon: 'Megaphone', label: 'Comunicados' },
   { id: 'settings', icon: 'Settings', label: 'Configurações' },
 ];
@@ -63,7 +64,7 @@ export default function MobileDrawer({ isOpen, onClose, currentView, setCurrentV
 
         {/* Nav items */}
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-          {menuItems.map((item) => {
+          {menuItems.filter((item) => !item.somenteAdmin || user?.is_admin).map((item) => {
             const IconComponent = Icons[item.icon];
             const active = currentView === item.id;
             return (

@@ -59,6 +59,19 @@ export const TTL = {
     // Índice de clientes usado pela cobertura para resolver o endereço herdado
     // (endereco_padrao_cliente = 'S'). Chave própria para que contratos-bairro
     // reaproveite sem depender do TTL do resultado montado.
-    COBERTURA_CLIENTES: parseInt(process.env.CACHE_TTL_COBERTURA_CLIENTES || '600') * 1000, // 10 min
+    // TTL longo de propósito: são ~48 mil registros e a coleta domina a latência
+    // do request frio. Endereço de cliente muda raramente, então pagar isso a
+    // cada 6h em vez de a cada 10 min não custa atualidade relevante.
+    COBERTURA_CLIENTES: parseInt(process.env.CACHE_TTL_COBERTURA_CLIENTES || '21600') * 1000, // 6 horas
     IXC_UF:        86400 * 1000, // 24 horas — tabela de UF é estática
+    // Tabela de cidades inteira, puxada de uma vez para servir o type-ahead do
+    // cadastro de colaborador em memória. Mesmo motivo do IXC_UF: é cadastro
+    // estático, e o custo aqui é um request frio lento por dia em troca de zero
+    // chamada ao IXC por tecla digitada.
+    IXC_CIDADES:   86400 * 1000, // 24 horas — cadastro de cidades é estático
+    // Listas de referência do cadastro de colaborador. TTL longo porque o request
+    // frio custa ~20s: três das cinco listas são derivadas de varreduras
+    // completas (funcionarios, usuarios, planejamento_analitico). São cadastros
+    // que mudam quando alguém é contratado, não de minuto em minuto.
+    TI_TAXONOMIAS: parseInt(process.env.CACHE_TTL_TI_TAXONOMIAS || '21600') * 1000, // 6 horas
 };

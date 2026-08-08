@@ -17,6 +17,7 @@ const menuItems = [
   { id: 'offices',   icon: 'Building', label: 'Escritórios',   group: 'menu' },
   { id: 'processes', icon: 'Doc',      label: 'Processos',     group: 'menu' },
   { id: 'tickets',   icon: 'Ticket',   label: 'Meus Chamados', group: 'menu' },
+  { id: 'ti',        icon: 'Chip',     label: 'TI',            group: 'menu', somenteAdmin: true },
 ];
 
 const CollapseIcon = ({ collapsed }) => (
@@ -425,7 +426,9 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
       />
 
       <GroupLabel showSeparator={false}>Menu</GroupLabel>
-      {menuItems.map(item => (
+      {/* O filtro vive aqui, e não no array: menuItems é const de módulo e não
+          enxerga `user`. */}
+      {menuItems.filter(item => !item.somenteAdmin || user?.is_admin).map(item => (
         <NavRow
           key={item.id}
           {...item}

@@ -15,6 +15,7 @@ import Login from './components/Login'
 import AdminDashboard from './components/AdminDashboard'
 import TicketsList from './components/TicketsList'
 import Offices from './components/Offices'
+import Ti from './components/Ti'
 import NotFound from './components/NotFound'
 
 import { usePresence } from './hooks/usePresence'
@@ -169,8 +170,12 @@ export default function App() {
                     {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'tickets' && <TicketsList user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'offices' && <Offices user={user} setCurrentView={setCurrentView} />}
+                    {/* Aba TI — restrita a admin, mesmo par de linhas do plantao-historico.
+                        Cadastrar pessoa no ERP não é ação para qualquer usuário logado. */}
+                    {currentView === 'ti' && user?.is_admin && <Ti user={user} setCurrentView={setCurrentView} />}
+                    {currentView === 'ti' && !user?.is_admin && <NotFound setCurrentView={setCurrentView} user={user} />}
                     {/* Fallback para outros menus não implementados ou páginas inexistentes */}
-                    {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'plantao-historico', 'processes', 'announcements', 'settings', 'tickets', 'offices'].includes(currentView) && (
+                    {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'plantao-historico', 'processes', 'announcements', 'settings', 'tickets', 'offices', 'ti'].includes(currentView) && (
                         <NotFound setCurrentView={setCurrentView} user={user} />
                     )}
                 </div>
