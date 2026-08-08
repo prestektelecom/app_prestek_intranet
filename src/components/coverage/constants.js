@@ -28,6 +28,17 @@ export const TECH_META = {
 
 export const corDoStatus = (status) => STATUS_META[status]?.cor || STATUS_COR_PADRAO;
 
+// Normalização do nome do bairro. Precisa ser idêntica à normalizarBairro() do
+// backend (backend/server.js) — se as duas divergirem, o mapa deixa de casar com
+// a lista, que é exatamente o tipo de falha silenciosa descrita no topo deste
+// arquivo. Só caixa alta e remoção de acento: nada de abreviação ou fuzzy.
+export const normalizarBairro = (valor) =>
+    String(valor ?? '')
+        .trim()
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
 // Chave estável de uma região (cidade + bairro). Usada como id de seleção e
 // como key de lista; centralizada porque map, lista e modal precisam bater.
-export const chaveRegiao = (r) => `${r.cidade_ixc_id}::${r.bairro}`;
+export const chaveRegiao = (r) => `${r.cidade_ixc_id}::${normalizarBairro(r.bairro)}`;

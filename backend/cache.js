@@ -56,4 +56,9 @@ export const TTL = {
     COBERTURA_IXC: parseInt(process.env.CACHE_TTL_COBERTURA      || '600')  * 1000, // 10 min
     OS_CHAMADOS:   parseInt(process.env.CACHE_TTL_OS             || '60')   * 1000, // 1 min
     GEOCODIFICAR:  86400 * 1000, // 24 horas — coordenadas de cidades não mudam
+    // Índice de clientes usado pela cobertura para resolver o endereço herdado
+    // (endereco_padrao_cliente = 'S'). Chave própria para que contratos-bairro
+    // reaproveite sem depender do TTL do resultado montado.
+    COBERTURA_CLIENTES: parseInt(process.env.CACHE_TTL_COBERTURA_CLIENTES || '600') * 1000, // 10 min
+    IXC_UF:        86400 * 1000, // 24 horas — tabela de UF é estática
 };

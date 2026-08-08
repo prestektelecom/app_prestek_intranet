@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { corDoStatus } from './coverage/constants';
+import { corDoStatus, chaveRegiao } from './coverage/constants';
 
 // Fix ícones padrão do Leaflet com Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -223,7 +223,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
         // ── 1. Marcadores de BAIRRO (coordenadas manuais) ────────
         dados.forEach(d => {
             if (d.latitude == null || d.longitude == null) return;
-            const chave = `${d.cidade_ixc_id}::${d.bairro}`;
+            const chave = chaveRegiao(d);
             const cor   = corDoStatus(d.status);
 
             if (marcBairroRef.current[chave]) {
@@ -236,22 +236,32 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             const marker = L.marker([d.latitude, d.longitude], { icon: criarIconeBairro(cor, false) })
                 .addTo(map)
                 .bindPopup(popupBairroHtml(d.cidade, d.bairro, cor, d.status), { className: 'noc-popup', maxWidth: 240 });
-            marker.on('click', () => onCidadeClick(`${d.cidade_ixc_id}::${d.bairro}`));
+            marker.on('click', () => onCidadeClick(chave));
             marker._cidadeId  = d.cidade_ixc_id;
             marker._cor       = cor;
             marker._coords    = { lat: d.latitude, lng: d.longitude };
             marcBairroRef.current[chave] = marker;
         });
 
-        // ── 2. Marcadores de CIDADE (geocodificação Nominatim) ────
+        // ── 2. Marcadores de CIDADE ───────────────────────────────
+        // Preferimos o centroide dos bairros da cidade, que vem de coordenada real
+        // do cadastro; o Nominatim fica só para cidade sem nenhum bairro localizado.
         const cidadesUnicas = {};
         dados.forEach(d => {
             if (!cidadesUnicas[d.cidade_ixc_id]) {
                 cidadesUnicas[d.cidade_ixc_id] = {
-                    nome: d.cidade, estado: d.estado, status: d.status,
+                    nome: d.cidade, estado: d.estado, status: d.status, pontos: [],
                 };
             }
+            if (d.latitude != null && d.longitude != null) {
+                cidadesUnicas[d.cidade_ixc_id].pontos.push([d.latitude, d.longitude]);
+            }
         });
+
+        const centroide = (pontos) => pontos.length === 0 ? null : {
+            lat: pontos.reduce((s, p) => s + p[0], 0) / pontos.length,
+            lng: pontos.reduce((s, p) => s + p[1], 0) / pontos.length,
+        };
 
         (async () => {
             setGeocodando(true);
@@ -259,8 +269,9 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 if (cancelado) break;
                 if (marcCidadeRef.current[id]) continue;
 
-                const coords = await geocodificar(cidade.nome, cidade.estado);
-                if (!coords || cancelado) { await sleep(300); continue; }
+                const local = centroide(cidade.pontos);
+                const coords = local || await geocodificar(cidade.nome, cidade.estado);
+                if (!coords || cancelado) { if (!local) await sleep(300); continue; }
 
                 const cor = corDoStatus(cidade.status);
 
@@ -273,7 +284,9 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
                 marker._coords    = coords;
                 marker._nome      = cidade.nome;
                 marcCidadeRef.current[id] = marker;
-                await sleep(300);
+                // Pausa só existe para respeitar o rate limit do Nominatim; quando
+                // a coordenada veio do centroide local não há por que esperar.
+                if (!local) await sleep(300);
             }
             if (!cancelado) setGeocodando(false);
         })();
