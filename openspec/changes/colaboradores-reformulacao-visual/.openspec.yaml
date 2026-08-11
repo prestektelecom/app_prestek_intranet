@@ -1,0 +1,11 @@
+schema: spec-driven
+status: draft
+created: 2026-08-11
+title: colaboradores-reformulacao-visual
+description: Reformulação visual e de acessibilidade da tela Colaboradores, migrando-a para os primitivos compartilhados de ui/ e adicionando visão em lista
+specs:
+  - people-hub-hero
+  - employee-card-v2
+  - department-chip-filter
+  - infinite-scroll-directory
+  - directory-densidade
