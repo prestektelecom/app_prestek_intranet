@@ -13,20 +13,19 @@ import React from 'react';
  */
 export function SkeletonCard() {
     return (
-        <li className="overflow-hidden rounded-2xl border border-border bg-surface" aria-hidden="true">
-            <div className="h-1 w-full bg-surface-raised" />
-            <div className="p-5">
-                <div className="mb-3.5 flex items-start justify-between">
-                    <div className="h-14 w-14 animate-pulse rounded-full bg-surface-raised" />
-                    <div className="h-5 w-16 animate-pulse rounded-full bg-surface-raised" />
+        <li className="relative overflow-hidden rounded-[20px] border border-border bg-surface" aria-hidden="true">
+            <div className="h-1.5 w-full bg-surface-raised" />
+            <div className="absolute right-3 top-[18px] h-[26px] w-16 animate-pulse rounded-full bg-surface-raised" />
+            <div className="flex flex-col items-center px-5 pb-5 pt-7">
+                <div className="h-[88px] w-[88px] animate-pulse rounded-full bg-surface-raised" />
+                <div className="mt-4 h-[22px] w-3/5 animate-pulse rounded bg-surface-raised" />
+                <div className="mt-2 h-[26px] w-2/5 animate-pulse rounded-md bg-surface-raised" />
+                <div className="mt-3 h-4 w-1/3 animate-pulse rounded bg-surface-raised" />
+                <div className="mt-1 h-4 w-3/5 animate-pulse rounded bg-surface-raised" />
+                <div className="mt-5 flex w-full gap-2">
+                    <div className="h-11 flex-1 animate-pulse rounded-xl bg-surface-raised" />
+                    <div className="h-11 flex-1 animate-pulse rounded-xl bg-surface-raised" />
                 </div>
-                <div className="h-[22px] w-3/5 animate-pulse rounded bg-surface-raised" />
-                <div className="mt-2 h-5 w-2/5 animate-pulse rounded-md bg-surface-raised" />
-                <div className="mt-3.5 flex flex-col gap-2">
-                    <div className="h-4 w-2/5 animate-pulse rounded bg-surface-raised" />
-                    <div className="h-4 w-4/5 animate-pulse rounded bg-surface-raised" />
-                </div>
-                <div className="mt-4 h-11 w-full animate-pulse rounded-xl bg-surface-raised" />
             </div>
         </li>
     );

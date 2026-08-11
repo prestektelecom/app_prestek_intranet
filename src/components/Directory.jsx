@@ -316,24 +316,6 @@ export default function Directory({ user }) {
                 )}
             </div>
 
-            <style>{`
-                /* Ações visíveis por PADRÃO, escondidas só onde o hover é
-                   comprovadamente confiável. A regra anterior era o inverso:
-                   escondia sempre e só reexibia em (hover: none) and
-                   (pointer: coarse) — o que cobre celular e tablet mas NÃO
-                   cobre notebook Windows com touchscreen e mouse conectado,
-                   que reporta hover:hover + pointer:fine. Numa intranet
-                   rodando em Windows 11 isso não é caso de borda.
-
-                   :focus-within é o que faltava para teclado: antes o usuário
-                   tabulava para um <a> com opacity:0 — falha de SC 2.4.7. */
-                .emp-card-actions { opacity: 1; transform: none; transition: opacity .2s, transform .2s; }
-                @media (hover: hover) and (pointer: fine) {
-                    .emp-card-actions { opacity: 0; transform: translateY(6px); }
-                    .emp-card:hover .emp-card-actions,
-                    .emp-card:focus-within .emp-card-actions { opacity: 1; transform: none; }
-                }
-            `}</style>
         </main>
     );
 }

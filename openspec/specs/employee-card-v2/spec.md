@@ -39,36 +39,47 @@ Um único hex por departamento SHALL NOT ser usado para os dois papéis: os requ
 - **WHEN** o departamento se chama "TI", "T.I.", "Setor de T.I" ou "NOC"
 - **THEN** todas resolvem para o mesmo departamento
 
-### Requirement: Ações de contato operáveis sem mouse
-As ações de contato SHALL ser visíveis por padrão. A revelação por hover SHALL ser aplicada apenas dentro de `@media (hover: hover) and (pointer: fine)`, e nesse ramo SHALL incluir `:focus-within` junto de `:hover`.
+### Requirement: Ações sempre visíveis, nunca reveladas por hover
+As ações de contato SHALL estar visíveis desde a renderização, no rodapé do card. O card SHALL NOT usar revelação por `:hover` para expor ações.
 
-A regra inversa — esconder por padrão e reexibir em `(hover: none) and (pointer: coarse)` — SHALL NOT ser usada: não cobre dispositivos híbridos (notebook com touchscreen e mouse conectado, que reporta `hover: hover, pointer: fine`).
+A revelação por hover foi removida junto com o layout alinhado à esquerda. Ela exigia uma media query de capacidade (`hover: hover and pointer: fine`) mais `:focus-within` só para chegar ao mesmo lugar onde a versão sempre visível chega sem nenhuma condicional — e a versão condicional é a que falha em dispositivo híbrido, como notebook com touchscreen e mouse conectado.
 
-#### Scenario: Navegação por teclado revela as ações
-- **WHEN** o usuário tabula até um elemento dentro do card
-- **THEN** as ações do card ficam visíveis (`opacity: 1`), satisfazendo a SC 2.4.7
+#### Scenario: Ação disponível sem interação
+- **WHEN** o card é renderizado em qualquer dispositivo
+- **THEN** as ações de contato estão visíveis e operáveis, sem hover, foco ou toque prévio
 
-#### Scenario: Dispositivo sem hover confiável
-- **WHEN** o card é renderizado num dispositivo que não reporta `hover: hover` e `pointer: fine`
-- **THEN** as ações já estão visíveis sem qualquer interação
+#### Scenario: Alvo e rótulo da ação
+- **WHEN** uma ação é renderizada
+- **THEN** tem no mínimo 44px de altura efetiva, rótulo textual visível e `aria-label` descrevendo o destinatário
 
-#### Scenario: Alvo de ação com 44px
-- **WHEN** a ação de contato é renderizada
-- **THEN** tem no mínimo 44px de altura efetiva
+### Requirement: Texto informa, botão age
+As linhas de contato do corpo do card SHALL ser texto, e as ações SHALL ficar exclusivamente nos botões do rodapé. O mesmo canal de contato SHALL NOT aparecer como link no corpo e como botão no rodapé.
 
-#### Scenario: Ausência de contato é anunciada
-- **WHEN** o colaborador não tem celular nem ramal
-- **THEN** a ação recebe `aria-disabled="true"` e o clique é prevenido
+O e-mail SHALL truncar por responsabilidade do container, com o endereço completo em `title`, e SHALL NOT ter largura máxima fixa em pixels.
 
-### Requirement: E-mail como link e sem truncamento artificial
-A linha de e-mail SHALL ser o próprio `<a href="mailto:">`, dispensando um botão duplicado na barra de ações. O e-mail SHALL NOT ter largura máxima fixa em pixels — o truncamento é responsabilidade do container.
+#### Scenario: E-mail legível e acionável sem duplicar afordância
+- **WHEN** o colaborador tem e-mail
+- **THEN** o endereço aparece como texto truncado no corpo, com `title` completo, e a ação "E-mail" aparece uma única vez, no rodapé
 
-#### Scenario: Clique no e-mail abre o cliente de correio
-- **WHEN** o usuário clica no e-mail exibido no card
-- **THEN** o `mailto:` é acionado
+#### Scenario: Canal telefônico único no rodapé
+- **WHEN** o colaborador tem celular e ramal
+- **THEN** o rodapé exibe "WhatsApp"; havendo apenas ramal, exibe "Ligar"
+
+### Requirement: Composição em retrato centralizado
+O card SHALL usar composição centralizada: faixa de departamento no topo, chip de situação ancorado no canto superior direito, avatar de 88px centralizado, identidade e contato centralizados abaixo dele, e as ações pareadas no rodapé.
+
+O card SHALL NOT usar `scale` no hover. A elevação SHALL vir de `translateY`, que não altera a caixa de layout — um card que cresce dentro de um grid passa por cima dos vizinhos.
+
+#### Scenario: Hover não desloca vizinhos
+- **WHEN** o usuário passa o mouse sobre um card do grid
+- **THEN** o card sobe por `translateY` e ganha sombra e borda na cor do departamento, sem alterar a área ocupada na grade
+
+#### Scenario: Silhueta consistente com a casa
+- **WHEN** o card é renderizado
+- **THEN** usa raio de 20px — entre o `rounded-2xl` dos painéis e o `rounded-[24px]` dos heroes
 
 ### Requirement: Um sinal por canal visual
-O anel do avatar, a tarja esquerda e a faixa do topo SHALL codificar **departamento**. O chip do canto superior direito SHALL codificar **situação**.
+A faixa do topo e o anel do avatar SHALL codificar **departamento**. O chip do canto superior direito SHALL codificar **situação**.
 
 O card SHALL NOT exibir ponto de presença sobre o avatar. Ele codificava `ativo` — um terceiro canal para o mesmo dado que o chip já diz por extenso — e, animado, emprestava a semântica de "online agora" do Slack/Teams para um dado que significa apenas "não foi desligado", além de animar `box-shadow` em todos os cards visíveis simultaneamente.
 
@@ -81,13 +92,13 @@ O card SHALL NOT exibir ponto de presença sobre o avatar. Ele codificava `ativo
 - **THEN** o `<h3>` exibe apenas o nome, em capitalização de nome próprio
 
 ### Requirement: Estilo de borda em longhand
-O card SHALL definir a borda apenas com propriedades longhand (`borderStyle`, `borderColor`, `borderWidth`, `borderLeftColor`), e SHALL NOT combinar o shorthand `border` com `borderLeft` no mesmo objeto de estilo inline.
+Componentes com borda dependente de estado SHALL usar apenas propriedades longhand (`borderStyle`, `borderWidth`, `borderColor`, e as variantes por lado), e SHALL NOT combinar o shorthand `border` com um longhand de lado no mesmo objeto de estilo inline.
 
-A combinação funciona na primeira renderização, porque o React aplica as chaves na ordem do objeto, mas quebra na atualização: quando apenas `hover` muda, o diff contém só `border`, o React executa `style.border = ...` e o shorthand zera `border-left-width` de volta para 1px — `borderLeft` não é reaplicado porque não mudou.
+A combinação funciona na primeira renderização, porque o React aplica as chaves na ordem do objeto, mas quebra na atualização: quando apenas `hover` muda, o diff contém só `border`, o React executa `style.border = ...` e o shorthand zera as larguras por lado — o longhand não é reaplicado porque não mudou. O sintoma observado era um card perdendo a tarja do departamento depois do primeiro hover, e apenas aquele card.
 
-#### Scenario: Tarja sobrevive ao hover
-- **WHEN** o usuário passa o mouse sobre um card e retira
-- **THEN** a tarja de 4px na cor do departamento continua visível
+#### Scenario: Borda sobrevive ao hover
+- **WHEN** o usuário passa o mouse sobre um card ou linha e retira
+- **THEN** a espessura e a cor por lado permanecem as definidas, inclusive a tarja de departamento da visão em lista
 
 ### Requirement: Ausência de contato é explícita
 Quando o colaborador não tem e-mail, ramal nem celular, o card SHALL exibir "Sem contato cadastrado" e SHALL NOT renderizar a barra de ações.
