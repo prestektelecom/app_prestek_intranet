@@ -1,4 +1,6 @@
 import React from 'react';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
+import { neumorfismo, relevo, reentrancia } from './neumorfismo';
 
 /**
  * Esqueleto do card, com o MESMO layout do card real.
@@ -12,20 +14,34 @@ import React from 'react';
  * Quem chama passa `LOTE`.
  */
 export function SkeletonCard() {
+    const C = useBentoTheme();
+    const n = neumorfismo(C);
+    // O esqueleto carrega o MESMO relevo do card real. Um esqueleto plano sob
+    // um card em relevo produz um "estalo" quando os dados chegam, que é
+    // exatamente o que o esqueleto deveria evitar.
+    // A massa do esqueleto usa `line`, não `surfaceSoft`: sobre a face
+    // neumórfica do tema claro (#F5F9FF), surfaceSoft é #F7FAFD — dois pontos
+    // de diferença, invisível.
+    const massa = { background: C.line, opacity: n.claro ? 1 : 0.6 };
+
     return (
-        <li className="relative overflow-hidden rounded-[20px] border border-border bg-surface" aria-hidden="true">
-            <div className="h-1.5 w-full bg-surface-raised" />
-            <div className="absolute right-3 top-[18px] h-[26px] w-16 animate-pulse rounded-full bg-surface-raised" />
-            <div className="flex flex-col items-center px-5 pb-5 pt-7">
-                <div className="h-[88px] w-[88px] animate-pulse rounded-full bg-surface-raised" />
-                <div className="mt-4 h-[22px] w-3/5 animate-pulse rounded bg-surface-raised" />
-                <div className="mt-2 h-[26px] w-2/5 animate-pulse rounded-md bg-surface-raised" />
-                <div className="mt-3 h-4 w-1/3 animate-pulse rounded bg-surface-raised" />
-                <div className="mt-1 h-4 w-3/5 animate-pulse rounded bg-surface-raised" />
-                <div className="mt-5 flex w-full gap-2">
-                    <div className="h-11 flex-1 animate-pulse rounded-xl bg-surface-raised" />
-                    <div className="h-11 flex-1 animate-pulse rounded-xl bg-surface-raised" />
-                </div>
+        <li
+            className="rounded-3xl p-6"
+            aria-hidden="true"
+            style={{ background: n.face, boxShadow: relevo(n, 12, 24), border: '1px solid transparent' }}
+        >
+            <div className="mb-4 flex justify-center">
+                <div className="h-28 w-28 rounded-full" style={{ background: n.face, boxShadow: reentrancia(n, 6, 12) }} />
+            </div>
+            <div className="flex flex-col items-center">
+                <div className="h-[22px] w-3/5 animate-pulse rounded" style={massa} />
+                <div className="mt-2 h-[18px] w-2/5 animate-pulse rounded" style={massa} />
+                <div className="mt-2 h-4 w-1/3 animate-pulse rounded" style={massa} />
+                <div className="mt-4 h-[26px] w-24 animate-pulse rounded-full" style={massa} />
+            </div>
+            <div className="mt-6 flex gap-2">
+                <div className="h-[52px] flex-1 rounded-full" style={{ background: n.face, boxShadow: relevo(n, 6, 12) }} />
+                <div className="h-[52px] flex-1 rounded-full" style={{ background: n.face, boxShadow: relevo(n, 6, 12) }} />
             </div>
         </li>
     );

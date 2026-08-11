@@ -236,8 +236,11 @@ export default function Directory({ user }) {
     // conteúdo vive num container ~330px mais estreito (sidebar de 248px +
     // px-10 do main). Com 4 colunas o card ficava com ~289px e truncava o
     // e-mail, que é justamente o dado que o usuário veio buscar.
+    // gap-8 no grid, e não gap-6: as sombras neumórficas do card se estendem
+    // ~36px além da caixa (deslocamento 12 + desfoque 24). Com 24px de calha as
+    // sombras de cards vizinhos se sobrepõem e o relevo vira borrão.
     const classeLista = emGrid
-        ? 'grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3'
+        ? 'grid list-none grid-cols-1 gap-8 p-0 sm:grid-cols-2 lg:grid-cols-3'
         : 'flex list-none flex-col gap-2 p-0';
 
     return (

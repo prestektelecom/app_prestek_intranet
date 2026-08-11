@@ -65,31 +65,100 @@ O e-mail SHALL truncar por responsabilidade do container, com o endereço comple
 - **WHEN** o colaborador tem celular e ramal
 - **THEN** o rodapé exibe "WhatsApp"; havendo apenas ramal, exibe "Ligar"
 
-### Requirement: Composição em retrato centralizado
-O card SHALL usar composição centralizada: faixa de departamento no topo, chip de situação ancorado no canto superior direito, avatar de 88px centralizado, identidade e contato centralizados abaixo dele, e as ações pareadas no rodapé.
+### Requirement: Perfil neumórfico em retrato centralizado
+O card SHALL usar composição centralizada em relevo: ponto de situação e selo no canto superior direito, avatar de 112px em berço reentrante, identidade centralizada, rótulo de situação em pílula e duas ações circulares no rodapé, tudo em `rounded-3xl`.
 
-O card SHALL NOT usar `scale` no hover. A elevação SHALL vir de `translateY`, que não altera a caixa de layout — um card que cresce dentro de um grid passa por cima dos vizinhos.
+O relevo SHALL vir de `src/components/directory/neumorfismo.js`, e SHALL NOT ser escrito com valores literais nos componentes.
 
-#### Scenario: Hover não desloca vizinhos
-- **WHEN** o usuário passa o mouse sobre um card do grid
-- **THEN** o card sobe por `translateY` e ganha sombra e borda na cor do departamento, sem alterar a área ocupada na grade
+#### Scenario: Face do card acompanha o fundo
+- **WHEN** o card é renderizado no tema claro
+- **THEN** a face usa `C.bg`, não `C.surface` — o efeito depende de figura e fundo terem a mesma cor, senão a sombra clara não tem contra o que contrastar
 
-#### Scenario: Silhueta consistente com a casa
-- **WHEN** o card é renderizado
-- **THEN** usa raio de 20px — entre o `rounded-2xl` dos painéis e o `rounded-[24px]` dos heroes
+#### Scenario: Relevo sobrevive ao preto absoluto
+- **WHEN** o card é renderizado no tema amoled, cujo `bg` é `#000000`
+- **THEN** a face sobe para `C.surfaceSoft`, para que a sombra escura tenha para onde ir
 
-### Requirement: Um sinal por canal visual
-A faixa do topo e o anel do avatar SHALL codificar **departamento**. O chip do canto superior direito SHALL codificar **situação**.
+#### Scenario: Hover aprofunda o relevo
+- **WHEN** o usuário passa o mouse sobre um card
+- **THEN** o deslocamento e o desfoque das sombras aumentam, o avatar cresce, e uma borda na cor do departamento é revelada
 
-O card SHALL NOT exibir ponto de presença sobre o avatar. Ele codificava `ativo` — um terceiro canal para o mesmo dado que o chip já diz por extenso — e, animado, emprestava a semântica de "online agora" do Slack/Teams para um dado que significa apenas "não foi desligado", além de animar `box-shadow` em todos os cards visíveis simultaneamente.
+#### Scenario: Crescimento no hover não invade a calha
+- **WHEN** o card cresce no hover
+- **THEN** o fator de escala é no máximo 1,02 — 1,05 sobre um card de ~370px consome quase um terço do `gap-8` e desalinha a fileira
 
-#### Scenario: Situação exibida como chip
-- **WHEN** o card é renderizado
-- **THEN** a situação vem de `situacaoColaborador()` e é exibida no chip, com a paleta correspondente ao tom (`ok`, `info`, `aviso`, `neutro`) derivada dos tokens de tema
+### Requirement: Calha proporcional à sombra
+O grid SHALL usar `gap-8`.
+
+As sombras neumórficas se estendem cerca de 36px além da caixa (deslocamento 12 + desfoque 24). Com `gap-6` as sombras de cards vizinhos se sobrepõem e o relevo lê como borrão.
+
+#### Scenario: Sombras não colidem
+- **WHEN** o grid é renderizado com 3 colunas
+- **THEN** há espaço suficiente entre os cards para cada relevo se fechar
+
+### Requirement: Mapeamento dos slots do card de perfil
+O card SHALL preencher os slots da composição com dados que existem no cadastro:
+
+| slot | conteúdo |
+|---|---|
+| nome | nome sem o prefixo de situação, em capitalização de nome próprio |
+| cargo | departamento, na `tinta` categórica do setor |
+| linha terciária | ramal; na ausência dele, o e-mail |
+| ponto de status | situação (`ok`, `info`, `aviso`, `neutro`) |
+| pílula | a mesma situação, por extenso |
+| selo | e-mail corporativo `@prestek.com.br` |
+| ações | e-mail e WhatsApp, ou ligar para o ramal |
+
+O ponto de status SHALL codificar situação de vínculo, e SHALL NOT ser apresentado como presença em tempo real.
+
+#### Scenario: Selo distingue e-mail corporativo
+- **WHEN** o e-mail do colaborador termina em `@prestek.com.br`
+- **THEN** o selo é exibido, com o endereço completo em `title`
+
+#### Scenario: Pulso apenas no vínculo ativo
+- **WHEN** a situação é "Ativo"
+- **THEN** o ponto recebe `animate-ping`, que anima `transform` e `opacity` — resolvidas pelo compositor — e é neutralizado pelo bloco global de `prefers-reduced-motion`
 
 #### Scenario: Nome sem metadado embutido
 - **WHEN** o cadastro tem prefixo de situação no nome
-- **THEN** o `<h3>` exibe apenas o nome, em capitalização de nome próprio
+- **THEN** o `<h3>` exibe apenas o nome, e o prefixo aparece na pílula
+
+### Requirement: Ação percorre a rampa do relevo
+Os botões de ação SHALL ter três estados, e a sombra SHALL diminuir monotonicamente do repouso ao pressionado:
+
+| estado | sombra | escala |
+|---|---|---|
+| repouso | relevo 6px/12px | 1 |
+| hover / foco | relevo 3px/6px | 0,98 |
+| pressionado | reentrância 4px/8px | 0,95 |
+
+A sombra SHALL NOT aumentar no hover: numa superfície neumórfica isso lê como o botão saltando para longe do cursor, o oposto da affordance de pressionar.
+
+O estado de foco de teclado SHALL aplicar o mesmo realce do hover, além do anel de foco.
+
+#### Scenario: Hover afunda o botão
+- **WHEN** o usuário passa o mouse sobre um botão de ação
+- **THEN** a sombra encolhe, o botão reduz para 0,98, o fundo recebe tinta e o ícone cresce para 1,1
+
+#### Scenario: Teclado recebe o mesmo feedback
+- **WHEN** o botão recebe foco por `Tab`
+- **THEN** o realce de hover é aplicado junto do `focus-visible:ring`
+
+#### Scenario: Cor de realce do WhatsApp
+- **WHEN** o botão do WhatsApp é destacado
+- **THEN** usa `var(--success-strong)`, e SHALL NOT usar o verde de marca `#25D366` — que dá 1,88:1 sobre a face clara e reprova o piso de 3:1 da SC 1.4.11
+
+### Requirement: Texto legível sobre a face neumórfica
+Nenhum texto do card SHALL usar `C.muted`.
+
+A face neumórfica é `C.bg` (`#F5F9FF` no tema claro), e não o branco puro. Sobre ela, `C.muted` (`#8896A8`) dá **2,85:1** — reprova a SC 1.4.3. `C.ink2` dá **7,28:1** e é visualmente quase o mesmo cinza. Isso vale em especial para a linha terciária, que carrega o ramal.
+
+#### Scenario: Linha do ramal legível
+- **WHEN** o card exibe o ramal ou o e-mail na linha terciária
+- **THEN** a cor é `C.ink2`, com no mínimo 4,5:1 contra a face
+
+#### Scenario: Tinta do departamento revalidada contra a face
+- **WHEN** o nome do departamento é exibido no lugar do cargo
+- **THEN** a `tinta` mantém no mínimo 4,5:1 contra a face de cada tema — medido entre 6,71 e 12,99
 
 ### Requirement: Estilo de borda em longhand
 Componentes com borda dependente de estado SHALL usar apenas propriedades longhand (`borderStyle`, `borderWidth`, `borderColor`, e as variantes por lado), e SHALL NOT combinar o shorthand `border` com um longhand de lado no mesmo objeto de estilo inline.
