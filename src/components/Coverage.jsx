@@ -140,6 +140,7 @@ export default function Coverage({ user }) {
                     setFiltroTec={setFiltroTec}
                     filtroStatus={filtroStatus}
                     setFiltroStatus={setFiltroStatus}
+                    busca={busca}
                     onLimpar={limparFiltros}
                 />
 

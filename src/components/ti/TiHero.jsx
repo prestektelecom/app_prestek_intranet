@@ -1,9 +1,10 @@
 import React from 'react';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { tone } from '../../utils/tone';
+import { fundoHero } from '../ui/heroGradiente';
 
 // Mesmo piso de opacidade do CoverageHero e do ServicesHero: sobre o painel
-// bg-black/55, /70 dá 5,6:1 e /75 dá 6,2:1. Abaixo disso reprova em AA.
+// bg-black/60, /75 dá 4,9:1 e /70 dá 4,5:1. Abaixo disso reprova em AA.
 const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
 
 function KpiTile({ label, valor, sub }) {
@@ -28,9 +29,9 @@ function KpiEsqueleto() {
 }
 
 /**
- * Hero da aba TI. Mesma anatomia do CoverageHero (gradiente 120deg, grade SVG
- * de 40px, dois blobs desfocados, split 6/6 em 2xl) — as telas são irmãs e
- * precisam ler como o mesmo produto.
+ * Hero da aba TI. Mesma anatomia do CoverageHero (rampa de ui/heroGradiente,
+ * retícula de pontos, anéis de propagação no background, split 6/6) — as telas
+ * são irmãs e precisam ler como o mesmo produto.
  *
  * @param {object}  ferramenta  entrada do registry, define título e descrição
  * @param {Array}   kpis        [{ label, valor, sub }] do painel direito
@@ -44,20 +45,18 @@ export default function TiHero({ ferramenta, kpis = [], isLoading = false, etapa
         <div
             className="relative shrink-0 overflow-hidden rounded-[24px] p-6 text-white sm:p-8"
             style={{
-                background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
+                background: fundoHero(C),
                 boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
             }}
         >
-            <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none' }}>
+            <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.22, pointerEvents: 'none' }}>
                 <defs>
-                    <pattern id="ti-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+                    <pattern id="ti-grid" width="22" height="22" patternUnits="userSpaceOnUse">
+                        <circle cx="1" cy="1" r="1" fill="white" />
                     </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#ti-grid)" />
             </svg>
-            <div aria-hidden="true" style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-            <div aria-hidden="true" style={{ position: 'absolute', bottom: -100, right: 120, width: 220, height: 220, borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)', pointerEvents: 'none' }} />
 
             {/* Split em 2xl e não em xl, pelo mesmo motivo do CoverageHero: os
                 breakpoints medem a viewport, mas aqui dentro o espaço é ~330px
@@ -84,7 +83,7 @@ export default function TiHero({ ferramenta, kpis = [], isLoading = false, etapa
                     </span>
                 </div>
 
-                <div className="rounded-2xl border border-white/15 bg-black/55 p-4 backdrop-blur-sm 2xl:col-span-6">
+                <div className="rounded-2xl border border-white/15 bg-black/60 p-4 2xl:col-span-6">
                     <div className="flex items-center justify-between gap-2 border-b border-white/[0.15] pb-2">
                         <div className="flex items-center gap-2">
                             <span className="h-2 w-2 shrink-0 rounded-full bg-white/80" aria-hidden="true" />

@@ -3,6 +3,7 @@ import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { tone } from '../../utils/tone';
 import Sparkline from '../common/Sparkline';
 import HeroSearchInput from '../ui/HeroSearchInput';
+import { fundoHero } from '../ui/heroGradiente';
 import { parseVelocidade } from '../../utils/planTaxonomy';
 
 // Os KPIs são de CONTRATOS, não dos planos listados abaixo — o rótulo
@@ -147,20 +148,24 @@ export default function ServicesHero({
         <div
             className="relative overflow-hidden rounded-[24px] p-6 text-white sm:p-8"
             style={{
-                background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
+                // A parada do meio era C.accentDark, que nos três temas escuros
+                // vale #FDBA74 — o tom CLARO da rampa. O gradiente invertia e o
+                // texto branco caía para 1,71:1. Ver ui/heroGradiente.js.
+                background: fundoHero(C),
                 boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
             }}
         >
-            <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none' }}>
+            {/* Retícula de pontos no lugar da grade quadrada, e os dois blobs
+                desfocados saíram: renderizavam quase inteiramente atrás do
+                painel escuro. Ver CoverageHero.jsx — as duas telas são irmãs. */}
+            <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.22, pointerEvents: 'none' }}>
                 <defs>
-                    <pattern id="svc-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+                    <pattern id="svc-grid" width="22" height="22" patternUnits="userSpaceOnUse">
+                        <circle cx="1" cy="1" r="1" fill="white" />
                     </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#svc-grid)" />
             </svg>
-            <div aria-hidden="true" style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-            <div aria-hidden="true" style={{ position: 'absolute', bottom: -100, right: 120, width: 220, height: 220, borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)', pointerEvents: 'none' }} />
 
             <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-center lg:gap-8">
                 {/* ─── Identidade + busca ─── */}
@@ -220,7 +225,10 @@ export default function ServicesHero({
                 </div>
 
                 {/* ─── Painel de instrumentos ─── */}
-                <div className="rounded-2xl border border-white/15 bg-black/55 p-4 backdrop-blur-sm lg:col-span-6">
+                {/* bg-black/60 e sem backdrop-blur: vidro só lê como vidro
+                    quando há alta frequência atrás, e atrás daqui só há o
+                    gradiente. O /60 ainda sobe o piso de contraste dos rótulos. */}
+                <div className="rounded-2xl border border-white/15 bg-black/60 p-4 lg:col-span-6">
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.15] pb-2">
                         <span className="flex min-w-0 items-center gap-1.5">
                             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white" />

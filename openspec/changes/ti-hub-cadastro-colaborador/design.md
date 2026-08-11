@@ -253,7 +253,11 @@ A Decisão 3 previa derivar `funcionarios.uf` do registro de cidade escolhido. O
 
 O campo é preenchido com `1` (ou `0`) independentemente da cidade — não é a mesma escala de `cidade.uf`, ou simplesmente nunca foi mantido. Apenas 3 registros em 478 são coerentes.
 
-Preencher com o valor semanticamente correto tornaria nossos cadastros os únicos divergentes do resto do ERP; preencher com `1` propaga um dado errado. **Decisão pendente do usuário.** Enquanto isso, o dry-run exibe os dois valores e marca o campo como pendência explícita — o que é honesto e não custa nada, já que na v1 nada é gravado.
+**Decisão do usuário: espelhar o ERP, `uf = 1`.**
+
+O raciocínio: o valor "correto" tornaria nossos cadastros os únicos divergentes em 478, e qualquer filtro ou relatório do IXC que hoje assuma `uf = 1` passaria a não enxergar o colaborador novo. Consistência com o que existe vale mais que correção isolada num campo que ninguém mantém.
+
+`BASE_FUNCIONARIO` fixa `uf: '1'`. O dry-run continua exibindo o valor derivado da cidade como **nota informativa** ao lado — se um dia o ERP for corrigido em massa, a informação está ali, e a origem da divergência fica documentada em vez de esquecida.
 
 ### Achado 4 — Formatos reais, para calibrar validação e busca
 

@@ -42,8 +42,14 @@ export default function HeroSearchInput({ value, onChange, placeholder = 'Buscar
                     color: 'white',
                     fontSize: 14,
                     fontWeight: 500,
-                    outline: 'none',
-                    transition: 'background .2s, border-color .2s',
+                    // O foco era só a borda passando de rgba(255,255,255,.3) para
+                    // .6 — 2,19:1 contra o preenchimento do input, abaixo dos 3:1
+                    // que a WCAG 1.4.11 exige de indicador não-textual. Outline
+                    // branco sólido dá 5,18:1 sobre a rampa e casa com o
+                    // focus-visible:ring-2 ring-white que os botões vizinhos usam.
+                    outline: focused ? '2px solid #FFFFFF' : '2px solid transparent',
+                    outlineOffset: 2,
+                    transition: 'background .2s, border-color .2s, outline-color .2s',
                 }}
             />
 
@@ -52,6 +58,9 @@ export default function HeroSearchInput({ value, onChange, placeholder = 'Buscar
                     type="button"
                     onClick={() => onChange('')}
                     aria-label="Limpar busca"
+                    // after:-inset-2.5 expande o alvo de toque de ~24px para 44px
+                    // sem ocupar layout — o ✕ visual continua do mesmo tamanho.
+                    className="rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-white after:absolute after:-inset-2.5 after:content-['']"
                     style={{
                         position: 'absolute',
                         right: 14,

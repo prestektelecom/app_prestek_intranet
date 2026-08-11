@@ -28,9 +28,14 @@ export default function CoverageFilters({
     setFiltroTec,
     filtroStatus,
     setFiltroStatus,
+    busca,
     onLimpar,
 }) {
-    const temFiltro = Boolean(filtroTec || filtroStatus);
+    // `busca` entra na conta porque `limparFiltros` também a zera (Coverage.jsx).
+    // Sem isto: digitar uma busca não fazia aparecer nenhum affordance de limpar,
+    // e clicar em "Limpar filtros" apagava o texto de um campo que o usuário não
+    // estava olhando — estado mudando fora do campo visual.
+    const temFiltro = Boolean(filtroTec || filtroStatus || busca);
     const contaTec = (t) => dados.filter(d => d.tecnologia === t).length;
     const contaStatus = (s) => dados.filter(d => d.status === s).length;
 
