@@ -984,24 +984,38 @@ app.get('/api/colaboradores', async (req, res) => {
         const dadosIXC = await respostaVal.json();
         const funcionariosIXC = dadosIXC.registros || [];
 
-        // 1. Fotos salvas via tela de Configurações ficam em usuarios_preferencias como avatarUrl
-        const fotosPrefsResult = await pool.query("SELECT usuario_email, valor FROM usuarios_preferencias WHERE chave = 'avatarUrl'");
+        // Enriquecimentos locais e o grupo IXC, todos em paralelo. O grupo vem de
+        // `usuarios` (cacheado, compartilhado com /api/setores) e é OPCIONAL: se a
+        // listagem falhar, o diretório carrega sem o eixo de grupo em vez de 500.
+        const [fotosPrefsResult, ramaisQuery, usuarios, nomesGrupo, idsSupervisores] = await Promise.all([
+            // 1. Fotos salvas via tela de Configurações ficam em usuarios_preferencias como avatarUrl
+            pool.query("SELECT usuario_email, valor FROM usuarios_preferencias WHERE chave = 'avatarUrl'"),
+            // 2. Ramais editados pelo usuário em Configurações (usuarios_preferencias)
+            //    A tabela usuarios_preferencias já salva o usuario_email diretamente
+            pool.query(`
+                SELECT usuario_email, valor AS ramal
+                FROM usuarios_preferencias
+                WHERE chave = 'ramal' AND valor IS NOT NULL AND valor <> '' AND valor <> '0'
+            `),
+            buscarUsuariosIXC().catch(e => {
+                console.warn('[colaboradores] grupos indisponíveis:', e.message);
+                return [];
+            }),
+            nomesDeGrupo(),
+            idsGruposSupervisoresLocais(),
+        ]);
+
         const mapaFotosPorEmail = fotosPrefsResult.rows.reduce((acc, curr) => {
             if (curr.usuario_email) acc[curr.usuario_email.toLowerCase()] = curr.valor;
             return acc;
         }, {});
 
-        // 2. Ramais editados pelo usuário em Configurações (usuarios_preferencias)
-        //    A tabela usuarios_preferencias já salva o usuario_email diretamente
-        const ramaisQuery = await pool.query(`
-            SELECT usuario_email, valor AS ramal
-            FROM usuarios_preferencias
-            WHERE chave = 'ramal' AND valor IS NOT NULL AND valor <> '' AND valor <> '0'
-        `);
         const mapaRamaisPorEmail = ramaisQuery.rows.reduce((acc, curr) => {
             if (curr.usuario_email) acc[curr.usuario_email.toLowerCase()] = curr.ramal;
             return acc;
         }, {});
+
+        const gruposPorFuncionario = mapaGrupoPorFuncionario(usuarios);
 
         // Mescla dados do IXC com dados locais de foto e ramal
         const colaboradores = funcionariosIXC.map(f => {
@@ -1015,12 +1029,20 @@ app.get('/api/colaboradores', async (req, res) => {
                     ixcFoto = null;
                 }
 
+                // Grupo IXC: eixo ortogonal ao departamento. Nem todo funcionário
+                // tem login (18 dos 162 ativos não têm), então null é um estado
+                // legítimo, não uma falha — o Diretório o exibe como "Sem grupo".
+                const idGrupo = gruposPorFuncionario[String(f.id)] || null;
+
                 return {
                     usuario_id: null,
                     funcionario_id: f.id,
                     funcionario_nome: f.funcionario,
                     usuario_email: f.email,
                     id_departamento: f.id_departamento,
+                    id_grupo: idGrupo,
+                    grupo_nome: idGrupo ? rotuloGrupo(idGrupo, nomesGrupo) : null,
+                    grupo_supervisor: !!idGrupo && idsSupervisores.has(idGrupo),
                     filial_id: f.filial_id,
                     id_funcao: f.id_funcao,
                     fone_celular: f.fone_celular,
@@ -2338,6 +2360,89 @@ app.get('/api/usuarios-grupo', async (req, res) => {
     }
 });
 
+// ─── Helper: Usuários do IXC (cacheado) ──────────────────────────────────────
+// `usuarios` é a ÚNICA fonte de `id_grupo` e agora tem dois consumidores:
+// /api/setores (composição da equipe + supervisor) e /api/colaboradores (eixo de
+// grupo no Diretório). Sem cache, cada carregamento do Diretório pagaria uma
+// listagem de milhares de registros que muda algumas vezes por mês.
+async function buscarUsuariosIXC() {
+    const CHAVE = 'ixc:usuarios';
+    const cached = cacheGet(CHAVE);
+    if (cached.hit) return cached.data;
+
+    const usuarios = await ixcListar('usuarios', {
+        qtype: 'usuarios.id', rp: '10000', sortname: 'usuarios.id',
+    });
+    cacheSet(CHAVE, usuarios, TTL.COLABORADORES);
+    return usuarios;
+}
+
+/**
+ * Mapa id_funcionario → id_grupo.
+ *
+ * Prefere o login com `status === 'A'`. Um funcionário pode ter mais de um
+ * registro em `usuarios` (logins antigos ficam com 'I'), e a atribuição direta
+ * deixava o último da lista vencer — o grupo viria de uma conta desativada sem
+ * nenhum sinal na tela. Hoje a base não tem esse caso, e é exatamente por isso
+ * que ele passaria despercebido quando aparecer.
+ */
+function mapaGrupoPorFuncionario(usuarios) {
+    const mapa = {};
+    const veioDeLoginAtivo = new Set();
+    for (const u of usuarios || []) {
+        if (!u.funcionario || !u.id_grupo) continue;
+        const chave = String(u.funcionario);
+        const ehAtivo = u.status === 'A';
+        if (veioDeLoginAtivo.has(chave) && !ehAtivo) continue;
+        mapa[chave] = String(u.id_grupo);
+        if (ehAtivo) veioDeLoginAtivo.add(chave);
+    }
+    return mapa;
+}
+
+/**
+ * Rótulos de grupo, vindos da tabela local `grupos_nomes`.
+ *
+ * O IXC NEGA a leitura de `usuarios_grupo` para este token — a listagem volta
+ * vazia (ver o aviso sobre `type:'error'` em services/ixc.js). Então o nome só
+ * existe se alguém cadastrar. Sem nome, o id cru identifica o grupo e permite
+ * batizá-lo depois com um INSERT, sem tocar em código.
+ */
+async function nomesDeGrupo() {
+    try {
+        const { rows } = await pool.query('SELECT id_grupo, nome FROM grupos_nomes');
+        return rows.reduce((acc, r) => { acc[String(r.id_grupo)] = r.nome; return acc; }, {});
+    } catch (e) {
+        console.warn('[grupos] grupos_nomes indisponível, usando ids crus:', e.message);
+        return {};
+    }
+}
+
+const rotuloGrupo = (idGrupo, nomes) =>
+    !idGrupo ? 'Sem grupo' : (nomes[String(idGrupo)] || `Grupo ${idGrupo}`);
+
+/** Ids de grupo marcados como supervisão na tabela local. Só leitura. */
+async function idsGruposSupervisoresLocais() {
+    try {
+        const { rows } = await pool.query('SELECT id_grupo FROM grupos_supervisores');
+        return new Set(rows.map(r => String(r.id_grupo)));
+    } catch (e) {
+        console.warn('[grupos] grupos_supervisores indisponível:', e.message);
+        return new Set();
+    }
+}
+
+/**
+ * Ordena a composição de uma equipe: supervisão primeiro, depois as maiores.
+ * "Sem grupo" vai sempre por último — é ausência de informação, não uma equipe,
+ * e no topo daria a impressão de ser a maior célula do setor.
+ */
+function ordenarGrupos(a, b) {
+    if (!a.id !== !b.id) return a.id ? -1 : 1;
+    if (a.supervisor !== b.supervisor) return a.supervisor ? -1 : 1;
+    return b.total - a.total;
+}
+
 // ─── Helper: Busca automática de grupos SUPERVISOR(A) no IXC ─────────────────
 // Tenta buscar do IXC todos os grupos cujo nome contém "SUPERVISOR".
 // Se o endpoint estiver disponível (permissão liberada), sincroniza o banco local
@@ -2379,18 +2484,20 @@ async function buscarIdsGruposSupervisores(host, headers) {
         // endpoint indisponível — silencioso, usa fallback
     }
 
-    // Fallback: usa IDs configurados manualmente no banco local
-    const result = await pool.query('SELECT id_grupo FROM grupos_supervisores');
-    return new Set(result.rows.map(r => String(r.id_grupo)));
+    // Fallback: usa IDs configurados manualmente no banco local. Na prática este
+    // é o caminho de sempre — o IXC nega `usuarios_grupo` para este token.
+    return idsGruposSupervisoresLocais();
 }
 
 // ─── Rota: Diretório de Setores (empresa_setor + funcionários com SUPERVISOR) ────────
 app.get('/api/setores', async (req, res) => {
     // ── Cache: retorna imediatamente se ainda válido ────────────────────────────
-    const CACHE_KEY = 'setores:lista';
+    // Sufixo v2: a entrada passou de array de setores para { setores, resumo }, e
+    // um processo antigo em memória devolveria a forma anterior.
+    const CACHE_KEY = 'setores:lista:v2';
     const cached = cacheGet(CACHE_KEY);
     if (cached.hit) {
-        return res.json({ sucesso: true, setores: cached.data, cacheStatus: 'HIT' });
+        return res.json({ sucesso: true, ...cached.data, cacheStatus: 'HIT' });
     }
 
     const host = process.env.IXC_HOST;
@@ -2403,7 +2510,7 @@ app.get('/api/setores', async (req, res) => {
 
     try {
         // Busca setores, funcionários, usuários E supervisores em paralelo (5 em vez de 3+1)
-        const [resSetor, resFunc, resUsuarios, idsGruposSupervisor, responsaveisManuaisRows, descricoesRows] = await Promise.all([
+        const [resSetor, resFunc, usuarios, idsGruposSupervisor, responsaveisManuaisRows, descricoesRows, nomesGrupo] = await Promise.all([
             fetchIXC(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
@@ -2412,32 +2519,23 @@ app.get('/api/setores', async (req, res) => {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
             }),
-            fetchIXC(`https://${host}/webservice/v1/usuarios`, {
-                method: 'POST', headers,
-                body: JSON.stringify({ qtype: 'usuarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios.id', sortorder: 'asc' })
-            }),
+            // Cacheado e compartilhado com /api/colaboradores
+            buscarUsuariosIXC(),
             // Busca grupos SUPERVISOR em paralelo (antes era sequencial após os 3 acima)
             buscarIdsGruposSupervisores(host, headers),
             // Queries ao banco local também em paralelo
             pool.query('SELECT * FROM responsaveis_manuais').catch(() => ({ rows: [] })),
             pool.query('SELECT * FROM setores_descricoes').catch(() => ({ rows: [] })),
+            nomesDeGrupo(),
         ]);
 
         const dataSetor = await resSetor.json();
         const dataFunc = await resFunc.json();
-        const dataUsuarios = await resUsuarios.json();
 
         const setoresRaw = (dataSetor.registros || []).filter(s => s.ativo === 'S');
         const funcionarios = dataFunc.registros || [];
-        const usuarios = dataUsuarios.registros || [];
 
-        // Mapeia id_funcionario -> id_grupo (usando field 'funcionario' como chave)
-        const gruposPorFuncionario = {};
-        usuarios.forEach(usr => {
-            if (usr.funcionario && usr.id_grupo) {
-                gruposPorFuncionario[usr.funcionario] = usr.id_grupo;
-            }
-        });
+        const gruposPorFuncionario = mapaGrupoPorFuncionario(usuarios);
 
         // Monta mapas a partir dos resultados paralelos do banco
         const responsaveisManuais = {};
@@ -2449,6 +2547,12 @@ app.get('/api/setores', async (req, res) => {
         descricoesRows.rows.forEach(r => {
             descricoesManuais[String(r.id_setor)] = r.descricao;
         });
+
+        // União dos membros de todos os setores. A absorção de ATENDIMENTO abaixo
+        // coloca as mesmas pessoas de SUPORTE e RELACIONAMENTO em dois setores, e
+        // somar `totalMembros` no hero contava esses 17 duas vezes — o KPI exibia
+        // mais colaboradores do que a empresa tem.
+        const idsUnicos = new Set();
 
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
@@ -2462,7 +2566,29 @@ app.get('/api/setores', async (req, res) => {
                 
                 return idDep === idSetor;
             });
-            
+
+            membros.forEach(m => idsUnicos.add(String(m.id)));
+
+            // Composição da equipe por grupo IXC — o segundo eixo do diretório.
+            // O grupo é permissão de sistema, não lotação: g56 aparece em 10
+            // setores (camada de gestão) e g4 em 5 (camada técnica). É por isso
+            // que ele complementa o setor em vez de substituí-lo.
+            const porGrupo = new Map();
+            for (const m of membros) {
+                const idGrupo = gruposPorFuncionario[String(m.id)] || null;
+                const chave = idGrupo || 'sem';
+                if (!porGrupo.has(chave)) {
+                    porGrupo.set(chave, {
+                        id: idGrupo,
+                        nome: rotuloGrupo(idGrupo, nomesGrupo),
+                        total: 0,
+                        supervisor: !!idGrupo && idsGruposSupervisor.has(String(idGrupo)),
+                    });
+                }
+                porGrupo.get(chave).total++;
+            }
+            const grupos = [...porGrupo.values()].sort(ordenarGrupos);
+
             // Procura por supervisores no setor (funcionários cujo id_grupo está na lista configurada)
             let responsavel = null;
             
@@ -2485,7 +2611,7 @@ app.get('/api/setores', async (req, res) => {
             // Prioridade 2: Grupos Supervisor
             else if (idsGruposSupervisor.size > 0) {
                 for (const membro of membros) {
-                    const idGrupoDoFuncionario = gruposPorFuncionario[membro.id];
+                    const idGrupoDoFuncionario = gruposPorFuncionario[String(membro.id)];
                     if (idGrupoDoFuncionario && idsGruposSupervisor.has(String(idGrupoDoFuncionario))) {
                         responsavel = membro;
                         break;
@@ -2499,6 +2625,7 @@ app.get('/api/setores', async (req, res) => {
                 cor: setor.cor || null,
                 descricao_customizada: descricoesManuais[String(setor.id)] || null,
                 totalMembros: membros.length,
+                grupos,
                 responsavel: responsavel ? {
                     id: responsavel.id,
                     nome: responsavel.funcionario,
@@ -2508,11 +2635,17 @@ app.get('/api/setores', async (req, res) => {
             };
         });
 
-        // Armazena no cache por 5 minutos
-        cacheSet(CACHE_KEY, setores, TTL.SETORES);
+        const resumo = {
+            // Distintos, não a soma dos cards — ver o comentário em `idsUnicos`.
+            totalColaboradores: idsUnicos.size,
+            totalAtivos: funcionarios.length,
+        };
 
-        console.log(`-> /api/setores: ${setores.length} setores, ${usuarios.length} usuários, ${Object.keys(gruposPorFuncionario).length} com grupos`);
-        return res.json({ sucesso: true, setores, cacheStatus: 'MISS' });
+        // Armazena no cache por 5 minutos
+        cacheSet(CACHE_KEY, { setores, resumo }, TTL.SETORES);
+
+        console.log(`-> /api/setores: ${setores.length} setores, ${usuarios.length} usuários, ${Object.keys(gruposPorFuncionario).length} com grupos, ${resumo.totalColaboradores}/${resumo.totalAtivos} colaboradores alocados`);
+        return res.json({ sucesso: true, setores, resumo, cacheStatus: 'MISS' });
     } catch (e) {
         console.error('Erro rota /api/setores:', e);
         return res.status(500).json({ sucesso: false, erro: e.message });

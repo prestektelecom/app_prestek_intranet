@@ -212,6 +212,8 @@ export default function SectorCard({ setor, isAdmin, onSaveDescription, setCurre
                 </div>
             </div>
 
+            <ComposicaoGrupos grupos={setor.grupos} marca={marca} tinta={tinta} C={C} />
+
             {/* Ações — mt-auto ancora no rodapé mesmo com descrição expandida */}
             <div className="mt-auto flex gap-2">
                 <AcaoRelevo
@@ -242,6 +244,75 @@ export default function SectorCard({ setor, isAdmin, onSaveDescription, setCurre
                 )}
             </div>
         </li>
+    );
+}
+
+/**
+ * Composição da equipe por grupo IXC — o segundo eixo do diretório.
+ *
+ * Mostra 3 grupos e resume o resto: com até 8 grupos por setor, a lista inteira
+ * roubaria a hierarquia do card, que é setor → responsável → equipe.
+ *
+ * Sem sombra neumórfica: o card já carrega duas, e uma terceira camada de relevo
+ * nesta escala vira ruído. Reusa a mesma forma do chip de ramal lá em cima.
+ */
+function ComposicaoGrupos({ grupos, marca, tinta, C }) {
+    // 10 dos 29 setores estão vazios — sem isto, ficariam com um rótulo órfão.
+    if (!grupos?.length) return null;
+
+    const MOSTRAR = 3;
+
+    // Ordem por MASSA, não pela hierárquica que o backend devolve. O Diretório
+    // lista a equipe inteira e ali a supervisão vem primeiro, que é o que se
+    // procura ao abrir um setor. Aqui só cabem 3 chips: com a ordem hierárquica,
+    // ATENDIMENTO exibia três grupos de supervisão de 1–3 pessoas e escondia o
+    // grupo de 14 dentro do "+22" — o resumo omitia justamente a maioria da
+    // equipe. O ★ continua marcando a supervisão onde quer que ela caia.
+    const porMassa = [...grupos].sort((a, b) =>
+        (!a.id !== !b.id) ? (a.id ? -1 : 1) : b.total - a.total);
+    const visiveis = porMassa.slice(0, MOSTRAR);
+    const restante = porMassa.slice(MOSTRAR).reduce((acc, g) => acc + g.total, 0);
+
+    return (
+        <div>
+            <p className="m-0 mb-2 font-mono text-[10px] font-extrabold uppercase tracking-[0.1em]" style={{ color: C.muted }}>
+                Composição
+            </p>
+            <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+                {visiveis.map(g => (
+                    <li
+                        key={g.id ?? 'sem'}
+                        // O grupo sem rótulo cadastrado aparece como "Grupo 109".
+                        // É pouco, mas é honesto: identifica a célula e permite
+                        // batizá-la depois sem tocar na interface.
+                        title={g.supervisor ? `${g.nome} — grupo de supervisão` : g.nome}
+                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-bold"
+                        style={
+                            // "Sem grupo" é ausência de dado, não uma equipe: fica
+                            // neutro para não competir com os grupos reais.
+                            g.id
+                                ? { background: tone(marca, 0.12), color: tinta }
+                                : { background: C.surfaceSoft, color: C.muted }
+                        }
+                    >
+                        {g.supervisor && (
+                            <span className="material-symbols-outlined text-[13px]" aria-hidden="true">stars</span>
+                        )}
+                        <span className="max-w-[10rem] truncate">{g.nome}</span>
+                        <span className="font-mono tabular-nums opacity-70">{g.total}</span>
+                    </li>
+                ))}
+                {restante > 0 && (
+                    <li
+                        title={porMassa.slice(MOSTRAR).map(g => `${g.nome}: ${g.total}`).join('\n')}
+                        className="inline-flex items-center rounded-lg px-2.5 py-1.5 font-mono text-[11px] font-bold tabular-nums"
+                        style={{ background: C.surfaceSoft, color: C.muted }}
+                    >
+                        +{restante}
+                    </li>
+                )}
+            </ul>
+        </div>
     );
 }
 

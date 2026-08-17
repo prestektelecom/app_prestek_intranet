@@ -4,6 +4,7 @@ import DirectoryToolbar from './directory/DirectoryToolbar';
 import EmployeeCard from './directory/EmployeeCard';
 import EmployeeRow from './directory/EmployeeRow';
 import { SkeletonCard, SkeletonRow, EmptyState, ErrorState, AvisoTaxonomia } from './directory/DirectoryStates';
+import GrupoSecao from './directory/GrupoSecao';
 import { situacaoColaborador, semAcento } from './directory/statusColaborador';
 
 // Quantidade por lote do scroll infinito. O esqueleto usa o MESMO número —
@@ -32,6 +33,24 @@ function idCanonico(id) {
         if (alias.includes(alvo)) return canonico;
     }
     return alvo;
+}
+
+// Teto de segurança do agrupamento. Hoje o maior setor tem 53 pessoas, então
+// agrupar significa renderizar tudo de uma vez — o que é justamente o que
+// permite o cabeçalho de cada grupo anunciar um total que confere com o que está
+// na tela. Se um setor crescer além disto, o custo de render passa a pesar mais
+// que o ganho e a tela volta ao scroll infinito sem agrupar.
+const TETO_AGRUPAMENTO = 120;
+
+/**
+ * Ordena as seções: supervisão primeiro, depois as maiores, "Sem grupo" por
+ * último. Espelha `ordenarGrupos` do backend — as duas telas mostram a mesma
+ * equipe e divergir na ordem faria parecer times diferentes.
+ */
+function ordenarSecoes(a, b) {
+    if (!a.id !== !b.id) return a.id ? -1 : 1;
+    if (a.supervisor !== b.supervisor) return a.supervisor ? -1 : 1;
+    return b.itens.length - a.itens.length;
 }
 
 export default function Directory({ user }) {
@@ -201,8 +220,36 @@ export default function Directory({ user }) {
         ];
     }, [colaboradores, kpiDeptos, isAdmin]);
 
-    const visiveis = colaboradoresFiltrados.slice(0, visibleCount);
-    const temMais = visibleCount < colaboradoresFiltrados.length;
+    // Agrupar por grupo IXC só faz sentido DENTRO de um setor: o grupo atravessa
+    // setores (o de supervisão aparece em 10), então na lista completa ele
+    // juntaria dez chefias sem relação entre si sob um mesmo rótulo.
+    const agrupado = !!deptoFiltro && colaboradoresFiltrados.length <= TETO_AGRUPAMENTO;
+
+    // Fatiar por LOTE e agrupar em seguida faria as seções crescerem enquanto o
+    // usuário rola, e o total no cabeçalho contradiria os cards abaixo dele.
+    // Quando agrupa, renderiza o conjunto inteiro e dispensa o scroll infinito.
+    const visiveis = agrupado ? colaboradoresFiltrados : colaboradoresFiltrados.slice(0, visibleCount);
+    const temMais = !agrupado && visibleCount < colaboradoresFiltrados.length;
+
+    const secoes = useMemo(() => {
+        if (!agrupado) return null;
+        const mapa = new Map();
+        for (const c of colaboradoresFiltrados) {
+            const chave = c.id_grupo || 'sem';
+            if (!mapa.has(chave)) {
+                mapa.set(chave, {
+                    id: c.id_grupo || null,
+                    // `grupo_nome` já chega resolvido do backend (nome cadastrado
+                    // em grupos_nomes, ou "Grupo <id>").
+                    nome: c.grupo_nome || 'Sem grupo',
+                    supervisor: !!c.grupo_supervisor,
+                    itens: [],
+                });
+            }
+            mapa.get(chave).itens.push(c);
+        }
+        return [...mapa.values()].sort(ordenarSecoes);
+    }, [agrupado, colaboradoresFiltrados]);
 
     const sentinelRef = useCallback(node => {
         if (observerRef.current) {
@@ -222,7 +269,7 @@ export default function Directory({ user }) {
 
     const textoContador = colaboradoresFiltrados.length === 0
         ? 'Nenhum colaborador encontrado'
-        : `Exibindo ${Math.min(visibleCount, colaboradoresFiltrados.length)} de ${colaboradoresFiltrados.length} colaborador${colaboradoresFiltrados.length !== 1 ? 'es' : ''}`;
+        : `Exibindo ${visiveis.length} de ${colaboradoresFiltrados.length} colaborador${colaboradoresFiltrados.length !== 1 ? 'es' : ''}`;
 
     const temFiltroAtivo = !!busca || !!deptoFiltro || !!situacaoFiltro;
     const limparFiltros = useCallback(() => {
@@ -242,6 +289,18 @@ export default function Directory({ user }) {
     const classeLista = emGrid
         ? 'grid list-none grid-cols-1 gap-8 p-0 sm:grid-cols-2 lg:grid-cols-3'
         : 'flex list-none flex-col gap-2 p-0';
+
+    const renderItem = colab => {
+        const Item = emGrid ? EmployeeCard : EmployeeRow;
+        return (
+            <Item
+                key={colab.usuario_id || colab.funcionario_id}
+                colab={colab}
+                situacao={colab._situacao}
+                departamentoNome={colab._deptoNome}
+            />
+        );
+    };
 
     return (
         // flex-1 é obrigatório: o shell do App é um flex row e, sem ele, o
@@ -284,21 +343,27 @@ export default function Directory({ user }) {
                             <>
                                 {/* <ul>/<li>: um diretório de pessoas É uma lista.
                                     O leitor de tela passa a anunciar "lista com N
-                                    itens" e a dar os limites de cada item. */}
-                                <ul className={classeLista}>
-                                    {visiveis.map(colab => {
-                                        const key = colab.usuario_id || colab.funcionario_id;
-                                        const Item = emGrid ? EmployeeCard : EmployeeRow;
-                                        return (
-                                            <Item
-                                                key={key}
-                                                colab={colab}
-                                                situacao={colab._situacao}
-                                                departamentoNome={colab._deptoNome}
-                                            />
-                                        );
-                                    })}
-                                </ul>
+                                    itens" e a dar os limites de cada item. Quando
+                                    agrupado, cada seção traz a sua própria <ul>,
+                                    para a contagem anunciada bater com a do
+                                    cabeçalho do grupo. */}
+                                {agrupado ? (
+                                    <div className="flex flex-col gap-8">
+                                        {secoes.map(s => (
+                                            <GrupoSecao
+                                                key={s.id ?? 'sem'}
+                                                nome={s.nome}
+                                                total={s.itens.length}
+                                                supervisor={s.supervisor}
+                                                classeLista={classeLista}
+                                            >
+                                                {s.itens.map(renderItem)}
+                                            </GrupoSecao>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <ul className={classeLista}>{visiveis.map(renderItem)}</ul>
+                                )}
 
                                 {temMais && (
                                     <div ref={sentinelRef} className="flex items-center justify-center gap-2.5 py-8 text-muted">

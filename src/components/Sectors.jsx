@@ -19,6 +19,10 @@ const ESQUELETOS = 8;
 export default function Sectors({ user, setCurrentView }) {
     const C = useBentoTheme();
     const [setores, setSetores] = useState([]);
+    // Contagens do backend. Não dá para derivar no front: a soma de
+    // `totalMembros` conta duas vezes quem está em SUPORTE e RELACIONAMENTO, que
+    // ATENDIMENTO absorve, e os cards não trazem os ids para deduplicar.
+    const [resumo, setResumo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [erro, setErro] = useState(false);
     const [busca, setBusca] = useState('');
@@ -37,8 +41,10 @@ export default function Sectors({ user, setCurrentView }) {
         try {
             const res = await fetch('/api/setores');
             const data = await res.json();
-            if (data.sucesso) setSetores(data.setores);
-            else setErro(true);
+            if (data.sucesso) {
+                setSetores(data.setores);
+                setResumo(data.resumo || null);
+            } else setErro(true);
         } catch (e) {
             console.error('Erro ao buscar setores:', e);
             setErro(true);
@@ -93,18 +99,26 @@ export default function Sectors({ user, setCurrentView }) {
     }, [setores, busca, ordenacao]);
 
     const kpis = useMemo(() => {
-        const totalColaboradores = setores.reduce((acc, s) => acc + (Number(s.totalMembros) || 0), 0);
         const comResponsavel = setores.filter(s => s.responsavel?.nome).length;
+        const alocados = resumo?.totalColaboradores ?? 0;
+        const foraDeSetor = (resumo?.totalAtivos ?? 0) - alocados;
         return [
             { label: 'Setores', valor: setores.length },
-            { label: 'Colaboradores', valor: totalColaboradores },
+            {
+                label: 'Colaboradores',
+                valor: alocados,
+                // O `sub` não é enfeite: trocar 163 por 146 e parar aí apenas
+                // mudaria de imprecisão — as 16 pessoas sem setor sumiriam da
+                // tela sem deixar rastro de que existem.
+                sub: foraDeSetor > 0 ? `${foraDeSetor} sem setor` : undefined,
+            },
             {
                 label: 'Com responsável',
                 valor: comResponsavel,
                 sub: setores.length - comResponsavel > 0 ? `${setores.length - comResponsavel} sem` : undefined,
             },
         ];
-    }, [setores]);
+    }, [setores, resumo]);
 
     const textoContador = setoresFiltrados.length === 0
         ? 'Nenhum setor encontrado'
