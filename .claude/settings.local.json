@@ -117,7 +117,11 @@
       "Bash(node --check services/ixcTaxonomias.js)",
       "Bash(node \"C:/Users/PRESTE~1/AppData/Local/Temp/claude/c--Users-Prestek-Telecom-Documents-prestek-intranet/1030bd0f-e49a-4cbd-aa74-089871e1493d/scratchpad/marcar.cjs\" openspec/changes/ti-hub-cadastro-colaborador/tasks.md)",
       "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const c=JSON.parse\\(s\\).changes.find\\(x=>x.name==='ti-hub-cadastro-colaborador'\\);console.log\\('progresso:',c.completedTasks+'/'+c.totalTasks\\)}\\)\")",
-      "Bash(node scripts/openspec-cli.mjs new colaboradores-reformulacao-visual)"
+      "Bash(node scripts/openspec-cli.mjs new colaboradores-reformulacao-visual)",
+      "PowerShell(npm run build)",
+      "PowerShell(npx vitest run 2>$null)",
+      "PowerShell(npx vitest run --reporter=basic)",
+      "Bash(npx vitest *)"
     ],
     "additionalDirectories": [
       "F:\\Projetos em Dev\\prestek_intranet\\src\\image\\services"
