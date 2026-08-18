@@ -2,21 +2,22 @@
 // Centraliza o cache de respostas da API IXC para evitar chamadas redundantes.
 // Substitui o padrão ad-hoc de cacheOS que existia apenas para /api/os-chamados.
 
-const _store = new Map(); // chave -> { data, expiresAt }
+const _store = new Map(); // chave -> { data, expiresAt, staleUntil }
 
 /**
  * Recupera um item do cache.
  * @param {string} key
- * @returns {{ hit: true, data: any } | { hit: false }}
+ * @returns {{ hit: true, stale: boolean, data: any } | { hit: false }}
  */
 export function cacheGet(key) {
     const entry = _store.get(key);
     if (!entry) return { hit: false };
-    if (Date.now() > entry.expiresAt) {
+    const now = Date.now();
+    if (now > entry.staleUntil) {
         _store.delete(key);
         return { hit: false };
     }
-    return { hit: true, data: entry.data };
+    return { hit: true, stale: now > entry.expiresAt, data: entry.data };
 }
 
 /**
@@ -24,9 +25,11 @@ export function cacheGet(key) {
  * @param {string} key
  * @param {any} data
  * @param {number} ttlMs  Tempo de vida em milissegundos
+ * @param {number} [staleWindowMs=0]  Janela extra em que o item, já expirado, ainda é servido como stale
  */
-export function cacheSet(key, data, ttlMs) {
-    _store.set(key, { data, expiresAt: Date.now() + ttlMs });
+export function cacheSet(key, data, ttlMs, staleWindowMs = 0) {
+    const expiresAt = Date.now() + ttlMs;
+    _store.set(key, { data, expiresAt, staleUntil: expiresAt + staleWindowMs });
 }
 
 /**
@@ -54,6 +57,10 @@ export const TTL = {
     TOP_VENDEDORES:parseInt(process.env.CACHE_TTL_TOP_VENDEDORES|| '600')  * 1000, // 10 min
     PLANOS:        parseInt(process.env.CACHE_TTL_PLANOS         || '300')  * 1000, // 5 min
     COBERTURA_IXC: parseInt(process.env.CACHE_TTL_COBERTURA      || '600')  * 1000, // 10 min
+    // Janela stale-while-revalidate do cache de cobertura: além do TTL de 10 min,
+    // o dado expirado ainda é servido imediatamente por mais 30 min enquanto um
+    // rebuild roda em background — só além disso o request bloqueia (MISS real).
+    COBERTURA_SWR_WINDOW: parseInt(process.env.CACHE_STW_COBERTURA || '1800') * 1000, // 30 min
     OS_CHAMADOS:   parseInt(process.env.CACHE_TTL_OS             || '60')   * 1000, // 1 min
     GEOCODIFICAR:  86400 * 1000, // 24 horas — coordenadas de cidades não mudam
     // Índice de clientes usado pela cobertura para resolver o endereço herdado
