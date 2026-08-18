@@ -5,18 +5,13 @@ import ManagePlantaoModal from './schedule/ManagePlantaoModal';
 import HistoricoPreviewModal from './schedule/HistoricoPreviewModal';
 import ScheduleHistoricoTab from './schedule/ScheduleHistoricoTab';
 import ScheduleMobileCard from './schedule/ScheduleMobileCard';
+import { SkeletonRow, SkeletonCard, EmptyState, ErrorState } from './schedule/ScheduleStates';
 import { useScheduleData } from '../hooks/useScheduleData';
 import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
 import { handleImprimir, handleExportarICal } from '../services/exportService';
 import { useBentoTheme } from '../hooks/useBentoTheme';
-
-// Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Colaboradores)
-
-function tone(hex, a) {
-  const h = hex.replace('#', '');
-  const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
-  return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
-}
+import { tone } from '../utils/tone';
+import { fundoHero } from './ui/heroGradiente';
 
 function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, user, onPrint, onExport, onHistory, onAudit }) {
   const C = useBentoTheme();
@@ -28,17 +23,19 @@ function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, use
 
   return (
     <div style={{
-      background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
+      background: fundoHero(C),
       borderRadius: 24, padding: '28px 32px', color: 'white',
       position: 'relative', overflow: 'hidden',
       boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
     }}>
-      <svg style={{ position: 'absolute', inset: 0, opacity: 0.12 }} width="100%" height="100%">
-        <defs><pattern id="schedule-hero-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" /></pattern></defs>
-        <rect width="100%" height="100%" fill="url(#schedule-hero-grid)" />
+      <svg aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.22, pointerEvents: 'none' }} width="100%" height="100%">
+        <defs>
+          <pattern id="sch-dots" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill="white" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#sch-dots)" />
       </svg>
-      <div style={{ position: 'absolute', top: -100, right: -60, width: 320, height: 320, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)' }} />
-      <div style={{ position: 'absolute', bottom: -80, right: 60, width: 180, height: 180, borderRadius: '50%', background: tone(C.cyan, 0.30), filter: 'blur(30px)' }} />
 
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ maxWidth: 560 }}>
@@ -128,21 +125,7 @@ function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, use
   );
 }
 
-// Skeleton row for loading state
-function SkeletonRow() {
-    return (
-        <tr className="animate-pulse">
-            {[...Array(5)].map((_, i) => (
-                <td key={i} className="p-4 pl-8">
-                    <div className="h-4 bg-[#E4ECF5] rounded-md w-3/4" />
-                </td>
-            ))}
-        </tr>
-    );
-}
-
 export default function Schedule({ setCurrentView, user }) {
-    const C = useBentoTheme();
     const d = new Date();
     const [activeTab, setActiveTab] = useState('escala');
     const [filterMonth, setFilterMonth] = useState((d.getMonth() + 1).toString());
@@ -409,8 +392,8 @@ export default function Schedule({ setCurrentView, user }) {
     }, [filteredPlantoes]);
 
     return (
-        <div className="flex-1 flex flex-col w-full max-w-[1920px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: C.bg }}>
-            <main className="flex-1 flex flex-col gap-8">
+        <main className="flex-1 overflow-y-auto bg-background px-4 py-8 text-foreground md:px-10">
+            <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <ScheduleHero
                     monthLabel={monthLabel()}
                     totalPlantoes={filteredPlantoes.length}
@@ -424,18 +407,15 @@ export default function Schedule({ setCurrentView, user }) {
                 />
 
                 {erroCarregamento && (
-                    <div className="p-4 rounded-xl border border-[#E84545]/30 bg-[var(--danger-soft)] text-[var(--danger-bento)] text-sm font-medium flex items-center gap-2">
-                        <span className="material-symbols-outlined">error</span>
-                        {erroCarregamento}
-                    </div>
+                    <ErrorState onRetry={fetchPlantoes} />
                 )}
 
                 {/* Tab switcher */}
-                <div className="flex gap-1 p-1 bg-[#FFF7ED] rounded-xl border border-[#E4ECF5] self-start">
+                <div className="flex gap-1 p-1 bg-[var(--accent-soft)] rounded-xl border border-border self-start">
                     <button
                         type="button"
                         onClick={() => setActiveTab('escala')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'escala' ? 'bg-white text-[#0B1B2E] shadow-sm' : 'text-[#475467] hover:text-[#0B1B2E]'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'escala' ? 'bg-surface text-foreground shadow-sm' : 'text-faint hover:text-foreground'}`}
                     >
                         <span className="material-symbols-outlined text-[18px]">calendar_month</span>
                         Escala
@@ -443,7 +423,7 @@ export default function Schedule({ setCurrentView, user }) {
                     <button
                         type="button"
                         onClick={() => setActiveTab('historico')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'historico' ? 'bg-white text-[#0B1B2E] shadow-sm' : 'text-[#475467] hover:text-[#0B1B2E]'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'historico' ? 'bg-surface text-foreground shadow-sm' : 'text-faint hover:text-foreground'}`}
                     >
                         <span className="material-symbols-outlined text-[18px]">history</span>
                         Histórico
@@ -462,16 +442,16 @@ export default function Schedule({ setCurrentView, user }) {
                     {/* Left Column: Filters & Context */}
                     <div className="lg:col-span-3 flex flex-col gap-6">
                         {/* Filtros Card */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-sm flex flex-col gap-5 border border-[#E4ECF5] animate-in fade-in slide-in-from-left-4 duration-500 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between border-b border-[#E4ECF5] pb-4">
+                        <div className="bg-surface rounded-[20px] p-6 shadow-sm flex flex-col gap-5 border border-border animate-in fade-in slide-in-from-left-4 duration-500 hover:shadow-md transition-shadow">
+                            <div className="flex items-center justify-between border-b border-border pb-4">
                                 <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#C2410C]">tune</span>
-                                    <h2 className="text-lg font-black text-[#0B1B2E] tracking-tight">Filtros</h2>
+                                    <span className="material-symbols-outlined text-[var(--accent-dark)]">tune</span>
+                                    <h2 className="text-lg font-black text-foreground tracking-tight">Filtros</h2>
                                 </div>
                                 {filtrosAtivos && (
                                     <button
                                         onClick={limparFiltros}
-                                        className="text-[10px] uppercase font-bold tracking-widest text-[#475467] hover:text-[#C2410C] transition-colors flex items-center gap-1 bg-[#FFF7ED] px-2 py-1 rounded-md"
+                                        className="text-[10px] uppercase font-bold tracking-widest text-faint hover:text-[var(--accent-dark)] transition-colors flex items-center gap-1 bg-[var(--accent-soft)] px-2 py-1 rounded-md"
                                         aria-label="Limpar filtros"
                                     >
                                         <span className="material-symbols-outlined text-[14px]">close_small</span> Limpar
@@ -481,12 +461,12 @@ export default function Schedule({ setCurrentView, user }) {
                             <div className="flex flex-col gap-4">
                                 <div className="grid grid-cols-2 gap-3">
                                     <label className="flex flex-col gap-1.5 cursor-pointer group">
-                                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#C2410C] transition-colors">Mês</span>
+                                        <span className="text-[10px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors">Mês</span>
                                         <div className="relative">
                                             <select
                                                 value={filterMonth}
                                                 onChange={(e) => setFilterMonth(e.target.value)}
-                                                className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-[#0B1B2E] focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-[#FFF7ED]/80"
+                                                className="w-full bg-surface-raised border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-foreground focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-[var(--accent-soft)]/80"
                                                 aria-label="Selecionar Mês"
                                             >
                                                 <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
@@ -494,42 +474,42 @@ export default function Schedule({ setCurrentView, user }) {
                                                 <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
                                                 <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
                                             </select>
-                                            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#475467] group-focus-within:text-[#C2410C] text-[18px] transition-colors">expand_more</span>
+                                            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-faint group-focus-within:text-[var(--accent-dark)] text-[18px] transition-colors">expand_more</span>
                                         </div>
                                     </label>
                                     <label className="flex flex-col gap-1.5 cursor-pointer group">
-                                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#C2410C] transition-colors">Ano</span>
+                                        <span className="text-[10px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors">Ano</span>
                                         <div className="relative">
                                             <select
                                                 value={filterYear}
                                                 onChange={(e) => setFilterYear(e.target.value)}
-                                                className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-[#0B1B2E] focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-[#FFF7ED]/80"
+                                                className="w-full bg-surface-raised border border-transparent rounded-lg py-2.5 pl-3 pr-8 text-foreground focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none appearance-none cursor-pointer font-bold text-sm transition-all hover:bg-[var(--accent-soft)]/80"
                                                 aria-label="Selecionar Ano"
                                             >
                                                 <option value="2024">2024</option>
                                                 <option value="2025">2025</option>
                                                 <option value="2026">2026</option>
                                             </select>
-                                            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#475467] group-focus-within:text-[#C2410C] text-[18px] transition-colors">expand_more</span>
+                                            <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-faint group-focus-within:text-[var(--accent-dark)] text-[18px] transition-colors">expand_more</span>
                                         </div>
                                     </label>
                                 </div>
                                 <label className="flex flex-col gap-1.5 group cursor-pointer">
-                                    <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest group-focus-within:text-[#C2410C] transition-colors block mb-0.5">Atendente</span>
+                                    <span className="text-[10px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors block mb-0.5">Atendente</span>
                                     <div className="relative">
-                                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#475467] text-lg group-focus-within:text-[#C2410C] transition-colors">search</span>
+                                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-faint text-lg group-focus-within:text-[var(--accent-dark)] transition-colors">search</span>
                                         <input
                                             type="text"
                                             placeholder="Buscar nome..."
                                             value={filterSearch}
                                             onChange={e => setFilterSearch(e.target.value)}
-                                            className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-10 pr-10 text-[#0B1B2E] focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] focus:outline-none font-bold text-sm placeholder-[#475467]/50 transition-all hover:bg-[#FFF7ED]/80"
+                                            className="w-full bg-surface-raised border border-transparent rounded-lg py-2.5 pl-10 pr-10 text-foreground focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-bold text-sm placeholder-faint/50 transition-all hover:bg-[var(--accent-soft)]/80"
                                             aria-label="Buscar Atendente"
                                         />
                                         {filterSearch && (
                                             <button
                                                 onClick={(e) => { e.preventDefault(); setFilterSearch(''); }}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-[#FFF7ED] text-[#475467] hover:text-[#0B1B2E] transition-colors"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-[var(--accent-soft)] text-faint hover:text-foreground transition-colors"
                                                 aria-label="Limpar busca"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">close</span>
@@ -543,31 +523,31 @@ export default function Schedule({ setCurrentView, user }) {
                                     type="button"
                                     onClick={() => setFilterMeusPlantoes(v => !v)}
                                     className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-bold transition-all border ${filterMeusPlantoes
-                                        ? 'bg-[#FFF7ED] text-[#C2410C] border-[#EC7D23]/30'
-                                        : 'bg-[#F7FAFD] text-[#475467] border-transparent hover:border-[#E4ECF5]'
+                                        ? 'bg-[var(--accent-soft)] text-[var(--accent-dark)] border-[var(--accent)]/30'
+                                        : 'bg-surface-raised text-faint border-transparent hover:border-border'
                                     }`}
                                 >
                                     <span className="material-symbols-outlined text-[18px]">person</span>
                                     Meus Plantões
                                     {filterMeusPlantoes && (
-                                        <span className="ml-auto w-2 h-2 rounded-full bg-[#EC7D23]" />
+                                        <span className="ml-auto w-2 h-2 rounded-full bg-[var(--accent)]" />
                                     )}
                                 </button>
                             </div>
                         </div>
 
                         {/* Mini Calendar */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-sm border border-[#E4ECF5] animate-in fade-in slide-in-from-left-4 duration-700 hover:shadow-md transition-shadow">
+                        <div className="bg-surface rounded-[20px] p-6 shadow-sm border border-border animate-in fade-in slide-in-from-left-4 duration-700 hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between mb-5">
-                                <h3 className="text-base font-black text-[#0B1B2E] capitalize tracking-tight flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#C2410C] text-[20px]">calendar_month</span>
+                                <h3 className="text-base font-black text-foreground capitalize tracking-tight flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[var(--accent-dark)] text-[20px]">calendar_month</span>
                                     {new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                                 </h3>
                             </div>
-                            <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-3 font-black text-[#475467] uppercase tracking-widest opacity-80">
+                            <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-3 font-black text-faint uppercase tracking-widest opacity-80">
                                 {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => <div key={i}>{d}</div>)}
                             </div>
-                            <div className="grid grid-cols-7 gap-1 text-sm bg-[#F7FAFD]/60 rounded-xl p-1">
+                            <div className="grid grid-cols-7 gap-1 text-sm bg-surface-raised/60 rounded-xl p-1">
                                 {Array.from({ length: firstDayOfMonth }).map((_, i) => (
                                     <div key={`empty-${i}`} />
                                 ))}
@@ -588,47 +568,47 @@ export default function Schedule({ setCurrentView, user }) {
                                     );
                                 })}
                             </div>
-                            <div className="mt-5 flex gap-4 text-[10px] font-black text-[#475467] uppercase tracking-widest">
-                                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[#EC7D23] rounded-full shadow-sm shadow-[#EC7D23]/20"></div> Hoje</div>
-                                <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[#EC7D23] rounded-full"></div> Plantão</div>
+                            <div className="mt-5 flex gap-4 text-[10px] font-black text-faint uppercase tracking-widest">
+                                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[var(--accent)] rounded-full shadow-sm shadow-[var(--accent)]/20"></div> Hoje</div>
+                                <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[var(--accent)] rounded-full"></div> Plantão</div>
                             </div>
                         </div>
 
                         {/* Stats */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-sm border border-[#E4ECF5] animate-in fade-in slide-in-from-left-4 duration-1000 flex items-center justify-between hover:shadow-md transition-shadow">
+                        <div className="bg-surface rounded-[20px] p-6 shadow-sm border border-border animate-in fade-in slide-in-from-left-4 duration-1000 flex items-center justify-between hover:shadow-md transition-shadow">
                             <div>
-                                <div className="text-[10px] font-bold text-[#475467] uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                <div className="text-[10px] font-bold text-faint uppercase tracking-widest mb-1 flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-[14px]">insights</span>
                                     Status do Filtro
                                 </div>
-                                <div className="text-3xl font-black text-[#0B1B2E]">
-                                    {filteredPlantoes.length} <span className="text-sm font-bold text-[#475467] uppercase tracking-widest ml-1">Plantões Filtrados</span>
+                                <div className="text-3xl font-black text-foreground">
+                                    {filteredPlantoes.length} <span className="text-sm font-bold text-faint uppercase tracking-widest ml-1">Plantões Filtrados</span>
                                 </div>
                             </div>
-                            <div className="size-10 rounded-full bg-[#FFF7ED] flex items-center justify-center text-[#C2410C] shrink-0 transition-transform hover:scale-110 duration-300">
+                            <div className="size-10 rounded-full bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent-dark)] shrink-0 transition-transform hover:scale-110 duration-300">
                                 <span className="material-symbols-outlined">event_available</span>
                             </div>
                         </div>
 
                         {/* Monthly change count — admin only */}
                         {user?.is_admin && (
-                            <div className="bg-white rounded-[20px] p-6 shadow-sm border border-[#E4ECF5] animate-in fade-in slide-in-from-left-4 duration-1000 flex items-center justify-between hover:shadow-md transition-shadow">
+                            <div className="bg-surface rounded-[20px] p-6 shadow-sm border border-border animate-in fade-in slide-in-from-left-4 duration-1000 flex items-center justify-between hover:shadow-md transition-shadow">
                                 <div>
-                                    <div className="text-[10px] font-bold text-[#475467] uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                    <div className="text-[10px] font-bold text-faint uppercase tracking-widest mb-1 flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-[14px]">edit_calendar</span>
                                         Alterações no Mês
                                     </div>
-                                    <div className="text-3xl font-black text-[#0B1B2E]">
+                                    <div className="text-3xl font-black text-foreground">
                                         {loadingChangeCount ? (
-                                            <span className="inline-block w-12 h-8 bg-[#E4ECF5] rounded-md animate-pulse" />
+                                            <span className="inline-block w-12 h-8 bg-border rounded-md animate-pulse" />
                                         ) : monthlyChangeCount === null ? (
-                                            <span className="text-sm font-bold text-[#475467]">—</span>
+                                            <span className="text-sm font-bold text-faint">—</span>
                                         ) : monthlyChangeCount === 0 ? (
-                                            <span className="text-base font-bold text-[#475467]">Sem alterações</span>
+                                            <span className="text-base font-bold text-faint">Sem alterações</span>
                                         ) : (
                                             <>
                                                 {monthlyChangeCount}{' '}
-                                                <span className="text-sm font-bold text-[#475467] uppercase tracking-widest ml-1">
+                                                <span className="text-sm font-bold text-faint uppercase tracking-widest ml-1">
                                                     {monthlyChangeCount === 1 ? 'alteração' : 'alterações'}
                                                 </span>
                                             </>
@@ -644,14 +624,14 @@ export default function Schedule({ setCurrentView, user }) {
 
                     {/* Right Column: Data Table */}
                     <div className="lg:col-span-9 flex flex-col gap-6">
-                        <div className="bg-white rounded-3xl shadow-sm overflow-hidden flex flex-col border border-[#E4ECF5] animate-in fade-in slide-in-from-right-4 duration-700">
-                            <div className="p-6 md:p-8 flex flex-wrap justify-between items-center bg-white border-b border-[#E4ECF5] gap-4">
+                        <div className="bg-surface rounded-3xl shadow-sm overflow-hidden flex flex-col border border-border animate-in fade-in slide-in-from-right-4 duration-700">
+                            <div className="p-6 md:p-8 flex flex-wrap justify-between items-center bg-surface border-b border-border gap-4">
                                 <div>
-                                    <h2 className="text-2xl font-black text-[#0B1B2E] tracking-tight">Escala Detalhada de Suporte</h2>
-                                    <p className="text-sm font-medium text-[#475467] mt-1">Clique nas linhas {user?.is_admin ? "ou no calendário" : ""} para ver detalhes.</p>
+                                    <h2 className="text-2xl font-black text-foreground tracking-tight">Escala Detalhada de Suporte</h2>
+                                    <p className="text-sm font-medium text-faint mt-1">Clique nas linhas {user?.is_admin ? "ou no calendário" : ""} para ver detalhes.</p>
                                 </div>
                                 {user?.is_admin && (
-                                    <div className="bg-[#FFF7ED] text-[#C2410C] text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[#EC7D23]/20 animate-pulse">
+                                    <div className="bg-[var(--accent-soft)] text-[var(--accent-dark)] text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[var(--accent)]/20 animate-pulse">
                                         <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
                                         Gestão Ativa
                                     </div>
@@ -662,12 +642,12 @@ export default function Schedule({ setCurrentView, user }) {
                             <div className="hidden md:block overflow-x-auto">
                                 <table className="schedule-table w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-[#F7FAFD] border-b border-[#E4ECF5]">
-                                            <th scope="col" className="p-4 pl-8 text-[11px] font-black text-[#475467] uppercase tracking-widest">DATA</th>
-                                            <th scope="col" className="p-4 text-[11px] font-black text-[#475467] uppercase tracking-widest">DIA</th>
-                                            <th scope="col" className="p-4 text-[11px] font-black text-[#475467] uppercase tracking-widest">N1 - ATENDIMENTO/NOC</th>
-                                            <th scope="col" className="p-4 text-[11px] font-black text-[#475467] uppercase tracking-widest">N2 - SUPORTE/SERVIÇOS</th>
-                                            <th scope="col" className="p-4 pr-8 text-[11px] font-black text-[#475467] uppercase tracking-widest text-right sm:text-left">SUPERVISÃO</th>
+                                        <tr className="bg-surface-raised border-b border-border">
+                                            <th scope="col" className="p-4 pl-8 text-[11px] font-black text-faint uppercase tracking-widest">DATA</th>
+                                            <th scope="col" className="p-4 text-[11px] font-black text-faint uppercase tracking-widest">DIA</th>
+                                            <th scope="col" className="p-4 text-[11px] font-black text-faint uppercase tracking-widest">N1 - ATENDIMENTO/NOC</th>
+                                            <th scope="col" className="p-4 text-[11px] font-black text-faint uppercase tracking-widest">N2 - SUPORTE/SERVIÇOS</th>
+                                            <th scope="col" className="p-4 pr-8 text-[11px] font-black text-faint uppercase tracking-widest text-right sm:text-left">SUPERVISÃO</th>
                                             {user?.is_admin && <th scope="col" className="p-4 pr-6 w-12"></th>}
                                         </tr>
                                     </thead>
@@ -676,23 +656,8 @@ export default function Schedule({ setCurrentView, user }) {
                                             [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
                                         ) : filteredPlantoes.length === 0 ? (
                                             <tr>
-                                                <td colSpan={user?.is_admin ? 6 : 5} className="p-16 text-center">
-                                                    <div className="flex flex-col items-center gap-4">
-                                                        <span className="material-symbols-outlined text-5xl text-[#8896A8]/40">event_busy</span>
-                                                        <div>
-                                                            <p className="font-black text-[#0B1B2E] text-base">Nenhum plantão encontrado</p>
-                                                            <p className="text-[#475467] text-sm mt-1">Não há plantões agendados para os filtros selecionados.</p>
-                                                        </div>
-                                                        {filtrosAtivos && (
-                                                            <button
-                                                                onClick={limparFiltros}
-                                                                className="flex items-center gap-2 px-4 py-2 bg-[#FFF7ED] text-[#C2410C] rounded-lg font-bold text-sm hover:bg-[#FFF7ED]/80 transition-colors"
-                                                            >
-                                                                <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
-                                                                Limpar filtros
-                                                            </button>
-                                                        )}
-                                                    </div>
+                                                <td colSpan={user?.is_admin ? 6 : 5} className="p-0">
+                                                    <EmptyState temFiltro={filtrosAtivos} onClear={limparFiltros} />
                                                 </td>
                                             </tr>
                                         ) : (
@@ -718,36 +683,9 @@ export default function Schedule({ setCurrentView, user }) {
                             {/* Mobile cards */}
                             <div className="md:hidden p-4 space-y-3">
                                 {loading ? (
-                                    [...Array(5)].map((_, i) => (
-                                        <div key={i} className="rounded-2xl border border-[#E4ECF5] bg-white p-4 space-y-3 animate-pulse">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 rounded-xl bg-[#E4ECF5]" />
-                                                <div className="flex-1 space-y-2">
-                                                    <div className="h-4 bg-[#E4ECF5] rounded w-1/2" />
-                                                    <div className="h-3 bg-[#E4ECF5] rounded w-1/3" />
-                                                </div>
-                                            </div>
-                                            <div className="h-3 bg-[#E4ECF5] rounded w-3/4" />
-                                            <div className="h-3 bg-[#E4ECF5] rounded w-1/2" />
-                                        </div>
-                                    ))
+                                    [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
                                 ) : filteredPlantoes.length === 0 ? (
-                                    <div className="flex flex-col items-center gap-4 py-12 text-center">
-                                        <span className="material-symbols-outlined text-5xl text-[#8896A8]/40">event_busy</span>
-                                        <div>
-                                            <p className="font-black text-[#0B1B2E] text-base">Nenhum plantão encontrado</p>
-                                            <p className="text-[#475467] text-sm mt-1">Não há plantões agendados para os filtros selecionados.</p>
-                                        </div>
-                                        {filtrosAtivos && (
-                                            <button
-                                                onClick={limparFiltros}
-                                                className="flex items-center gap-2 px-4 py-2 bg-[#FFF7ED] text-[#C2410C] rounded-lg font-bold text-sm hover:bg-[#FFF7ED]/80 transition-colors"
-                                            >
-                                                <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
-                                                Limpar filtros
-                                            </button>
-                                        )}
-                                    </div>
+                                    <EmptyState temFiltro={filtrosAtivos} onClear={limparFiltros} />
                                 ) : (
                                     filteredPlantoes.map((p) => (
                                         <ScheduleMobileCard
@@ -793,28 +731,28 @@ export default function Schedule({ setCurrentView, user }) {
                 )}
                 {/* Confirmação de exclusão */}
                 {confirmDeleteOpen && existingPlantao && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0B1B2E]/60 backdrop-blur-sm p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-[#E4ECF5] flex flex-col">
-                            <div className="px-5 py-4 border-b border-[#E4ECF5] flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[#E84545]">delete_forever</span>
-                                <h3 className="text-base font-black text-[#0B1B2E]">Excluir plantão?</h3>
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                        <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm border border-border flex flex-col">
+                            <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[var(--danger-bento)]">delete_forever</span>
+                                <h3 className="text-base font-black text-foreground">Excluir plantão?</h3>
                             </div>
-                            <div className="px-5 py-4 flex flex-col gap-3 text-sm text-[#0B1B2E]">
+                            <div className="px-5 py-4 flex flex-col gap-3 text-sm text-foreground">
                                 <p className="font-medium">
                                     Tem certeza que deseja excluir permanentemente o plantão do dia <strong className="whitespace-nowrap">{new Date(selectedDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</strong>?
                                 </p>
-                                <div className="bg-[#F7FAFD] rounded-lg p-3 text-xs flex flex-col gap-1 opacity-70">
+                                <div className="bg-surface-raised rounded-lg p-3 text-xs flex flex-col gap-1 opacity-70">
                                     <div><span className="font-black">N1:</span> {getNamesFromIds(existingPlantao.n1_id).join(', ') || '—'}</div>
                                     <div><span className="font-black">N2:</span> {getNamesFromIds(existingPlantao.n2_id).join(', ') || '—'}</div>
                                     <div><span className="font-black">Supervisão:</span> {getNamesFromIds(existingPlantao.gerente_id).join(', ') || '—'}</div>
                                 </div>
                             </div>
-                            <div className="flex gap-2 px-5 py-4 border-t border-[#E4ECF5]">
+                            <div className="flex gap-2 px-5 py-4 border-t border-border">
                                 <button
                                     type="button"
                                     onClick={() => setConfirmDeleteOpen(false)}
                                     disabled={deletando}
-                                    className="flex-1 px-3 py-2 bg-[#F7FAFD] text-[#0B1B2E] font-bold rounded-xl hover:bg-[#FFF7ED] transition-colors text-sm disabled:opacity-60"
+                                    className="flex-1 px-3 py-2 bg-surface-raised text-foreground font-bold rounded-xl hover:bg-[var(--accent-soft)] transition-colors text-sm disabled:opacity-60"
                                 >
                                     Cancelar
                                 </button>
@@ -822,7 +760,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     type="button"
                                     onClick={executarDelecao}
                                     disabled={deletando}
-                                    className="flex-1 px-3 py-2 bg-[#E84545] text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[#E84545]/30 text-sm flex items-center justify-center gap-1.5 disabled:opacity-60"
+                                    className="flex-1 px-3 py-2 bg-[var(--danger-bento)] text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[var(--danger-bento)]/30 text-sm flex items-center justify-center gap-1.5 disabled:opacity-60"
                                 >
                                     {deletando && <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>}
                                     {deletando ? 'Excluindo...' : 'Sim, excluir'}
@@ -864,7 +802,7 @@ export default function Schedule({ setCurrentView, user }) {
                             position: sticky;
                             left: 0;
                             z-index: 10;
-                            background: white;
+                            background: var(--surface);
                         }
                         .schedule-table th:first-child::after,
                         .schedule-table td:first-child::after {
@@ -879,15 +817,7 @@ export default function Schedule({ setCurrentView, user }) {
                         }
                     }
                 `}</style>
-
-                <footer className="mt-8 pt-8 border-t border-[#E4ECF5] pb-4 flex flex-col md:flex-row justify-between items-center text-xs text-[#8896A8] font-bold gap-4 uppercase tracking-widest">
-                    <p>© 2026 Prestek Intranet • Portal Interno</p>
-                    <div className="flex gap-6">
-                        <a className="hover:text-[#C2410C] transition-colors" href="#">Políticas</a>
-                        <a className="hover:text-[#C2410C] transition-colors" href="#">Suporte</a>
-                    </div>
-                </footer>
-            </main>
-        </div>
+            </div>
+        </main>
     );
 }
