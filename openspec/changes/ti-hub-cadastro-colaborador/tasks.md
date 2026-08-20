@@ -57,66 +57,74 @@ As fases 4 e 5 **não bloqueiam** a 6: o dry-run opera sobre o estado do formul�
 
 ## 3. Formulário — entregável sozinho, sem PDF
 
-- [ ] 3.1 Criar `src/components/ti/cadastro/estilos.js` com `CAMPO` e `ROTULO` copiados de `coverage/OverrideModal.jsx:6-9` (variante densa, correta para grid de 3 colunas — o `FIELD_CLASS` do `ModalShell` é para modal de 1 coluna), `HINT`, `BTN_PRIMARIO`, `BTN_SECUNDARIO`, `CARD`.
-- [ ] 3.2 Criar `src/components/ti/cadastro/normalizadores.js` (espelho de cliente, só para máscara ao vivo).
-- [ ] 3.3 Criar `src/components/ti/cadastro/campos.js` — descrição declarativa das 4 seções e de cada campo (`nome, rotulo, tipo, obrigatorio, opcoes, span, maxLength`). O formulário é **gerado** daqui; mudar um campo passa a ser mudar dado.
-- [ ] 3.4 Nos campos de enum, usar **apenas o conjunto BR**: `cor_raca` ∈ `A/B/I/P/N/O`, `grau_escolaridade` ∈ `EF/EM/ES/PG/M/D`. ⚠️ A doc do IXC concatena BR e CO com chaves duplicadas (`N` = Negro *e* Rrom; `EF` duas vezes).
-- [ ] 3.5 Criar `src/components/ti/useTaxonomiasIxc.js` — carrega `/api/ti/colaborador/taxonomias` uma vez; expõe `carregando`, `erro` e `parciais`.
-- [ ] 3.6 Criar `SecaoForm.jsx` — `CARD` + faixa `h-1 bg-gradient-to-r from-[#7C2D12] via-[#C2410C] to-[#EC7D23]` + header `border-b border-border px-6 py-4` com ícone em `rounded-xl bg-[var(--accent-soft)]` + corpo `grid grid-cols-1 gap-4 px-6 py-5 sm:grid-cols-2 lg:grid-cols-3`.
-- [ ] 3.7 Criar `CampoForm.jsx` — label, badge de confiança, input/select/segmentado, hint de erro. Cada input recebe `id={'campo-' + nome}` (é o alvo do scroll-to da tarefa 6.9).
-- [ ] 3.8 Criar `CidadeCombobox.jsx` — type-ahead contra `/cidades`, grava `{cidade_id, cidade_nome, uf_id}`. **Nunca pré-selecionar com mais de um resultado.**
-- [ ] 3.9 Criar `CadastroColaborador.jsx` — orquestrador com os estados `ficha → revisão → simulação`, o grid `xl:grid-cols-[minmax(0,1fr)_360px]` (**`xl`, não `lg`** — ver Decisão 9) e o trilho de etapas.
-- [ ] 3.10 Criar `PainelLateral.jsx` — resumo, botão "Simular cadastro", duplicados, texto bruto do PDF e log.
-- [ ] 3.11 Validação de cliente `onBlur`, que **pinta mas não bloqueia**: obrigatório vazio, DV do CPF, CEP de 8 dígitos, e-mail, datas plausíveis, `funcionario` ≤ 100 (contador a partir de 90).
-- [ ] 3.12 Estado de taxonomia carregando: skeleton `h-[38px] animate-pulse rounded-xl bg-surface-raised`, **nunca spinner** (padrão do projeto — ver `PlansGrid.jsx:6-15`).
-- [ ] 3.13 Toast no padrão de `ServicesDirectory.jsx:660-673` (`fixed right-4 top-4 z-[1120]`).
-- [ ] 3.14 **Marco: cadastro manual completo e usável, sem nenhum PDF.** Preencher o formulário inteiro à mão e confirmar que todos os selects populam.
+- [x] 3.1 Criar `src/components/ti/cadastro/estilos.js` com `CAMPO` e `ROTULO` copiados de `coverage/OverrideModal.jsx:6-9` (variante densa, correta para grid de 3 colunas — o `FIELD_CLASS` do `ModalShell` é para modal de 1 coluna), `HINT`, `BTN_PRIMARIO`, `BTN_SECUNDARIO`, `CARD`.
+- [x] 3.2 Criar `src/components/ti/cadastro/normalizadores.js` (espelho de cliente, só para máscara ao vivo).
+- [x] 3.3 Criar `src/components/ti/cadastro/campos.js` — descrição declarativa das 4 seções e de cada campo (`nome, rotulo, tipo, obrigatorio, opcoes, span, maxLength`). O formulário é **gerado** daqui; mudar um campo passa a ser mudar dado.
+- [x] 3.4 Nos campos de enum, usar **apenas o conjunto BR**: `cor_raca` ∈ `A/B/I/P/N/O`, `grau_escolaridade` ∈ `EF/EM/ES/PG/M/D`. ⚠️ A doc do IXC concatena BR e CO com chaves duplicadas (`N` = Negro *e* Rrom; `EF` duas vezes).
+- [x] 3.5 Criar `src/components/ti/useTaxonomiasIxc.js` — carrega `/api/ti/colaborador/taxonomias` uma vez; expõe `carregando`, `erro` e `parciais`.
+- [x] 3.6 Criar `SecaoForm.jsx` — `CARD` + faixa `h-1 bg-gradient-to-r from-[#7C2D12] via-[#C2410C] to-[#EC7D23]` + header `border-b border-border px-6 py-4` com ícone em `rounded-xl bg-[var(--accent-soft)]` + corpo `grid grid-cols-1 gap-4 px-6 py-5 sm:grid-cols-2 lg:grid-cols-3`.
+- [x] 3.7 Criar `CampoForm.jsx` — label, badge de confiança, input/select/segmentado, hint de erro. Cada input recebe `id={'campo-' + nome}` (é o alvo do scroll-to da tarefa 6.9).
+- [x] 3.8 Criar `CidadeCombobox.jsx` — type-ahead contra `/cidades`, grava `{cidade_id, cidade_nome, uf_id}`. **Nunca pré-selecionar com mais de um resultado.**
+- [x] 3.9 Criar `CadastroColaborador.jsx` — orquestrador com os estados `ficha → revisão → simulação`, o grid `xl:grid-cols-[minmax(0,1fr)_360px]` (**`xl`, não `lg`** — ver Decisão 9) e o trilho de etapas.
+- [x] 3.10 Criar `PainelLateral.jsx` — resumo, botão "Simular cadastro", duplicados, texto bruto do PDF e log.
+- [x] 3.11 Validação de cliente `onBlur`, que **pinta mas não bloqueia**: obrigatório vazio, DV do CPF, CEP de 8 dígitos, e-mail, datas plausíveis, `funcionario` ≤ 100 (contador a partir de 90).
+- [x] 3.12 Estado de taxonomia carregando: skeleton `h-[38px] animate-pulse rounded-xl bg-surface-raised`, **nunca spinner** (padrão do projeto — ver `PlansGrid.jsx:6-15`).
+- [x] 3.13 Toast no padrão de `ServicesDirectory.jsx:660-673` (`fixed right-4 top-4 z-[1120]`).
+- [x] 3.14 **Marco: cadastro manual completo e usável, sem nenhum PDF.** Preencher o formulário inteiro à mão e confirmar que todos os selects populam.
 
 ## 4. Extração — camada de texto
 
-- [ ] 4.1 Adicionar `pdf-parse` a `backend/package.json`. ⚠️ É **API v2**: `new PDFParse({data})` → `await parser.getText()` → `await parser.destroy()`. O `read-pdf.js` da raiz usa a API v1 e **não** serve de exemplo.
-- [ ] 4.2 Criar `backend/services/normalizadores.js` — versão canônica (o servidor é a autoridade): `soDigitos`, `normalizarCPF` **com validação de DV**, `normalizarCEP`, `normalizarData` (aceita `dd/mm/aaaa`, `dd-mm-aaaa`, `aaaa-mm-dd`, `dd/mm/aa` → sempre `yyyy-mm-dd`), `normalizarTelefone`, `normalizarNome`, `normalizarMoeda`, `gerarLogin`, `mapearEstadoCivil`, `mapearCorRaca`, `mapearEscolaridade`.
-- [ ] 4.3 Criar `backend/services/extrairTextoPdf.js` — validar a assinatura `%PDF-` (senão 400) e implementar o ramo de camada de texto. Limiar de "texto útil": `texto.replace(/\s/g,'').length >= 200`.
-- [ ] 4.4 Criar `backend/services/fichaParser.js` com a tabela `REGRAS` e as três estratégias de casamento (mesma linha 1.0 / linha seguinte 0.5 / `padraoGlobal` 0.35).
-- [ ] 4.5 ⚠️ Casar rótulos **do mais longo para o mais curto** — senão `'nome'` captura `'Nome da Mãe'`. É o erro silencioso mais provável do parser. Escrever um caso de teste manual para isso.
-- [ ] 4.6 Normalização do texto antes do parsing: `\r\n → \n`, remover soft-hyphen `­`, colapsar espaços e nbsp, `split('\n').map(trim).filter(Boolean)`. Matching com acentos removidos (`NFD` + strip), mas **o valor sai da string original**.
-- [ ] 4.7 Normalizador que invalida o valor (CPF com DV errado) mantém o valor cru e derruba a confiança para 0.35.
-- [ ] 4.8 Emitir `naoReconhecido`: linhas no formato `Rótulo: valor` cujo rótulo não bateu com nenhuma regra. É o insumo para calibrar a tabela com fichas reais.
-- [ ] 4.9 `_cidade_texto` e `_uf_texto` saem do parser como texto; a resolução para FK é do front (tarefa 3.8). **Não chutar `uf: 1`.**
-- [ ] 4.10 Implementar `POST /api/ti/colaborador/extrair-pdf` com `adminAuth` + `express.raw({type:'application/pdf', limit:'15mb'})`. Import dinâmico de `pdf-parse` **dentro do handler**. **Nunca persistir o arquivo.**
-- [ ] 4.11 `registrarAuditoria(email, 'ti_extrair_ficha', ...)` sem dados pessoais na descrição.
-- [ ] 4.12 Criar `UploadFicha.jsx` — dropzone com os estados vazio / arrastando / lendo / OCR / ok / escaneado / erro. Card âmbar no padrão de `Coverage.jsx:126-134`.
-- [ ] 4.13 Badge de confiança em `CampoForm`: `≥ .75` limpo · `.35–.75` ícone `help` + `ring-1 ring-inset ring-amber-400/60` · `< .35` ícone `priority_high` + ring + hint · obrigatório ausente `ring-red-400/60` · editado pelo usuário → chip mono `editado`.
-- [ ] 4.14 Painel de texto bruto no `PainelLateral`: `<details>` + `<pre className="max-h-[320px] overflow-auto rounded-xl bg-surface-raised p-3 font-mono text-[11px] whitespace-pre-wrap text-muted">`.
-- [ ] 4.15 Testar com um PDF digital e com um exportado do Word. Anotar quais rótulos vieram em `naoReconhecido` e **calibrar `REGRAS`**.
+- [x] 4.1 Adicionar `pdf-parse` a `backend/package.json`. ⚠️ É **API v2**: `new PDFParse({data})` → `await parser.getText()` → `await parser.destroy()`. O `read-pdf.js` da raiz usa a API v1 e **não** serve de exemplo.
+- [x] 4.2 Criar `backend/services/normalizadores.js` — versão canônica (o servidor é a autoridade): `soDigitos`, `normalizarCPF` **com validação de DV**, `normalizarCEP`, `normalizarData` (aceita `dd/mm/aaaa`, `dd-mm-aaaa`, `aaaa-mm-dd`, `dd/mm/aa` → sempre `yyyy-mm-dd`), `normalizarTelefone`, `normalizarNome`, `normalizarMoeda`, `gerarLogin`, `mapearEstadoCivil`, `mapearCorRaca`, `mapearEscolaridade`.
+- [x] 4.3 Criar `backend/services/extrairTextoPdf.js` — validar a assinatura `%PDF-` (senão 400) e implementar o ramo de camada de texto. Limiar de "texto útil": `texto.replace(/\s/g,'').length >= 200`.
+- [x] 4.4 Criar `backend/services/fichaParser.js` com a tabela `REGRAS` e as três estratégias de casamento (mesma linha 1.0 / linha seguinte 0.5 / `padraoGlobal` 0.35).
+- [x] 4.5 ⚠️ Casar rótulos **do mais longo para o mais curto** — senão `'nome'` captura `'Nome da Mãe'`. É o erro silencioso mais provável do parser. Escrever um caso de teste manual para isso.
+- [x] 4.6 Normalização do texto antes do parsing: `\r\n → \n`, remover soft-hyphen `­`, colapsar espaços e nbsp, `split('\n').map(trim).filter(Boolean)`. Matching com acentos removidos (`NFD` + strip), mas **o valor sai da string original**.
+- [x] 4.7 Normalizador que invalida o valor (CPF com DV errado) mantém o valor cru e derruba a confiança para 0.35.
+- [x] 4.8 Emitir `naoReconhecido`: linhas no formato `Rótulo: valor` cujo rótulo não bateu com nenhuma regra. É o insumo para calibrar a tabela com fichas reais.
+- [x] 4.9 `_cidade_texto` e `_uf_texto` saem do parser como texto; a resolução para FK é do front (tarefa 3.8). **Não chutar `uf: 1`.**
+- [x] 4.10 Implementar `POST /api/ti/colaborador/extrair-pdf` com `adminAuth` + `express.raw({type:'application/pdf', limit:'15mb'})`. Import dinâmico de `pdf-parse` **dentro do handler**. **Nunca persistir o arquivo.**
+- [x] 4.11 `registrarAuditoria(email, 'ti_extrair_ficha', ...)` sem dados pessoais na descrição.
+- [x] 4.12 Criar `UploadFicha.jsx` — dropzone com os estados vazio / arrastando / lendo / OCR / ok / escaneado / erro. Card âmbar no padrão de `Coverage.jsx:126-134`.
+- [x] 4.13 Badge de confiança em `CampoForm`: `≥ .75` limpo · `.35–.75` ícone `help` + `ring-1 ring-inset ring-amber-400/60` · `< .35` ícone `priority_high` + ring + hint · obrigatório ausente `ring-red-400/60` · editado pelo usuário → chip mono `editado`.
+- [x] 4.14 Painel de texto bruto no `PainelLateral`: `<details>` + `<pre className="max-h-[320px] overflow-auto rounded-xl bg-surface-raised p-3 font-mono text-[11px] whitespace-pre-wrap text-muted">`.
+- [x] 4.15 Testado com uma ficha real digital (modelo "Registro de Empregado" / CTPS, não o modelo "Ficha de Cadastro" que `REGRAS` assumia). Achados:
+    - **Bug bloqueante:** `extrairCampos` chamava `extrairCampo(linhas, regra)` sem o 3º argumento `linhasConsumidas` — `undefined.has()` quebrava o parser inteiro em qualquer entrada. Corrigido.
+    - **Bug do próprio critério da tarefa 4.5** (nunca tinha sido testado): rótulo curto `nome` casava com a linha "Nome da Mãe". Corrigido com uma lista `negativos` por regra.
+    - Adicionado fallback: quando o rótulo casa mas o valor não valida (ex.: "CPF" seguido de uma linha que não é CPF), tenta `padraoGlobal` no texto inteiro antes de desistir — corrigiu CPF e data de nascimento nesta ficha.
+    - Adicionada borda de palavra no casamento de rótulo (`empregado` não pode casar com `empregador`) e uma guarda para a estratégia B não capturar outro rótulo conhecido como se fosse valor.
+    - `mapearEscolaridade` agora aceita sufixo "Completo/Incompleto/Cursando" (ex.: "Ensino Médio Completo"), padrão universal em fichas reais.
+    - Rótulos novos: `empregado` (nome do colaborador), `residência`/`residencia` (endereço, distinto do endereço do empregador), `cor` (cor/raça).
+    - **Limitação conhecida, não corrigida:** este modelo de ficha imprime rótulos em bloco antes dos valores correspondentes (ex.: "Empregado / Residência / Beneficiários" seguido só depois pelos 3 valores, fora de ordem 1:1 simples) — um artefato de formulário em grade. As estratégias A/B (mesma linha / linha seguinte) não resolvem esse caso; `funcionario`, `estado_civil`, `cor_raca` e o endereço granular (número/complemento/bairro/cidade) ficam vazios nesta ficha em vez de errados — consistente com "nunca preenche errado com confiança alta", mas exige preenchimento manual. Corrigir isso de verdade exigiria casar blocos de rótulos com blocos de valores pela posição, o que é escopo de uma tarefa própria, não desta calibração.
+    - Sem ficha exportada do Word disponível para este teste — pendente se aparecer uma.
 
 ## 5. OCR — fichas escaneadas
 
-- [ ] 5.1 Adicionar `tesseract.js` a `backend/package.json`. Import dinâmico dentro do handler.
-- [ ] 5.2 Em `extrairTextoPdf.js`, implementar o ramo OCR: `getScreenshot()` → PNG por página → Tesseract com idioma `por`.
-- [ ] 5.3 Confiança de campo vindo de OCR é **multiplicada por 0.7** — na prática todo campo de ficha escaneada aparece com ring âmbar, que é o comportamento correto.
-- [ ] 5.4 Reportar progresso por página para a UI e exibir barra em `UploadFicha`.
-- [ ] 5.5 Quando nem o OCR produzir texto útil: `origem: 'nenhum'`, **HTTP 200** com aviso âmbar e formulário destravado. **Nenhum ramo da cascata retorna erro ao usuário.**
+- [x] 5.1 Adicionar `tesseract.js` a `backend/package.json`. Import dinâmico dentro do handler.
+- [x] 5.2 Em `extrairTextoPdf.js`, implementar o ramo OCR: `getScreenshot()` → PNG por página → Tesseract com idioma `por`.
+- [x] 5.3 Confiança de campo vindo de OCR é **multiplicada por 0.7** — na prática todo campo de ficha escaneada aparece com ring âmbar, que é o comportamento correto.
+- [x] 5.4 Reportar progresso por página para a UI e exibir barra em `UploadFicha`.
+- [x] 5.5 Quando nem o OCR produzir texto útil: `origem: 'nenhum'`, **HTTP 200** com aviso âmbar e formulário destravado. **Nenhum ramo da cascata retorna erro ao usuário.**
 - [ ] 5.6 Medir o tempo de OCR por página e o tamanho do download de `por.traineddata` no primeiro uso. Anotar aqui.
 - [ ] 5.7 Confirmar que `npm run dev` ainda sobe em tempo aceitável com as duas dependências novas instaladas (o import dinâmico deve manter o cold start igual).
 - [ ] 5.8 Testar com uma ficha escaneada real e confirmar que **todos** os campos vêm em âmbar.
 
 ## 6. Dry-run
 
-- [ ] 6.1 Criar `backend/services/ixcColaborador.js` com `OBRIGATORIOS_FUNCIONARIO` (7: `funcionario`, `filial_id`, `cidade`, `id_conta`, `envia_email_os`, `envia_sms_os`, `ferias_colaborador`) e `OBRIGATORIOS_USUARIO` (12, incluindo os 5 flags financeiros: `recebimentos_dia_atual`, `pagamentos_dia_atual`, `lancamentos_dia_atual`, `desc_parc_atraso`, `filtra_colaborador_quadro_kanban`).
-- [ ] 6.2 `BASE_FUNCIONARIO` a partir do payload de create da doc, com os defaults colombianos corrigidos: `tipo_documento_identificacao_col: ''` (era `'Cédula de ciudadanía'`) e `cor_raca` do conjunto BR (era `'Palenquero'`).
-- [ ] 6.3 `validar(dados, taxonomias)` → `{erros, avisos}`: obrigatórios · cada FK existe na taxonomia correspondente · enums do conjunto BR · `max_length` vira **aviso `TRUNCADO`**, não erro · DV do CPF · datas em `yyyy-mm-dd` (formato comprovado em `server.js:1019`).
-- [ ] 6.4 `id_conta` ausente é **erro duro**, nunca preenchimento automático (Decisão: é conta contábil, erra na folha).
-- [ ] 6.5 `montarPlano()` → os 3 passos com `metodo`, `url`, `headers`, `payload` e `retornoEsperado`. Quando "criar usuário do sistema" estiver desligado, o plano tem 1 passo só.
-- [ ] 6.6 Implementar `GET /api/ti/colaborador/duplicado?cpf=&email=` — buscar em `funcionarios` por CPF **com e sem máscara** (não se sabe como o IXC armazena) e por e-mail, e em `usuarios` por e-mail.
-- [ ] 6.7 Implementar `POST /api/ti/colaborador/dry-run`. Rodar a checagem de duplicados internamente, para que funcione mesmo se a UI não tiver chamado 6.6.
-- [ ] 6.8 **Senha:** o texto puro nunca volta no `plano`, nunca entra em log e nunca entra em `auditoria_logs` — só `sha256(senha)` hex, idêntico a `server.js:245`. Default de `IXC_SENHA_PADRAO_COLABORADOR`, campo na UI como override.
-- [ ] 6.9 Criar `DryRunResultado.jsx` — banner verde/vermelho, erros e avisos como linhas clicáveis que fazem `scrollIntoView` + `focus()` no campo, 3 `<details>` com `<pre>` do payload e botão "Copiar JSON".
-- [ ] 6.10 Faixa fixa no rodapé do card: `bg-amber-400/15 border-t border-amber-300/40 font-mono text-[10px] uppercase tracking-[0.14em]` — "DRY-RUN · nenhuma requisição foi enviada ao IXC".
-- [ ] 6.11 UI mostra `sha256(••••••)` com toggle "revelar hash".
-- [ ] 6.12 Confirmar que o botão "Simular" **nunca fica desabilitado** — o propósito é enumerar todos os problemas de uma vez.
-- [ ] 6.13 `registrarAuditoria(email, 'ti_dry_run_colaborador', ...)`.
-- [ ] 6.14 **Verificação de que nada foi gravado:** rodar um dry-run completo e válido, depois buscar o nome e o CPF no IXC e confirmar que não existem.
+- [x] 6.1 Criado `backend/services/ixcColaborador.js` com `OBRIGATORIOS_FUNCIONARIO` (7) e `OBRIGATORIOS_USUARIO` (12, incluindo os 5 flags financeiros). Confirmados contra os campos `required: "Sim"` reais da doc (`docs/querys_ixc_prestek/ixc_api_recursos_endpoints.json`) — bateram exatamente 7 e 12.
+- [x] 6.2 `BASE_FUNCIONARIO`/`BASE_USUARIO` a partir do payload de `create` da doc. Além dos dois defaults colombianos já documentados (`tipo_documento_identificacao_col`, `cor_raca`), **achado durante a implementação**: a doc mistura, no mesmo payload, campos já corrigidos à mão (`ctps_seleciona: 'N'`) com outros que ainda trazem o **rótulo humano em vez do código** do `values` — `estado_civil: 'Solteiro(a)'` (código real `'S'`), `status: 'Ativo'` em usuários (código `'A'`), `tipo_acesso: 'Ambos'` (código `'A'`), `template: 'Moderno'` (código `'vg'`), `scheme: 'Modo claro'` (código `'light'`), `desc_parc_atraso: 'Padrão'` (código `'P'`), `rastreador_tipo: 'Externo'` (código `'S'`). Todos corrigidos com comentário citando o `values` da doc como evidência. Também aplicado o achado de `ferias_colaborador` (doc sugere `'S'`, 478/478 registros reais são `'N'`) e `uf: '1'` fixo (Achado 3).
+- [x] 6.3 `validar(dados, taxonomias)` implementado como descrito. **Achado durante a implementação:** o cadastro (fase 3) usava o código `'U'` para União Estável — código inexistente no schema real (`'UE'`) — e não tinha `'SE'` (Separado(a)). Corrigido em `campos.js` e em `normalizadores.js` (backend), já que a validação de enum do dry-run só faz sentido se o conjunto aceito for o real.
+- [x] 6.4 `id_conta` ausente é erro duro (`OBRIGATORIOS_FUNCIONARIO`), nunca preenchido automaticamente — confirmado por teste ao vivo.
+- [x] 6.5 `montarPlano()` implementado — 1 passo sem "criar usuário", 3 com. Testado ao vivo (via `curl` contra o backend em dev) nos dois modos.
+- [x] 6.6 `GET /api/ti/colaborador/duplicado?cpf=&email=` implementado e testado ao vivo: `?email=` de um usuário real devolveu `DUPLICADO` com o id correto.
+- [x] 6.7 `POST /api/ti/colaborador/dry-run` implementado, roda a checagem de duplicados internamente.
+- [x] 6.8 Senha: `usuarios.senha` no IXC real **já é o hash SHA-256 hex** (confirmado em `server.js` — o login compara `usuario.senha === sha256(digitada)`), então o hash calculado é literalmente o valor do payload, não uma redação — a UI só decide se mostra ou mascara. Texto puro nunca sai da rota. Default por `IXC_SENHA_PADRAO_COLABORADOR` (adicionada a `.env copy.example`), override no campo `senha` já existente do formulário (fase 3).
+- [x] 6.9 Criado `DryRunResultado.jsx` — banner verde/vermelho, erros/avisos clicáveis com `scrollIntoView` + `focus()`, `<details><pre>` por passo do plano (1 ou 3, conforme 6.5), botão "Copiar JSON".
+- [x] 6.10 Faixa fixa no rodapé implementada.
+- [x] 6.11 Hash com toggle "revelar" implementado.
+- [x] 6.12 Confirmado: o botão em `PainelLateral.jsx` só desabilita durante a chamada em curso (`disabled={simulando}`), nunca por causa de erro de validação.
+- [x] 6.13 `registrarAuditoria(email, 'ti_dry_run_colaborador', ...)` chamado na rota. **Achado durante a implementação:** a rota de extração de PDF (fase 4) já tinha esse mesmo bug — `req.adminEmail` nunca é setado pelo middleware `adminAuth` (que só valida o header, não o anexa ao `req`), então o e-mail do admin gravado na auditoria de `ti_extrair_ficha` sempre foi vazio. Corrigido para ler `req.headers['x-admin-email']`, igual às demais rotas.
+- [x] 6.14 Dry-run completo e válido rodado ao vivo contra o backend em dev (`valido: true`, sem erros); em seguida, busca em `funcionarios` por nome e por CPF confirmou **zero registros** — nada foi gravado.
 
 ## 7. Fechamento
 

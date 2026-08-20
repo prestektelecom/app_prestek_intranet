@@ -11,3 +11,8 @@ DB_USER=prestek
 DB_PASSWORD=SUA_SENHA_SEGURA_AQUI
 
 PORT=3001
+
+# Cadastro de colaborador (aba TI) — senha padrão do usuário do sistema criado
+# junto com o funcionário. A tela permite sobrescrever por cadastro; sem esta
+# variável e sem override, o dry-run acusa erro em vez de usar um valor fraco.
+IXC_SENHA_PADRAO_COLABORADOR=

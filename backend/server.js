@@ -12,6 +12,9 @@ import { cacheGet, cacheSet, cacheInvalidate, TTL } from './cache.js'
 // sem alteração de comportamento; ixcListar é novo.
 import { fetchIXC, ixcHeaders, paginarIXC, ixcListar } from './services/ixc.js'
 import { carregarTaxonomias } from './services/ixcTaxonomias.js'
+import { extrairTextoPdf } from './services/extrairTextoPdf.js'
+import { extrairCampos } from './services/fichaParser.js'
+import { validar as validarColaborador, montarPlano, buscarDuplicados } from './services/ixcColaborador.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -4210,6 +4213,124 @@ app.get('/api/ti/colaborador/cidades', adminAuth, async (req, res) => {
     } catch (e) {
         console.error('[ti/cidades] Erro:', e.message);
         return res.status(502).json({ sucesso: false, erro: `Falha ao consultar cidades no IXC: ${e.message}` });
+    }
+});
+
+// ─── Extração de ficha em PDF ────────────────────────────────────
+// O PDF nunca é persistido: o buffer vive na requisição e morre com ela.
+// Nenhum ramo da cascata retorna erro ao usuário — no máximo `origem:
+// 'nenhum'` com aviso, liberando o preenchimento manual.
+app.post('/api/ti/colaborador/extrair-pdf', adminAuth, express.raw({ type: 'application/pdf', limit: '15mb' }), async (req, res) => {
+    const adminEmail = req.headers['x-admin-email'];
+    try {
+        if (!req.body || !Buffer.isBuffer(req.body)) {
+            return res.status(400).json({ sucesso: false, erro: 'Nenhum arquivo recebido.' });
+        }
+
+        const { texto, origem } = await extrairTextoPdf(req.body);
+        const { campos, confianca, textoBruto, naoReconhecido } = extrairCampos(texto, { origemOCR: origem === 'ocr' });
+
+        await registrarAuditoria(
+            adminEmail,
+            'ti_extrair_ficha',
+            'colaborador',
+            '',
+            `Extraiu ficha de registro (${origem})`
+        );
+
+        return res.json({
+            sucesso: true,
+            origem,
+            campos,
+            confianca,
+            textoBruto,
+            naoReconhecido,
+            aviso: origem === 'nenhum' ? 'Não foi possível extrair texto da ficha. Preencha o formulário manualmente.' : undefined,
+        });
+    } catch (e) {
+        console.error('[ti/extrair-pdf] Erro:', e.message);
+        const status = e.status || 502;
+        return res.status(status).json({
+            sucesso: false,
+            erro: status === 400 ? e.message : `Falha ao processar PDF: ${e.message}`,
+        });
+    }
+});
+
+// ─── Checagem de duplicidade ─────────────────────────────────────
+// cpf_cnpj é armazenado COM máscara no IXC (Achado 4 em design.md) — a busca
+// tenta mascarado primeiro. O dry-run já roda isto internamente (não depende
+// de a UI ter chamado esta rota antes).
+app.get('/api/ti/colaborador/duplicado', adminAuth, async (req, res) => {
+    const cpf = String(req.query.cpf || '').trim();
+    const email = String(req.query.email || '').trim();
+    if (!cpf && !email) {
+        return res.json({ sucesso: true, duplicados: { porCpf: [], porEmailFuncionario: [], porEmailUsuario: [] } });
+    }
+    try {
+        const duplicados = await buscarDuplicados({ cpf, email });
+        return res.json({ sucesso: true, duplicados });
+    } catch (e) {
+        console.error('[ti/duplicado] Erro:', e.message);
+        return res.status(502).json({ sucesso: false, erro: `Falha ao consultar duplicidade no IXC: ${e.message}` });
+    }
+});
+
+// ─── Dry-run ──────────────────────────────────────────────────────
+// Monta e valida os payloads de criação SEM enviar nada ao IXC — ver Decisão 2
+// em design.md. A senha em texto puro nunca sai desta função: só o hash
+// SHA-256 (idêntico ao formato que /api/login valida) entra no plano.
+app.post('/api/ti/colaborador/dry-run', adminAuth, async (req, res) => {
+    const adminEmail = req.headers['x-admin-email'];
+    try {
+        const dados = req.body?.dados || {};
+        const criarUsuario = dados.criar_usuario === 'S';
+
+        const { taxonomias } = await carregarTaxonomias(pool);
+
+        const senhaTexto = criarUsuario
+            ? (String(dados.senha || '').trim() || process.env.IXC_SENHA_PADRAO_COLABORADOR || '')
+            : '';
+        const senhaHash = senhaTexto ? crypto.createHash('sha256').update(senhaTexto).digest('hex') : '';
+
+        const { erros, avisos } = validarColaborador(dados, taxonomias, { senhaResolvida: !!senhaHash });
+
+        try {
+            const duplicados = await buscarDuplicados({ cpf: dados.cpf_cnpj, email: dados.email });
+            if (duplicados.porCpf.length) {
+                avisos.push({ campo: 'cpf_cnpj', mensagem: `DUPLICADO: CPF já cadastrado em funcionários (id ${duplicados.porCpf.map(r => r.id).join(', ')}).` });
+            }
+            if (duplicados.porEmailFuncionario.length) {
+                avisos.push({ campo: 'email', mensagem: `DUPLICADO: e-mail já usado por funcionário (id ${duplicados.porEmailFuncionario.map(r => r.id).join(', ')}).` });
+            }
+            if (duplicados.porEmailUsuario.length) {
+                avisos.push({ campo: 'email', mensagem: `DUPLICADO: e-mail já usado por usuário do sistema (id ${duplicados.porEmailUsuario.map(r => r.id).join(', ')}).` });
+            }
+        } catch (e) {
+            avisos.push({ campo: null, mensagem: `Não foi possível checar duplicidade no IXC: ${e.message}` });
+        }
+
+        const { passos } = montarPlano(dados, { senhaHash });
+
+        await registrarAuditoria(
+            adminEmail,
+            'ti_dry_run_colaborador',
+            'colaborador',
+            '',
+            `Dry-run para "${dados.funcionario || '(sem nome)'}" — ${erros.length} erro(s), ${avisos.length} aviso(s).`
+        );
+
+        return res.json({
+            sucesso: true,
+            valido: erros.length === 0,
+            erros,
+            avisos,
+            plano: passos,
+            senhaHash: senhaHash || undefined,
+        });
+    } catch (e) {
+        console.error('[ti/dry-run] Erro:', e.message);
+        return res.status(502).json({ sucesso: false, erro: `Falha ao montar o dry-run: ${e.message}` });
     }
 });
 
