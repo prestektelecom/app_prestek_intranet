@@ -9,15 +9,20 @@ function textoUtil(texto) {
 }
 
 async function extrairCamadaTexto(buffer) {
-    // Import dinâmico: pdf-parse v2 usa pdfjs-dist + wasm, e isolar o cold
-    // start aqui mantém o `npm run dev` leve para quem não abre a aba TI.
-    const { PDFParse } = await import('pdf-parse');
-    const parser = new PDFParse({ data: buffer });
     try {
-        const resultado = await parser.getText();
-        return String(resultado?.text || '');
-    } finally {
-        await parser.destroy();
+        // Import dinâmico: pdf-parse v2 usa pdfjs-dist + wasm, e isolar o cold
+        // start aqui mantém o `npm run dev` leve para quem não abre a aba TI.
+        const { PDFParse } = await import('pdf-parse');
+        const parser = new PDFParse({ data: buffer });
+        try {
+            const resultado = await parser.getText();
+            return String(resultado?.text || '');
+        } finally {
+            await parser.destroy().catch(() => {});
+        }
+    } catch (e) {
+        console.warn('[extrairTextoPdf] Camada de texto falhou:', e.message);
+        return '';
     }
 }
 
@@ -42,15 +47,20 @@ async function extrairOCR(buffer, onProgresso) {
         const partes = [];
         for (let i = 1; i <= total; i += 1) {
             const screenshot = await parser.getScreenshot({ pageNumber: i });
-            if (!screenshot) continue;
-            const { data: { text } } = await worker.recognize(screenshot);
+            const pageData = screenshot?.pages?.[0];
+            const imgSource = pageData?.dataUrl || (pageData?.data ? Buffer.from(pageData.data) : null);
+            if (!imgSource) continue;
+            const { data: { text } } = await worker.recognize(imgSource);
             partes.push(text);
             onProgresso?.({ pagina: i, progresso: 1 });
         }
         return partes.join('\n');
+    } catch (e) {
+        console.warn('[extrairTextoPdf] Falha no processamento OCR:', e.message);
+        return '';
     } finally {
-        if (worker) await worker.terminate();
-        await parser.destroy();
+        if (worker) await worker.terminate().catch(() => {});
+        await parser.destroy().catch(() => {});
     }
 }
 

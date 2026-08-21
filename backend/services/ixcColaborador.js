@@ -89,6 +89,23 @@ export const BASE_FUNCIONARIO = {
     // Achado 4 (design.md): a doc sugere 'S', mas 478 de 478 colaboradores reais
     // têm 'N' — a doc está errada, não o ERP.
     ferias_colaborador: 'N',
+
+    // ── Documentos, Filiação e Identificação Expandida ──────────────────
+    nacionalidade: 'Brasileira',
+    ie_identidade: '',
+    rg_orgao_emissor: '',
+    rg_data_emissao: '0000-00-00',
+    ctps_numero: '',
+    ctps_serie: '',
+    ctps_data_emissao: '0000-00-00',
+    titulo_numero: '',
+    titulo_zona: '',
+    titulo_secao: '',
+    pis_numero: '',
+    pis_data: '0000-00-00',
+    nome_mae: '',
+    nome_pai: '',
+    obs: '',
 };
 
 export const BASE_USUARIO = {
@@ -138,6 +155,10 @@ export const BASE_USUARIO = {
 const MAX_LENGTH = {
     funcionario: 100, endereco: 200, numero: 20, complemento: 100,
     bairro: 100, cep: 20, telefone: 20, email: 120, cpf_cnpj: 30,
+    nacionalidade: 50, ie_identidade: 30, rg_orgao_emissor: 30,
+    ctps_numero: 20, ctps_serie: 20, titulo_numero: 30,
+    titulo_zona: 10, titulo_secao: 10, pis_numero: 30,
+    nome_mae: 100, nome_pai: 100,
 };
 
 const OBRIGATORIO_FUNCIONARIO_MSG = {
@@ -236,9 +257,15 @@ export function validar(dados, taxonomias, { senhaResolvida = false } = {}) {
     }
 
     // ── Datas em yyyy-mm-dd (server.js:1019 confirma o formato aceito) ──
-    if (dados.data_nascimento && !/^\d{4}-\d{2}-\d{2}$/.test(dados.data_nascimento)) {
-        erros.push({ campo: 'data_nascimento', mensagem: 'Data deve estar em yyyy-mm-dd.' });
-    }
+    const checarData = (campo, valor) => {
+        if (valor && !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+            erros.push({ campo, mensagem: 'Data deve estar em yyyy-mm-dd.' });
+        }
+    };
+    checarData('data_nascimento', dados.data_nascimento);
+    checarData('rg_data_emissao', dados.rg_data_emissao);
+    checarData('ctps_data_emissao', dados.ctps_data_emissao);
+    checarData('pis_data', dados.pis_data);
 
     // ── max_length vira aviso TRUNCADO, não erro ─────────────────────────
     for (const [campo, max] of Object.entries(MAX_LENGTH)) {
@@ -274,6 +301,21 @@ export function validar(dados, taxonomias, { senhaResolvida = false } = {}) {
 export function montarPlano(dados, { senhaHash = '' } = {}) {
     const criarUsuario = dados.criar_usuario === 'S';
 
+    // Compõe campo de observações livres preservando notas de Cargo e CBO da ficha
+    const partesObs = [];
+    if (dados.obs) partesObs.push(String(dados.obs).trim());
+    const cargoFicha = String(dados._cargo_texto || '').trim();
+    const cboFicha = String(dados._cbo_texto || '').trim();
+    if (cargoFicha || cboFicha) {
+        const notaFicha = [
+            cargoFicha ? `Cargo (ficha): ${cargoFicha}` : '',
+            cboFicha ? `CBO: ${cboFicha}` : '',
+        ].filter(Boolean).join(' · ');
+        if (notaFicha && !partesObs.includes(notaFicha)) {
+            partesObs.push(notaFicha);
+        }
+    }
+
     const payloadFuncionario = {
         ...BASE_FUNCIONARIO,
         funcionario: dados.funcionario || '',
@@ -281,10 +323,40 @@ export function montarPlano(dados, { senhaHash = '' } = {}) {
         id_funcao: dados.id_funcao || '',
         id_departamento: dados.id_departamento || '',
         cpf_cnpj: dados.cpf_cnpj || '',
+        cpf_seleciona: dados.cpf_cnpj ? 'S' : 'N',
         data_nascimento: dados.data_nascimento || '',
         estado_civil: dados.estado_civil || BASE_FUNCIONARIO.estado_civil,
         cor_raca: dados.cor_raca || BASE_FUNCIONARIO.cor_raca,
         grau_escolaridade: dados.grau_escolaridade || BASE_FUNCIONARIO.grau_escolaridade,
+        nacionalidade: dados.nacionalidade || BASE_FUNCIONARIO.nacionalidade,
+        possui_deficiencia: dados.possui_deficiencia || BASE_FUNCIONARIO.possui_deficiencia,
+        tipo_deficiencia: dados.tipo_deficiencia || BASE_FUNCIONARIO.tipo_deficiencia,
+
+        // Documentos
+        ie_identidade: dados.ie_identidade || '',
+        rg_orgao_emissor: dados.rg_orgao_emissor || '',
+        rg_data_emissao: dados.rg_data_emissao || BASE_FUNCIONARIO.rg_data_emissao,
+        rg_seleciona: dados.ie_identidade ? 'S' : 'N',
+
+        ctps_numero: dados.ctps_numero || '',
+        ctps_serie: dados.ctps_serie || '',
+        ctps_data_emissao: dados.ctps_data_emissao || BASE_FUNCIONARIO.ctps_data_emissao,
+        ctps_seleciona: dados.ctps_numero ? 'S' : 'N',
+
+        titulo_numero: dados.titulo_numero || '',
+        titulo_zona: dados.titulo_zona || '',
+        titulo_secao: dados.titulo_secao || '',
+        titulo_eleitoral_seleciona: dados.titulo_numero ? 'S' : 'N',
+
+        pis_numero: dados.pis_numero || '',
+        pis_data: dados.pis_data || BASE_FUNCIONARIO.pis_data,
+        pis_seleciona: dados.pis_numero ? 'S' : 'N',
+
+        // Filiação
+        nome_mae: dados.nome_mae || '',
+        nome_pai: dados.nome_pai || '',
+
+        // Endereço & Contato
         cep: dados.cep || '',
         endereco: dados.endereco || '',
         numero: dados.numero || '',
@@ -297,6 +369,9 @@ export function montarPlano(dados, { senhaHash = '' } = {}) {
         envia_email_os: dados.envia_email_os || BASE_FUNCIONARIO.envia_email_os,
         envia_sms_os: dados.envia_sms_os || BASE_FUNCIONARIO.envia_sms_os,
         ferias_colaborador: dados.ferias_colaborador || BASE_FUNCIONARIO.ferias_colaborador,
+
+        // Observações (contém notas de Cargo/CBO da ficha)
+        obs: partesObs.join('\n'),
     };
 
     const passos = [

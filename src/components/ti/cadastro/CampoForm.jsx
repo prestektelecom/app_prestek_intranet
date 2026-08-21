@@ -34,7 +34,7 @@ function Segmentado({ opcoes, valor, onChange }) {
 export default function CampoForm({
     campo, valor, erro, touched, onChange, onBlur,
     taxonomias, carregandoTaxonomias, user, onCidadeSelecionada,
-    confianca, editado,
+    confianca, editado, dica,
 }) {
     const id = `campo-${campo.nome}`;
     const spanClass = campo.span === 2 ? 'sm:col-span-2' : campo.span === 3 ? 'sm:col-span-2 lg:col-span-3' : '';
@@ -120,6 +120,12 @@ export default function CampoForm({
             </label>
             {conteudo}
             {erro && touched ? <p className={HINT}>{erro}</p> : null}
+            {dica ? (
+                <p className="flex items-center gap-1 text-[11px] text-muted">
+                    <span className="material-symbols-outlined text-[13px] text-[var(--accent)]">lightbulb</span>
+                    <span>{dica}</span>
+                </p>
+            ) : null}
             {confianca !== undefined && confianca < 0.35 && !editado ? (
                 <p className={`${HINT} text-amber-700 dark:text-amber-400`}>
                     <span className="material-symbols-outlined mr-1 text-[12px] align-middle">priority_high</span>

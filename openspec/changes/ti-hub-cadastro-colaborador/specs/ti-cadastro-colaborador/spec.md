@@ -78,13 +78,31 @@ A confiança SHALL refletir **como** o valor foi obtido, e não apenas se foi ob
 - **THEN** a interface SHALL disponibilizar o texto bruto obtido da ficha
 - **THEN** a interface SHALL disponibilizar a relação de rótulos presentes no documento que nenhuma regra reconheceu
 
+### Requirement: Documentos, Filiação e Preservação de Cargo/CBO
+O formulário de cadastro SHALL comportar as seções de Documentos e Filiação, bem como campos adicionais de Identificação (Nacionalidade e Deficiência). Rótulos de Cargo e CBO extraídos da ficha SHALL ser preservados como observações do colaborador e sugeridos na interface.
+
+#### Scenario: Documentos e derivação de flags de seleção
+- **WHEN** documentos (RG, CTPS, Título de Eleitor, PIS) são informados ou extraídos
+- **THEN** os flags do ERP correspondentes (`rg_seleciona`, `ctps_seleciona`, `titulo_eleitoral_seleciona`, `pis_seleciona`, `cpf_seleciona`) SHALL ser derivados automaticamente como `'S'` quando o documento estiver presente e `'N'` quando ausente
+- **THEN** a interface SHALL NOT exigir preenchimento manual de flags booleanos redundantes para documentos preenchidos
+
+#### Scenario: Filiação materna e paterna
+- **WHEN** dados de filiação constam na ficha ou são digitados
+- **THEN** o sistema SHALL armazenar `nome_mae` e `nome_pai` em seus respectivos campos do ERP `funcionarios`
+- **THEN** o casamento de nomes de familiares SHALL NOT sobrepor o nome do colaborador
+
+#### Scenario: Cargo e CBO da ficha
+- **WHEN** the ficha contém informações de Cargo e CBO
+- **THEN** o sistema SHALL gravar uma nota formatada em `funcionarios.obs` (`"Cargo (ficha): ... · CBO: ..."`)
+- **THEN** a interface SHALL exibir uma dica visual informativa junto ao seletor de Função para orientar a escolha do operador
+
 ### Requirement: Resolução de chaves estrangeiras contra o IXC
 Todo campo do cadastro que referencia outro registro do IXC SHALL ser resolvido contra o sistema, e nunca inferido a partir do texto da ficha.
 
 #### Scenario: Cidade nunca é adivinhada
 - **WHEN** a ficha informa um nome de cidade
 - **THEN** a ferramenta SHALL consultar o cadastro de cidades do IXC
-- **WHEN** a consulta retorna exatamente um resultado
+- **WHEN** the consulta retorna exatamente um resultado
 - **THEN** a ferramenta SHALL pré-selecionar esse resultado, sinalizando-o como pendente de conferência
 - **WHEN** a consulta retorna nenhum ou mais de um resultado
 - **THEN** a ferramenta SHALL deixar o campo em aberto e registrá-lo como pendência

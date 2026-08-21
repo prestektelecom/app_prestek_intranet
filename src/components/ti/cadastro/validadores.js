@@ -61,7 +61,10 @@ export function validarCampo(campo, valor) {
             if (!validarEmail(texto)) return 'E-mail inválido.';
             return null;
         case 'data_nascimento':
-            if (!validarDataISO(texto)) return 'Data inválida.';
+        case 'rg_data_emissao':
+        case 'ctps_data_emissao':
+        case 'pis_data':
+            if (!validarDataISO(texto)) return 'Data inválida (aaaa-mm-dd).';
             return null;
         case 'telefone': {
             const d = soDigitos(texto);

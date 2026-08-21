@@ -42,6 +42,7 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
     const [simulando, setSimulando] = useState(false);
     const [resultadoDryRun, setResultadoDryRun] = useState(null);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [dicaFuncao, setDicaFuncao] = useState('');
 
     const derivadasComDados = useMemo(
         () => derivados.filter(d => (taxonomias[d] || []).length),
@@ -115,6 +116,20 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
         const novosCampos = {};
         const novaConfianca = {};
 
+        const cargoFicha = String(dados.campos?._cargo_texto || '').trim();
+        const cboFicha = String(dados.campos?._cbo_texto || '').trim();
+        if (cargoFicha || cboFicha) {
+            const dica = [
+                cargoFicha ? `Cargo na ficha: "${cargoFicha}"` : '',
+                cboFicha ? `CBO: ${cboFicha}` : '',
+            ].filter(Boolean).join(' · ');
+            setDicaFuncao(dica);
+            novosCampos._cargo_texto = cargoFicha;
+            novosCampos._cbo_texto = cboFicha;
+        } else {
+            setDicaFuncao('');
+        }
+
         for (const [nome, valor] of Object.entries(dados.campos || {})) {
             if (!valor) continue;
             // Cidade vem como texto; a resolução para FK é do operador no combobox.
@@ -123,7 +138,7 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
                 novaConfianca.cidade_id = dados.confianca?.[nome] ?? 0;
                 continue;
             }
-            if (nome === '_uf_texto') continue;
+            if (nome === '_uf_texto' || nome === '_cargo_texto' || nome === '_cbo_texto') continue;
             if (!campoPorNome(nome)) continue;
 
             novosCampos[nome] = valor;
@@ -237,6 +252,7 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
                                     onCidadeSelecionada={handleCidadeSelecionada}
                                     confianca={confianca[campo.nome]}
                                     editado={editado[campo.nome]}
+                                    dica={campo.nome === 'id_funcao' ? dicaFuncao : undefined}
                                 />
                             ))}
                         </SecaoForm>

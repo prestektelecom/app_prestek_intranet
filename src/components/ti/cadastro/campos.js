@@ -51,6 +51,18 @@ export const SECOES = [
         subtitulo: 'Dados pessoais do colaborador.',
     },
     {
+        id: 'filiacao',
+        icone: 'diversity_1',
+        titulo: 'Filiação',
+        subtitulo: 'Filiação materna e paterna.',
+    },
+    {
+        id: 'documentos',
+        icone: 'article',
+        titulo: 'Documentos',
+        subtitulo: 'RG, CTPS, Título Eleitoral e PIS.',
+    },
+    {
         id: 'endereco',
         icone: 'location_on',
         titulo: 'Endereço e Contato',
@@ -97,6 +109,14 @@ export const CAMPOS = [
         obrigatorio: false, span: 1,
     },
     {
+        nome: 'nacionalidade', rotulo: 'Nacionalidade', tipo: 'text', secao: 'identificacao',
+        obrigatorio: false, span: 1, placeholder: 'Brasileira',
+    },
+    {
+        nome: 'possui_deficiencia', rotulo: 'Possui deficiência', tipo: 'segmentado', secao: 'identificacao',
+        obrigatorio: false, opcoes: OPCOES_SN, span: 1,
+    },
+    {
         nome: 'estado_civil', rotulo: 'Estado civil', tipo: 'select', secao: 'identificacao',
         obrigatorio: false, opcoes: ESTADO_CIVIL, span: 1,
     },
@@ -107,6 +127,62 @@ export const CAMPOS = [
     {
         nome: 'grau_escolaridade', rotulo: 'Escolaridade', tipo: 'select', secao: 'identificacao',
         obrigatorio: false, opcoes: GRAU_ESCOLARIDADE, span: 1,
+    },
+
+    // Filiação
+    {
+        nome: 'nome_mae', rotulo: 'Nome da mãe', tipo: 'text', secao: 'filiacao',
+        obrigatorio: false, maxLength: 100, span: 2, placeholder: 'Nome completo da mãe',
+    },
+    {
+        nome: 'nome_pai', rotulo: 'Nome do pai', tipo: 'text', secao: 'filiacao',
+        obrigatorio: false, maxLength: 100, span: 2, placeholder: 'Nome completo do pai',
+    },
+
+    // Documentos
+    {
+        nome: 'ie_identidade', rotulo: 'RG / Identidade', tipo: 'text', secao: 'documentos',
+        obrigatorio: false, maxLength: 30, span: 1, placeholder: 'Ex.: 12345678',
+    },
+    {
+        nome: 'rg_orgao_emissor', rotulo: 'Órgão emissor / UF', tipo: 'text', secao: 'documentos',
+        obrigatorio: false, maxLength: 30, span: 1, placeholder: 'Ex.: SSP/AL',
+    },
+    {
+        nome: 'rg_data_emissao', rotulo: 'Data de emissão (RG)', tipo: 'date', secao: 'documentos',
+        obrigatorio: false, span: 1,
+    },
+    {
+        nome: 'ctps_numero', rotulo: 'Nº CTPS', tipo: 'text', secao: 'documentos',
+        obrigatorio: false, maxLength: 20, span: 1, placeholder: 'Nº carteira de trabalho',
+    },
+    {
+        nome: 'ctps_serie', rotulo: 'Série CTPS', tipo: 'text', secao: 'documentos',
+        obrigatorio: false, maxLength: 20, span: 1, placeholder: 'Série',
+    },
+    {
+        nome: 'ctps_data_emissao', rotulo: 'Expedição CTPS', tipo: 'date', secao: 'documentos',
+        obrigatorio: false, span: 1,
+    },
+    {
+        nome: 'titulo_numero', rotulo: 'Título de Eleitor', tipo: 'text', secao: 'documentos',
+        obrigatorio: false, maxLength: 30, span: 1, placeholder: 'Número do título',
+    },
+    {
+        nome: 'titulo_zona', rotulo: 'Zona', tipo: 'text', secao: 'documentos',
+        obrigatorio: false, maxLength: 10, span: 1, placeholder: 'Ex.: 013',
+    },
+    {
+        nome: 'titulo_secao', rotulo: 'Seção', tipo: 'text', secao: 'documentos',
+        obrigatorio: false, maxLength: 10, span: 1, placeholder: 'Ex.: 0061',
+    },
+    {
+        nome: 'pis_numero', rotulo: 'PIS / PASEP', tipo: 'text', secao: 'documentos',
+        obrigatorio: false, maxLength: 30, span: 1, placeholder: '000.00000.00-0',
+    },
+    {
+        nome: 'pis_data', rotulo: 'Data do PIS', tipo: 'date', secao: 'documentos',
+        obrigatorio: false, span: 1,
     },
 
     // Endereço e Contato
@@ -173,6 +249,7 @@ export const CAMPOS = [
 export const OBRIGATORIOS = CAMPOS.filter(c => c.obrigatorio).map(c => c.nome);
 
 export const VALOR_INICIAL = CAMPOS.reduce((acc, campo) => {
-    acc[campo.nome] = campo.tipo === 'segmentado' ? 'N' : '';
+    acc[campo.nome] = campo.tipo === 'segmentado' ? 'N' : (campo.nome === 'nacionalidade' ? 'Brasileira' : '');
     return acc;
-}, { criar_usuario: 'N' });
+}, { criar_usuario: 'N', nacionalidade: 'Brasileira', possui_deficiencia: 'N' });
+

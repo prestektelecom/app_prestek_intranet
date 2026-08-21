@@ -259,6 +259,19 @@ O raciocínio: o valor "correto" tornaria nossos cadastros os únicos divergente
 
 `BASE_FUNCIONARIO` fixa `uf: '1'`. O dry-run continua exibindo o valor derivado da cidade como **nota informativa** ao lado — se um dia o ERP for corrigido em massa, a informação está ali, e a origem da divergência fica documentada em vez de esquecida.
 
+## Decisão 12 — Cargo e CBO da ficha em `funcionarios.obs` + dica visual
+
+O ERP `funcionarios` não possui colunas dedicadas para texto de cargo ou CBO livre (`id_funcao` é FK opaca). Em vez de tentar resolver `id_funcao` às cegas ou descartar o texto extraído da ficha:
+1. O texto extraído (`"Cargo: ... · CBO: ..."`) é gravado de forma estruturada em `funcionarios.obs` (campo de texto livre com até 65k caracteres).
+2. Na UI, uma dica informativa contextual é exibida logo abaixo do seletor de Função: `💡 Cargo na ficha: "ASSISTENTE COMERCIAL" · CBO: 411010`, orientando o operador a selecionar a função equivalente cadastrada no IXC.
+
+## Decisão 13 — Derivação automática de flags `*_seleciona`
+
+O schema do IXC contém flags booleanos redundantes (`ctps_seleciona`, `rg_seleciona`, `titulo_eleitoral_seleciona`, `pis_seleciona`, `cpf_seleciona`).
+- Esses flags são calculados automaticamente no backend (`'S'` se o documento correspondente possui valor, `'N'` se vazio).
+- Nenhum toggle redundante é exibido na UI, mantendo o formulário limpo e focado estritamente em dados úteis.
+
+
 ### Achado 4 — Formatos reais, para calibrar validação e busca
 
 De um colaborador ativo real:

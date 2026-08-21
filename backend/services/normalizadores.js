@@ -154,3 +154,25 @@ export function mapearEscolaridade(valor) {
     const codigo = MAPA_ESCOLARIDADE[chave] || '';
     return { valor: codigo, valido: !!codigo };
 }
+
+export function mapearSimNao(valor) {
+    const texto = String(valor || '').trim().toLowerCase();
+    if (!texto) return { valor: 'N', valido: true };
+    if (['s', 'sim', 'true', '1', 'pcd', 'possui'].includes(texto)) {
+        return { valor: 'S', valido: true };
+    }
+    if (['n', 'nao', 'não', 'false', '0'].includes(texto)) {
+        return { valor: 'N', valido: true };
+    }
+    return { valor: 'N', valido: false };
+}
+
+export function normalizarPIS(valor) {
+    const d = soDigitos(valor);
+    if (!d) return { valor: '', valido: false };
+    if (d.length === 11) {
+        return { valor: d.replace(/(\d{3})(\d{5})(\d{2})(\d{1})/, '$1.$2.$3-$4'), valido: true };
+    }
+    return { valor: String(valor || '').trim(), valido: d.length >= 10 };
+}
+

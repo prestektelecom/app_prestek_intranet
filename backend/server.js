@@ -3884,13 +3884,13 @@ app.delete('/api/escritorios/:id', async (req, res) => {
 // devem passar por este middleware.
 // ═══════════════════════════════════════════════════════════════════
 async function adminAuth(req, res, next) {
-    const adminEmail = req.headers['x-admin-email'];
+    const adminEmail = String(req.headers['x-admin-email'] || '').trim();
     if (!adminEmail) {
         return res.status(401).json({ sucesso: false, erro: 'Acesso não autorizado.' });
     }
     try {
         const { rows } = await pool.query(
-            'SELECT is_admin FROM usuarios_perfil WHERE usuario_email = $1',
+            'SELECT is_admin FROM usuarios_perfil WHERE LOWER(usuario_email) = LOWER($1)',
             [adminEmail]
         );
         if (!rows.length || !rows[0].is_admin) {
@@ -3911,9 +3911,9 @@ async function registrarAuditoria(adminEmail, acao, entidade, entidadeId, descri
         );
         const admin = rows[0] || {};
         await pool.query(
-            `INSERT INTO auditoria_logs (admin_id, admin_nome, admin_email, acao, entidade, entidade_id, descricao)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [admin.usuario_id || '', admin.usuario_nome || '', adminEmail, acao, entidade, String(entidadeId || ''), descricao]
+            `INSERT INTO auditoria_logs (id_usuario, admin_id, admin_nome, admin_email, acao, entidade, entidade_id, descricao)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+            [admin.usuario_id || null, admin.usuario_id || '', admin.usuario_nome || '', adminEmail, acao, entidade, String(entidadeId || ''), descricao]
         );
     } catch (e) {
         console.warn('[auditoria] Falha ao registrar log:', e.message);
@@ -4220,42 +4220,61 @@ app.get('/api/ti/colaborador/cidades', adminAuth, async (req, res) => {
 // O PDF nunca é persistido: o buffer vive na requisição e morre com ela.
 // Nenhum ramo da cascata retorna erro ao usuário — no máximo `origem:
 // 'nenhum'` com aviso, liberando o preenchimento manual.
-app.post('/api/ti/colaborador/extrair-pdf', adminAuth, express.raw({ type: 'application/pdf', limit: '15mb' }), async (req, res) => {
-    const adminEmail = req.headers['x-admin-email'];
-    try {
-        if (!req.body || !Buffer.isBuffer(req.body)) {
-            return res.status(400).json({ sucesso: false, erro: 'Nenhum arquivo recebido.' });
+app.post(
+    '/api/ti/colaborador/extrair-pdf',
+    (req, res, next) => {
+        console.log('[DEBUG extrair-pdf] 1. Recebeu requisição. Content-Type:', req.headers['content-type'], 'Length:', req.headers['content-length']);
+        next();
+    },
+    express.raw({ type: () => true, limit: '25mb' }),
+    (req, res, next) => {
+        console.log('[DEBUG extrair-pdf] 2. express.raw executado. isBuffer:', Buffer.isBuffer(req.body), 'Length:', req.body?.length);
+        next();
+    },
+    adminAuth,
+    async (req, res) => {
+        const adminEmail = req.headers['x-admin-email'];
+        console.log('[DEBUG extrair-pdf] 3. adminAuth passou para:', adminEmail);
+        try {
+            if (!req.body || !Buffer.isBuffer(req.body) || req.body.length === 0) {
+                console.log('[DEBUG extrair-pdf] 3b. Nenhum buffer válido.');
+                return res.status(400).json({ sucesso: false, erro: 'Nenhum arquivo recebido ou arquivo vazio.' });
+            }
+
+            console.log('[DEBUG extrair-pdf] 4. Chamando extrairTextoPdf...');
+            const { texto, origem } = await extrairTextoPdf(req.body);
+            console.log('[DEBUG extrair-pdf] 5. extrairTextoPdf retornou:', { origem, textoLen: (texto || '').length });
+
+            const { campos, confianca, textoBruto, naoReconhecido } = extrairCampos(texto, { origemOCR: origem === 'ocr' });
+            console.log('[DEBUG extrair-pdf] 6. extrairCampos concluído.');
+
+            registrarAuditoria(
+                adminEmail,
+                'ti_extrair_ficha',
+                'colaborador',
+                '',
+                `Extraiu ficha de registro (${origem})`
+            ).catch(err => console.warn('[auditoria] Falha não bloqueante:', err.message));
+
+            return res.json({
+                sucesso: true,
+                origem,
+                campos,
+                confianca,
+                textoBruto,
+                naoReconhecido,
+                aviso: origem === 'nenhum' ? 'Não foi possível extrair texto da ficha. Preencha o formulário manualmente.' : undefined,
+            });
+        } catch (e) {
+            console.error('[ti/extrair-pdf] Erro:', e);
+            const status = e.status || 502;
+            return res.status(status).json({
+                sucesso: false,
+                erro: status === 400 ? e.message : `Falha ao processar PDF: ${e.message}`,
+            });
         }
-
-        const { texto, origem } = await extrairTextoPdf(req.body);
-        const { campos, confianca, textoBruto, naoReconhecido } = extrairCampos(texto, { origemOCR: origem === 'ocr' });
-
-        await registrarAuditoria(
-            adminEmail,
-            'ti_extrair_ficha',
-            'colaborador',
-            '',
-            `Extraiu ficha de registro (${origem})`
-        );
-
-        return res.json({
-            sucesso: true,
-            origem,
-            campos,
-            confianca,
-            textoBruto,
-            naoReconhecido,
-            aviso: origem === 'nenhum' ? 'Não foi possível extrair texto da ficha. Preencha o formulário manualmente.' : undefined,
-        });
-    } catch (e) {
-        console.error('[ti/extrair-pdf] Erro:', e.message);
-        const status = e.status || 502;
-        return res.status(status).json({
-            sucesso: false,
-            erro: status === 400 ? e.message : `Falha ao processar PDF: ${e.message}`,
-        });
     }
-});
+);
 
 // ─── Checagem de duplicidade ─────────────────────────────────────
 // cpf_cnpj é armazenado COM máscara no IXC (Achado 4 em design.md) — a busca
@@ -4344,6 +4363,23 @@ app.get('/api/health', async (req, res) => {
         return res.status(503).json({ status: 'unavailable', database: 'disconnected' })
     }
 })
+
+// ─── Rede de segurança: erro não tratado por nenhuma rota ──────────
+// Sem isto, uma exceção que escapa de um middleware (ex.: express.raw
+// rejeitando um corpo malformado antes do handler rodar) cai no handler
+// padrão do Express, que devolve uma página HTML — o front-end espera JSON
+// e, ao falhar o parse, mostra só "Falha na requisição (HTTP <status>)" sem
+// nenhuma pista do que realmente quebrou. Precisa dos 4 parâmetros
+// (err, req, res, next) para o Express reconhecer como middleware de erro.
+app.use((err, req, res, next) => {
+    if (res.headersSent) return next(err);
+    console.error(`[erro não tratado] ${req.method} ${req.originalUrl}:`, err.stack || err.message);
+    const status = err.status || err.statusCode || 500;
+    res.status(status).json({
+        sucesso: false,
+        erro: status === 413 ? 'Arquivo excede o limite permitido.' : (err.message || 'Erro interno do servidor.'),
+    });
+});
 
 // ─── Inicialização ───────────────────────────────────────────────
 function iniciarServidor() {

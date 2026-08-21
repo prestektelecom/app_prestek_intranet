@@ -18,20 +18,22 @@ import {
     normalizarTelefone,
     normalizarNome,
     normalizarMoeda,
+    normalizarPIS,
     mapearEstadoCivil,
     mapearCorRaca,
     mapearEscolaridade,
+    mapearSimNao,
 } from './normalizadores.js';
 
 const semAcento = (s) => String(s || '')
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
 
 const colapsarEspacos = (s) => String(s || '')
-    .replace(/­/g, '')
-    .replace(/ /g, ' ')
+    .replace(/\u00ad/g, '')
+    .replace(/\u00a0/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -45,7 +47,7 @@ const REGRAS = [
         // ele casa com "Nome da Mãe" / "Nome do Pai" antes de chegar na linha
         // certa (era exatamente o risco que a ordenação por tamanho tentava
         // evitar, mas não cobre o caso de o rótulo errado vir primeiro no texto).
-        negativos: ['nome da mae', 'nome do pai', 'nome da mãe', 'nome do responsavel', 'nome do responsável'],
+        negativos: ['nome da mae', 'nome do pai', 'nome da mãe', 'nome do responsavel', 'nome do responsável', 'nome do conjuge', 'nome do cônjuge'],
         normalizador: normalizarNome,
         tipoTextoLivre: true,
     },
@@ -57,9 +59,19 @@ const REGRAS = [
     },
     {
         campo: 'data_nascimento',
-        rotulos: ['data de nascimento', 'nascimento', 'dt nascimento'],
+        rotulos: ['data de nascimento', 'nascimento', 'dt nascimento', 'data nasc'],
         normalizador: normalizarData,
         padraoGlobal: /\b\d{2}[\/\-.]\d{2}[\/\-.]\d{4}\b/,
+    },
+    {
+        campo: 'nacionalidade',
+        rotulos: ['nacionalidade brasileira', 'nacionalidade'],
+        tipoTextoLivre: true,
+    },
+    {
+        campo: 'possui_deficiencia',
+        rotulos: ['possui deficiencia', 'possui deficiência', 'portador de deficiencia', 'portador de deficiência', 'deficiencia', 'deficiência', 'pcd'],
+        normalizador: mapearSimNao,
     },
     {
         campo: 'estado_civil',
@@ -76,6 +88,75 @@ const REGRAS = [
         rotulos: ['grau de escolaridade', 'escolaridade', 'grau de instrução'],
         normalizador: mapearEscolaridade,
     },
+
+    // ── Filiação ────────────────────────────────────────────────────────
+    {
+        campo: 'nome_mae',
+        rotulos: ['nome completo da mae', 'nome da mae', 'nome da mãe', 'filiacao materna', 'filiação materna', 'mae', 'mãe'],
+        normalizador: normalizarNome,
+        tipoTextoLivre: true,
+    },
+    {
+        campo: 'nome_pai',
+        rotulos: ['nome completo do pai', 'nome do pai', 'filiacao paterna', 'filiação paterna', 'pai'],
+        normalizador: normalizarNome,
+        tipoTextoLivre: true,
+    },
+
+    // ── Documentos ──────────────────────────────────────────────────────
+    {
+        campo: 'ie_identidade',
+        rotulos: ['carteira de identidade', 'cedula de identidade', 'cédula de identidade', 'registro geral', 'numero do rg', 'número do rg', 'identidade', 'rg'],
+        negativos: ['rg do conjuge', 'rg conjuge', 'rg dependente'],
+    },
+    {
+        campo: 'rg_orgao_emissor',
+        rotulos: ['orgao expedidor / uf', 'órgão expedidor / uf', 'orgao emissor / uf', 'órgão emissor / uf', 'orgao emissor', 'órgão emissor', 'orgao expedidor', 'órgão expedidor', 'emissor / uf', 'expedicao / orgao', 'emissor'],
+        tipoTextoLivre: true,
+    },
+    {
+        campo: 'rg_data_emissao',
+        rotulos: ['data de emissao do rg', 'data de expedicao do rg', 'data de emissao da identidade', 'data de expedicao da identidade', 'data de expedicao', 'data de expedição', 'data de emissao', 'data de emissão', 'dt expedicao', 'dt emissao'],
+        negativos: ['data de expedicao da ctps', 'data de emissao da ctps'],
+        normalizador: normalizarData,
+    },
+    {
+        campo: 'ctps_numero',
+        rotulos: ['carteira de trabalho e previdencia social', 'carteira de trabalho', 'numero da ctps', 'número da ctps', 'ctps no', 'ctps nº', 'ctps num', 'ctps', 'num ctps'],
+    },
+    {
+        campo: 'ctps_serie',
+        rotulos: ['serie da ctps', 'série da ctps', 'serie ctps', 'série ctps', 'serie', 'série'],
+    },
+    {
+        campo: 'ctps_data_emissao',
+        rotulos: ['data de expedicao da ctps', 'data de emissao da ctps', 'data de emissao ctps', 'expedicao ctps', 'emissao ctps', 'data ctps'],
+        normalizador: normalizarData,
+    },
+    {
+        campo: 'titulo_numero',
+        rotulos: ['titulo de eleitor', 'título de eleitor', 'titulo eleitoral', 'título eleitoral', 'titulo', 'título'],
+    },
+    {
+        campo: 'titulo_zona',
+        rotulos: ['zona eleitoral', 'zona'],
+    },
+    {
+        campo: 'titulo_secao',
+        rotulos: ['secao eleitoral', 'seção eleitoral', 'secao', 'seção'],
+    },
+    {
+        campo: 'pis_numero',
+        rotulos: ['pis / pasep', 'pis/pasep', 'numero do pis', 'número do pis', 'pis', 'pasep'],
+        normalizador: normalizarPIS,
+    },
+    {
+        campo: 'pis_data',
+        rotulos: ['data do pis', 'data cadastramento pis', 'data de cadastramento pis', 'data cadastramento', 'data de cadastramento', 'dt pis'],
+        normalizador: normalizarData,
+    },
+
+    // ── Endereço & Contato ──────────────────────────────────────────────
     {
         campo: 'cep',
         rotulos: ['cep'],
@@ -85,6 +166,7 @@ const REGRAS = [
     {
         campo: 'endereco',
         rotulos: ['endereço residencial', 'endereco residencial', 'residência', 'residencia', 'endereço', 'logradouro'],
+        negativos: ['endereco e contato', 'endereço e contato', 'endereco comercial', 'endereço comercial'],
         tipoTextoLivre: true,
     },
     {
@@ -126,6 +208,17 @@ const REGRAS = [
         campo: 'salario',
         rotulos: ['salário base', 'salario base', 'salário', 'salario'],
         normalizador: normalizarMoeda,
+    },
+
+    // ── Cargo / CBO da ficha ────────────────────────────────────────────
+    {
+        campo: '_cargo_texto',
+        rotulos: ['cargo / funcao', 'cargo / função', 'cargo do colaborador', 'cargo', 'funcao', 'função'],
+        tipoTextoLivre: true,
+    },
+    {
+        campo: '_cbo_texto',
+        rotulos: ['c.b.o.', 'cbo', 'codigo cbo', 'código cbo'],
     },
 ];
 

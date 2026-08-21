@@ -126,13 +126,22 @@ As fases 4 e 5 **não bloqueiam** a 6: o dry-run opera sobre o estado do formul�
 - [x] 6.13 `registrarAuditoria(email, 'ti_dry_run_colaborador', ...)` chamado na rota. **Achado durante a implementação:** a rota de extração de PDF (fase 4) já tinha esse mesmo bug — `req.adminEmail` nunca é setado pelo middleware `adminAuth` (que só valida o header, não o anexa ao `req`), então o e-mail do admin gravado na auditoria de `ti_extrair_ficha` sempre foi vazio. Corrigido para ler `req.headers['x-admin-email']`, igual às demais rotas.
 - [x] 6.14 Dry-run completo e válido rodado ao vivo contra o backend em dev (`valido: true`, sem erros); em seguida, busca em `funcionarios` por nome e por CPF confirmou **zero registros** — nada foi gravado.
 
-## 7. Fechamento
+## 7. Documentos, Filiação e Enriquecimento (Fase 5)
 
-- [ ] 7.1 `POST /api/ti/colaborador/criar` como stub **501**, com o algoritmo da fase 2 em comentário — incluindo a compensação do funcionário órfão (deletar ou `ativo: 'N'`).
-- [ ] 7.2 Registrar em `CHANGELOG.md`.
-- [ ] 7.3 Rodar `openspec validate ti-hub-cadastro-colaborador`.
+- [x] 7.1 Parser (`fichaParser.js`): Adicionadas regras de extração de RG (`ie_identidade`), Órgão Emissor, Data de Emissão, CTPS (`ctps_numero`, `ctps_serie`, `ctps_data_emissao`), Título de Eleitor (`titulo_numero`, `titulo_zona`, `titulo_secao`), PIS (`pis_numero`, `pis_data`), Filiação (`nome_mae`, `nome_pai`), Nacionalidade, Deficiência e Cargo/CBO da ficha (`_cargo_texto`, `_cbo_texto`).
+- [x] 7.2 Normalizadores (`normalizadores.js`): Implementados `mapearSimNao` e `normalizarPIS`.
+- [x] 7.3 Backend de Colaborador (`ixcColaborador.js`): `BASE_FUNCIONARIO` e `MAX_LENGTH` expandidos com campos de documentos e filiação. `montarPlano()` agora deriva automaticamente `rg_seleciona`, `ctps_seleciona`, `titulo_eleitoral_seleciona`, `pis_seleciona`, `cpf_seleciona` e grava nota de Cargo/CBO em `funcionarios.obs`.
+- [x] 7.4 Estrutura do Formulário (`campos.js`): Adicionadas seções `documentos` e `filiacao`, e campos correspondentes com spans responsivos, tipos, máscaras e defaults.
+- [x] 7.5 Componentes de UI: `CampoForm.jsx` atualizado para suportar `dica` informativa; `CadastroColaborador.jsx` atualizado para capturar dados extraídos e exibir dica de Cargo/CBO junto ao seletor de Função.
+- [x] 7.6 Teste automatizado de ponta a ponta (`test_fase5.js`) validando a extração, derivação de flags booleanos e composição de `obs`.
 
-## 8. Verificação end-to-end
+## 8. Fechamento
+
+- [ ] 8.1 `POST /api/ti/colaborador/criar` como stub **501**, com o algoritmo da fase 2 em comentário — incluindo a compensação do funcionário órfão (deletar ou `ativo: 'N'`).
+- [ ] 8.2 Registrar em `CHANGELOG.md`.
+- [ ] 8.3 Rodar `openspec validate ti-hub-cadastro-colaborador`.
+
+## 9. Verificação end-to-end
 
 - [ ] 8.1 `npm run dev` (front 5000 + back 3001, proxy `/api` já em `vite.config.js`).
 - [ ] 8.2 Cada rota nova sem `x-admin-email` → **401**; com e-mail de não-admin → **403**.

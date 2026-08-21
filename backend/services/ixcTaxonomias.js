@@ -200,11 +200,28 @@ async function carregarContas(funcionarios) {
 
 // ─── Montagem ────────────────────────────────────────────────────────────────
 
+// Duas requisições chegando com o cache frio (ex.: a aba TI recarrega
+// taxonomias no mount, e a mesma resposta do dry-run também as carrega)
+// disparariam duas varreduras completas de funcionarios/usuarios/
+// planejamento_analitico ao mesmo tempo — dobrando a carga concorrente
+// contra o IXC bem no cenário que paginarIXC já documenta como capaz de
+// derrubar a conexão. Mesmo padrão de `db.js` (selecaoEmCurso): a segunda
+// chamada espera a primeira em vez de duplicar o trabalho.
+const CHAVE_TAXONOMIAS = 'ixc:ti:taxonomias';
+let carregamentoEmCurso = null;
+
 export async function carregarTaxonomias(pool) {
-    const CHAVE = 'ixc:ti:taxonomias';
-    const cache = cacheGet(CHAVE);
+    const cache = cacheGet(CHAVE_TAXONOMIAS);
     if (cache.hit) return cache.data;
 
+    if (carregamentoEmCurso) return carregamentoEmCurso;
+    carregamentoEmCurso = carregarTaxonomiasSemCache(pool).finally(() => {
+        carregamentoEmCurso = null;
+    });
+    return carregamentoEmCurso;
+}
+
+async function carregarTaxonomiasSemCache(pool) {
     // funcionarios alimenta duas listas; carrega uma vez só.
     let funcionarios = [];
     let erroFuncionarios = null;
@@ -251,6 +268,6 @@ export async function carregarTaxonomias(pool) {
         ...(erroFuncionarios ? { avisoFuncionarios: erroFuncionarios } : {}),
     };
 
-    cacheSet(CHAVE, payload, TTL.TI_TAXONOMIAS);
+    cacheSet(CHAVE_TAXONOMIAS, payload, TTL.TI_TAXONOMIAS);
     return payload;
 }
