@@ -3898,9 +3898,12 @@ async function adminAuth(req, res, next) {
         }
         next();
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        // Loga o erro real no terminal para facilitar diagnóstico, sem expor ao cliente
+        console.error('[adminAuth] Falha ao consultar banco:', e.message);
+        return res.status(503).json({ sucesso: false, erro: 'Serviço de autenticação temporariamente indisponível. Tente novamente.' });
     }
 }
+
 
 // ─── Helper: registrar auditoria ────────────────────────────────────
 async function registrarAuditoria(adminEmail, acao, entidade, entidadeId, descricao) {

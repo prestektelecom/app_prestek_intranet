@@ -243,9 +243,6 @@ export function validar(dados, taxonomias, { senhaResolvida = false } = {}) {
     if (!enumValido(dados.estado_civil, ['S', 'C', 'UE', 'D', 'V', 'SE'])) {
         erros.push({ campo: 'estado_civil', mensagem: 'Estado civil fora do conjunto aceito (S/C/UE/D/V/SE).' });
     }
-    if (!enumValido(dados.cor_raca, ['A', 'B', 'I', 'P', 'N', 'O'])) {
-        erros.push({ campo: 'cor_raca', mensagem: 'Cor/raça fora do conjunto brasileiro (A/B/I/P/N/O) — a doc do IXC mistura códigos colombianos.' });
-    }
     if (!enumValido(dados.grau_escolaridade, ['EF', 'EM', 'ES', 'PG', 'M', 'D'])) {
         erros.push({ campo: 'grau_escolaridade', mensagem: 'Escolaridade fora do conjunto brasileiro (EF/EM/ES/PG/M/D).' });
     }

@@ -47,7 +47,12 @@ export default function UploadFicha({ user, onCamposExtraidos, onLog }) {
             const dados = await res.json().catch(() => ({}));
 
             if (!res.ok || !dados.sucesso) {
-                throw new Error(dados.erro || `Falha na requisição (HTTP ${res.status})`);
+                const msg = dados.erro || `Falha na requisição (HTTP ${res.status})`;
+                // 503: serviço de banco temporariamente indisponível — orienta o usuário a tentar novamente
+                if (res.status === 503) {
+                    throw new Error('Serviço indisponível no momento. Aguarde alguns segundos e tente novamente.');
+                }
+                throw new Error(msg);
             }
 
             if (dados.origem === 'nenhum') {

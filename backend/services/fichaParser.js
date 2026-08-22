@@ -20,7 +20,6 @@ import {
     normalizarMoeda,
     normalizarPIS,
     mapearEstadoCivil,
-    mapearCorRaca,
     mapearEscolaridade,
     mapearSimNao,
 } from './normalizadores.js';
@@ -77,11 +76,6 @@ const REGRAS = [
         campo: 'estado_civil',
         rotulos: ['estado civil', 'estado civil do colaborador'],
         normalizador: mapearEstadoCivil,
-    },
-    {
-        campo: 'cor_raca',
-        rotulos: ['cor / raça', 'cor raca', 'raça / cor', 'cor'],
-        normalizador: mapearCorRaca,
     },
     {
         campo: 'grau_escolaridade',

@@ -121,10 +121,6 @@ export const CAMPOS = [
         obrigatorio: false, opcoes: ESTADO_CIVIL, span: 1,
     },
     {
-        nome: 'cor_raca', rotulo: 'Cor / Raça', tipo: 'select', secao: 'identificacao',
-        obrigatorio: false, opcoes: COR_RACA, span: 1,
-    },
-    {
         nome: 'grau_escolaridade', rotulo: 'Escolaridade', tipo: 'select', secao: 'identificacao',
         obrigatorio: false, opcoes: GRAU_ESCOLARIDADE, span: 1,
     },

@@ -5,6 +5,16 @@ import 'dotenv/config';
 // Timeout por host antes de desistir e tentar o próximo da lista
 const CONNECT_TIMEOUT_MS = 10_000;
 
+// Parâmetros do pool de conexões
+// max: evita esgotar conexões quando várias requisições chegam juntas
+// idleTimeoutMillis: libera conexões ociosas para não acumular no servidor
+// statement_timeout: query que trava por mais de 15s é abortada → nunca bloqueia o pool
+const POOL_CONFIG = {
+    max: 20,
+    idleTimeoutMillis: 30_000,
+    statement_timeout: 15_000,
+};
+
 // Monta a lista ordenada de candidatos de conexão.
 // PRODUÇÃO: DB_PRIMARY_HOST (Felix) primeiro, DB_REPLICA_HOST (Antonio) como fallback.
 // LOCAL:    apenas DB_HOST — sem fallback, nunca toca nos servidores remotos.
@@ -16,6 +26,7 @@ function montarCandidatos() {
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         connectionTimeoutMillis: CONNECT_TIMEOUT_MS,
+        ...POOL_CONFIG,
     };
 
     if (process.env.DB_PRIMARY_HOST) {

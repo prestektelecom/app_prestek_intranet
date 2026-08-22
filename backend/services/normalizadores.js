@@ -101,21 +101,22 @@ export function gerarLogin(nome) {
 // Códigos confirmados contra o schema real do IXC — 'U' não existe; o código
 // de União Estável é 'UE', e falta 'SE' (Separado(a)).
 const MAPA_ESTADO_CIVIL = {
-    solteiro: 'S', solteira: 'S',
-    casado: 'C', casada: 'C',
-    divorciado: 'D', divorciada: 'D',
-    viuvo: 'V', viuva: 'V',
-    separado: 'SE', separada: 'SE',
-    uniao_estavel: 'UE', 'união estável': 'UE', 'uniao estavel': 'UE',
+    s: 'S', solteiro: 'S', solteira: 'S',
+    c: 'C', casado: 'C', casada: 'C',
+    d: 'D', divorciado: 'D', divorciada: 'D',
+    v: 'V', viuvo: 'V', viuva: 'V',
+    se: 'SE', separado: 'SE', separada: 'SE',
+    u: 'UE', ue: 'UE', uniao_estavel: 'UE', 'uniao estavel': 'UE',
 };
 
 export function mapearEstadoCivil(valor) {
-    const chave = String(valor || '')
+    const limpo = String(valor || '')
         .trim()
         .toLowerCase()
-        .replace(/\(.*\)/, '')
-        .trim();
-    const codigo = MAPA_ESTADO_CIVIL[chave] || '';
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    const semParenteses = limpo.replace(/\(.*\)/, '').trim();
+    const codigo = MAPA_ESTADO_CIVIL[limpo] || MAPA_ESTADO_CIVIL[semParenteses] || '';
     return { valor: codigo, valido: !!codigo };
 }
 
