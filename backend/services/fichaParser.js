@@ -37,28 +37,34 @@ const colapsarEspacos = (s) => String(s || '')
     .trim();
 
 // Rótulos casados do mais longo para o mais curto. Se `nome` viesse antes de
-// `nome da mae`, capturaria a linha errada. A ordenação é feita na extração.
 const REGRAS = [
     {
         campo: 'funcionario',
-        rotulos: ['nome completo do colaborador', 'nome do colaborador', 'nome do funcionario', 'empregado', 'nome'],
-        // 'nome' é o rótulo mais curto e genérico da tabela — sem esta lista,
-        // ele casa com "Nome da Mãe" / "Nome do Pai" antes de chegar na linha
-        // certa (era exatamente o risco que a ordenação por tamanho tentava
-        // evitar, mas não cobre o caso de o rótulo errado vir primeiro no texto).
-        negativos: ['nome da mae', 'nome do pai', 'nome da mãe', 'nome do responsavel', 'nome do responsável', 'nome do conjuge', 'nome do cônjuge'],
+        rotulos: [
+            'nome completo do colaborador', 'nome completo do empregado', 'nome completo do funcionario', 'nome completo do funcionário',
+            'nome completo do candidato', 'nome completo do trabalhador', 'nome do colaborador', 'nome do empregado',
+            'nome do funcionario', 'nome do funcionário', 'nome do candidato', 'nome do trabalhador',
+            'nome do titular', 'nome do profissional', 'nome completo', 'nome do empregado/colaborador',
+            'colaborador', 'empregado', 'funcionario', 'funcionário', 'trabalhador', 'candidato', 'nome'
+        ],
+        negativos: [
+            'nome da mae', 'nome do pai', 'nome da mãe', 'nome do responsavel', 'nome do responsável',
+            'nome do conjuge', 'nome do cônjuge', 'nome empresarial', 'nome social', 'nome fantasia',
+            'nome da empresa', 'nome do empregador', 'nome do estabelecimento', 'razao social',
+            'razao social do empregador', 'empregador', 'empresa', 'estabelecimento'
+        ],
         normalizador: normalizarNome,
         tipoTextoLivre: true,
     },
     {
         campo: 'cpf_cnpj',
-        rotulos: ['cpf do colaborador', 'cpf'],
+        rotulos: ['cpf do colaborador', 'cpf do empregado', 'cpf do funcionario', 'cpf/cnpj', 'cpf_cnpj', 'cpf'],
         normalizador: normalizarCPF,
         padraoGlobal: /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/,
     },
     {
         campo: 'data_nascimento',
-        rotulos: ['data de nascimento', 'nascimento', 'dt nascimento', 'data nasc'],
+        rotulos: ['data de nascimento do colaborador', 'data de nascimento do empregado', 'data de nascimento', 'nascimento', 'dt nascimento', 'dt. nascimento', 'dt nasc', 'data nasc'],
         normalizador: normalizarData,
         padraoGlobal: /\b\d{2}[\/\-.]\d{2}[\/\-.]\d{4}\b/,
     },
@@ -74,19 +80,23 @@ const REGRAS = [
     },
     {
         campo: 'estado_civil',
-        rotulos: ['estado civil', 'estado civil do colaborador'],
+        rotulos: ['estado civil do colaborador', 'estado civil do empregado', 'estado civil', 'est. civil', 'est civil', 'e. civil', 'est.civil', 'estcivil'],
         normalizador: mapearEstadoCivil,
     },
     {
         campo: 'grau_escolaridade',
-        rotulos: ['grau de escolaridade', 'escolaridade', 'grau de instrução'],
+        rotulos: [
+            'grau de escolaridade', 'grau de instrucao', 'grau de instrução', 'nivel de escolaridade',
+            'nível de escolaridade', 'nivel de instrucao', 'nível de instrução', 'escolaridade',
+            'instrucao', 'instrução', 'formacao escolar', 'formação escolar', 'formacao', 'formação'
+        ],
         normalizador: mapearEscolaridade,
     },
 
     // ── Filiação ────────────────────────────────────────────────────────
     {
         campo: 'nome_mae',
-        rotulos: ['nome completo da mae', 'nome da mae', 'nome da mãe', 'filiacao materna', 'filiação materna', 'mae', 'mãe'],
+        rotulos: ['nome completo da mae', 'nome completo da mãe', 'nome da mae', 'nome da mãe', 'filiacao materna', 'filiação materna', 'mae', 'mãe'],
         normalizador: normalizarNome,
         tipoTextoLivre: true,
     },
@@ -267,43 +277,92 @@ function pontuar(regra, valor, estrategia) {
 
 function extrairCampo(linhas, regra, linhasConsumidas) {
     const rotulosOrdenados = [...regra.rotulos].sort((a, b) => b.length - a.length);
-    // Guardado para o caso de o rótulo casar mas o valor não validar (ex.: "CPF"
-    // seguido por uma linha que não é o CPF) — nesse caso ainda tentamos a
-    // estratégia C antes de desistir e usar esse candidato de baixa confiança.
     let candidato = null;
 
     for (let i = 0; i < linhas.length; i += 1) {
         if (linhasConsumidas.has(i)) continue;
-        const linha = semAcento(linhas[i]);
+        const linhaOriginal = linhas[i];
+        const linhaSemAcento = semAcento(linhaOriginal);
+
+        // Remove numeração inicial de lista (ex.: "1. ", "01 - ", "a) ")
+        const linhaLimpaInicio = linhaSemAcento.replace(/^\s*(?:\d+[\.\)\-:]\s*|[a-z][\.\)]\s*|[-•*]\s*)+/i, '');
+        const offsetInicio = linhaSemAcento.length - linhaLimpaInicio.length;
+
         for (const rotulo of rotulosOrdenados) {
             const rotuloLimpo = semAcento(rotulo);
-            if (!linha.startsWith(rotuloLimpo)) continue;
-            // Borda de palavra: "empregado" não pode casar com "empregador".
-            const proximoChar = linha[rotuloLimpo.length];
-            if (proximoChar && /[a-z0-9]/i.test(proximoChar)) continue;
-            // Rótulo genérico casando com a linha errada (ex.: "nome" em
-            // "Nome da Mãe"). Pula esta tentativa e deixa outra linha resolver.
-            if (regra.negativos && regra.negativos.some(n => linha.startsWith(semAcento(n)))) continue;
 
-            // Estratégia A: rótulo e valor na mesma linha.
-            const resto = colapsarEspacos(linhas[i].slice(rotulo.length));
-            const restoLimpo = resto.replace(/^[:\-–—\s]+/, '').trim();
-            if (restoLimpo.length > 1) {
-                linhasConsumidas.add(i);
-                const resultado = pontuar(regra, restoLimpo, 'mesma_linha');
-                if (resultado.valido) return resultado;
+            // Procura o rótulo no início da linha OU em qualquer posição da linha (para tabelas/colunas)
+            let matchIndex = -1;
+            if (linhaLimpaInicio.startsWith(rotuloLimpo)) {
+                matchIndex = offsetInicio;
+            } else {
+                const idx = linhaSemAcento.indexOf(rotuloLimpo);
+                if (idx > 0 && !/[a-z0-9]/i.test(linhaSemAcento[idx - 1])) {
+                    matchIndex = idx;
+                }
+            }
+
+            if (matchIndex === -1) continue;
+
+            // Borda de palavra no final do rótulo: "empregado" não pode casar com "empregador"
+            const endRotuloIdx = matchIndex + rotuloLimpo.length;
+            const proximoChar = linhaSemAcento[endRotuloIdx];
+            if (proximoChar && /[a-z0-9]/i.test(proximoChar)) continue;
+
+            // Checa negativos
+            const pedacoParaNegativo = linhaSemAcento.slice(matchIndex);
+            if (regra.negativos && regra.negativos.some(n => pedacoParaNegativo.startsWith(semAcento(n)))) continue;
+
+            // Pega o conteúdo após o rótulo
+            let resto = linhaOriginal.slice(endRotuloIdx);
+            resto = colapsarEspacos(resto).replace(/^[:\-–—\s\.\/]+/, '').trim();
+
+            // Trunca se encontrar outro rótulo na mesma linha (ex.: "Nome: João CPF: 123...")
+            let menorIndiceProximoRotulo = -1;
+            if (resto.length > 0) {
+                const restoSemAcento = semAcento(resto);
+
+                for (const outroRotulo of TODOS_ROTULOS) {
+                    if (outroRotulo === rotuloLimpo) continue;
+                    const rIdx = restoSemAcento.indexOf(outroRotulo);
+                    if (rIdx > 0 && !/[a-z0-9]/i.test(restoSemAcento[rIdx - 1])) {
+                        const after = rIdx + outroRotulo.length;
+                        if (!restoSemAcento[after] || !/[a-z0-9]/i.test(restoSemAcento[after])) {
+                            if (menorIndiceProximoRotulo === -1 || rIdx < menorIndiceProximoRotulo) {
+                                menorIndiceProximoRotulo = rIdx;
+                            }
+                        }
+                    }
+                }
+
+                if (menorIndiceProximoRotulo !== -1) {
+                    resto = resto.slice(0, menorIndiceProximoRotulo).trim();
+                }
+            }
+
+            // Estratégia A: rótulo e valor na mesma linha
+            if (resto.length > 1) {
+                const resultado = pontuar(regra, resto, 'mesma_linha');
+                if (resultado.valido) {
+                    if (menorIndiceProximoRotulo === -1) {
+                        linhasConsumidas.add(i);
+                    }
+                    return resultado;
+                }
                 if (!candidato) candidato = resultado;
                 break;
             }
 
-            // Estratégia B: rótulo isolado, valor na linha seguinte.
+            // Estratégia B: rótulo isolado, valor na linha seguinte
             if (i + 1 < linhas.length && !linhasConsumidas.has(i + 1)) {
                 const proxima = colapsarEspacos(linhas[i + 1]);
                 if (proxima.length > 1 && !pareceRotulo(semAcento(proxima))) {
-                    linhasConsumidas.add(i);
-                    linhasConsumidas.add(i + 1);
                     const resultado = pontuar(regra, proxima, 'linha_seguinte');
-                    if (resultado.valido) return resultado;
+                    if (resultado.valido) {
+                        linhasConsumidas.add(i);
+                        linhasConsumidas.add(i + 1);
+                        return resultado;
+                    }
                     if (!candidato) candidato = resultado;
                     break;
                 }
@@ -311,9 +370,7 @@ function extrairCampo(linhas, regra, linhasConsumidas) {
         }
     }
 
-    // Estratégia C: padrão global, sem rótulo. Preferida sobre um candidato de
-    // rótulo inválido — é comum, em fichas tabulares, o rótulo casar numa linha
-    // de cabeçalho e a estratégia A/B pegar lixo do cabeçalho vizinho.
+    // Estratégia C: padrão global, sem rótulo
     if (regra.padraoGlobal) {
         const match = linhas.join('\n').match(regra.padraoGlobal);
         if (match) {

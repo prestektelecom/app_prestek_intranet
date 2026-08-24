@@ -68,14 +68,23 @@ export function normalizarTelefone(valor) {
     return { valor: d.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3'), valido: true };
 }
 
+const REGEX_PJ = /\b(ltda|s\.?a\.?|eireli|me|epp|s\/a|s\/s|ss|eop|spe|servicos|serviços|comercio|comércio|telecom|telecomunicacoes|telecomunicações|comunicacoes|comunicações|distribuidora|industria|indústria|engenharia|incorporadora|associacao|associação|instituto|cooperativa|sindicato|empreendimentos|holding|locacoes|locações|seguranca|segurança|transportes|logistica|logística)\b/i;
+
 export function normalizarNome(valor) {
-    const limpo = String(valor || '')
-        .replace(/^[:\-–—\s\.\/]+/, '')
-        .trim()
+    const texto = String(valor || '').replace(/^[:\-–—\s\.\/]+/, '').trim();
+    if (!texto) return { valor: '', valido: false };
+
+    // Se contiver termos corporativos/PJ, não é nome de pessoa física (é razão social do empregador)
+    if (REGEX_PJ.test(texto)) {
+        return { valor: texto, valido: false };
+    }
+
+    const limpo = texto
         .replace(/\s+/g, ' ')
         .split(' ')
         .map(p => p ? p[0].toUpperCase() + p.slice(1).toLowerCase() : '')
         .join(' ');
+
     return { valor: limpo, valido: limpo.length >= 2 };
 }
 
