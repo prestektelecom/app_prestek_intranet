@@ -70,6 +70,7 @@ export function normalizarTelefone(valor) {
 
 export function normalizarNome(valor) {
     const limpo = String(valor || '')
+        .replace(/^[:\-–—\s\.\/]+/, '')
         .trim()
         .replace(/\s+/g, ' ')
         .split(' ')
@@ -136,23 +137,29 @@ export function mapearCorRaca(valor) {
 }
 
 const MAPA_ESCOLARIDADE = {
-    'ensino fundamental': 'EF', 'fundamental': 'EF', 'ef': 'EF',
-    'ensino médio': 'EM', 'ensino medio': 'EM', 'médio': 'EM', 'medio': 'EM', 'em': 'EM',
-    'ensino superior': 'ES', 'superior': 'ES', 'graduação': 'ES', 'graduacao': 'ES', 'es': 'ES',
-    'pós-graduação': 'PG', 'pos-graduacao': 'PG', 'pós': 'PG', 'pos': 'PG', 'pg': 'PG',
-    mestrado: 'M', 'mestrado completo': 'M', 'm': 'M',
-    doutorado: 'D', 'doutorado completo': 'D', 'd': 'D',
+    // Fundamental (EF)
+    'ef': 'EF', 'fundamental': 'EF', 'ensino fundamental': 'EF', '1 grau': 'EF', '1o grau': 'EF', '1º grau': 'EF', 'primeiro grau': 'EF', 'ginasio': 'EF', 'primario': 'EF',
+    // Médio (EM)
+    'em': 'EM', 'medio': 'EM', 'ensino medio': 'EM', '2 grau': 'EM', '2o grau': 'EM', '2º grau': 'EM', 'segundo grau': 'EM', 'colegial': 'EM', 'tecnico': 'EM', 'ensino tecnico': 'EM',
+    // Superior (ES)
+    'es': 'ES', 'superior': 'ES', 'ensino superior': 'ES', 'graduacao': 'ES', 'superior tecnologo': 'ES', 'tecnologo': 'ES', 'bacharelado': 'ES', 'licenciatura': 'ES', 'terceiro grau': 'ES', '3 grau': 'ES', '3o grau': 'ES', '3º grau': 'ES',
+    // Pós (PG)
+    'pg': 'PG', 'pos': 'PG', 'pos-graduacao': 'PG', 'pos graduacao': 'PG', 'posgraduacao': 'PG', 'especializacao': 'PG', 'mba': 'PG',
+    // Mestrado (M)
+    'm': 'M', 'mestrado': 'M', 'mestre': 'M',
+    // Doutorado (D)
+    'd': 'D', 'doutorado': 'D', 'doutor': 'D', 'phd': 'D',
 };
 
 export function mapearEscolaridade(valor) {
-    // Fichas reais quase sempre dizem "Ensino Médio Completo", não só "Ensino
-    // Médio" — a tabela mapeia o termo base; aqui só removemos o sufixo.
-    const chave = String(valor || '')
+    const limpo = String(valor || '')
         .trim()
         .toLowerCase()
-        .replace(/\s*(completo|incompleto|cursando)\s*$/, '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s*(completo|incompleto|cursando|em andamento|interrompido)\s*$/i, '')
         .trim();
-    const codigo = MAPA_ESCOLARIDADE[chave] || '';
+    const codigo = MAPA_ESCOLARIDADE[limpo] || '';
     return { valor: codigo, valido: !!codigo };
 }
 
