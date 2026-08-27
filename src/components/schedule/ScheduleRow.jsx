@@ -15,7 +15,12 @@ export default function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr
         >
             <td className={`p-4 pl-8 font-black relative ${isToday ? 'text-[var(--accent-dark)]' : 'text-foreground'}`}>
                 <div className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${isToday ? 'bg-[var(--accent)]' : (isAdmin ? 'group-hover:bg-[var(--accent)]/40 bg-transparent' : 'bg-transparent')}`}></div>
-                {date}
+                <div className="flex items-center gap-2">
+                    {date}
+                    {isToday && (
+                        <span className="text-[9px] font-black uppercase tracking-widest bg-[var(--accent)] text-white px-1.5 py-0.5 rounded-full">Hoje</span>
+                    )}
+                </div>
             </td>
             <td className={`p-4 font-bold ${isWeekend ? 'text-faint opacity-70' : 'text-faint'}`}>{day}</td>
             <td className="p-4">
@@ -36,12 +41,12 @@ export default function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr
                 <div className={`flex flex-col gap-2 items-end sm:items-start transition-transform ${isAdmin ? 'group-hover:-translate-x-2' : ''}`}>
                     {isArray(mgr) ? mgr.map((u, i) => (
                         <div key={i} className="flex items-center gap-2 bg-[var(--accent-soft)]/60 rounded-full pl-1.5 pr-3 py-1 border border-[var(--accent)]/10">
-                            <UserAvatar user={u} hideName className="!gap-0 !size-8" />
+                            <UserAvatar user={u} hideName size="size-8" className="gap-0" />
                             <span className="font-bold text-foreground text-[11px] whitespace-nowrap">{u.name}</span>
                         </div>
                     )) : (
                         <div className="flex items-center gap-2 bg-[var(--accent-soft)]/60 rounded-full pl-1.5 pr-3 py-1 border border-[var(--accent)]/10">
-                            <UserAvatar user={mgr} hideName className="!gap-0" />
+                            <UserAvatar user={mgr} hideName size="size-8" className="gap-0" />
                             <span className="font-bold text-foreground text-[11px] whitespace-nowrap">{mgr.name}</span>
                         </div>
                     )}

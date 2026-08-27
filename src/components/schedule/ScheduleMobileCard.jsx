@@ -1,5 +1,4 @@
 import UserAvatar from './UserAvatar';
-import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 export default function ScheduleMobileCard({
   date,
@@ -12,8 +11,6 @@ export default function ScheduleMobileCard({
   isAdmin,
   onEdit,
 }) {
-  const C = useBentoTheme();
-
   const renderList = (list, allowEmpty) => (
     <div className="flex flex-col gap-2">
       {Array.isArray(list) ? (
@@ -34,7 +31,6 @@ export default function ScheduleMobileCard({
       className={`rounded-2xl border p-4 transition-all ${
         isAdmin ? 'cursor-pointer active:scale-[0.99]' : ''
       } ${isToday ? 'border-[var(--accent)] bg-[var(--accent)]/[0.04]' : 'border-border bg-surface'}`}
-      style={{ borderColor: isToday ? C.accent : C.line }}
     >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
@@ -87,13 +83,13 @@ export default function ScheduleMobileCard({
             {Array.isArray(mgr) ? (
               mgr.map((u, i) => (
                 <div key={i} className="flex items-center gap-2 bg-[var(--accent-soft)]/60 rounded-full pl-1.5 pr-3 py-1 border border-[var(--accent)]/10 w-fit">
-                  <UserAvatar user={u} hideName className="!gap-0 !size-8" />
+                  <UserAvatar user={u} hideName size="size-8" className="gap-0" />
                   <span className="font-bold text-foreground text-xs whitespace-nowrap">{u.name}</span>
                 </div>
               ))
             ) : (
               <div className="flex items-center gap-2 bg-[var(--accent-soft)]/60 rounded-full pl-1.5 pr-3 py-1 border border-[var(--accent)]/10 w-fit">
-                <UserAvatar user={mgr} hideName className="!gap-0" />
+                <UserAvatar user={mgr} hideName size="size-8" className="gap-0" />
                 <span className="font-bold text-foreground text-xs whitespace-nowrap">{mgr.name}</span>
               </div>
             )}

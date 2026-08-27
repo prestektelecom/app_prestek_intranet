@@ -18,22 +18,33 @@ A página SHALL exibir um botão "Novo Plantão" no Hero Banner, visível soment
 - **WHEN** um usuário com `is_admin = false` (ou sem a propriedade) carrega a página
 - **THEN** o botão "Novo Plantão" NÃO é exibido
 
-### Requirement: Abertura do modal de criação sem data pré-selecionada
+### Requirement: Abertura do modal de criação com data padrão editável
 
-Ao clicar em "Novo Plantão", o sistema SHALL abrir o `ManagePlantaoModal` em modo de criação com o campo de data vazio para seleção pelo administrador.
+Ao clicar em "Novo Plantão", o sistema SHALL abrir o `ManagePlantaoModal` em modo de criação com a data de hoje pré-selecionada e um campo de data editável para o administrador manter ou trocar.
 
 #### Scenario: Admin clica em "Novo Plantão"
 
 - **WHEN** o administrador clica no botão "Novo Plantão" no Hero
 - **THEN** o `ManagePlantaoModal` é aberto
-- **AND** nenhuma data está pré-selecionada
-- **AND** o modal exibe um campo de seleção de data habilitado para o admin escolher
+- **AND** a data de hoje é pré-selecionada no campo de data
+- **AND** o campo permanece editável para o admin escolher outra data caso deseje
 
-#### Scenario: Admin salva plantão após selecionar data no modal
+#### Scenario: Admin salva plantão mantendo a data padrão
 
-- **WHEN** o admin seleciona uma data no modal aberto via botão "Novo Plantão" e clica em salvar
-- **THEN** o sistema cria o plantão para a data informada
+- **WHEN** o admin abre o modal via "Novo Plantão", não altera o campo de data e clica em salvar
+- **THEN** o sistema cria o plantão para a data de hoje
 - **AND** o comportamento de salvamento é idêntico ao fluxo existente via calendário
+
+#### Scenario: Admin salva plantão após trocar a data no modal
+
+- **WHEN** o admin altera a data pré-selecionada no modal aberto via botão "Novo Plantão" e clica em salvar
+- **THEN** o sistema cria o plantão para a nova data informada
+- **AND** o comportamento de salvamento é idêntico ao fluxo existente via calendário
+
+#### Scenario: Admin limpa a data e tenta salvar sem selecionar outra
+
+- **WHEN** o admin limpa manualmente o campo de data pré-preenchido e tenta salvar
+- **THEN** o sistema exibe a mensagem de erro "Selecione uma data para o plantão." e não cria o plantão
 
 #### Scenario: Admin abre modal via botão e fecha sem salvar
 

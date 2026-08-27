@@ -12,5 +12,5 @@ A estrutura de layout e o fluxo funcional da página SHALL ser preservados, incl
 #### Scenario: Administrador usa o botão "Novo Plantão" no Hero
 
 - **WHEN** um administrador clica em "Novo Plantão" no Hero Banner
-- **THEN** o `ManagePlantaoModal` abre em modo de criação, sem data pré-selecionada
+- **THEN** o `ManagePlantaoModal` abre em modo de criação, com a data de hoje pré-selecionada e editável
 - **AND** o restante da página permanece no estado atual (filtros e listagem inalterados)

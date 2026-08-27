@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useBentoTheme } from '../../hooks/useBentoTheme';
 
 export default function MultiSelectEmployee({
     values,
@@ -9,11 +8,11 @@ export default function MultiSelectEmployee({
     idField = 'funcionario_id',
     nameField = 'funcionario_nome',
 }) {
-    const C = useBentoTheme();
     const [search, setSearch] = useState('');
 
     const getId = (opt) => String(opt[idField] ?? opt.id ?? '');
     const getName = (opt) => opt[nameField] ?? opt.nome ?? '';
+    const getInitial = (name) => (name.trim()[0] || '?').toUpperCase();
 
     const filtered = useMemo(() => {
         if (!search.trim()) return options;
@@ -41,68 +40,79 @@ export default function MultiSelectEmployee({
     const allFilteredSelected = filtered.length > 0 && filtered.every(o => values.includes(getId(o)));
 
     return (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
             {/* Busca */}
             <div className="relative">
-                <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-[#8896A8] text-[15px]">search</span>
+                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--muted-bento)] text-[16px]">search</span>
                 <input
                     type="text"
                     placeholder="Buscar nome..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="w-full bg-[#F7FAFD] border border-transparent rounded-lg py-1.5 pl-7 pr-7 text-xs text-[#0B1B2E] focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] focus:outline-none placeholder-[#8896A8]/50 transition-all"
+                    className="w-full bg-[var(--surface-soft)] border border-transparent rounded-lg py-2.5 pl-8 pr-8 text-xs text-[var(--ink)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none placeholder-[var(--muted-bento)]/70 transition-all"
                 />
                 {search && (
                     <button
                         type="button"
                         onClick={() => setSearch('')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8896A8] hover:text-[#0B1B2E] transition-colors"
+                        aria-label="Limpar busca"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[var(--muted-bento)] hover:text-[var(--ink)] transition-colors p-1 rounded-full"
                     >
-                        <span className="material-symbols-outlined text-[14px]">close</span>
+                        <span className="material-symbols-outlined text-[15px]">close</span>
                     </button>
                 )}
             </div>
 
             {/* Ações rápidas */}
-            <div className="flex items-center justify-between px-0.5">
-                {hasFiltered && !allFilteredSelected && (
-                    <button
-                        type="button"
-                        onClick={selectFiltered}
-                        className="text-[10px] text-[#C2410C] font-bold hover:underline"
-                    >
-                        Selecionar {filtered.length} resultado{filtered.length > 1 ? 's' : ''}
-                    </button>
-                )}
-                {(allowEmpty || true) && values.length > 0 && (
-                    <button
-                        type="button"
-                        onClick={clearAll}
-                        className="text-[10px] text-[#E84545] font-bold hover:underline ml-auto"
-                    >
-                        Limpar
-                    </button>
-                )}
-            </div>
+            {(hasFiltered || values.length > 0) && (
+                <div className="flex items-center justify-between px-0.5 min-h-[18px]">
+                    {hasFiltered && !allFilteredSelected ? (
+                        <button
+                            type="button"
+                            onClick={selectFiltered}
+                            className="text-[11px] text-[var(--accent-dark)] font-bold hover:underline"
+                        >
+                            Selecionar {filtered.length} resultado{filtered.length > 1 ? 's' : ''}
+                        </button>
+                    ) : <span />}
+                    {values.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={clearAll}
+                            className="text-[11px] text-[var(--danger-strong)] font-bold hover:underline ml-auto"
+                        >
+                            Limpar seleção
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* Lista */}
-            <div className="rounded-lg border border-[#E4ECF5] bg-[#F7FAFD] p-1.5 max-h-44 overflow-y-auto">
+            <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-soft)] p-1.5 max-h-44 overflow-y-auto">
                 <div className="flex flex-col gap-0.5">
                     {filtered.length === 0 ? (
-                        <div className="text-xs text-[#8896A8] italic text-center py-2">Nenhum resultado.</div>
+                        <div className="text-xs text-[var(--muted-bento)] italic text-center py-3 px-2">
+                            {hasFiltered ? `Nenhum nome encontrado para "${search.trim()}".` : 'Nenhum colaborador disponível.'}
+                        </div>
                     ) : (
                         filtered.map(opt => {
                             const id = getId(opt);
                             const name = getName(opt);
+                            const checked = values.includes(id);
                             return (
-                                <label key={id} className="flex items-center gap-2 cursor-pointer hover:bg-[#FFF7ED] px-1.5 py-1 rounded-md transition-colors">
+                                <label
+                                    key={id}
+                                    className="flex items-center gap-2 cursor-pointer hover:bg-[var(--accent-soft)] px-1.5 py-2 rounded-md transition-colors"
+                                >
                                     <input
                                         type="checkbox"
-                                        checked={values.includes(id)}
+                                        checked={checked}
                                         onChange={() => toggleValue(id)}
-                                        className="w-4 h-4 rounded border-[#E4ECF5] text-[#C2410C] focus:ring-[#EC7D23] shrink-0"
+                                        className="w-4 h-4 rounded border-[var(--line)] text-[var(--accent-dark)] focus:ring-[var(--accent)] shrink-0"
                                     />
-                                    <span className="font-medium text-[#0B1B2E] text-xs leading-tight">{name}</span>
+                                    <span className={`font-medium text-xs leading-tight ${checked ? 'text-[var(--ink)]' : 'text-[var(--ink)]/85'}`}>
+                                        {name}
+                                    </span>
                                 </label>
                             );
                         })
@@ -110,18 +120,32 @@ export default function MultiSelectEmployee({
                 </div>
             </div>
 
-            {/* Badges dos selecionados */}
+            {/* Chips dos selecionados (removíveis) */}
             {values.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-0.5">
+                <div className="flex flex-wrap gap-1.5 mt-0.5">
                     {values.map(val => {
                         const opt = options.find(o => getId(o) === val);
                         if (!opt) return null;
                         const name = getName(opt);
-                        const parts = name.split(' ');
+                        const parts = name.trim().split(' ');
                         const shortName = parts.length > 1 ? `${parts[0]} ${parts[1][0]}.` : parts[0];
                         return (
-                            <span key={val} className="text-[10px] bg-[#FFF7ED] text-[#C2410C] px-2 py-0.5 rounded-full font-bold">
+                            <span
+                                key={val}
+                                className="flex items-center gap-1 text-[11px] bg-[var(--accent-soft)] text-[var(--accent-dark)] pl-1 pr-1.5 py-0.5 rounded-full font-bold"
+                            >
+                                <span className="w-4 h-4 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-[9px] font-black shrink-0">
+                                    {getInitial(name)}
+                                </span>
                                 {shortName}
+                                <button
+                                    type="button"
+                                    onClick={() => toggleValue(val)}
+                                    aria-label={`Remover ${name}`}
+                                    className="hover:text-[var(--danger-strong)] transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-[13px] block">close</span>
+                                </button>
                             </span>
                         );
                     })}

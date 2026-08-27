@@ -631,7 +631,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     <p className="text-sm font-medium text-faint mt-1">Clique nas linhas {user?.is_admin ? "ou no calendário" : ""} para ver detalhes.</p>
                                 </div>
                                 {user?.is_admin && (
-                                    <div className="bg-[var(--accent-soft)] text-[var(--accent-dark)] text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[var(--accent)]/20 animate-pulse">
+                                    <div className="bg-[var(--accent-soft)] text-[var(--accent-dark)] text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[var(--accent)]/20">
                                         <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
                                         Gestão Ativa
                                     </div>
@@ -669,7 +669,7 @@ export default function Schedule({ setCurrentView, user }) {
                                                     isToday={isHoje(p.data)}
                                                     isWeekend={isFimDeSemana(p.data)}
                                                     n1={mapIdsToPessoas(p.n1_id)}
-                                                    n2={p.n2_id ? mapIdsToPessoas(p.n2_id) : [{ name: 'Não atribuído', initials: '??', img: null }]}
+                                                    n2={p.n2_id ? mapIdsToPessoas(p.n2_id) : null}
                                                     mgr={mapIdsToPessoas(p.gerente_id)}
                                                     isAdmin={user?.is_admin}
                                                     onEdit={() => openManagement(toIsoDay(p.data))}
