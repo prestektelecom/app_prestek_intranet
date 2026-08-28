@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { CATEGORIAS, PROCESSOS, STATUS_CONFIG } from '../data/processosData';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 
@@ -157,17 +157,67 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
             tags: (processo.tags || []).join(', '),
         };
     });
-    const [erro, setErro] = useState('');
+    const [erros, setErros] = useState({});
+    const [sujo, setSujo] = useState(false);
+
+    const modalRef = useRef(null);
+    const nomeRef = useRef(null);
+    const descricaoRef = useRef(null);
+    const sujoRef = useRef(false);
+
+    const tituloId = 'processo-modal-titulo';
+    const formId = 'processo-modal-form';
+
+    useEffect(() => { sujoRef.current = sujo; }, [sujo]);
+
+    // Foco inicial no primeiro campo, ao abrir
+    useEffect(() => { nomeRef.current?.focus(); }, []);
+
+    // Prender o foco dentro do modal (Tab/Shift+Tab) e fechar com Escape,
+    // confirmando antes se houver alterações não salvas
+    useEffect(() => {
+        function onKeyDown(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (sujoRef.current && !window.confirm('Existem alterações não salvas neste processo. Deseja descartá-las?')) return;
+                onFechar();
+                return;
+            }
+            if (e.key !== 'Tab' || !modalRef.current) return;
+            const focaveis = modalRef.current.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            if (focaveis.length === 0) return;
+            const primeiro = focaveis[0];
+            const ultimo = focaveis[focaveis.length - 1];
+            if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+            else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+        }
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [onFechar]);
 
     function set(campo, valor) {
         setForm(f => ({ ...f, [campo]: valor }));
-        setErro('');
+        setSujo(true);
+        setErros(e => (e[campo] ? { ...e, [campo]: undefined } : e));
+    }
+
+    function tentarFechar() {
+        if (sujo && !window.confirm('Existem alterações não salvas neste processo. Deseja descartá-las?')) return;
+        onFechar();
     }
 
     function handleSubmit(e) {
         e.preventDefault();
-        if (!form.nome.trim()) return setErro('O nome do processo é obrigatório.');
-        if (!form.descricao.trim()) return setErro('A descrição é obrigatória.');
+        const novosErros = {};
+        if (!form.nome.trim()) novosErros.nome = 'O nome do processo é obrigatório.';
+        if (!form.descricao.trim()) novosErros.descricao = 'A descrição é obrigatória.';
+        if (Object.keys(novosErros).length > 0) {
+            setErros(novosErros);
+            (novosErros.nome ? nomeRef : descricaoRef).current?.focus();
+            return;
+        }
         const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
         const payload = {
             ...(processo || {}),
@@ -190,23 +240,30 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
         onSalvar(payload);
     }
 
-    const inputCls = "w-full px-3 py-2 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
+    const inputCls = "w-full px-3 py-2.5 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
+    const inputErroCls = "border-[#E84545] focus:ring-[#E84545]";
     const labelCls = "block text-[10px] font-black text-[#475467] uppercase tracking-widest mb-1.5";
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-[#E4ECF5]">
+            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={tentarFechar} />
+            <div
+                ref={modalRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={tituloId}
+                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-[#E4ECF5]"
+            >
                 {/* Header do modal */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] bg-[#F7FAFD]">
                     <div className="flex items-center gap-3">
                         <div className="bg-[#FFF7ED] p-2 rounded-lg">
-                            <span className="material-symbols-outlined text-[#C2410C] text-xl">
+                            <span className="material-symbols-outlined text-[#C2410C] text-xl" aria-hidden="true">
                                 {isEdicao ? 'edit' : 'add_circle'}
                             </span>
                         </div>
                         <div>
-                            <h2 className="text-[#0B1B2E] font-black text-lg">
+                            <h2 id={tituloId} className="text-[#0B1B2E] font-black text-lg">
                                 {isEdicao ? 'Editar Processo' : 'Novo Processo'}
                             </h2>
                             {isEdicao && (
@@ -214,22 +271,41 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                             )}
                         </div>
                     </div>
-                    <button onClick={onFechar} className="text-[#8896A8] hover:text-[#E84545] p-1 rounded-full hover:bg-[var(--danger-soft)] transition-colors">
+                    <button
+                        onClick={tentarFechar}
+                        aria-label="Fechar"
+                        className="text-[#8896A8] hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545]"
+                    >
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
                 {/* Corpo do formulário */}
-                <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
+                <form id={formId} onSubmit={handleSubmit} noValidate className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="sm:col-span-2">
-                            <label className={labelCls}>Nome do Processo *</label>
-                            <input className={inputCls} value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Ex: Onboarding de Clientes" />
+                            <label htmlFor="processo-nome" className={labelCls}>Nome do Processo *</label>
+                            <input
+                                id="processo-nome"
+                                ref={nomeRef}
+                                className={`${inputCls} ${erros.nome ? inputErroCls : ''}`}
+                                value={form.nome}
+                                onChange={e => set('nome', e.target.value)}
+                                placeholder="Ex: Onboarding de Clientes"
+                                aria-invalid={Boolean(erros.nome)}
+                                aria-describedby={erros.nome ? 'processo-nome-erro' : undefined}
+                            />
+                            {erros.nome && (
+                                <p id="processo-nome-erro" role="alert" className="mt-1.5 text-xs text-[#E84545] flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
+                                    {erros.nome}
+                                </p>
+                            )}
                         </div>
 
                         <div>
-                            <label className={labelCls}>Categoria *</label>
-                            <select className={inputCls} value={form.categoria} onChange={e => set('categoria', e.target.value)}>
+                            <label htmlFor="processo-categoria" className={labelCls}>Categoria *</label>
+                            <select id="processo-categoria" className={inputCls} value={form.categoria} onChange={e => set('categoria', e.target.value)}>
                                 {CATEGORIAS.filter(c => c.id !== 'todos').map(c => (
                                     <option key={c.id} value={c.id}>{c.label}</option>
                                 ))}
@@ -237,8 +313,8 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                         </div>
 
                         <div>
-                            <label className={labelCls}>Status *</label>
-                            <select className={inputCls} value={form.status} onChange={e => set('status', e.target.value)}>
+                            <label htmlFor="processo-status" className={labelCls}>Status *</label>
+                            <select id="processo-status" className={inputCls} value={form.status} onChange={e => set('status', e.target.value)}>
                                 {Object.entries(STATUS_CONFIG).map(([k, v]) => (
                                     <option key={k} value={k}>{v.label}</option>
                                 ))}
@@ -246,63 +322,94 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                         </div>
 
                         <div className="sm:col-span-2">
-                            <label className={labelCls}>Descrição *</label>
-                            <textarea className={`${inputCls} resize-none`} rows={3} value={form.descricao} onChange={e => set('descricao', e.target.value)} placeholder="Descreva o objetivo e escopo deste processo..." />
+                            <label htmlFor="processo-descricao" className={labelCls}>Descrição *</label>
+                            <textarea
+                                id="processo-descricao"
+                                ref={descricaoRef}
+                                className={`${inputCls} resize-none ${erros.descricao ? inputErroCls : ''}`}
+                                rows={3}
+                                value={form.descricao}
+                                onChange={e => set('descricao', e.target.value)}
+                                placeholder="Descreva o objetivo e escopo deste processo..."
+                                aria-invalid={Boolean(erros.descricao)}
+                                aria-describedby={erros.descricao ? 'processo-descricao-erro' : undefined}
+                            />
+                            {erros.descricao && (
+                                <p id="processo-descricao-erro" role="alert" className="mt-1.5 text-xs text-[#E84545] flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
+                                    {erros.descricao}
+                                </p>
+                            )}
                         </div>
 
                         <div>
-                            <label className={labelCls}>Versão</label>
-                            <input className={inputCls} value={form.versao} onChange={e => set('versao', e.target.value)} placeholder="1.0" />
+                            <label htmlFor="processo-versao" className={labelCls}>Versão</label>
+                            <input id="processo-versao" className={inputCls} value={form.versao} onChange={e => set('versao', e.target.value)} placeholder="1.0" />
                         </div>
 
                         <div>
-                            <label className={labelCls}>Responsável</label>
-                            <input className={inputCls} value={form.responsavelNome} onChange={e => set('responsavelNome', e.target.value)} placeholder="Ex: Coordenador de TI" />
+                            <label htmlFor="processo-responsavel" className={labelCls}>Responsável</label>
+                            <input id="processo-responsavel" className={inputCls} value={form.responsavelNome} onChange={e => set('responsavelNome', e.target.value)} placeholder="Ex: Coordenador de TI" />
                         </div>
 
                         <div>
-                            <label className={labelCls}>Nº de Etapas</label>
-                            <input className={inputCls} type="number" min="0" value={form.etapas} onChange={e => set('etapas', e.target.value)} placeholder="Ex: 5" />
+                            <label htmlFor="processo-etapas" className={labelCls}>Nº de Etapas</label>
+                            <input id="processo-etapas" className={inputCls} type="number" min="0" value={form.etapas} onChange={e => set('etapas', e.target.value)} placeholder="Ex: 5" />
                         </div>
 
                         <div>
-                            <label className={labelCls}>Tempo Estimado</label>
-                            <input className={inputCls} value={form.tempoEstimado} onChange={e => set('tempoEstimado', e.target.value)} placeholder="Ex: 30min" />
+                            <label htmlFor="processo-tempo" className={labelCls}>Tempo Estimado</label>
+                            <input id="processo-tempo" className={inputCls} value={form.tempoEstimado} onChange={e => set('tempoEstimado', e.target.value)} placeholder="Ex: 30min" />
                         </div>
 
                         <div className="sm:col-span-2">
-                            <label className={labelCls}>Link do Google Docs (POP)</label>
-                            <input className={inputCls} type="url" value={form.docUrl} onChange={e => set('docUrl', e.target.value)} placeholder="https://docs.google.com/..." />
+                            <label htmlFor="processo-doc" className={labelCls}>Link do Google Docs (POP)</label>
+                            <input id="processo-doc" className={inputCls} type="url" value={form.docUrl} onChange={e => set('docUrl', e.target.value)} placeholder="https://docs.google.com/..." />
                         </div>
 
                         <div className="sm:col-span-2">
-                            <label className={labelCls}>Tags (separadas por vírgula)</label>
-                            <input className={inputCls} value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="Ex: IXC, cadastro, ativação" />
+                            <label htmlFor="processo-tags" className={labelCls}>Tags (separadas por vírgula)</label>
+                            <input id="processo-tags" className={inputCls} value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="Ex: IXC, cadastro, ativação" />
                         </div>
                     </div>
-
-                    {erro && (
-                        <p className="text-[#E84545] text-sm flex items-center gap-1">
-                            <span className="material-symbols-outlined text-base">error</span>
-                            {erro}
-                        </p>
-                    )}
                 </form>
 
                 {/* Footer */}
                 <div className="px-6 py-4 border-t border-[#E4ECF5] bg-white flex justify-end gap-3">
-                    <button type="button" onClick={onFechar} className="px-4 py-2 text-sm font-bold text-[#0B1B2E] border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] transition-colors">
+                    <button type="button" onClick={tentarFechar} className="px-4 py-2 text-sm font-bold text-[#0B1B2E] border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">
                         Cancelar
                     </button>
                     <button
-                        onClick={handleSubmit}
-                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2"
+                        type="submit"
+                        form={formId}
+                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
                     >
-                        <span className="material-symbols-outlined text-[18px]">{isEdicao ? 'save' : 'add'}</span>
+                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{isEdicao ? 'save' : 'add'}</span>
                         {isEdicao ? 'Salvar Alterações' : 'Criar Processo'}
                     </button>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function EmptyState({ onAdd }) {
+    return (
+        <div className="bg-white border border-[#E4ECF5] rounded-[20px] shadow-sm px-6 py-16 flex flex-col items-center text-center">
+            <div className="bg-[#FFF7ED] p-4 rounded-2xl text-[#C2410C] mb-5">
+                <span className="material-symbols-outlined text-4xl">folder_off</span>
+            </div>
+            <h2 className="text-[#0B1B2E] font-black text-lg mb-2">Nenhum processo cadastrado ainda</h2>
+            <p className="text-[#475467] text-sm max-w-md mb-6">
+                Cadastre o primeiro procedimento operacional para começar a organizar os fluxos de trabalho do seu setor.
+            </p>
+            <button
+                onClick={onAdd}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white text-sm font-bold shadow-md shadow-[#EC7D23]/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+            >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                Cadastrar Primeiro Processo
+            </button>
         </div>
     );
 }
@@ -347,6 +454,27 @@ export default function Processos({ setCurrentView }) {
     function abrirEditar(p) { setModal({ modo: 'editar', processo: p }); }
     function fecharModal() { setModal(null); }
 
+    function exportarCSV() {
+        if (processosFiltrados.length === 0) return;
+        const cabecalho = ['ID', 'Nome', 'Categoria', 'Status', 'Versão', 'Responsável', 'Setor', 'Tempo Estimado', 'Última Atualização'];
+        const linhas = processosFiltrados.map(p => [
+            p.id, p.nome, CATEGORIAS.find(c => c.id === p.categoria)?.label || p.categoria,
+            STATUS_CONFIG[p.status]?.label || p.status, p.versao, p.responsavel?.nome || '', p.responsavel?.setor || '',
+            p.tempoEstimado || '', p.ultimaAtualizacao || '',
+        ]);
+        const escapar = valor => `"${String(valor ?? '').replace(/"/g, '""')}"`;
+        const csv = [cabecalho, ...linhas].map(linha => linha.map(escapar).join(';')).join('\r\n');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `processos-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
     function salvarProcesso(payload) {
         if (modal.modo === 'novo') {
             const novoId = gerarId(payload.categoria, lista);
@@ -356,14 +484,6 @@ export default function Processos({ setCurrentView }) {
         }
         setModal(null);
     }
-
-    // Fechar modal com Escape
-    useEffect(() => {
-        if (!modal) return;
-        function onKey(e) { if (e.key === 'Escape') fecharModal(); }
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [modal]);
 
     const categoriasComContagem = CATEGORIAS.filter(c => c.id !== 'todos');
 
@@ -390,16 +510,27 @@ export default function Processos({ setCurrentView }) {
                 onAdd={abrirNovo}
             />
 
+            {lista.length === 0 ? (
+                <div className="mt-8">
+                    <EmptyState onAdd={abrirNovo} />
+                </div>
+            ) : (
+            <div className="mt-8 flex flex-col gap-8">
             {/* Ações secundárias */}
-            <div className="mt-5 mb-6 flex flex-wrap justify-end gap-3">
-                <button className="flex items-center gap-2 px-4 h-10 bg-white border border-[#E4ECF5] rounded-lg text-[#0B1B2E] text-sm font-bold shadow-sm hover:bg-[#F7FAFD] transition-colors">
+            <div className="flex flex-wrap justify-end gap-3">
+                <button
+                    onClick={exportarCSV}
+                    disabled={processosFiltrados.length === 0}
+                    aria-label="Exportar lista de processos filtrada em CSV"
+                    className="flex items-center gap-2 px-4 h-10 bg-white border border-[#E4ECF5] rounded-lg text-[#0B1B2E] text-sm font-bold shadow-sm hover:bg-[#F7FAFD] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                >
                     <span className="material-symbols-outlined text-[20px]">download</span>
                     <span>Exportar Lista</span>
                 </button>
             </div>
 
             {/* Barra de busca e filtros */}
-            <div className="bg-white p-5 rounded-[20px] border border-[#E4ECF5] shadow-sm mb-8">
+            <div className="bg-white p-5 rounded-[20px] border border-[#E4ECF5] shadow-sm">
                 <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
                     <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8896A8]">
@@ -419,7 +550,8 @@ export default function Processos({ setCurrentView }) {
                                 <button
                                     key={cat.id}
                                     onClick={() => handleCategoria(cat.id)}
-                                    className={`snap-start shrink-0 lg:shrink flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all ${
+                                    aria-pressed={categoriaAtiva === cat.id}
+                                    className={`snap-start shrink-0 lg:shrink flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 ${
                                         categoriaAtiva === cat.id
                                             ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20'
                                             : 'bg-[#F7FAFD] border border-[#E4ECF5] text-[#475467] hover:border-[#EC7D23] hover:text-[#C2410C]'
@@ -437,7 +569,7 @@ export default function Processos({ setCurrentView }) {
             </div>
 
             {/* Lista Mobile (Cards) — oculta em md+ */}
-            <div className="block md:hidden bg-white border border-[#E4ECF5] rounded-[20px] overflow-hidden shadow-sm mb-8">
+            <div className="block md:hidden bg-white border border-[#E4ECF5] rounded-[20px] overflow-hidden shadow-sm">
                 {processosPagina.length === 0 ? (
                     <p className="px-6 py-12 text-center text-[#8896A8] text-sm">
                         Nenhum processo encontrado para os filtros aplicados.
@@ -457,11 +589,12 @@ export default function Processos({ setCurrentView }) {
                             <h3 className="font-black text-[#0B1B2E] text-base leading-snug">{p.nome}</h3>
                             <p className="text-xs text-[#475467] mb-1">{p.responsavel.setor} · v{p.versao}</p>
                             <p className="text-sm text-[#475467] line-clamp-2 mb-3">{p.descricao}</p>
-                            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                                 <button
                                     onClick={() => abrirEditar(p)}
+                                    aria-label={`Editar ${p.nome}`}
                                     title="Editar processo"
-                                    className="p-1.5 rounded-md text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
+                                    className="p-3 rounded-md text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">edit</span>
                                 </button>
@@ -470,14 +603,15 @@ export default function Processos({ setCurrentView }) {
                                         href={p.docUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        aria-label={`Abrir POP de ${p.nome} no Google Docs`}
                                         title="Abrir POP no Google Docs"
-                                        className="p-1.5 rounded-md text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
+                                        className="p-3 rounded-md text-[#C2410C] hover:bg-[#FFF7ED] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                     </a>
                                 ) : (
-                                    <span className="p-1.5 text-[#8896A8] cursor-default" title="Rascunho — sem POP publicado">
-                                        <span className="material-symbols-outlined text-[20px]">edit_note</span>
+                                    <span className="p-3 text-[#8896A8] cursor-default" title="Rascunho — sem POP publicado" aria-label="Rascunho, sem POP publicado">
+                                        <span className="material-symbols-outlined text-[20px]" aria-hidden="true">edit_note</span>
                                     </span>
                                 )}
                             </div>
@@ -490,14 +624,14 @@ export default function Processos({ setCurrentView }) {
                         {processosFiltrados.length === 0 ? 0 : inicio + 1}–{Math.min(inicio + ROWS_PER_PAGE, processosFiltrados.length)} de {processosFiltrados.length}
                     </span>
                     <div className="flex gap-2">
-                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Anterior</button>
-                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Próximo</button>
+                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-2 min-h-[44px] border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">Anterior</button>
+                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-2 min-h-[44px] border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">Próximo</button>
                     </div>
                 </div>
             </div>
 
             {/* Tabela Desktop — oculta em mobile */}
-            <div className="hidden md:flex bg-white border border-[#E4ECF5] rounded-[20px] overflow-hidden shadow-sm flex-1 flex-col mb-8">
+            <div className="hidden md:flex bg-white border border-[#E4ECF5] rounded-[20px] overflow-hidden shadow-sm flex-1 flex-col">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -543,8 +677,9 @@ export default function Processos({ setCurrentView }) {
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
                                                     onClick={() => abrirEditar(p)}
+                                                    aria-label={`Editar ${p.nome}`}
                                                     title="Editar processo"
-                                                    className="p-1.5 rounded-md text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
+                                                    className="p-3 rounded-md text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                                                 >
                                                     <span className="material-symbols-outlined text-[20px]">edit</span>
                                                 </button>
@@ -553,14 +688,15 @@ export default function Processos({ setCurrentView }) {
                                                         href={p.docUrl}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
+                                                        aria-label={`Abrir POP de ${p.nome} no Google Docs`}
                                                         title="Abrir POP no Google Docs"
-                                                        className="p-1.5 rounded-md text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
+                                                        className="p-3 rounded-md text-[#C2410C] hover:bg-[#FFF7ED] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                                     </a>
                                                 ) : (
-                                                    <span className="p-1.5 text-[#8896A8] cursor-default" title="Rascunho — sem POP publicado">
-                                                        <span className="material-symbols-outlined text-[20px]">edit_note</span>
+                                                    <span className="p-3 text-[#8896A8] cursor-default" title="Rascunho — sem POP publicado" aria-label="Rascunho, sem POP publicado">
+                                                        <span className="material-symbols-outlined text-[20px]" aria-hidden="true">edit_note</span>
                                                     </span>
                                                 )}
                                             </div>
@@ -591,14 +727,14 @@ export default function Processos({ setCurrentView }) {
                         <button
                             onClick={() => setPagina(p => Math.max(1, p - 1))}
                             disabled={paginaSegura === 1}
-                            className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="px-3 py-2 min-h-[44px] border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                         >
                             Anterior
                         </button>
                         <button
                             onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
                             disabled={paginaSegura === totalPaginas}
-                            className="px-3 py-1 border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="px-3 py-2 min-h-[44px] border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                         >
                             Próximo
                         </button>
@@ -615,7 +751,8 @@ export default function Processos({ setCurrentView }) {
                         <button
                             key={cat.id}
                             onClick={() => { handleCategoria(cat.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                            className="bg-white p-6 rounded-[20px] border border-[#E4ECF5] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-left"
+                            aria-label={`Filtrar por ${cat.label}, ${total} processo${total !== 1 ? 's' : ''}`}
+                            className="bg-white p-6 rounded-[20px] border border-[#E4ECF5] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className="bg-[#FFF7ED] p-3 rounded-[14px] text-[#C2410C] group-hover:bg-gradient-to-br group-hover:from-[#9A3412] group-hover:to-[#EC7D23] group-hover:text-white transition-all">
@@ -635,6 +772,8 @@ export default function Processos({ setCurrentView }) {
                     );
                 })}
             </div>
+            </div>
+            )}
         </main>
         </>
     );
