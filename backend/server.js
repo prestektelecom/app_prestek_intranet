@@ -3877,6 +3877,63 @@ app.delete('/api/escritorios/:id', async (req, res) => {
     }
 });
 
+// ─── Categorias de Processos (CRUD) ──────────────────────────────
+// Leitura pública (usada pelo select do modal "Novo Processo" e pelos filtros);
+// escrita restrita a admin via adminAuth (diferente de /api/escritorios acima,
+// que não tem essa proteção).
+app.get('/api/categorias-processos', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM categorias_processos ORDER BY ordem, label');
+        res.json(rows);
+    } catch (e) {
+        console.error('GET /api/categorias-processos:', e.message);
+        res.status(500).json({ erro: e.message });
+    }
+});
+
+app.post('/api/categorias-processos', adminAuth, async (req, res) => {
+    const { id, label, icon, prefixo, ordem } = req.body;
+    try {
+        const { rows } = await pool.query(
+            `INSERT INTO categorias_processos (id, label, icon, prefixo, ordem)
+             VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+            [id, label, icon, prefixo || null, ordem ?? 0]
+        );
+        res.status(201).json(rows[0]);
+    } catch (e) {
+        console.error('POST /api/categorias-processos:', e.message);
+        res.status(500).json({ erro: e.message });
+    }
+});
+
+app.put('/api/categorias-processos/:id', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    const { label, icon, prefixo, ordem } = req.body;
+    try {
+        const { rows } = await pool.query(
+            `UPDATE categorias_processos SET label=$1, icon=$2, prefixo=$3, ordem=$4 WHERE id=$5 RETURNING *`,
+            [label, icon, prefixo || null, ordem ?? 0, id]
+        );
+        if (!rows.length) return res.status(404).json({ erro: 'Categoria não encontrada.' });
+        res.json(rows[0]);
+    } catch (e) {
+        console.error('PUT /api/categorias-processos/:id:', e.message);
+        res.status(500).json({ erro: e.message });
+    }
+});
+
+app.delete('/api/categorias-processos/:id', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rowCount } = await pool.query('DELETE FROM categorias_processos WHERE id=$1', [id]);
+        if (!rowCount) return res.status(404).json({ erro: 'Categoria não encontrada.' });
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('DELETE /api/categorias-processos/:id:', e.message);
+        res.status(500).json({ erro: e.message });
+    }
+});
+
 // ═══════════════════════════════════════════════════════════════════
 // ─── Middleware de autenticação administrativa ───────────────────
 // Verifica se o solicitante é um admin consultando o banco pelo email.

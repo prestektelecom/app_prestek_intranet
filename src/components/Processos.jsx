@@ -1,6 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { CATEGORIAS, PROCESSOS, STATUS_CONFIG } from '../data/processosData';
+import { PROCESSOS, STATUS_CONFIG } from '../data/processosData';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+
+// Pseudo-categoria "todas" — só existe no front, nunca é persistida no banco
+const CATEGORIA_TODOS = { id: 'todos', label: 'Todas as Categorias', icon: 'grid_view' };
 
 // Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Escala/Escritórios)
 
@@ -26,8 +29,8 @@ function percentualAtivosPorCategoria(lista) {
     return Object.fromEntries(Object.keys(total).map(c => [c, Math.round(((ativos[c] || 0) / total[c]) * 100)]));
 }
 
-function gerarId(categoria, lista) {
-    const cat = CATEGORIAS.find(c => c.id === categoria);
+function gerarId(categoria, lista, categorias) {
+    const cat = categorias.find(c => c.id === categoria);
     const prefixo = cat?.prefixo || 'OP';
     const existentes = lista.filter(p => p.id.startsWith(prefixo + '-')).map(p => parseInt(p.id.split('-')[1], 10)).filter(n => !isNaN(n));
     const proximo = existentes.length ? Math.max(...existentes) + 1 : 1;
@@ -143,7 +146,7 @@ const FORM_VAZIO = {
 function CampoSecao({ titulo, children }) {
     return (
         <div>
-            <h3 className="text-[11px] font-black text-[#C2410C] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+            <h3 className="text-[11px] font-black text-[var(--accent-dark)] uppercase tracking-widest mb-3 flex items-center gap-1.5">
                 <span className="w-1 h-3 rounded-full bg-gradient-to-b from-[#9A3412] to-[#EC7D23]" />
                 {titulo}
             </h3>
@@ -154,7 +157,7 @@ function CampoSecao({ titulo, children }) {
     );
 }
 
-function ProcessoModal({ processo, onSalvar, onFechar }) {
+function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
     const isEdicao = Boolean(processo?.id);
     const [form, setForm] = useState(() => {
         if (!processo) return FORM_VAZIO;
@@ -243,7 +246,7 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
             docUrl: form.docUrl.trim() || null,
             responsavel: {
                 nome: form.responsavelNome.trim() || 'Não informado',
-                setor: CATEGORIAS.find(c => c.id === form.categoria)?.label || '',
+                setor: categorias.find(c => c.id === form.categoria)?.label || '',
                 funcionario_id: processo?.responsavel?.funcionario_id ?? null,
             },
             etapas: form.etapas !== '' ? Number(form.etapas) : null,
@@ -254,22 +257,23 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
         onSalvar(payload);
     }
 
-    const inputCls = "w-full px-3 py-2.5 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
+    const inputCls = "w-full px-3 py-2.5 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
     const inputErroCls = "border-[#E84545] focus:ring-[#E84545]";
-    const labelCls = "block text-[10px] font-black text-[#475467] uppercase tracking-widest mb-1.5";
+    const labelCls = "block text-[10px] font-black text-faint uppercase tracking-widest mb-1.5";
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+            {/* z-[1100] fica acima de Header e Sidebar (ambos z-1000). */}
             <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={tentarFechar} />
             <div
                 ref={modalRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={tituloId}
-                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-[#E4ECF5]"
+                className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-border"
             >
                 {/* Header do modal */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[#E4ECF5] bg-[#F7FAFD]">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-surface-raised">
                     <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-br from-[#9A3412] to-[#EC7D23] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30">
                             <span className="material-symbols-outlined text-white text-2xl" aria-hidden="true">
@@ -277,14 +281,14 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                             </span>
                         </div>
                         <div>
-                            <h2 id={tituloId} className="text-[#0B1B2E] font-black text-lg">
+                            <h2 id={tituloId} className="text-foreground font-black text-lg">
                                 {isEdicao ? 'Editar Processo' : 'Novo Processo'}
                             </h2>
-                            <p className="text-xs text-[#475467] mt-0.5">
+                            <p className="text-xs text-faint mt-0.5">
                                 {isEdicao ? 'Atualize os dados deste procedimento.' : 'Cadastre um novo procedimento operacional.'}
                             </p>
                             {isEdicao && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white border border-[#E4ECF5] text-[10px] font-mono font-bold text-[#475467] mt-1.5">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-surface border border-border text-[10px] font-mono font-bold text-faint mt-1.5">
                                     {processo.id}
                                 </span>
                             )}
@@ -293,7 +297,7 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                     <button
                         onClick={tentarFechar}
                         aria-label="Fechar"
-                        className="text-[#8896A8] hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]"
+                        className="text-muted hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]"
                     >
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -301,9 +305,12 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
 
                 {/* Corpo do formulário */}
                 <form id={formId} onSubmit={handleSubmit} noValidate className="overflow-y-auto flex-1 px-6 py-6 space-y-6">
-                    <CampoSecao titulo="Identificação">
+                    <CampoSecao titulo="Informações Básicas">
                         <div className="sm:col-span-2">
-                            <label htmlFor="processo-nome" className={labelCls}>Nome do Processo *</label>
+                            <div className="flex items-baseline justify-between mb-1.5">
+                                <label htmlFor="processo-nome" className="text-[10px] font-black text-faint uppercase tracking-widest">Nome do Processo *</label>
+                                <span className="text-[10px] font-bold text-muted tabular-nums">{form.nome.length}/100</span>
+                            </div>
                             <input
                                 id="processo-nome"
                                 ref={nomeRef}
@@ -311,6 +318,7 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                                 value={form.nome}
                                 onChange={e => set('nome', e.target.value)}
                                 placeholder="Ex: Onboarding de Clientes"
+                                maxLength={100}
                                 aria-invalid={Boolean(erros.nome)}
                                 aria-describedby={erros.nome ? 'processo-nome-erro' : undefined}
                             />
@@ -324,26 +332,33 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
 
                         <div>
                             <label htmlFor="processo-categoria" className={labelCls}>Categoria *</label>
-                            <select id="processo-categoria" className={inputCls} value={form.categoria} onChange={e => set('categoria', e.target.value)}>
-                                {CATEGORIAS.filter(c => c.id !== 'todos').map(c => (
-                                    <option key={c.id} value={c.id}>{c.label}</option>
-                                ))}
-                            </select>
+                            <div className="relative">
+                                <select id="processo-categoria" className={`${inputCls} appearance-none pr-9`} value={form.categoria} onChange={e => set('categoria', e.target.value)}>
+                                    {categorias.map(c => (
+                                        <option key={c.id} value={c.id}>{c.label}</option>
+                                    ))}
+                                </select>
+                                <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-muted text-[18px] pointer-events-none" aria-hidden="true">expand_more</span>
+                            </div>
                         </div>
 
                         <div>
                             <label htmlFor="processo-status" className={labelCls}>Status *</label>
-                            <select id="processo-status" className={inputCls} value={form.status} onChange={e => set('status', e.target.value)}>
-                                {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                                    <option key={k} value={k}>{v.label}</option>
-                                ))}
-                            </select>
+                            <div className="relative">
+                                <select id="processo-status" className={`${inputCls} appearance-none pr-9`} value={form.status} onChange={e => set('status', e.target.value)}>
+                                    {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+                                        <option key={k} value={k}>{v.label}</option>
+                                    ))}
+                                </select>
+                                <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-muted text-[18px] pointer-events-none" aria-hidden="true">expand_more</span>
+                            </div>
                         </div>
-                    </CampoSecao>
 
-                    <CampoSecao titulo="Descrição">
                         <div className="sm:col-span-2">
-                            <label htmlFor="processo-descricao" className={labelCls}>Descrição *</label>
+                            <div className="flex items-baseline justify-between mb-1.5">
+                                <label htmlFor="processo-descricao" className="text-[10px] font-black text-faint uppercase tracking-widest">Descrição *</label>
+                                <span className="text-[10px] font-bold text-muted tabular-nums">{form.descricao.length}/500</span>
+                            </div>
                             <textarea
                                 id="processo-descricao"
                                 ref={descricaoRef}
@@ -352,6 +367,7 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                                 value={form.descricao}
                                 onChange={e => set('descricao', e.target.value)}
                                 placeholder="Descreva o objetivo e escopo deste processo..."
+                                maxLength={500}
                                 aria-invalid={Boolean(erros.descricao)}
                                 aria-describedby={erros.descricao ? 'processo-descricao-erro' : undefined}
                             />
@@ -368,40 +384,48 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                         <div>
                             <label htmlFor="processo-versao" className={labelCls}>Versão</label>
                             <input id="processo-versao" className={inputCls} value={form.versao} onChange={e => set('versao', e.target.value)} placeholder="1.0" />
+                            <div className="mt-1 min-h-[30px]" />
                         </div>
 
                         <div>
                             <label htmlFor="processo-responsavel" className={labelCls}>Responsável</label>
                             <input id="processo-responsavel" className={inputCls} value={form.responsavelNome} onChange={e => set('responsavelNome', e.target.value)} placeholder="Ex: Coordenador de TI" />
+                            <div className="mt-1 min-h-[30px]" />
                         </div>
 
                         <div>
                             <label htmlFor="processo-etapas" className={labelCls}>Nº de Etapas</label>
                             <input id="processo-etapas" className={inputCls} type="number" min="0" value={form.etapas} onChange={e => set('etapas', e.target.value)} placeholder="Ex: 5" />
+                            <div className="mt-1 min-h-[30px]" />
                         </div>
 
                         <div>
                             <label htmlFor="processo-tempo" className={labelCls}>Tempo Estimado</label>
-                            <input id="processo-tempo" className={inputCls} value={form.tempoEstimado} onChange={e => set('tempoEstimado', e.target.value)} placeholder="Ex: 30min" />
+                            <input id="processo-tempo" className={inputCls} value={form.tempoEstimado} onChange={e => set('tempoEstimado', e.target.value)} placeholder="Ex: 30min" aria-describedby="processo-tempo-dica" />
+                            <div className="mt-1 min-h-[30px]">
+                                <p id="processo-tempo-dica" className="text-[11px] text-muted leading-snug">Duração aproximada (ex: "30min", "2h", "1 dia útil").</p>
+                            </div>
                         </div>
                     </CampoSecao>
 
                     <CampoSecao titulo="Documentação e Tags">
                         <div className="sm:col-span-2">
                             <label htmlFor="processo-doc" className={labelCls}>Link do Google Docs (POP)</label>
-                            <input id="processo-doc" className={inputCls} type="url" value={form.docUrl} onChange={e => set('docUrl', e.target.value)} placeholder="https://docs.google.com/..." />
+                            <input id="processo-doc" className={inputCls} type="url" value={form.docUrl} onChange={e => set('docUrl', e.target.value)} placeholder="https://docs.google.com/..." aria-describedby="processo-doc-dica" />
+                            <p id="processo-doc-dica" className="text-[11px] text-muted mt-1">Use um link com permissão de visualização para "qualquer pessoa com o link".</p>
                         </div>
 
                         <div className="sm:col-span-2">
                             <label htmlFor="processo-tags" className={labelCls}>Tags (separadas por vírgula)</label>
-                            <input id="processo-tags" className={inputCls} value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="Ex: IXC, cadastro, ativação" />
+                            <input id="processo-tags" className={inputCls} value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="Ex: IXC, cadastro, ativação" aria-describedby="processo-tags-dica" />
+                            <p id="processo-tags-dica" className="text-[11px] text-muted mt-1">Separe múltiplas tags por vírgula.</p>
                         </div>
                     </CampoSecao>
                 </form>
 
                 {/* Footer */}
-                <div className="px-6 py-5 border-t border-[#E4ECF5] bg-white flex justify-end gap-3">
-                    <button type="button" onClick={tentarFechar} className="h-11 px-4 text-sm font-bold text-[#0B1B2E] border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]">
+                <div className="px-6 py-5 border-t border-border bg-surface flex justify-end gap-3 shadow-[0_-4px_12px_rgba(11,27,46,0.05)]">
+                    <button type="button" onClick={tentarFechar} className="h-11 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]">
                         Cancelar
                     </button>
                     <button
@@ -418,14 +442,204 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
     );
 }
 
+function slugify(texto) {
+    return texto
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+}
+
+const CATEGORIA_FORM_VAZIO = { id: '', label: '', icon: '', prefixo: '', ordem: 0 };
+
+function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminEmail }) {
+    const [form, setForm] = useState(CATEGORIA_FORM_VAZIO);
+    const [editandoId, setEditandoId] = useState(null);
+    const [salvando, setSalvando] = useState(false);
+    const [erro, setErro] = useState('');
+
+    const inputCls = "w-full px-3 py-2 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
+    const labelCls = "block text-[10px] font-black text-faint uppercase tracking-widest mb-1";
+
+    function set(campo, valor) {
+        setForm(f => ({ ...f, [campo]: valor }));
+    }
+
+    function editar(cat) {
+        setEditandoId(cat.id);
+        setForm({ id: cat.id, label: cat.label, icon: cat.icon, prefixo: cat.prefixo || '', ordem: cat.ordem ?? 0 });
+        setErro('');
+    }
+
+    function cancelarEdicao() {
+        setEditandoId(null);
+        setForm(CATEGORIA_FORM_VAZIO);
+        setErro('');
+    }
+
+    async function excluir(cat) {
+        if (!window.confirm(`Excluir a categoria "${cat.label}"? Processos que já usam essa categoria não serão afetados, mas ela deixará de aparecer nos filtros.`)) return;
+        try {
+            const res = await fetch(`/api/categorias-processos/${cat.id}`, {
+                method: 'DELETE',
+                headers: { 'x-admin-email': adminEmail },
+            });
+            const dados = await res.json();
+            if (!res.ok) throw new Error(dados.erro || 'Erro ao excluir categoria.');
+            onCategoriasChange(categorias.filter(c => c.id !== cat.id));
+            if (editandoId === cat.id) cancelarEdicao();
+        } catch (e) {
+            setErro(e.message);
+        }
+    }
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        setErro('');
+        if (!form.label.trim()) { setErro('O nome da categoria é obrigatório.'); return; }
+        if (!form.icon.trim()) { setErro('Informe o nome do ícone (Material Symbols).'); return; }
+        const id = editandoId || form.id || slugify(form.label);
+        if (!id) { setErro('Informe um identificador para a categoria.'); return; }
+
+        setSalvando(true);
+        try {
+            const payload = {
+                id,
+                label: form.label.trim(),
+                icon: form.icon.trim(),
+                prefixo: form.prefixo.trim().toUpperCase() || null,
+                ordem: Number(form.ordem) || 0,
+            };
+            const url = editandoId ? `/api/categorias-processos/${editandoId}` : '/api/categorias-processos';
+            const res = await fetch(url, {
+                method: editandoId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                body: JSON.stringify(payload),
+            });
+            const dados = await res.json();
+            if (!res.ok) throw new Error(dados.erro || 'Erro ao salvar categoria.');
+
+            if (editandoId) {
+                onCategoriasChange(categorias.map(c => c.id === dados.id ? dados : c));
+            } else {
+                onCategoriasChange([...categorias, dados].sort((a, b) => (a.ordem - b.ordem) || a.label.localeCompare(b.label)));
+            }
+            cancelarEdicao();
+        } catch (e) {
+            setErro(e.message);
+        } finally {
+            setSalvando(false);
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
+            <div role="dialog" aria-modal="true" aria-labelledby="categorias-admin-titulo" className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col border border-border">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-surface-raised">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-br from-[#9A3412] to-[#EC7D23] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30">
+                            <span className="material-symbols-outlined text-white text-2xl" aria-hidden="true">tune</span>
+                        </div>
+                        <div>
+                            <h2 id="categorias-admin-titulo" className="text-foreground font-black text-lg">Gerenciar Categorias</h2>
+                            <p className="text-xs text-faint mt-0.5">Adicione, edite ou remova as categorias de processos.</p>
+                        </div>
+                    </div>
+                    <button onClick={onFechar} aria-label="Fechar" className="text-muted hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+                    <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
+                        {categorias.length === 0 && (
+                            <p className="px-4 py-6 text-center text-sm text-muted">Nenhuma categoria cadastrada.</p>
+                        )}
+                        {categorias.map(cat => (
+                            <div key={cat.id} className="flex items-center gap-3 px-4 py-3 bg-surface">
+                                <span className="material-symbols-outlined text-[var(--accent-dark)]">{cat.icon}</span>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-foreground truncate">{cat.label}</p>
+                                    <p className="text-xs text-faint font-mono">{cat.id} · {cat.prefixo || '—'}</p>
+                                </div>
+                                <button type="button" onClick={() => editar(cat)} aria-label={`Editar ${cat.label}`} className="p-2 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">
+                                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                                </button>
+                                <button type="button" onClick={() => excluir(cat)} aria-label={`Excluir ${cat.label}`} className="p-2 rounded-md text-muted hover:text-[#E84545] hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545]">
+                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-3 border-t border-border pt-5">
+                        <h3 className="text-[11px] font-black text-[var(--accent-dark)] uppercase tracking-widest">
+                            {editandoId ? `Editando "${editandoId}"` : 'Nova categoria'}
+                        </h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="col-span-2">
+                                <label className={labelCls}>Nome *</label>
+                                <input className={inputCls} value={form.label} onChange={e => set('label', e.target.value)} placeholder="Ex: Marketing" />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Ícone (Material Symbols) *</label>
+                                <input className={inputCls} value={form.icon} onChange={e => set('icon', e.target.value)} placeholder="Ex: campaign" />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Prefixo</label>
+                                <input className={inputCls} value={form.prefixo} onChange={e => set('prefixo', e.target.value)} placeholder="Ex: MKT" maxLength={10} />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Ordem</label>
+                                <input className={inputCls} type="number" value={form.ordem} onChange={e => set('ordem', e.target.value)} />
+                            </div>
+                            {!editandoId && (
+                                <div>
+                                    <label className={labelCls}>Identificador</label>
+                                    <input className={inputCls} value={form.id || slugify(form.label)} onChange={e => set('id', slugify(e.target.value))} placeholder="gerado automaticamente" />
+                                </div>
+                            )}
+                        </div>
+                        {erro && (
+                            <p role="alert" className="text-xs text-[#E84545] flex items-center gap-1">
+                                <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
+                                {erro}
+                            </p>
+                        )}
+                        <div className="flex justify-end gap-2 pt-1">
+                            {editandoId && (
+                                <button type="button" onClick={cancelarEdicao} className="h-10 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors">
+                                    Cancelar edição
+                                </button>
+                            )}
+                            <button type="submit" disabled={salvando} className="h-10 px-4 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors disabled:opacity-60 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{editandoId ? 'save' : 'add'}</span>
+                                {editandoId ? 'Salvar Alterações' : 'Adicionar Categoria'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="px-6 py-4 border-t border-border bg-surface flex justify-end">
+                    <button type="button" onClick={onFechar} className="h-10 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function EmptyState({ onAdd }) {
     return (
-        <div className="bg-white border border-[#E4ECF5] rounded-[20px] shadow-sm px-6 py-16 flex flex-col items-center text-center">
-            <div className="bg-[#FFF7ED] p-4 rounded-2xl text-[#C2410C] mb-5">
+        <div className="bg-surface border border-border rounded-[20px] shadow-sm px-6 py-16 flex flex-col items-center text-center">
+            <div className="bg-[var(--accent-soft)] p-4 rounded-2xl text-[var(--accent-dark)] mb-5">
                 <span className="material-symbols-outlined text-4xl">folder_off</span>
             </div>
-            <h2 className="text-[#0B1B2E] font-black text-lg mb-2">Nenhum processo cadastrado ainda</h2>
-            <p className="text-[#475467] text-sm max-w-md mb-6">
+            <h2 className="text-foreground font-black text-lg mb-2">Nenhum processo cadastrado ainda</h2>
+            <p className="text-faint text-sm max-w-md mb-6">
                 Cadastre o primeiro procedimento operacional para começar a organizar os fluxos de trabalho do seu setor.
             </p>
             <button
@@ -443,13 +657,22 @@ function EmptyState({ onAdd }) {
 
 const ROWS_PER_PAGE = 10;
 
-export default function Processos({ setCurrentView }) {
+export default function Processos({ user, setCurrentView }) {
     const C = useBentoTheme();
     const [lista, setLista] = useState(PROCESSOS);
     const [busca, setBusca] = useState('');
     const [categoriaAtiva, setCategoriaAtiva] = useState('todos');
     const [pagina, setPagina] = useState(1);
     const [modal, setModal] = useState(null); // null | { modo: 'novo' } | { modo: 'editar', processo }
+    const [categorias, setCategorias] = useState([]);
+    const [categoriasAbertas, setCategoriasAbertas] = useState(false);
+
+    useEffect(() => {
+        fetch('/api/categorias-processos')
+            .then(res => res.json())
+            .then(setCategorias)
+            .catch(err => console.error('Erro ao buscar categorias de processos:', err));
+    }, []);
 
     const contagem = useMemo(() => contarPorCategoria(lista), [lista]);
     const percentuaisAtivos = useMemo(() => percentualAtivosPorCategoria(lista), [lista]);
@@ -483,7 +706,7 @@ export default function Processos({ setCurrentView }) {
         if (processosFiltrados.length === 0) return;
         const cabecalho = ['ID', 'Nome', 'Categoria', 'Status', 'Versão', 'Responsável', 'Setor', 'Tempo Estimado', 'Última Atualização'];
         const linhas = processosFiltrados.map(p => [
-            p.id, p.nome, CATEGORIAS.find(c => c.id === p.categoria)?.label || p.categoria,
+            p.id, p.nome, categorias.find(c => c.id === p.categoria)?.label || p.categoria,
             STATUS_CONFIG[p.status]?.label || p.status, p.versao, p.responsavel?.nome || '', p.responsavel?.setor || '',
             p.tempoEstimado || '', p.ultimaAtualizacao || '',
         ]);
@@ -502,15 +725,13 @@ export default function Processos({ setCurrentView }) {
 
     function salvarProcesso(payload) {
         if (modal.modo === 'novo') {
-            const novoId = gerarId(payload.categoria, lista);
+            const novoId = gerarId(payload.categoria, lista, categorias);
             setLista(prev => [{ ...payload, id: novoId }, ...prev]);
         } else {
             setLista(prev => prev.map(p => p.id === payload.id ? payload : p));
         }
         setModal(null);
     }
-
-    const categoriasComContagem = CATEGORIAS.filter(c => c.id !== 'todos');
 
     const totalAtivos = lista.filter(p => p.status === 'ativo').length;
     const totalRevisao = lista.filter(p => p.status === 'revisao').length;
@@ -522,6 +743,15 @@ export default function Processos({ setCurrentView }) {
                 processo={modal.modo === 'editar' ? modal.processo : null}
                 onSalvar={salvarProcesso}
                 onFechar={fecharModal}
+                categorias={categorias}
+            />
+        )}
+        {categoriasAbertas && (
+            <CategoriasAdminModal
+                categorias={categorias}
+                onCategoriasChange={setCategorias}
+                onFechar={() => setCategoriasAbertas(false)}
+                adminEmail={user?.email || ''}
             />
         )}
 
@@ -531,7 +761,7 @@ export default function Processos({ setCurrentView }) {
                 total={lista.length}
                 ativos={totalAtivos}
                 revisao={totalRevisao}
-                categorias={categoriasComContagem.length}
+                categorias={categorias.length}
                 onAdd={abrirNovo}
             />
 
@@ -547,7 +777,7 @@ export default function Processos({ setCurrentView }) {
                     onClick={exportarCSV}
                     disabled={processosFiltrados.length === 0}
                     aria-label="Exportar lista de processos filtrada em CSV"
-                    className="flex items-center gap-2 px-4 h-10 bg-white border border-[#E4ECF5] rounded-lg text-[#0B1B2E] text-sm font-bold shadow-sm hover:bg-[#F7FAFD] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                    className="flex items-center gap-2 px-4 h-10 bg-surface border border-border rounded-lg text-foreground text-sm font-bold shadow-sm hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
                 >
                     <span className="material-symbols-outlined text-[20px]">download</span>
                     <span>Exportar Lista</span>
@@ -555,14 +785,14 @@ export default function Processos({ setCurrentView }) {
             </div>
 
             {/* Barra de busca e filtros */}
-            <div className="bg-white p-5 rounded-[20px] border border-[#E4ECF5] shadow-sm">
+            <div className="bg-surface p-5 rounded-[20px] border border-border shadow-sm">
                 <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
                     <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8896A8]">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
                             <span className="material-symbols-outlined">search</span>
                         </div>
                         <input
-                            className="block w-full pl-10 pr-3 py-2.5 border border-[#E4ECF5] rounded-lg leading-5 bg-[#F7FAFD] text-[#0B1B2E] placeholder:text-[#8896A8] focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent sm:text-sm transition-all"
+                            className="block w-full pl-10 pr-3 py-2.5 border border-border rounded-lg leading-5 bg-surface-raised text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent sm:text-sm transition-all"
                             placeholder="Buscar por Nome, ID (ex: TI-001) ou tag..."
                             type="text"
                             value={busca}
@@ -571,7 +801,7 @@ export default function Processos({ setCurrentView }) {
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex gap-2 overflow-x-auto lg:overflow-visible lg:flex-wrap pb-2 lg:pb-0 no-scrollbar snap-x">
-                            {CATEGORIAS.map(cat => (
+                            {[CATEGORIA_TODOS, ...categorias].map(cat => (
                                 <button
                                     key={cat.id}
                                     onClick={() => handleCategoria(cat.id)}
@@ -579,24 +809,33 @@ export default function Processos({ setCurrentView }) {
                                     className={`snap-start shrink-0 lg:shrink flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 ${
                                         categoriaAtiva === cat.id
                                             ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20'
-                                            : 'bg-[#F7FAFD] border border-[#E4ECF5] text-[#475467] hover:border-[#EC7D23] hover:text-[#C2410C]'
+                                            : 'bg-surface-raised border border-border text-faint hover:border-[#EC7D23] hover:text-[var(--accent-dark)]'
                                     }`}
                                 >
-                                    <span className={`material-symbols-outlined text-[18px] ${categoriaAtiva === cat.id ? 'text-white' : 'text-[#8896A8]'}`}>
+                                    <span className={`material-symbols-outlined text-[18px] ${categoriaAtiva === cat.id ? 'text-white' : 'text-muted'}`}>
                                         {cat.icon}
                                     </span>
                                     {cat.label}
                                 </button>
                             ))}
+                            {user?.is_admin && (
+                                <button
+                                    onClick={() => setCategoriasAbertas(true)}
+                                    className="snap-start shrink-0 lg:shrink flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal border border-dashed border-[var(--accent-dark)] text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">tune</span>
+                                    Gerenciar Categorias
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Lista Mobile (Cards) — oculta em md+ */}
-            <div className="block md:hidden bg-white border border-[#E4ECF5] rounded-[20px] overflow-hidden shadow-sm">
+            <div className="block md:hidden bg-surface border border-border rounded-[20px] overflow-hidden shadow-sm">
                 {processosPagina.length === 0 ? (
-                    <p className="px-6 py-12 text-center text-[#8896A8] text-sm">
+                    <p className="px-6 py-12 text-center text-muted text-sm">
                         Nenhum processo encontrado para os filtros aplicados.
                     </p>
                 ) : processosPagina.map(p => {
@@ -605,21 +844,21 @@ export default function Processos({ setCurrentView }) {
                         <div
                             key={p.id}
                             onClick={() => abrirEditar(p)}
-                            className="p-4 border-b border-[#E4ECF5] last:border-b-0 cursor-pointer hover:bg-[#F7FAFD] transition-colors"
+                            className="p-4 border-b border-border last:border-b-0 cursor-pointer hover:bg-surface-raised transition-colors"
                         >
                             <div className="flex justify-between items-start mb-1">
-                                <span className="font-mono font-bold text-[#C2410C] text-sm">{p.id}</span>
+                                <span className="font-mono font-bold text-[var(--accent-dark)] text-sm">{p.id}</span>
                                 <StatusBadge status={p.status} />
                             </div>
-                            <h3 className="font-black text-[#0B1B2E] text-base leading-snug">{p.nome}</h3>
-                            <p className="text-xs text-[#475467] mb-1">{p.responsavel.setor} · v{p.versao}</p>
-                            <p className="text-sm text-[#475467] line-clamp-2 mb-3">{p.descricao}</p>
+                            <h3 className="font-black text-foreground text-base leading-snug">{p.nome}</h3>
+                            <p className="text-xs text-faint mb-1">{p.responsavel.setor} · v{p.versao}</p>
+                            <p className="text-sm text-faint line-clamp-2 mb-3">{p.descricao}</p>
                             <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                                 <button
                                     onClick={() => abrirEditar(p)}
                                     aria-label={`Editar ${p.nome}`}
                                     title="Editar processo"
-                                    className="p-3 rounded-md text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                    className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">edit</span>
                                 </button>
@@ -630,12 +869,12 @@ export default function Processos({ setCurrentView }) {
                                         rel="noopener noreferrer"
                                         aria-label={`Abrir POP de ${p.nome} no Google Docs`}
                                         title="Abrir POP no Google Docs"
-                                        className="p-3 rounded-md text-[#C2410C] hover:bg-[#FFF7ED] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                        className="p-3 rounded-md text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                     </a>
                                 ) : (
-                                    <span className="p-3 text-[#8896A8] cursor-default" title="Rascunho — sem POP publicado" aria-label="Rascunho, sem POP publicado">
+                                    <span className="p-3 text-muted cursor-default" title="Rascunho — sem POP publicado" aria-label="Rascunho, sem POP publicado">
                                         <span className="material-symbols-outlined text-[20px]" aria-hidden="true">edit_note</span>
                                     </span>
                                 )}
@@ -644,35 +883,35 @@ export default function Processos({ setCurrentView }) {
                     );
                 })}
                 {/* Paginação mobile */}
-                <div className="px-4 py-3 border-t border-[#E4ECF5] flex items-center justify-between bg-[#F7FAFD]">
-                    <span className="text-xs font-bold text-[#475467]">
+                <div className="px-4 py-3 border-t border-border flex items-center justify-between bg-surface-raised">
+                    <span className="text-xs font-bold text-faint">
                         {processosFiltrados.length === 0 ? 0 : inicio + 1}–{Math.min(inicio + ROWS_PER_PAGE, processosFiltrados.length)} de {processosFiltrados.length}
                     </span>
                     <div className="flex gap-2">
-                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-2 min-h-[44px] border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">Anterior</button>
-                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-2 min-h-[44px] border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">Próximo</button>
+                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-faint hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">Anterior</button>
+                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-foreground hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">Próximo</button>
                     </div>
                 </div>
             </div>
 
             {/* Tabela Desktop — oculta em mobile */}
-            <div className="hidden md:flex bg-white border border-[#E4ECF5] rounded-[20px] overflow-hidden shadow-sm flex-1 flex-col">
+            <div className="hidden md:flex bg-surface border border-border rounded-[20px] overflow-hidden shadow-sm flex-1 flex-col">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-[#F7FAFD] border-b border-[#E4ECF5]">
-                                <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest w-28">ID</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest w-1/4">PROCESSO</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest">DESCRIÇÃO</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest w-24 text-center">VERSÃO</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest w-36 text-center">STATUS</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-[#475467] uppercase tracking-widest w-28 text-right">AÇÕES</th>
+                            <tr className="bg-surface-raised border-b border-border">
+                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-28">ID</th>
+                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-1/4">PROCESSO</th>
+                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest">DESCRIÇÃO</th>
+                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-24 text-center">VERSÃO</th>
+                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-36 text-center">STATUS</th>
+                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-28 text-right">AÇÕES</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E4ECF5] bg-white">
+                        <tbody className="divide-y divide-border bg-surface">
                             {processosPagina.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-[#8896A8] text-sm">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-muted text-sm">
                                         Nenhum processo encontrado para os filtros aplicados.
                                     </td>
                                 </tr>
@@ -682,17 +921,17 @@ export default function Processos({ setCurrentView }) {
                                     <tr
                                         key={p.id}
                                         onClick={() => abrirEditar(p)}
-                                        className="hover:bg-[#FFF7ED] transition-colors cursor-pointer"
+                                        className="hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
                                     >
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-[#C2410C]">{p.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-[var(--accent-dark)]">{p.id}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-bold text-[#0B1B2E]">{p.nome}</div>
-                                            <div className="text-xs text-[#475467] mt-0.5">{p.responsavel.setor}</div>
+                                            <div className="text-sm font-bold text-foreground">{p.nome}</div>
+                                            <div className="text-xs text-faint mt-0.5">{p.responsavel.setor}</div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-[#475467] max-w-xs">
+                                        <td className="px-6 py-4 text-sm text-faint max-w-xs">
                                             <span className="line-clamp-2" title={p.descricao}>{p.descricao}</span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-[#0B1B2E] font-medium">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-foreground font-medium">
                                             v{p.versao}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -704,7 +943,7 @@ export default function Processos({ setCurrentView }) {
                                                     onClick={() => abrirEditar(p)}
                                                     aria-label={`Editar ${p.nome}`}
                                                     title="Editar processo"
-                                                    className="p-3 rounded-md text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                                    className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                                                 >
                                                     <span className="material-symbols-outlined text-[20px]">edit</span>
                                                 </button>
@@ -715,12 +954,12 @@ export default function Processos({ setCurrentView }) {
                                                         rel="noopener noreferrer"
                                                         aria-label={`Abrir POP de ${p.nome} no Google Docs`}
                                                         title="Abrir POP no Google Docs"
-                                                        className="p-3 rounded-md text-[#C2410C] hover:bg-[#FFF7ED] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                                        className="p-3 rounded-md text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                                     </a>
                                                 ) : (
-                                                    <span className="p-3 text-[#8896A8] cursor-default" title="Rascunho — sem POP publicado" aria-label="Rascunho, sem POP publicado">
+                                                    <span className="p-3 text-muted cursor-default" title="Rascunho — sem POP publicado" aria-label="Rascunho, sem POP publicado">
                                                         <span className="material-symbols-outlined text-[20px]" aria-hidden="true">edit_note</span>
                                                     </span>
                                                 )}
@@ -734,32 +973,32 @@ export default function Processos({ setCurrentView }) {
                 </div>
 
                 {/* Paginação */}
-                <div className="px-6 py-4 border-t border-[#E4ECF5] flex items-center justify-between bg-[#F7FAFD]">
-                    <span className="text-sm text-[#475467]">
+                <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-surface-raised">
+                    <span className="text-sm text-faint">
                         Mostrando{' '}
-                        <span className="font-bold text-[#0B1B2E]">
+                        <span className="font-bold text-foreground">
                             {processosFiltrados.length === 0 ? 0 : inicio + 1}
                         </span>{' '}
                         a{' '}
-                        <span className="font-bold text-[#0B1B2E]">
+                        <span className="font-bold text-foreground">
                             {Math.min(inicio + ROWS_PER_PAGE, processosFiltrados.length)}
                         </span>{' '}
                         de{' '}
-                        <span className="font-bold text-[#0B1B2E]">{processosFiltrados.length}</span>{' '}
+                        <span className="font-bold text-foreground">{processosFiltrados.length}</span>{' '}
                         resultado{processosFiltrados.length !== 1 ? 's' : ''}
                     </span>
                     <div className="flex gap-2">
                         <button
                             onClick={() => setPagina(p => Math.max(1, p - 1))}
                             disabled={paginaSegura === 1}
-                            className="px-3 py-2 min-h-[44px] border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                            className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-faint hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                         >
                             Anterior
                         </button>
                         <button
                             onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
                             disabled={paginaSegura === totalPaginas}
-                            className="px-3 py-2 min-h-[44px] border border-[#E4ECF5] rounded-lg text-sm font-bold text-[#0B1B2E] hover:bg-[#FFF7ED] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                            className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-foreground hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
                         >
                             Próximo
                         </button>
@@ -769,7 +1008,7 @@ export default function Processos({ setCurrentView }) {
 
             {/* Cards de resumo por categoria */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {categoriasComContagem.map(cat => {
+                {categorias.map(cat => {
                     const total = contagem[cat.id] || 0;
                     const pct = percentuaisAtivos[cat.id] || 0;
                     return (
@@ -777,22 +1016,22 @@ export default function Processos({ setCurrentView }) {
                             key={cat.id}
                             onClick={() => { handleCategoria(cat.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                             aria-label={`Filtrar por ${cat.label}, ${total} processo${total !== 1 ? 's' : ''}`}
-                            className="bg-white p-6 rounded-[20px] border border-[#E4ECF5] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                            className="bg-surface p-6 rounded-[20px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
                         >
                             <div className="flex items-start justify-between mb-4">
-                                <div className="bg-[#FFF7ED] p-3 rounded-[14px] text-[#C2410C] group-hover:bg-gradient-to-br group-hover:from-[#9A3412] group-hover:to-[#EC7D23] group-hover:text-white transition-all">
+                                <div className="bg-[var(--accent-soft)] p-3 rounded-[14px] text-[var(--accent-dark)] group-hover:bg-gradient-to-br group-hover:from-[#9A3412] group-hover:to-[#EC7D23] group-hover:text-white transition-all">
                                     <span className="material-symbols-outlined text-3xl">{cat.icon}</span>
                                 </div>
-                                <span className="text-3xl font-black text-[#0B1B2E]">{total}</span>
+                                <span className="text-3xl font-black text-foreground">{total}</span>
                             </div>
-                            <h3 className="text-base font-bold text-[#0B1B2E] mb-1">{cat.label}</h3>
-                            <p className="text-[#475467] text-xs">
+                            <h3 className="text-base font-bold text-foreground mb-1">{cat.label}</h3>
+                            <p className="text-faint text-xs">
                                 {total === 0 ? 'Nenhum processo cadastrado' : `${total} processo${total !== 1 ? 's' : ''} cadastrado${total !== 1 ? 's' : ''}`}
                             </p>
-                            <div className="mt-4 w-full bg-[#F7FAFD] rounded-full h-1.5">
+                            <div className="mt-4 w-full bg-surface-raised rounded-full h-1.5">
                                 <div className="bg-gradient-to-r from-[#9A3412] to-[#EC7D23] h-1.5 rounded-full transition-all" style={{ width: `${pct}%` }} />
                             </div>
-                            <p className="text-xs text-[#475467] mt-2 text-right">{pct}% Ativos</p>
+                            <p className="text-xs text-faint mt-2 text-right">{pct}% Ativos</p>
                         </button>
                     );
                 })}

@@ -165,7 +165,7 @@ export default function App() {
                     {currentView === 'schedule' && <Schedule user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'plantao-historico' && user?.is_admin && <PlantaoHistorico user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'plantao-historico' && !user?.is_admin && <NotFound setCurrentView={setCurrentView} user={user} />}
-                    {currentView === 'processes' && <Processos setCurrentView={setCurrentView} />}
+                    {currentView === 'processes' && <Processos user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'announcements' && <Comunicados user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}
                     {currentView === 'tickets' && <TicketsList user={user} setCurrentView={setCurrentView} />}
