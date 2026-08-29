@@ -140,6 +140,20 @@ const FORM_VAZIO = {
     tags: '',
 };
 
+function CampoSecao({ titulo, children }) {
+    return (
+        <div>
+            <h3 className="text-[11px] font-black text-[#C2410C] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <span className="w-1 h-3 rounded-full bg-gradient-to-b from-[#9A3412] to-[#EC7D23]" />
+                {titulo}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {children}
+            </div>
+        </div>
+    );
+}
+
 function ProcessoModal({ processo, onSalvar, onFechar }) {
     const isEdicao = Boolean(processo?.id);
     const [form, setForm] = useState(() => {
@@ -255,10 +269,10 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                 className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-[#E4ECF5]"
             >
                 {/* Header do modal */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] bg-[#F7FAFD]">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[#E4ECF5] bg-[#F7FAFD]">
                     <div className="flex items-center gap-3">
-                        <div className="bg-[#FFF7ED] p-2 rounded-lg">
-                            <span className="material-symbols-outlined text-[#C2410C] text-xl" aria-hidden="true">
+                        <div className="bg-gradient-to-br from-[#9A3412] to-[#EC7D23] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30">
+                            <span className="material-symbols-outlined text-white text-2xl" aria-hidden="true">
                                 {isEdicao ? 'edit' : 'add_circle'}
                             </span>
                         </div>
@@ -266,23 +280,28 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                             <h2 id={tituloId} className="text-[#0B1B2E] font-black text-lg">
                                 {isEdicao ? 'Editar Processo' : 'Novo Processo'}
                             </h2>
+                            <p className="text-xs text-[#475467] mt-0.5">
+                                {isEdicao ? 'Atualize os dados deste procedimento.' : 'Cadastre um novo procedimento operacional.'}
+                            </p>
                             {isEdicao && (
-                                <p className="text-xs text-[#8896A8] font-mono">{processo.id}</p>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white border border-[#E4ECF5] text-[10px] font-mono font-bold text-[#475467] mt-1.5">
+                                    {processo.id}
+                                </span>
                             )}
                         </div>
                     </div>
                     <button
                         onClick={tentarFechar}
                         aria-label="Fechar"
-                        className="text-[#8896A8] hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545]"
+                        className="text-[#8896A8] hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]"
                     >
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
                 {/* Corpo do formulário */}
-                <form id={formId} onSubmit={handleSubmit} noValidate className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <form id={formId} onSubmit={handleSubmit} noValidate className="overflow-y-auto flex-1 px-6 py-6 space-y-6">
+                    <CampoSecao titulo="Identificação">
                         <div className="sm:col-span-2">
                             <label htmlFor="processo-nome" className={labelCls}>Nome do Processo *</label>
                             <input
@@ -320,7 +339,9 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                                 ))}
                             </select>
                         </div>
+                    </CampoSecao>
 
+                    <CampoSecao titulo="Descrição">
                         <div className="sm:col-span-2">
                             <label htmlFor="processo-descricao" className={labelCls}>Descrição *</label>
                             <textarea
@@ -341,7 +362,9 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                                 </p>
                             )}
                         </div>
+                    </CampoSecao>
 
+                    <CampoSecao titulo="Detalhes Operacionais">
                         <div>
                             <label htmlFor="processo-versao" className={labelCls}>Versão</label>
                             <input id="processo-versao" className={inputCls} value={form.versao} onChange={e => set('versao', e.target.value)} placeholder="1.0" />
@@ -361,7 +384,9 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                             <label htmlFor="processo-tempo" className={labelCls}>Tempo Estimado</label>
                             <input id="processo-tempo" className={inputCls} value={form.tempoEstimado} onChange={e => set('tempoEstimado', e.target.value)} placeholder="Ex: 30min" />
                         </div>
+                    </CampoSecao>
 
+                    <CampoSecao titulo="Documentação e Tags">
                         <div className="sm:col-span-2">
                             <label htmlFor="processo-doc" className={labelCls}>Link do Google Docs (POP)</label>
                             <input id="processo-doc" className={inputCls} type="url" value={form.docUrl} onChange={e => set('docUrl', e.target.value)} placeholder="https://docs.google.com/..." />
@@ -371,18 +396,18 @@ function ProcessoModal({ processo, onSalvar, onFechar }) {
                             <label htmlFor="processo-tags" className={labelCls}>Tags (separadas por vírgula)</label>
                             <input id="processo-tags" className={inputCls} value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="Ex: IXC, cadastro, ativação" />
                         </div>
-                    </div>
+                    </CampoSecao>
                 </form>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-[#E4ECF5] bg-white flex justify-end gap-3">
-                    <button type="button" onClick={tentarFechar} className="px-4 py-2 text-sm font-bold text-[#0B1B2E] border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">
+                <div className="px-6 py-5 border-t border-[#E4ECF5] bg-white flex justify-end gap-3">
+                    <button type="button" onClick={tentarFechar} className="h-11 px-4 text-sm font-bold text-[#0B1B2E] border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]">
                         Cancelar
                     </button>
                     <button
                         type="submit"
                         form={formId}
-                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                        className="h-11 px-5 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 active:scale-[0.98]"
                     >
                         <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{isEdicao ? 'save' : 'add'}</span>
                         {isEdicao ? 'Salvar Alterações' : 'Criar Processo'}
