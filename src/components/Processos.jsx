@@ -665,13 +665,23 @@ export default function Processos({ user, setCurrentView }) {
     const [pagina, setPagina] = useState(1);
     const [modal, setModal] = useState(null); // null | { modo: 'novo' } | { modo: 'editar', processo }
     const [categorias, setCategorias] = useState([]);
+    const [categoriasErro, setCategoriasErro] = useState(false);
     const [categoriasAbertas, setCategoriasAbertas] = useState(false);
 
     useEffect(() => {
         fetch('/api/categorias-processos')
-            .then(res => res.json())
-            .then(setCategorias)
-            .catch(err => console.error('Erro ao buscar categorias de processos:', err));
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(dados => {
+                if (!Array.isArray(dados)) throw new Error('Resposta inesperada da API de categorias.');
+                setCategorias(dados);
+            })
+            .catch(err => {
+                console.error('Erro ao buscar categorias de processos:', err);
+                setCategoriasErro(true);
+            });
     }, []);
 
     const contagem = useMemo(() => contarPorCategoria(lista), [lista]);
@@ -828,6 +838,12 @@ export default function Processos({ user, setCurrentView }) {
                                 </button>
                             )}
                         </div>
+                        {categoriasErro && (
+                            <p className="mt-2 text-xs text-[#E84545] flex items-center gap-1">
+                                <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
+                                Não foi possível carregar as categorias agora. Tente recarregar a página.
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
