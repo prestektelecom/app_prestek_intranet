@@ -453,6 +453,66 @@ function slugify(texto) {
 
 const CATEGORIA_FORM_VAZIO = { id: '', label: '', icon: '', prefixo: '', ordem: 0 };
 
+// Ícones Material Symbols mais comuns para categorias de processo — evita que o
+// admin precise adivinhar/digitar o nome exato do ícone às cegas.
+const ICONES_CATEGORIA = [
+    'support_agent', 'headset_mic', 'router', 'dns', 'cloud',
+    'sell', 'storefront', 'local_offer', 'shopping_cart',
+    'payments', 'receipt_long', 'account_balance',
+    'person', 'groups', 'badge', 'school',
+    'computer', 'settings', 'build', 'engineering', 'security',
+    'apartment', 'work', 'business_center', 'inventory_2',
+    'forum', 'verified', 'category', 'folder', 'description',
+];
+
+function IconePicker({ value, onChange }) {
+    const [busca, setBusca] = useState('');
+    const inputCls = "w-full px-3 py-2 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
+
+    const termo = busca.trim().toLowerCase();
+    const icones = termo ? ICONES_CATEGORIA.filter(i => i.includes(termo)) : ICONES_CATEGORIA;
+    // Garante que o ícone atual (mesmo se vier de fora da lista curada, ex: dado legado) sempre apareça selecionável.
+    const lista = value && !icones.includes(value) ? [value, ...icones] : icones;
+
+    return (
+        <div className="border border-border rounded-lg bg-surface-raised p-3">
+            <div className="flex items-center gap-3 mb-2.5">
+                <div className="shrink-0 w-10 h-10 rounded-lg bg-[var(--accent-soft)] text-[var(--accent-dark)] flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[22px]">{value || 'help'}</span>
+                </div>
+                <input
+                    className={inputCls}
+                    value={busca}
+                    onChange={e => setBusca(e.target.value)}
+                    placeholder="Buscar ícone... (ex: venda, pessoa, nuvem)"
+                />
+            </div>
+            <div className="flex flex-wrap gap-1.5 max-h-[132px] overflow-y-auto">
+                {lista.length === 0 && (
+                    <p className="text-xs text-muted px-1 py-2">Nenhum ícone encontrado para "{busca}".</p>
+                )}
+                {lista.map(nome => (
+                    <button
+                        key={nome}
+                        type="button"
+                        onClick={() => onChange(nome)}
+                        title={nome}
+                        aria-label={`Selecionar ícone ${nome}`}
+                        aria-pressed={value === nome}
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] ${
+                            value === nome
+                                ? 'bg-gradient-to-br from-[#9A3412] to-[#EC7D23] text-white'
+                                : 'bg-surface border border-border text-muted hover:border-[#EC7D23] hover:text-[var(--accent-dark)]'
+                        }`}
+                    >
+                        <span className="material-symbols-outlined text-[18px]">{nome}</span>
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminEmail }) {
     const [form, setForm] = useState(CATEGORIA_FORM_VAZIO);
     const [editandoId, setEditandoId] = useState(null);
@@ -498,7 +558,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
         e.preventDefault();
         setErro('');
         if (!form.label.trim()) { setErro('O nome da categoria é obrigatório.'); return; }
-        if (!form.icon.trim()) { setErro('Informe o nome do ícone (Material Symbols).'); return; }
+        if (!form.icon.trim()) { setErro('Selecione um ícone para a categoria.'); return; }
         const id = editandoId || form.id || slugify(form.label);
         if (!id) { setErro('Informe um identificador para a categoria.'); return; }
 
@@ -583,9 +643,9 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                                 <label className={labelCls}>Nome *</label>
                                 <input className={inputCls} value={form.label} onChange={e => set('label', e.target.value)} placeholder="Ex: Marketing" />
                             </div>
-                            <div>
-                                <label className={labelCls}>Ícone (Material Symbols) *</label>
-                                <input className={inputCls} value={form.icon} onChange={e => set('icon', e.target.value)} placeholder="Ex: campaign" />
+                            <div className="col-span-2">
+                                <label className={labelCls}>Ícone *</label>
+                                <IconePicker value={form.icon} onChange={nome => set('icon', nome)} />
                             </div>
                             <div>
                                 <label className={labelCls}>Prefixo</label>
@@ -775,13 +835,9 @@ export default function Processos({ user, setCurrentView }) {
                 onAdd={abrirNovo}
             />
 
-            {lista.length === 0 ? (
-                <div className="mt-8">
-                    <EmptyState onAdd={abrirNovo} />
-                </div>
-            ) : (
             <div className="mt-8 flex flex-col gap-8">
-            {/* Ações secundárias */}
+            {/* Ações secundárias — só faz sentido com processos cadastrados */}
+            {lista.length > 0 && (
             <div className="flex flex-wrap justify-end gap-3">
                 <button
                     onClick={exportarCSV}
@@ -793,8 +849,10 @@ export default function Processos({ user, setCurrentView }) {
                     <span>Exportar Lista</span>
                 </button>
             </div>
+            )}
 
-            {/* Barra de busca e filtros */}
+            {/* Barra de busca e filtros — também visível para admin com a lista vazia, para acesso a "Gerenciar Categorias" */}
+            {(lista.length > 0 || user?.is_admin) && (
             <div className="bg-surface p-5 rounded-[20px] border border-border shadow-sm">
                 <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
                     <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 relative">
@@ -847,7 +905,12 @@ export default function Processos({ user, setCurrentView }) {
                     </div>
                 </div>
             </div>
+            )}
 
+            {lista.length === 0 ? (
+                <EmptyState onAdd={abrirNovo} />
+            ) : (
+            <>
             {/* Lista Mobile (Cards) — oculta em md+ */}
             <div className="block md:hidden bg-surface border border-border rounded-[20px] overflow-hidden shadow-sm">
                 {processosPagina.length === 0 ? (
@@ -1052,8 +1115,9 @@ export default function Processos({ user, setCurrentView }) {
                     );
                 })}
             </div>
-            </div>
+            </>
             )}
+            </div>
         </main>
         </>
     );
