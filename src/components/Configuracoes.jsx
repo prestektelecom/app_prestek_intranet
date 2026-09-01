@@ -392,9 +392,9 @@ export default function Configuracoes({ user, setCurrentView }) {
                                         )}
                                     </div>
                                 )}
-                                {/* Grid Avatares */}
+                                {/* Grid Avatares — camada FLOATING (Z.FLOATING = 20) */}
                                 {showAvatarGrid && (
-                                    <div style={{ position: 'absolute', top: 224, left: '50%', transform: 'translateX(-50%)', zIndex: 30, width: 288, background: C.surface, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 12px 32px ${tone(C.accentDeep, 0.14)}`, padding: 12, maxHeight: 380, overflowY: 'auto' }}>
+                                    <div style={{ position: 'absolute', top: 224, left: '50%', transform: 'translateX(-50%)', zIndex: 20, width: 288, background: C.surface, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 12px 32px ${tone(C.accentDeep, 0.14)}`, padding: 12, maxHeight: 380, overflowY: 'auto' }}>
                                         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, textAlign: 'center', marginBottom: 10, fontFamily: '"JetBrains Mono", monospace' }}>Avatares 3D</p>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                                             {PREDEFINED_PNG_AVATARS.map((url, idx) => (
@@ -523,9 +523,9 @@ export default function Configuracoes({ user, setCurrentView }) {
                 </div>
             </div>
 
-            {/* Toast de sucesso */}
+            {/* Toast de sucesso — camada TOAST (Z.TOAST = 9999) */}
             {saveSuccess && (
-                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 99, animation: 'toastUp .35s ease-out' }}>
+                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, animation: 'toastUp .35s ease-out' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.successSoft}`, boxShadow: `0 8px 32px ${tone(C.success, 0.2)}` }}>
                         <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.successSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 20, color: C.success }}>check_circle</span>

@@ -850,7 +850,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
         <div style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 100,
+            zIndex: 1100, // camada MODAL (Z.MODAL). ⚠️ era 100 (atrás do header z-1000) — provável bug, validar visualmente
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -1118,7 +1118,7 @@ function DeleteModal({ onClose, onConfirm }) {
         <div style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 110,
+            zIndex: 1100, // camada MODAL (Z.MODAL). ⚠️ era 110 (atrás do header z-1000) — provável bug, validar visualmente
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

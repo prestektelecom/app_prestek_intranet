@@ -72,9 +72,9 @@ export default function OrgChart({ data, loaded, isAdmin, onEdit }) {
                 }}
             >
                 <div className="flex min-w-[1144px] flex-col items-center pr-6">
-                    {/* CEO */}
+                    {/* CEO — camada ELEVATED (Z.ELEVATED = 10) */}
                     <div
-                        className="relative z-[2] w-[240px] rounded-[18px] px-4 py-5 text-center text-white"
+                        className="relative z-[10] w-[240px] rounded-[18px] px-4 py-5 text-center text-white"
                         style={{
                             background: gradienteHero(C),
                             boxShadow: `0 16px 36px -16px ${tone(C.accentDeep, 0.55)}`,

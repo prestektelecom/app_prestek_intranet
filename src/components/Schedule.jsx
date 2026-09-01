@@ -729,9 +729,9 @@ export default function Schedule({ setCurrentView, user }) {
                         getNamesFromIds={getNamesFromIds}
                     />
                 )}
-                {/* Confirmação de exclusão */}
+                {/* Confirmação de exclusão — camada MODAL (Z.MODAL = 1100) */}
                 {confirmDeleteOpen && existingPlantao && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                         <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm border border-border flex flex-col">
                             <div className="px-5 py-4 border-b border-border flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[var(--danger-bento)]">delete_forever</span>

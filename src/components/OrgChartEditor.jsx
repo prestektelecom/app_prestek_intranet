@@ -117,7 +117,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
 
     return (
         <div style={{
-            position: 'fixed', inset: 0, zIndex: 100,
+            position: 'fixed', inset: 0, zIndex: 1100, // camada MODAL (Z.MODAL). ⚠️ era 100 (atrás do header z-1000) — provável bug, validar visualmente
             background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
         }} onClick={onClose}>
