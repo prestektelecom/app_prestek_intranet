@@ -14,15 +14,26 @@ O design transmite uma atmosfera **Corporativa Acolhedora** — profissional e o
 
 | Nome Descritivo | Hex | Papel Funcional |
 |---|---|---|
-| **Laranja Âmbar Intenso** | `#ff8c00` | Cor primária: ações, destaques, links ativos, badges |
-| **Creme Morno** | `#f8f7f5` | Fundo principal da aplicação |
-| **Marrom Noturno** | `#231a0f` | Fundo escuro (modo dark) |
-| **Marrom Tinta** | `#1d150c` | Texto primário e títulos |
-| **Marrom Mesclado** | `#635c55` | Texto secundário e labels |
-| **Ambar Claro** | `#a17745` | Ícones de busca e placeholders |
-| **Bege Suave** | `#f4eee6` | Fundos de hover, inputs, chips de data |
-| **Creme Borda** | `#eaddcd` | Bordas de divisão e separadores |
-| **Branco Puro** | `#ffffff` | Fundo de cards, header e sidebar |
+| **Laranja Prestek** | `#EC7D23` | Cor primária: ações, destaques, links ativos, badges |
+| **Azul Gelo** | `#F5F9FF` | Fundo principal da aplicação |
+| **Branco Puro** | `#FFFFFF` | Fundo de cards, header e sidebar |
+| **Azul Profundo** | `#0B1B2E` | Texto primário e títulos |
+| **Azul Mesclado** | `#475467` | Texto secundário e labels |
+| **Azul Claro** | `#8896A8` | Texto secundário mais claro |
+| **Azul Gelo Elevado** | `#F7FAFD` | Superfícies elevadas (surface-raised) |
+| **Borda Gelo** | `#E4ECF5` | Bordas de divisão e separadores |
+| **Borda Sutil** | `#EFF4FA` | Bordas secundárias |
+
+### Temas Dark
+
+O projeto oferece 4 temas escuros completos com variáveis CSS:
+
+| Tema | Background | Primária | Atmosfera |
+|---|---|---|---|
+| **Default Dark** | `#070B13` (azul escuro) | `#F97316` | Sóbrio, profissional |
+| **Cyber-Obsidian** | `#070B13` (glassmorph) | `#EC7D23` | Néon, vídeo-game |
+| **Deep-Space Aurora** | `#0F0C20` (roxo escuro) | `#FB923C` | Cósmico, vibrante |
+| **AMOLED Pitch Black** | `#000000` (preto verdadeiro) | `#F97316` | Máximo contraste, economia de bateria |
 
 ---
 

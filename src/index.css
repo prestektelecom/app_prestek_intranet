@@ -133,8 +133,8 @@
   --foreground-rgb: 245 249 255;
   --foreground-muted:#8896A8;
   --foreground-muted-rgb: 136 150 168;
-  --foreground-faint:#475467;
-  --foreground-faint-rgb: 71 84 103;
+  --foreground-faint:#75899D;
+  --foreground-faint-rgb: 117 137 157;
 
   /* Primária (laranja Prestek, do logo) */
   --primary:         #F97316;
@@ -205,8 +205,8 @@
   --foreground-rgb: 245 249 255;
   --foreground-muted:#8896A8;
   --foreground-muted-rgb: 136 150 168;
-  --foreground-faint:#475467;
-  --foreground-faint-rgb: 71 84 103;
+  --foreground-faint:#75899D;
+  --foreground-faint-rgb: 117 137 157;
 
   /* Primária (Laranja Brasa — o néon deste tema, em quente) */
   --primary:         #F97316;
@@ -276,8 +276,8 @@
   --foreground-rgb: 245 249 255;
   --foreground-muted:#A398CD;
   --foreground-muted-rgb: 163 152 205;
-  --foreground-faint:#6B5F9C;
-  --foreground-faint-rgb: 107 95 156;
+  --foreground-faint:#9489C8;
+  --foreground-faint-rgb: 148 137 200;
 
   /* Primária (Laranja Aurora — destaque quente sobre estrutura roxa) */
   --primary:         #FB923C;
@@ -347,8 +347,8 @@
   --foreground-rgb: 255 255 255;
   --foreground-muted:#888888;
   --foreground-muted-rgb: 136 136 136;
-  --foreground-faint:#444444;
-  --foreground-faint-rgb: 68 68 68;
+  --foreground-faint:#777777;
+  --foreground-faint-rgb: 119 119 119;
 
   /* Primária (Laranja de Alto Contraste) */
   --primary:         #F97316;
