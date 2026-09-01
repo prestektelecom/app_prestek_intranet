@@ -688,3 +688,75 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   Print Styles — Prestek Intranet
+   O app é um SPA com h-screen + overflow-hidden. Sem estes
+   resets, imprimir recorta o conteúdo em uma só "tela".
+   ═══════════════════════════════════════════════════════════ */
+@media print {
+  /* Esconder chrome de navegação: Header (header), Sidebar (aside),
+     MobileBottomNav (nav) e overlays fixos (drawer, more-sheet, modais). */
+  header,
+  aside,
+  nav,
+  .fixed,
+  .glass {
+    display: none !important;
+  }
+
+  /* Reset do shell SPA: altura fixa e overflow recortam o conteúdo. */
+  html,
+  body,
+  #root,
+  #root > div,
+  [class*="h-screen"],
+  [class*="h-dvh"],
+  [class*="overflow-hidden"] {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Conteúdo ocupa a largura total da página */
+  #root > div,
+  [class*="flex-1"] {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Cores amigáveis à impressão */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+  a {
+    color: #1a56db !important;
+    text-decoration: underline;
+  }
+
+  /* Preservar cores de status (badges, KPIs) quando o usuário optar
+     por imprimir com fundos no diálogo da impressora. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Z-INDEX — Convenção de camadas
+   Referência rápida (detalhes em DESIGN.md). NUNCA invente um
+   número arbitrário; use a camada mais próxima abaixo.
+
+     0      base (padrão)
+     10     conteúdo elevado (badges, chips sobre cards)
+     20-99  controles flutuantes leves (tooltips, dropdowns)
+     100    headers/abas sticky internos de página
+     500    overlays de mapa (MapLegend) — acima do conteúdo,
+            abaixo do chrome global
+     1000   chrome global (header, sidebar, bottom-nav)
+     1100   drawers e modais (MobileDrawer, OverrideModal, ...)
+     9999   alertas críticos / toasts (acima de tudo)
+   ═══════════════════════════════════════════════════════════ */
+

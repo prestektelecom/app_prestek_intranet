@@ -68,3 +68,27 @@ O projeto oferece 4 temas escuros completos com variáveis CSS:
 - **Espaçamento interno:** Padding generoso nos cards (`p-6`), gaps de 8px (gap-2) a 32px (gap-8) entre elementos
 - **Whitespace strategy:** **"Breathing Room"** — cada card tem espaço interno suficiente para que os dados respirem; nada parece comprimido
 - **Widget de Suporte (sidebar):** Isolado ao fundo com gradiente sutil `from-primary/10 to-primary/5`, criando uma zona visualmente "quente" e chamativa sem agressividade
+
+---
+
+## 6. Z-Index Convention
+
+Camadas de sobreposição **documentadas** — nunca use um número arbitrário. Ao criar um novo overlay, use a camada mais próxima abaixo.
+
+| Camada | Valor | Uso |
+|---|---|---|
+| Base | `0` | Padrão (sem z-index) |
+| Elevado | `10` | Badges, chips, conteúdo que sobe sobre cards |
+| Flutuante leve | `20-99` | Tooltips, dropdowns, controles flutuantes |
+| Sticky interno | `100` | Headers/abas sticky dentro de páginas |
+| Mapa | `500` | `MapLegend` e overlays do Leaflet (acima do conteúdo, abaixo do chrome) |
+| Chrome global | `1000` | Header, Sidebar, MobileBottomNav, CoverageMap |
+| Chrome +1 | `1001-1050` | Elementos que sobem sobre o chrome (MobileMoreSheet, DirectoryToolbar) |
+| Drawers & Modais | `1100` | MobileDrawer, OverrideModal, TiSupportModal, PlanEditModal |
+| Toast crítico | `9999` | Alertas que precisam ficar acima de TUDO |
+
+**Regras:**
+1. Prefira `z-[1100]` (modais) a inventar `z-[1137]`.
+2. Novo overlay → escalone a partir da tabela; se precisar de um degrau intermediário, use o próximo valor "redondo" (`+10` ou `+100`) e **atualize esta tabela**.
+3. Chrome global (`1000`) nunca deve ser inferior a um modal (`1100`).
+4. O tema escuro **não** altera z-index — é puramente cor.
