@@ -115,7 +115,6 @@ export default function Configuracoes({ user, setCurrentView }) {
                 // com fallback para os defaults exibidos hoje quando o usuário nunca salvou a preferência
                 formDataFinal.notif_comunicados_departamento = toBoolPref(formDataFinal.notif_comunicados_departamento, true);
                 formDataFinal.notif_manutencao_sistema = toBoolPref(formDataFinal.notif_manutencao_sistema, true);
-                formDataFinal.notif_atualizacoes_colaboradores = toBoolPref(formDataFinal.notif_atualizacoes_colaboradores, false);
                 setFormData(formDataFinal);
 
             } catch (err) {
@@ -544,13 +543,12 @@ export default function Configuracoes({ user, setCurrentView }) {
                             <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${C.lineSoft}` }}>
                                 <p style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 14 }}>Notificações por E-mail</p>
                                 {isLoading ? (
-                                    [1, 2, 3].map(i => (
+                                    [1, 2].map(i => (
                                         <div key={i} style={{ height: 20, borderRadius: 999, background: C.lineSoft, marginBottom: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
                                     ))
                                 ) : [
                                     { label: 'Comunicados do Departamento', name: 'notif_comunicados_departamento' },
                                     { label: 'Manutenção do Sistema', name: 'notif_manutencao_sistema' },
-                                    { label: 'Atualizações de Colaboradores', name: 'notif_atualizacoes_colaboradores' },
                                 ].map(({ label, name }) => {
                                     const checked = !!formData[name];
                                     return (
