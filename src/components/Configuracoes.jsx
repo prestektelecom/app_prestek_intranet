@@ -5,6 +5,13 @@ import { useBentoTheme } from '../hooks/useBentoTheme';
 
 const PREDEFINED_PNG_AVATARS = AVATAR_PNGS;
 
+// Preferências booleanas voltam do banco como texto ('true'/'false') — normaliza para boolean real
+const toBoolPref = (valor, fallback) => {
+    if (valor === undefined || valor === null || valor === '') return fallback;
+    if (typeof valor === 'boolean') return valor;
+    return valor === 'true';
+};
+
 export default function Configuracoes({ user, setCurrentView }) {
     const C = useBentoTheme();
     const fileInputRef = useRef(null);
@@ -34,6 +41,7 @@ export default function Configuracoes({ user, setCurrentView }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [saveError, setSaveError] = useState(false);
 
     // Listas do IXC
     const [departamentosList, setDepartamentosList] = useState([]);
@@ -102,7 +110,13 @@ export default function Configuracoes({ user, setCurrentView }) {
                 };
 
                 // Preferências do usuário sobrescrevem os dados-base do perfil
-                setFormData({ ...baseFormData, ...dadosPrefs });
+                const formDataFinal = { ...baseFormData, ...dadosPrefs };
+                // Toggles de notificação: normaliza texto do banco ('true'/'false') para boolean,
+                // com fallback para os defaults exibidos hoje quando o usuário nunca salvou a preferência
+                formDataFinal.notif_comunicados_departamento = toBoolPref(formDataFinal.notif_comunicados_departamento, true);
+                formDataFinal.notif_manutencao_sistema = toBoolPref(formDataFinal.notif_manutencao_sistema, true);
+                formDataFinal.notif_atualizacoes_colaboradores = toBoolPref(formDataFinal.notif_atualizacoes_colaboradores, false);
+                setFormData(formDataFinal);
 
             } catch (err) {
                 console.error("Erro ao carregar dados do banco:", err);
@@ -213,6 +227,7 @@ export default function Configuracoes({ user, setCurrentView }) {
     const CAMPOS_READONLY = ['id_departamento', 'filial_id'];
     const handleSave = async () => {
         setIsSaving(true);
+        setSaveError(false);
         try {
             const pngIdx = PREDEFINED_PNG_AVATARS.indexOf(avatarUrl);
             const avatarCompacto = pngIdx >= 0
@@ -232,16 +247,22 @@ export default function Configuracoes({ user, setCurrentView }) {
                     body: JSON.stringify({ email: safeEmail, chave, valor: valor ?? '' })
                 })
             );
-            await Promise.all(promessas);
+            const respostasPrefs = await Promise.all(promessas);
+            if (respostasPrefs.some(res => !res.ok)) {
+                throw new Error('Falha ao salvar preferências');
+            }
 
             // Sincroniza dados críticos (como celular, nome, ramal) com a API IXC
             // avatarUrl é excluído pois pode ser um objeto Lottie gigante
             const { avatarUrl: _av, ...formDataSemAvatar } = formData;
-            await fetch(`/api/funcionario/${safeId}`, {
+            const respFuncionario = await fetch(`/api/funcionario/${safeId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formDataSemAvatar)
             });
+            if (!respFuncionario.ok) {
+                throw new Error('Falha ao sincronizar dados do funcionário');
+            }
 
             // Salva no localStorage com mesmo formato compacto
             if (safeId) {
@@ -253,6 +274,8 @@ export default function Configuracoes({ user, setCurrentView }) {
             setTimeout(() => setSaveSuccess(false), 3000);
         } catch (err) {
             console.error("Erro ao salvar no PostgreSQL:", err);
+            setSaveError(true);
+            setTimeout(() => setSaveError(false), 4000);
         } finally {
             setIsSaving(false);
         }
@@ -303,8 +326,17 @@ export default function Configuracoes({ user, setCurrentView }) {
     const sInputRO = { ...sInput, background: C.lineSoft, color: C.muted, cursor: 'not-allowed', border: `1.5px solid ${C.lineSoft}` };
     const sH3 = { fontSize: 15, fontWeight: 700, color: C.ink, margin: 0 };
 
+    // Skeleton de campo — mesmas dimensões de sInput, para não causar layout shift ao carregar
+    const FieldSkeleton = ({ span }) => (
+        <div className={`col-span-1 ${span === 2 ? 'md:col-span-2' : ''}`}>
+            <div style={{ width: 90, height: 10, borderRadius: 4, background: C.lineSoft, marginBottom: 8, animation: 'pulse 1.5s ease-in-out infinite' }} />
+            <div style={{ height: 38, borderRadius: 10, background: C.lineSoft, animation: 'pulse 1.5s ease-in-out infinite' }} />
+        </div>
+    );
+
     return (
         <main style={{ flex: 1, width: '100%', background: C.bg, overflowY: 'auto', padding: '0 0 48px' }}>
+            <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }`}</style>
 
             {/* ── Hero Banner ─────────────────────────────────────────────── */}
             <div style={{
@@ -368,7 +400,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                                 )}
                                 <button onClick={() => setShowAvatarMenu(!showAvatarMenu)}
                                     style={{ position: 'absolute', bottom: 2, right: 2, width: 28, height: 28, borderRadius: '50%', background: C.accent, border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 2px 8px ${tone(C.accentDeep, 0.3)}` }}
-                                    title="Alterar Foto">
+                                    title="Alterar Foto" aria-label="Alterar foto de perfil">
                                     <span className="material-symbols-outlined" style={{ fontSize: 15, color: 'white' }}>photo_camera</span>
                                 </button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/png, image/jpeg, image/webp" style={{ display: 'none' }} />
@@ -446,7 +478,9 @@ export default function Configuracoes({ user, setCurrentView }) {
                                 <h3 style={sH3}>Informações Pessoais</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 18 }}>
-                                {[
+                                {isLoading ? (
+                                    [1, 1, 2, 1, 1].map((span, i) => <FieldSkeleton key={i} span={span} />)
+                                ) : [
                                     { label: 'NOME', name: 'nome', value: displayNome, type: 'text', span: 1 },
                                     { label: 'SOBRENOME', name: 'sobrenome', value: displaySobrenome, type: 'text', span: 1 },
                                     { label: 'ENDEREÇO DE E-MAIL', name: 'email', value: displayEmail, type: 'email', span: 2 },
@@ -454,8 +488,8 @@ export default function Configuracoes({ user, setCurrentView }) {
                                     { label: 'DATA DE NASCIMENTO', name: 'data_nascimento', value: displayBirthDate, type: 'date', span: 1 },
                                 ].map(({ label, name, value, type, span }) => (
                                     <div key={name} className={`col-span-1 ${span === 2 ? 'md:col-span-2' : ''}`}>
-                                        <label style={sLabel}>{label}</label>
-                                        <input name={name} type={type} value={value} onChange={handleInputChange}
+                                        <label htmlFor={name} style={sLabel}>{label}</label>
+                                        <input id={name} name={name} type={type} value={value} onChange={handleInputChange}
                                             style={sInput}
                                             onFocus={e => { e.target.style.borderColor = C.accent; e.target.style.boxShadow = `0 0 0 3px ${tone(C.accent, 0.15)}`; }}
                                             onBlur={e => { e.target.style.borderColor = C.line; e.target.style.boxShadow = 'none'; }} />
@@ -467,27 +501,33 @@ export default function Configuracoes({ user, setCurrentView }) {
 
                     {/* Setor e Função */}
                     <div style={sCard}>
-                        <div style={{ height: 4, background: `linear-gradient(90deg, #FDBA74, ${tone('#FDBA74', 0.3)})` }} />
+                        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.cyan}, ${tone(C.cyan, 0.3)})` }} />
                         <div style={sSection}>
                             <div style={sSectionHead}>
-                                <div style={sIconBox('#FDBA74', '#EEF9FC')}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>work</span></div>
+                                <div style={sIconBox(C.cyan, tone(C.cyan, 0.15))}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>work</span></div>
                                 <h3 style={sH3}>Setor e Função</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 18 }}>
-                                <div>
-                                    <label style={sLabel}>SETOR</label>
-                                    <input readOnly value={deptoName} style={sInputRO} />
-                                </div>
-                                <div>
-                                    <label style={sLabel}>LOCALIZAÇÃO DO ESCRITÓRIO</label>
-                                    <input readOnly value={filialName} style={sInputRO} />
-                                </div>
-                                <div>
-                                    <label style={sLabel}>TELEFONE IP / RAMAL</label>
-                                    <input name="ramal" type="text" value={displayRamal} onChange={handleInputChange} style={sInput}
-                                        onFocus={e => { e.target.style.borderColor = C.accent; e.target.style.boxShadow = `0 0 0 3px ${tone(C.accent, 0.15)}`; }}
-                                        onBlur={e => { e.target.style.borderColor = C.line; e.target.style.boxShadow = 'none'; }} />
-                                </div>
+                                {isLoading ? (
+                                    [1, 1, 1].map((span, i) => <FieldSkeleton key={i} span={span} />)
+                                ) : (
+                                    <>
+                                        <div>
+                                            <label htmlFor="setor" style={sLabel}>SETOR</label>
+                                            <input id="setor" readOnly value={deptoName} style={sInputRO} />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="localizacao" style={sLabel}>LOCALIZAÇÃO DO ESCRITÓRIO</label>
+                                            <input id="localizacao" readOnly value={filialName} style={sInputRO} />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="ramal" style={sLabel}>TELEFONE IP / RAMAL</label>
+                                            <input id="ramal" name="ramal" type="text" value={displayRamal} onChange={handleInputChange} style={sInput}
+                                                onFocus={e => { e.target.style.borderColor = C.accent; e.target.style.boxShadow = `0 0 0 3px ${tone(C.accent, 0.15)}`; }}
+                                                onBlur={e => { e.target.style.borderColor = C.line; e.target.style.boxShadow = 'none'; }} />
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -503,20 +543,29 @@ export default function Configuracoes({ user, setCurrentView }) {
                             <ThemeSwitcher />
                             <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${C.lineSoft}` }}>
                                 <p style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 14 }}>Notificações por E-mail</p>
-                                {[
-                                    { label: 'Comunicados do Departamento', defaultChecked: true },
-                                    { label: 'Manutenção do Sistema', defaultChecked: true },
-                                    { label: 'Atualizações de Colaboradores', defaultChecked: false },
-                                ].map(({ label, defaultChecked }) => (
-                                    <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                                        <span style={{ fontSize: 13.5, color: C.ink2 }}>{label}</span>
-                                        <label style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
-                                            <input type="checkbox" defaultChecked={defaultChecked} className="sr-only peer" />
-                                            <div style={{ width: 36, height: 20, borderRadius: 999, background: '#D0D7E1', position: 'relative', transition: 'background .2s' }}
-                                                className="peer-checked:!bg-[#EC7D23] after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-[2px] after:left-[2px] peer-checked:after:translate-x-4 after:transition-all after:shadow-sm" />
+                                {isLoading ? (
+                                    [1, 2, 3].map(i => (
+                                        <div key={i} style={{ height: 20, borderRadius: 999, background: C.lineSoft, marginBottom: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
+                                    ))
+                                ) : [
+                                    { label: 'Comunicados do Departamento', name: 'notif_comunicados_departamento' },
+                                    { label: 'Manutenção do Sistema', name: 'notif_manutencao_sistema' },
+                                    { label: 'Atualizações de Colaboradores', name: 'notif_atualizacoes_colaboradores' },
+                                ].map(({ label, name }) => {
+                                    const checked = !!formData[name];
+                                    return (
+                                        <label key={name} htmlFor={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, cursor: 'pointer' }}>
+                                            <span style={{ fontSize: 13.5, color: C.ink2 }}>{label}</span>
+                                            <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                                                <input id={name} name={name} type="checkbox" checked={checked}
+                                                    onChange={e => setFormData(prev => ({ ...prev, [name]: e.target.checked }))}
+                                                    className="sr-only peer" />
+                                                <span style={{ width: 36, height: 20, borderRadius: 999, background: checked ? C.accent : C.line, position: 'relative', transition: 'background .2s', display: 'inline-block' }}
+                                                    className="after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-[2px] after:left-[2px] peer-checked:after:translate-x-4 after:transition-all after:shadow-sm" />
+                                            </span>
                                         </label>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -536,6 +585,21 @@ export default function Configuracoes({ user, setCurrentView }) {
                         </div>
                     </div>
                     <style>{`@keyframes toastUp { from { opacity:0; transform:translateX(-50%) translateY(16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
+                </div>
+            )}
+
+            {/* Toast de erro */}
+            {saveError && (
+                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 99, animation: 'toastUp .35s ease-out' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.dangerSoft}`, boxShadow: `0 8px 32px ${tone(C.danger, 0.2)}` }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.dangerSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 20, color: C.danger }}>error</span>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>Não foi possível salvar</div>
+                            <div style={{ fontSize: 12, color: C.muted }}>Verifique sua conexão e tente novamente.</div>
+                        </div>
+                    </div>
                 </div>
             )}
         </main>
