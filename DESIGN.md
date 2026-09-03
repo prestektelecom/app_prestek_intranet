@@ -14,15 +14,26 @@ O design transmite uma atmosfera **Corporativa Acolhedora** — profissional e o
 
 | Nome Descritivo | Hex | Papel Funcional |
 |---|---|---|
-| **Laranja Âmbar Intenso** | `#ff8c00` | Cor primária: ações, destaques, links ativos, badges |
-| **Creme Morno** | `#f8f7f5` | Fundo principal da aplicação |
-| **Marrom Noturno** | `#231a0f` | Fundo escuro (modo dark) |
-| **Marrom Tinta** | `#1d150c` | Texto primário e títulos |
-| **Marrom Mesclado** | `#635c55` | Texto secundário e labels |
-| **Ambar Claro** | `#a17745` | Ícones de busca e placeholders |
-| **Bege Suave** | `#f4eee6` | Fundos de hover, inputs, chips de data |
-| **Creme Borda** | `#eaddcd` | Bordas de divisão e separadores |
-| **Branco Puro** | `#ffffff` | Fundo de cards, header e sidebar |
+| **Laranja Prestek** | `#EC7D23` | Cor primária: ações, destaques, links ativos, badges |
+| **Azul Gelo** | `#F5F9FF` | Fundo principal da aplicação |
+| **Branco Puro** | `#FFFFFF` | Fundo de cards, header e sidebar |
+| **Azul Profundo** | `#0B1B2E` | Texto primário e títulos |
+| **Azul Mesclado** | `#475467` | Texto secundário e labels |
+| **Azul Claro** | `#8896A8` | Texto secundário mais claro |
+| **Azul Gelo Elevado** | `#F7FAFD` | Superfícies elevadas (surface-raised) |
+| **Borda Gelo** | `#E4ECF5` | Bordas de divisão e separadores |
+| **Borda Sutil** | `#EFF4FA` | Bordas secundárias |
+
+### Temas Dark
+
+O projeto oferece 4 temas escuros completos com variáveis CSS:
+
+| Tema | Background | Primária | Atmosfera |
+|---|---|---|---|
+| **Default Dark** | `#070B13` (azul escuro) | `#F97316` | Sóbrio, profissional |
+| **Cyber-Obsidian** | `#070B13` (glassmorph) | `#EC7D23` | Néon, vídeo-game |
+| **Deep-Space Aurora** | `#0F0C20` (roxo escuro) | `#FB923C` | Cósmico, vibrante |
+| **AMOLED Pitch Black** | `#000000` (preto verdadeiro) | `#F97316` | Máximo contraste, economia de bateria |
 
 ---
 
@@ -57,3 +68,27 @@ O design transmite uma atmosfera **Corporativa Acolhedora** — profissional e o
 - **Espaçamento interno:** Padding generoso nos cards (`p-6`), gaps de 8px (gap-2) a 32px (gap-8) entre elementos
 - **Whitespace strategy:** **"Breathing Room"** — cada card tem espaço interno suficiente para que os dados respirem; nada parece comprimido
 - **Widget de Suporte (sidebar):** Isolado ao fundo com gradiente sutil `from-primary/10 to-primary/5`, criando uma zona visualmente "quente" e chamativa sem agressividade
+
+---
+
+## 6. Z-Index Convention
+
+Camadas de sobreposição **documentadas** — nunca use um número arbitrário. Ao criar um novo overlay, use a camada mais próxima abaixo.
+
+| Camada | Valor | Uso |
+|---|---|---|
+| Base | `0` | Padrão (sem z-index) |
+| Elevado | `10` | Badges, chips, conteúdo que sobe sobre cards |
+| Flutuante leve | `20-99` | Tooltips, dropdowns, controles flutuantes |
+| Sticky interno | `100` | Headers/abas sticky dentro de páginas |
+| Mapa | `500` | `MapLegend` e overlays do Leaflet (acima do conteúdo, abaixo do chrome) |
+| Chrome global | `1000` | Header, Sidebar, MobileBottomNav, CoverageMap |
+| Chrome +1 | `1001-1050` | Elementos que sobem sobre o chrome (MobileMoreSheet, DirectoryToolbar) |
+| Drawers & Modais | `1100` | MobileDrawer, OverrideModal, TiSupportModal, PlanEditModal |
+| Toast crítico | `9999` | Alertas que precisam ficar acima de TUDO |
+
+**Regras:**
+1. Prefira `z-[1100]` (modais) a inventar `z-[1137]`.
+2. Novo overlay → escalone a partir da tabela; se precisar de um degrau intermediário, use o próximo valor "redondo" (`+10` ou `+100`) e **atualize esta tabela**.
+3. Chrome global (`1000`) nunca deve ser inferior a um modal (`1100`).
+4. O tema escuro **não** altera z-index — é puramente cor.
