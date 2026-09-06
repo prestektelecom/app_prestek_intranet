@@ -43,7 +43,7 @@ export function EmptyState({ temFiltro, onClear }) {
         <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
             <span className="material-symbols-outlined text-5xl text-muted/60" aria-hidden="true">event_busy</span>
             <div>
-                <p className="m-0 text-base font-black text-foreground">Nenhum plantão encontrado</p>
+                <p className="m-0 text-base font-extrabold text-foreground">Nenhum plantão encontrado</p>
                 <p className="m-0 mt-1 text-sm text-faint">
                     {temFiltro
                         ? 'Não há plantões agendados para os filtros selecionados.'

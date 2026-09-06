@@ -177,7 +177,7 @@ export default function ServicesHero({
                                 Ao vivo
                             </span>
                         </div>
-                        <h1 className="m-0 text-[26px] font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:text-[30px] lg:text-[34px]">
+                        <h1 className="m-0 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
                             Central de Vendas
                         </h1>
                         <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">

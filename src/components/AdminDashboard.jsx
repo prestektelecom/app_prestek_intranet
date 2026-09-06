@@ -181,7 +181,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                         <div className="mb-5 flex items-center gap-3 rounded-xl p-3" style={{ background: C.surfaceSoft }}>
                             <BentoAvatar name={adminName} size={48} color={[C.accent, '#fff']} />
                             <div className="flex min-w-0 flex-col">
-                                <h1 className="truncate text-sm font-bold" style={{ color: C.ink }}>{adminName}</h1>
+                                <p className="truncate text-sm font-bold" style={{ color: C.ink }}>{adminName}</p>
                                 <p className="text-xs font-medium" style={{ color: C.muted }}>Super Admin</p>
                             </div>
                         </div>
@@ -241,7 +241,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                             <>
                                 <div className="flex flex-wrap items-end justify-between gap-4">
                                     <div>
-                                        <h1 className="text-3xl font-extrabold leading-tight tracking-tight lg:text-4xl" style={{ color: C.ink }}>Visão Geral</h1>
+                                        <h1 className="font-display text-3xl font-extrabold leading-tight tracking-tight" style={{ color: C.ink }}>Visão Geral</h1>
                                         <p className="mt-1 text-base font-normal" style={{ color: C.muted }}>Bem-vindo, {adminName.split(' ')[0]}.</p>
                                     </div>
                                     <button

@@ -350,13 +350,13 @@ export default function Configuracoes({ user, setCurrentView }) {
                     <defs><pattern id="cfg-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" /></pattern></defs>
                     <rect width="100%" height="100%" fill="url(#cfg-grid)" />
                 </svg>
-                <div style={{ position: 'relative', maxWidth: 1024, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
+                <div style={{ position: 'relative', maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                             <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 18 }}>manage_accounts</span>
                             <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11.5, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.12em', fontWeight: 600, textTransform: 'uppercase' }}>Minha Conta</span>
                         </div>
-                        <h1 style={{ color: 'white', fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>Perfil &amp; Configurações</h1>
+                        <h1 className="font-display" style={{ color: 'white', fontSize: 30, fontWeight: 800, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>Perfil &amp; Configurações</h1>
                         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: '6px 0 0', fontWeight: 400 }}>Gerencie suas informações pessoais, preferências e configurações de conta.</p>
                     </div>
                     {/* Botão Salvar no hero */}
@@ -380,7 +380,7 @@ export default function Configuracoes({ user, setCurrentView }) {
             </div>
 
             {/* ── Conteúdo principal ─────────────────────────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 px-4 md:px-6" style={{ maxWidth: 1024, margin: '-48px auto 0', gap: 24, position: 'relative' }}>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 px-4 md:px-6" style={{ maxWidth: 1200, margin: '-48px auto 0', position: 'relative' }}>
 
                 {/* ── Card lateral — Perfil ──────────────────────────────── */}
                 <div className="lg:col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -544,7 +544,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                             </div>
                             <ThemeSwitcher />
                             <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${C.lineSoft}` }}>
-                                <p style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 14 }}>Notificações por E-mail</p>
+                                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.muted, fontFamily: '"JetBrains Mono", monospace', marginBottom: 14 }}>Notificações por E-mail</p>
                                 {isLoading ? (
                                     [1, 2].map(i => (
                                         <div key={i} style={{ height: 20, borderRadius: 999, background: C.lineSoft, marginBottom: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -575,7 +575,7 @@ export default function Configuracoes({ user, setCurrentView }) {
 
             {/* Toast de sucesso */}
             {saveSuccess && (
-                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 99, animation: 'toastUp .35s ease-out' }}>
+                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, animation: 'toastUp .35s ease-out' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.successSoft}`, boxShadow: `0 8px 32px ${tone(C.success, 0.2)}` }}>
                         <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.successSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 20, color: C.success }}>check_circle</span>
@@ -591,7 +591,7 @@ export default function Configuracoes({ user, setCurrentView }) {
 
             {/* Toast de erro */}
             {saveError && (
-                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 99, animation: 'toastUp .35s ease-out' }}>
+                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, animation: 'toastUp .35s ease-out' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.dangerSoft}`, boxShadow: `0 8px 32px ${tone(C.danger, 0.2)}` }}>
                         <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.dangerSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 20, color: C.danger }}>error</span>

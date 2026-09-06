@@ -78,7 +78,7 @@ const NotFound = ({ setCurrentView, user }) => {
 
                 {/* Text Content */}
                 <div className="space-y-3.5 mb-9">
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-[#1C2B3A] tracking-tight leading-tight">
+                    <h1 className="font-display text-3xl font-extrabold text-[#1C2B3A] tracking-tight leading-tight">
                         Estamos Trabalhando Aqui
                     </h1>
                     <p className="text-[14.5px] text-[#475467] leading-relaxed max-w-md mx-auto">

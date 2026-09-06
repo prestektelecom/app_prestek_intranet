@@ -153,7 +153,7 @@ export default function ResponsaveisManual() {
             {/* Cabeçalho */}
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Responsável por Setor</h1>
+                    <h1 className="font-display text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Responsável por Setor</h1>
                     <p className="mt-1 text-sm" style={{ color: C.muted }}>
                         Defina manualmente o responsável exibido em cada card do Diretório de Setores. Tem prioridade sobre os Grupos de Supervisor.
                     </p>

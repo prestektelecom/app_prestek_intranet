@@ -88,7 +88,7 @@ export default function DirectoryHero({ busca, setBusca, kpis = [], isLoading = 
                 <div className="flex flex-col gap-4 2xl:col-span-6">
                     <div>
                         <div className={LABEL_MONO}>Equipe Prestek</div>
-                        <h1 className="m-0 mt-1.5 text-[26px] font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:text-[30px] lg:text-[34px]">
+                        <h1 className="m-0 mt-1.5 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
                             Colaboradores
                         </h1>
                         {/* Substantivos concretos, como nas telas irmãs. O texto

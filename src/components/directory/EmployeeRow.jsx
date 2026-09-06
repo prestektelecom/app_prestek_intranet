@@ -68,8 +68,9 @@ export default function EmployeeRow({ colab, departamentoNome, situacao: situaca
             <ChipSituacao situacao={situacao} C={C} />
 
             <span
-                className="hidden max-w-[150px] shrink-0 truncate rounded-md px-2 py-0.5 text-[12px] font-semibold md:inline-block"
+                className="hidden max-w-[190px] shrink-0 truncate rounded-md px-2 py-0.5 text-[12px] font-semibold md:inline-block"
                 style={{ background: tone(marca, 0.12), color: tinta }}
+                title={departamentoNome}
             >
                 {departamentoNome}
             </span>

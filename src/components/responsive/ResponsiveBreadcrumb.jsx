@@ -36,7 +36,7 @@ export default function ResponsiveBreadcrumb({ items = [], onNavigate }) {
               <span style={{ color: C.muted }}>/</span>
             </>
           )}
-          <span className="truncate font-medium" style={{ color: C.ink, maxWidth: '45vw' }}>
+          <span className="truncate font-medium" style={{ color: C.ink, maxWidth: '60vw' }} title={items[items.length - 1].label}>
             {items[items.length - 1].label}
           </span>
         </li>
@@ -58,7 +58,7 @@ export default function ResponsiveBreadcrumb({ items = [], onNavigate }) {
               <span key={realIndex} className="flex items-center gap-1 min-w-0">
                 <span style={{ color: C.muted }}>/</span>
                 {isLast ? (
-                  <span className="truncate font-medium" style={{ color: C.ink, maxWidth: '30vw' }}>
+                  <span className="truncate font-medium" style={{ color: C.ink, maxWidth: '40vw' }} title={item.label}>
                     {item.label}
                   </span>
                 ) : (
@@ -83,7 +83,7 @@ export default function ResponsiveBreadcrumb({ items = [], onNavigate }) {
               <span key={index} className="flex items-center gap-1 min-w-0">
                 {index > 0 && <span style={{ color: C.muted }}>/</span>}
                 {isLast ? (
-                  <span className="truncate font-medium" style={{ color: C.ink, maxWidth: '24vw' }}>
+                  <span className="truncate font-medium" style={{ color: C.ink, maxWidth: '32vw' }} title={item.label}>
                     {item.label}
                   </span>
                 ) : (

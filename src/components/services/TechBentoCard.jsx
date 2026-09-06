@@ -47,12 +47,12 @@ export default function TechBentoCard({ service, isAdmin, onEditClick, onDeleteC
         >
             <div className="flex items-center justify-between pt-2">
                 {isFree ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/20 dark:bg-emerald-100/20 px-3 py-1 text-xs font-black text-emerald-900 dark:text-emerald-200">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/20 dark:bg-emerald-100/20 px-3 py-1 text-xs font-extrabold text-emerald-900 dark:text-emerald-200">
                         <span className="material-symbols-outlined text-sm font-bold">check_circle</span>
                         ISENTO DE COBRANÇA
                     </span>
                 ) : (
-                    <span className="text-xl sm:text-2xl font-black tracking-tight">
+                    <span className="text-xl sm:text-2xl font-extrabold tracking-tight">
                         {service.value}
                     </span>
                 )}

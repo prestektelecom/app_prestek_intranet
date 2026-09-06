@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { fundoHero } from './ui/heroGradiente';
+import HeroSearchInput from './ui/HeroSearchInput';
 
 // ── Paleta Bento Blue ────────────────────────────────────────────────────────
 
@@ -321,7 +323,7 @@ export default function Comunicados({ user, setCurrentView }) {
 
                 {/* ── Feed de Cards / Loading / Vazio ─────────────────────────── */}
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 20 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 24 }}>
                         {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
                     </div>
                 ) : comunicadosFiltrados.length === 0 ? (
@@ -378,39 +380,55 @@ export default function Comunicados({ user, setCurrentView }) {
 
 // ── Subcomponentes ───────────────────────────────────────────────────────────
 
+const HERO_LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
+
+function HeroKpiTile({ label, value, icon, color }) {
+    return (
+        <div className="flex min-w-0 items-center gap-2.5">
+            <span className="material-symbols-outlined shrink-0 text-[18px]" style={{ color: color || 'rgba(255,255,255,0.7)' }} aria-hidden="true">{icon}</span>
+            <div className="min-w-0">
+                <div className={HERO_LABEL_MONO}>{label}</div>
+                <div className="mt-0.5 truncate text-[17px] font-extrabold leading-none tracking-tight text-white tabular-nums">{value}</div>
+            </div>
+        </div>
+    );
+}
+
 function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kpiGerais, isLoading, isAdmin, onNewComunicado }) {
     const C = useBentoTheme();
+    const kpis = [
+        { label: 'Total', value: isLoading ? '···' : kpiTotal, icon: 'campaign', color: null },
+        { label: 'Urgentes', value: isLoading ? '···' : kpiUrgentes, icon: 'priority_high', color: C.danger },
+        { label: 'Importantes', value: isLoading ? '···' : kpiImportantes, icon: 'notification_important', color: C.warning },
+        { label: 'Gerais', value: isLoading ? '···' : kpiGerais, icon: 'article', color: C.success },
+    ];
+
     return (
-        <div style={{
-            background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
-            borderRadius: 24,
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            marginBottom: 28,
-            boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
-        }} className="p-6 md:p-8 lg:p-10">
-            {/* Grid pattern SVG */}
-            <svg style={{ position: 'absolute', inset: 0, opacity: 0.12, pointerEvents: 'none' }} width="100%" height="100%">
+        <div
+            className="relative shrink-0 overflow-hidden rounded-[24px] p-6 text-white sm:p-8"
+            style={{
+                background: fundoHero(C),
+                marginBottom: 28,
+                boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
+            }}
+        >
+            <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.22, pointerEvents: 'none' }}>
                 <defs>
-                    <pattern id="com-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+                    <pattern id="com-grid" width="22" height="22" patternUnits="userSpaceOnUse">
+                        <circle cx="1" cy="1" r="1" fill="white" />
                     </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#com-grid)" />
             </svg>
-            {/* Blur orbs */}
-            <div style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)', pointerEvents: 'none' }} />
 
-            <div style={{ position: 'relative', maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
-                
-                {/* Cabeçalho do Hero */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 20, flexWrap: 'wrap' }}>
+            <div className="relative grid grid-cols-1 gap-6 2xl:grid-cols-12 2xl:items-center 2xl:gap-8">
+                <div className="flex flex-col gap-4 2xl:col-span-6">
                     <div>
-                        <h1 style={{ margin: 0, fontWeight: 800, color: 'white', letterSpacing: '-0.03em', lineHeight: 1.1 }} className="text-[28px] md:text-4xl">
-                            📢 Comunicados da Empresa
+                        <div className={HERO_LABEL_MONO}>Intranet Prestek</div>
+                        <h1 className="m-0 mt-1.5 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
+                            Comunicados da Empresa
                         </h1>
-                        <p style={{ margin: '8px 0 0', fontSize: 15, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5, maxWidth: 640 }}>
+                        <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">
                             Fique atualizado com as últimas notícias, alertas urgentes e diretrizes importantes da Prestek.
                         </p>
                     </div>
@@ -418,92 +436,33 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kp
                     {isAdmin && (
                         <button
                             onClick={onNewComunicado}
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                padding: '10px 20px',
-                                borderRadius: 12,
-                                background: 'rgba(255, 255, 255, 0.18)',
-                                border: '1px solid rgba(255, 255, 255, 0.3)',
-                                backdropFilter: 'blur(8px)',
-                                color: 'white',
-                                fontWeight: 700,
-                                fontSize: 14,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                outline: 'none'
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.28)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'none'; }}
+                            className="inline-flex w-fit items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-bold shadow-sm transition-colors hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                            style={{ background: C.surface, color: C.accentDeep }}
                         >
-                            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add_circle</span>
+                            <span className="material-symbols-outlined text-[18px]">add_circle</span>
                             Novo Comunicado
                         </button>
                     )}
+
+                    <form role="search" onSubmit={e => e.preventDefault()}>
+                        <HeroSearchInput
+                            value={busca}
+                            onChange={setBusca}
+                            placeholder="Buscar por título ou conteúdo..."
+                        />
+                    </form>
                 </div>
 
-                {/* Busca inline glassmorphism */}
-                <div style={{ position: 'relative', maxWidth: 560, width: '100%' }}>
-                    <span style={{
-                        position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
-                        color: 'rgba(255,255,255,0.7)', fontSize: 20, fontFamily: '"Material Symbols Outlined"',
-                        pointerEvents: 'none', lineHeight: 1,
-                    }}>search</span>
-                    <input
-                        type="text"
-                        value={busca}
-                        onChange={e => setBusca(e.target.value)}
-                        placeholder="Buscar por título ou conteúdo..."
-                        style={{
-                            width: '100%', boxSizing: 'border-box',
-                            padding: '14px 48px 14px 50px',
-                            background: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(8px)',
-                            WebkitBackdropFilter: 'blur(8px)',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            borderRadius: 14,
-                            color: 'white',
-                            fontSize: 15, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-                            outline: 'none',
-                            transition: 'border-color 0.2s, background 0.2s',
-                        }}
-                        onFocus={e => { e.target.style.background = 'rgba(255,255,255,0.22)'; e.target.style.borderColor = 'rgba(255,255,255,0.6)'; }}
-                        onBlur={e => { e.target.style.background = 'rgba(255,255,255,0.15)'; e.target.style.borderColor = 'rgba(255,255,255,0.3)'; }}
-                    />
-                    {busca && (
-                        <button
-                            onClick={() => setBusca('')}
-                            style={{
-                                position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-                                background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6,
-                                color: 'white', cursor: 'pointer', padding: '2px 6px', fontSize: 12, lineHeight: 1.5,
-                            }}
-                        >✕</button>
-                    )}
-                </div>
+                <div className="rounded-2xl border border-white/15 bg-black/60 p-4 2xl:col-span-6">
+                    <div className="flex items-center gap-2 border-b border-white/[0.15] pb-2">
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-white/80" aria-hidden="true" />
+                        <span className={HERO_LABEL_MONO}>Comunicados</span>
+                    </div>
 
-                {/* KPI Pills */}
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                    {[
-                        { label: 'Total', value: isLoading ? '···' : kpiTotal, icon: 'campaign', color: 'white' },
-                        { label: 'Urgentes', value: isLoading ? '···' : kpiUrgentes, icon: 'priority_high', color: C.danger },
-                        { label: 'Importantes', value: isLoading ? '···' : kpiImportantes, icon: 'notification_important', color: C.warning },
-                        { label: 'Gerais', value: isLoading ? '···' : kpiGerais, icon: 'article', color: C.success },
-                    ].map(kpi => (
-                        <div key={kpi.label} style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 8,
-                            padding: '8px 16px', borderRadius: 999,
-                            background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
-                            border: '1px solid rgba(255,255,255,0.25)', color: 'white',
-                        }}>
-                            <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 18, lineHeight: 1, color: kpi.color === 'white' ? 'white' : kpi.color }}>{kpi.icon}</span>
-                            <span style={{ fontWeight: 700, fontSize: 16 }}>{kpi.value}</span>
-                            <span style={{ fontSize: 12, opacity: 0.8, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.06em' }}>{kpi.label.toUpperCase()}</span>
-                        </div>
-                    ))}
+                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        {kpis.map(k => <HeroKpiTile key={k.label} {...k} />)}
+                    </div>
                 </div>
-
             </div>
         </div>
     );
@@ -745,10 +704,12 @@ function SkeletonCard() {
             border: `1px solid ${C.line}`,
             overflow: 'hidden',
             animation: 'pulse 1.5s ease-in-out infinite',
-            height: 220
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 220
         }}>
             <div style={{ height: 4, background: C.line }} />
-            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box' }}>
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1, boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
                     <div style={{ height: 22, width: 80, borderRadius: 12, background: C.line }} />
                     <div style={{ height: 16, width: 60, borderRadius: 6, background: C.line, marginTop: 3 }} />
@@ -846,7 +807,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
         <div style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 100,
+            zIndex: 1100,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -1114,7 +1075,7 @@ function DeleteModal({ onClose, onConfirm }) {
         <div style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 110,
+            zIndex: 1100,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

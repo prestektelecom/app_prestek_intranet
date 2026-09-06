@@ -13,6 +13,35 @@ import { useBentoTheme } from '../hooks/useBentoTheme';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
 
+const HERO_LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
+
+function HeroKpiTile({ label, value, icon }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2.5">
+      <span className="material-symbols-outlined shrink-0 text-white/70 text-[18px]" aria-hidden="true">{icon}</span>
+      <div className="min-w-0">
+        <div className={HERO_LABEL_MONO}>{label}</div>
+        <div className="mt-0.5 truncate text-[17px] font-extrabold leading-none tracking-tight text-white tabular-nums">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function HeroActionButton({ onClick, icon, children, primary, C }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      style={primary
+        ? { background: C.surface, color: C.accentDeep }
+        : { background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', color: 'white' }}
+    >
+      <span className="material-symbols-outlined text-[18px]">{icon}</span>
+      {children}
+    </button>
+  );
+}
+
 function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, user, onPrint, onExport, onHistory, onAudit }) {
   const C = useBentoTheme();
   const kpis = [
@@ -22,12 +51,13 @@ function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, use
   ];
 
   return (
-    <div style={{
-      background: fundoHero(C),
-      borderRadius: 24, padding: '28px 32px', color: 'white',
-      position: 'relative', overflow: 'hidden',
-      boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
-    }}>
+    <div
+      className="relative shrink-0 overflow-hidden rounded-[24px] p-6 text-white sm:p-8"
+      style={{
+        background: fundoHero(C),
+        boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
+      }}
+    >
       <svg aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.22, pointerEvents: 'none' }} width="100%" height="100%">
         <defs>
           <pattern id="sch-dots" width="22" height="22" patternUnits="userSpaceOnUse">
@@ -37,89 +67,40 @@ function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, use
         <rect width="100%" height="100%" fill="url(#sch-dots)" />
       </svg>
 
-      <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
-        <div style={{ maxWidth: 560 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '5px 11px', borderRadius: 999,
-            background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
-            fontSize: 11.5, fontWeight: 600, fontFamily: '"JetBrains Mono", monospace',
-            letterSpacing: '0.12em', textTransform: 'uppercase',
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: 3, background: '#7FD8B8' }} />
-            {monthLabel}
+      <div className="relative grid grid-cols-1 gap-6 2xl:grid-cols-12 2xl:items-center 2xl:gap-8">
+        <div className="flex flex-col gap-4 2xl:col-span-6">
+          <div>
+            <div className={HERO_LABEL_MONO}>{monthLabel}</div>
+            <h1 className="m-0 mt-1.5 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
+              Visão Geral da Escala
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">
+              Visualize e gerencie as atribuições de cobertura mensal do time.
+            </p>
           </div>
-          <h1 style={{ margin: '14px 0 6px', fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08 }}>
-            Visão Geral da Escala
-          </h1>
-          <p style={{ margin: 0, fontSize: 15, opacity: 0.85, lineHeight: 1.5 }}>
-            Visualize e gerencie as atribuições de cobertura mensal do time.
-          </p>
-        </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <button onClick={onPrint} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '9px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)',
-              background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)',
-              color: 'white', fontFamily: 'inherit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-            }}>
-              <span className="material-symbols-outlined text-[18px]">print</span> Imprimir
-            </button>
-            <button onClick={onExport} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '9px 14px', borderRadius: 10,
-              background: C.surface, color: C.accentDeep,
-              fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-            }}>
-              <span className="material-symbols-outlined text-[18px]">ios_share</span> Exportar iCal
-            </button>
+          <div className="flex flex-wrap gap-2">
+            <HeroActionButton onClick={onPrint} icon="print" C={C}>Imprimir</HeroActionButton>
+            <HeroActionButton onClick={onExport} icon="ios_share" primary C={C}>Exportar iCal</HeroActionButton>
             {user?.is_admin && onHistory && (
-              <button onClick={onHistory} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '9px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)',
-                background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)',
-                color: 'white', fontFamily: 'inherit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-              }}>
-                <span className="material-symbols-outlined text-[18px]">table_chart</span> Ver Histórico
-              </button>
+              <HeroActionButton onClick={onHistory} icon="table_chart" C={C}>Ver Histórico</HeroActionButton>
             )}
             {user?.is_admin && onAudit && (
-              <button onClick={onAudit} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '9px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)',
-                background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)',
-                color: 'white', fontFamily: 'inherit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-              }}>
-                <span className="material-symbols-outlined text-[18px]">manage_history</span> Auditoria
-              </button>
+              <HeroActionButton onClick={onAudit} icon="manage_history" C={C}>Auditoria</HeroActionButton>
             )}
           </div>
         </div>
-      </div>
 
-      <div style={{ position: 'relative', display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 22 }}>
-        {kpis.map((kpi, idx) => (
-          <div key={idx} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 14px', borderRadius: 14,
-            background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(6px)',
-            border: '1px solid rgba(255,255,255,0.22)',
-          }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.22)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span className="material-symbols-outlined text-[18px]">{kpi.icon}</span>
-            </div>
-            <div>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9.5, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.8 }}>{kpi.label}</div>
-              <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{kpi.value}</div>
-            </div>
+        <div className="rounded-2xl border border-white/15 bg-black/60 p-4 2xl:col-span-6">
+          <div className="flex items-center gap-2 border-b border-white/[0.15] pb-2">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-white/80" aria-hidden="true" />
+            <span className={HERO_LABEL_MONO}>Escala</span>
           </div>
-        ))}
+
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {kpis.map(k => <HeroKpiTile key={k.label} {...k} />)}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -446,7 +427,7 @@ export default function Schedule({ setCurrentView, user }) {
                             <div className="flex items-center justify-between border-b border-border pb-4">
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[var(--accent-dark)]">tune</span>
-                                    <h2 className="text-lg font-black text-foreground tracking-tight">Filtros</h2>
+                                    <h2 className="text-lg font-extrabold text-foreground tracking-tight">Filtros</h2>
                                 </div>
                                 {filtrosAtivos && (
                                     <button
@@ -539,12 +520,12 @@ export default function Schedule({ setCurrentView, user }) {
                         {/* Mini Calendar */}
                         <div className="bg-surface rounded-[20px] p-6 shadow-sm border border-border animate-in fade-in slide-in-from-left-4 duration-700 hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between mb-5">
-                                <h3 className="text-base font-black text-foreground capitalize tracking-tight flex items-center gap-2">
+                                <h3 className="text-base font-extrabold text-foreground capitalize tracking-tight flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[var(--accent-dark)] text-[20px]">calendar_month</span>
                                     {new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                                 </h3>
                             </div>
-                            <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-3 font-black text-faint uppercase tracking-widest opacity-80">
+                            <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-3 font-extrabold text-faint uppercase tracking-widest opacity-80">
                                 {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => <div key={i}>{d}</div>)}
                             </div>
                             <div className="grid grid-cols-7 gap-1 text-sm bg-surface-raised/60 rounded-xl p-1">
@@ -568,7 +549,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     );
                                 })}
                             </div>
-                            <div className="mt-5 flex gap-4 text-[10px] font-black text-faint uppercase tracking-widest">
+                            <div className="mt-5 flex gap-4 text-[10px] font-extrabold text-faint uppercase tracking-widest">
                                 <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[var(--accent)] rounded-full shadow-sm shadow-[var(--accent)]/20"></div> Hoje</div>
                                 <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[var(--accent)] rounded-full"></div> Plantão</div>
                             </div>
@@ -581,7 +562,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     <span className="material-symbols-outlined text-[14px]">insights</span>
                                     Status do Filtro
                                 </div>
-                                <div className="text-3xl font-black text-foreground">
+                                <div className="text-3xl font-extrabold text-foreground">
                                     {filteredPlantoes.length} <span className="text-sm font-bold text-faint uppercase tracking-widest ml-1">Plantões Filtrados</span>
                                 </div>
                             </div>
@@ -598,7 +579,7 @@ export default function Schedule({ setCurrentView, user }) {
                                         <span className="material-symbols-outlined text-[14px]">edit_calendar</span>
                                         Alterações no Mês
                                     </div>
-                                    <div className="text-3xl font-black text-foreground">
+                                    <div className="text-3xl font-extrabold text-foreground">
                                         {loadingChangeCount ? (
                                             <span className="inline-block w-12 h-8 bg-border rounded-md animate-pulse" />
                                         ) : monthlyChangeCount === null ? (
@@ -627,11 +608,11 @@ export default function Schedule({ setCurrentView, user }) {
                         <div className="bg-surface rounded-3xl shadow-sm overflow-hidden flex flex-col border border-border animate-in fade-in slide-in-from-right-4 duration-700">
                             <div className="p-6 md:p-8 flex flex-wrap justify-between items-center bg-surface border-b border-border gap-4">
                                 <div>
-                                    <h2 className="text-2xl font-black text-foreground tracking-tight">Escala Detalhada de Suporte</h2>
+                                    <h2 className="font-display text-xl font-bold text-foreground">Escala Detalhada de Suporte</h2>
                                     <p className="text-sm font-medium text-faint mt-1">Clique nas linhas {user?.is_admin ? "ou no calendário" : ""} para ver detalhes.</p>
                                 </div>
                                 {user?.is_admin && (
-                                    <div className="bg-[var(--accent-soft)] text-[var(--accent-dark)] text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[var(--accent)]/20">
+                                    <div className="bg-[var(--accent-soft)] text-[var(--accent-dark)] text-[10px] font-extrabold uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[var(--accent)]/20">
                                         <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
                                         Gestão Ativa
                                     </div>
@@ -643,11 +624,11 @@ export default function Schedule({ setCurrentView, user }) {
                                 <table className="schedule-table w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-surface-raised border-b border-border">
-                                            <th scope="col" className="p-4 pl-8 text-[11px] font-black text-faint uppercase tracking-widest">DATA</th>
-                                            <th scope="col" className="p-4 text-[11px] font-black text-faint uppercase tracking-widest">DIA</th>
-                                            <th scope="col" className="p-4 text-[11px] font-black text-faint uppercase tracking-widest">N1 - ATENDIMENTO/NOC</th>
-                                            <th scope="col" className="p-4 text-[11px] font-black text-faint uppercase tracking-widest">N2 - SUPORTE/SERVIÇOS</th>
-                                            <th scope="col" className="p-4 pr-8 text-[11px] font-black text-faint uppercase tracking-widest text-right sm:text-left">SUPERVISÃO</th>
+                                            <th scope="col" className="p-4 pl-8 text-[11px] font-extrabold text-faint uppercase tracking-widest">DATA</th>
+                                            <th scope="col" className="p-4 text-[11px] font-extrabold text-faint uppercase tracking-widest">DIA</th>
+                                            <th scope="col" className="p-4 text-[11px] font-extrabold text-faint uppercase tracking-widest">N1 - ATENDIMENTO/NOC</th>
+                                            <th scope="col" className="p-4 text-[11px] font-extrabold text-faint uppercase tracking-widest">N2 - SUPORTE/SERVIÇOS</th>
+                                            <th scope="col" className="p-4 pr-8 text-[11px] font-extrabold text-faint uppercase tracking-widest text-right sm:text-left">SUPERVISÃO</th>
                                             {user?.is_admin && <th scope="col" className="p-4 pr-6 w-12"></th>}
                                         </tr>
                                     </thead>
@@ -731,20 +712,20 @@ export default function Schedule({ setCurrentView, user }) {
                 )}
                 {/* Confirmação de exclusão */}
                 {confirmDeleteOpen && existingPlantao && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                         <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-sm border border-border flex flex-col">
                             <div className="px-5 py-4 border-b border-border flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[var(--danger-bento)]">delete_forever</span>
-                                <h3 className="text-base font-black text-foreground">Excluir plantão?</h3>
+                                <h3 className="text-base font-extrabold text-foreground">Excluir plantão?</h3>
                             </div>
                             <div className="px-5 py-4 flex flex-col gap-3 text-sm text-foreground">
                                 <p className="font-medium">
                                     Tem certeza que deseja excluir permanentemente o plantão do dia <strong className="whitespace-nowrap">{new Date(selectedDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</strong>?
                                 </p>
                                 <div className="bg-surface-raised rounded-lg p-3 text-xs flex flex-col gap-1 opacity-70">
-                                    <div><span className="font-black">N1:</span> {getNamesFromIds(existingPlantao.n1_id).join(', ') || '—'}</div>
-                                    <div><span className="font-black">N2:</span> {getNamesFromIds(existingPlantao.n2_id).join(', ') || '—'}</div>
-                                    <div><span className="font-black">Supervisão:</span> {getNamesFromIds(existingPlantao.gerente_id).join(', ') || '—'}</div>
+                                    <div><span className="font-extrabold">N1:</span> {getNamesFromIds(existingPlantao.n1_id).join(', ') || '—'}</div>
+                                    <div><span className="font-extrabold">N2:</span> {getNamesFromIds(existingPlantao.n2_id).join(', ') || '—'}</div>
+                                    <div><span className="font-extrabold">Supervisão:</span> {getNamesFromIds(existingPlantao.gerente_id).join(', ') || '—'}</div>
                                 </div>
                             </div>
                             <div className="flex gap-2 px-5 py-4 border-t border-border">
@@ -760,7 +741,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     type="button"
                                     onClick={executarDelecao}
                                     disabled={deletando}
-                                    className="flex-1 px-3 py-2 bg-[var(--danger-bento)] text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[var(--danger-bento)]/30 text-sm flex items-center justify-center gap-1.5 disabled:opacity-60"
+                                    className="flex-1 px-3 py-2 bg-[var(--danger-bento)] text-white font-extrabold rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[var(--danger-bento)]/30 text-sm flex items-center justify-center gap-1.5 disabled:opacity-60"
                                 >
                                     {deletando && <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>}
                                     {deletando ? 'Excluindo...' : 'Sim, excluir'}

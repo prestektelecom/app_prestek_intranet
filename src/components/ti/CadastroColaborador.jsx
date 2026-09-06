@@ -273,7 +273,7 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
             />
 
             {toast.show && (
-                <div className="fixed right-4 top-4 z-[1120] duration-300 animate-in fade-in slide-in-from-top-4 sm:right-8 sm:top-8">
+                <div className="fixed right-4 top-4 z-[9999] duration-300 animate-in fade-in slide-in-from-top-4 sm:right-8 sm:top-8">
                     <div className={`flex items-center gap-3 rounded-2xl border px-6 py-4 shadow-2xl backdrop-blur-md ${
                         toast.type === 'success'
                             ? 'border-emerald-400 bg-emerald-500/90 text-white'

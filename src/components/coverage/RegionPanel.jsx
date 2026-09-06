@@ -40,7 +40,7 @@ export default function RegionPanel({
                 para fora da borda. Quando não cabe, a ordenação desce. */}
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 border-b border-border px-4 py-3">
                 <div className="flex min-w-0 items-center gap-2">
-                    <h2 className="truncate text-[13px] font-bold text-foreground">Regiões</h2>
+                    <h2 className="font-display truncate text-xl font-bold text-foreground">Regiões</h2>
                     <span className="font-mono text-[11px] tabular-nums text-muted">{regioes.length}</span>
                     {carregando && (
                         <span className="material-symbols-outlined animate-spin text-[15px] text-[var(--accent)]">autorenew</span>

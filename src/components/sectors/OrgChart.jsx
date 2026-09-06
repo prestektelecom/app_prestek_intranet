@@ -41,7 +41,7 @@ export default function OrgChart({ data, loaded, isAdmin, onEdit }) {
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <p className={`m-0 ${LABEL_MONO}`} style={{ color: C.accent }}>Hierarquia Organizacional</p>
-                    <h2 className="m-0 mt-1 text-[22px] font-extrabold tracking-[-0.02em] text-foreground">Estrutura Prestek</h2>
+                    <h2 className="font-display m-0 mt-1 text-xl font-bold tracking-[-0.02em] text-foreground">Estrutura Prestek</h2>
                 </div>
                 <div className="flex items-center gap-3">
                     {atualizadoEm && (

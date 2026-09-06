@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 import ResponsiveTable from './responsive/ResponsiveTable';
 import FilterBar from './responsive/FilterBar';
+import { fundoHero } from './ui/heroGradiente';
 
 // Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Escala/Escritórios/Processos)
 
@@ -95,6 +96,20 @@ const STATUS_FILTERS = [
   { key: 'todos', label: 'Todos' },
 ];
 
+const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
+
+function KpiTile({ label, value, icon }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2.5">
+      <span className="material-symbols-outlined shrink-0 text-white/70 text-[18px]" aria-hidden="true">{icon}</span>
+      <div className="min-w-0">
+        <div className={LABEL_MONO}>{label}</div>
+        <div className="mt-0.5 truncate text-[17px] font-extrabold leading-none tracking-tight text-white tabular-nums">{value}</div>
+      </div>
+    </div>
+  );
+}
+
 function TicketsHero({ total, abertos, finalizados, pendentes }) {
   const C = useBentoTheme();
   const kpis = [
@@ -105,64 +120,45 @@ function TicketsHero({ total, abertos, finalizados, pendentes }) {
   ];
 
   return (
-    <div style={{
-      background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
-      borderRadius: 24,
-      padding: '28px 32px',
-      color: 'white',
-      position: 'relative',
-      overflow: 'hidden',
-      boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
-    }}>
-      <svg style={{ position: 'absolute', inset: 0, opacity: 0.12 }} width="100%" height="100%">
+    <div
+      className="relative shrink-0 overflow-hidden rounded-[24px] p-6 text-white sm:p-8"
+      style={{
+        background: fundoHero(C),
+        boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
+      }}
+    >
+      <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.22, pointerEvents: 'none' }}>
         <defs>
-          <pattern id="tickets-hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+          <pattern id="tickets-hero-grid" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill="white" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#tickets-hero-grid)" />
       </svg>
-      <div style={{ position: 'absolute', top: -100, right: -60, width: 320, height: 320, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)' }} />
 
-      <div style={{ position: 'relative' }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          padding: '5px 11px', borderRadius: 999,
-          background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
-          fontSize: 11.5, fontWeight: 600, fontFamily: '"JetBrains Mono", monospace',
-          letterSpacing: '0.12em', textTransform: 'uppercase',
-        }}>
-          <span style={{ width: 6, height: 6, borderRadius: 3, background: C.success }} />
-          Suporte Técnico
-        </div>
-        <h1 style={{ margin: '14px 0 6px', fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08 }}>
-          Meus Chamados
-        </h1>
-        <p style={{ margin: 0, fontSize: 15, opacity: 0.85, lineHeight: 1.5, maxWidth: 560 }}>
-          Acompanhe o status de todos os seus tickets de suporte abertos no sistema.
-        </p>
-      </div>
-
-      <div style={{ position: 'relative', display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 22 }}>
-        {kpis.map((kpi, idx) => (
-          <div key={idx} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 14px', borderRadius: 14,
-            background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(6px)',
-            border: '1px solid rgba(255,255,255,0.22)',
-          }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.22)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span className="material-symbols-outlined text-[18px]">{kpi.icon}</span>
-            </div>
-            <div>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9.5, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.8 }}>{kpi.label}</div>
-              <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{kpi.value}</div>
-            </div>
+      <div className="relative grid grid-cols-1 gap-6 2xl:grid-cols-12 2xl:items-center 2xl:gap-8">
+        <div className="flex flex-col gap-4 2xl:col-span-6">
+          <div>
+            <div className={LABEL_MONO}>Suporte Técnico</div>
+            <h1 className="m-0 mt-1.5 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
+              Meus Chamados
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">
+              Acompanhe o status de todos os seus tickets de suporte abertos no sistema.
+            </p>
           </div>
-        ))}
+        </div>
+
+        <div className="rounded-2xl border border-white/15 bg-black/60 p-4 2xl:col-span-6">
+          <div className="flex items-center gap-2 border-b border-white/[0.15] pb-2">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-white/80" aria-hidden="true" />
+            <span className={LABEL_MONO}>Status</span>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {kpis.map(k => <KpiTile key={k.label} {...k} />)}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -179,7 +175,7 @@ function StatusBadge({ status }) {
 
   return (
     <span
-      className="px-2.5 py-1 inline-flex text-xs leading-5 font-black rounded-full"
+      className="px-2.5 py-1 inline-flex text-xs leading-5 font-extrabold rounded-full"
       style={{ backgroundColor: config.bg, color: config.text }}
     >
       {config.label}
@@ -244,7 +240,7 @@ export default function TicketsList({ user }) {
       className="flex-1 overflow-y-auto py-6 px-4 md:px-10"
       style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: C.bg }}
     >
-      <div className="flex flex-col w-full max-w-[1400px] mx-auto gap-6">
+      <div className="flex flex-col w-full max-w-[1200px] mx-auto gap-6">
         <TicketsHero
           total={total}
           abertos={abertos}
@@ -270,7 +266,7 @@ export default function TicketsList({ user }) {
             <div className="flex flex-col items-center justify-center p-20 gap-4 text-center">
               <span className="material-symbols-outlined text-6xl" style={{ color: C.danger }}>error</span>
               <div className="space-y-1">
-                <p className="font-black text-lg" style={{ color: C.ink }}>Ops! Algo deu errado.</p>
+                <p className="font-extrabold text-lg" style={{ color: C.ink }}>Ops! Algo deu errado.</p>
                 <p style={{ color: C.ink2 }}>{error}</p>
               </div>
               <button
@@ -288,7 +284,7 @@ export default function TicketsList({ user }) {
             <div className="flex flex-col items-center justify-center p-20 gap-4 text-center">
               <span className="material-symbols-outlined text-6xl" style={{ color: C.muted }}>confirmation_number</span>
               <div className="space-y-1">
-                <p className="font-black text-lg" style={{ color: C.ink }}>Nenhum chamado encontrado.</p>
+                <p className="font-extrabold text-lg" style={{ color: C.ink }}>Nenhum chamado encontrado.</p>
                 <p style={{ color: C.ink2 }}>Você ainda não abriu nenhum ticket de suporte.</p>
               </div>
             </div>
@@ -296,7 +292,7 @@ export default function TicketsList({ user }) {
             <>
               <div className="px-4 py-3 md:px-6 md:py-4 border-b" style={{ borderColor: C.line }}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h2 className="font-bold text-lg" style={{ color: C.ink }}>Chamados</h2>
+                  <h2 className="font-display font-bold text-xl" style={{ color: C.ink }}>Chamados</h2>
                   <FilterBar
                     activeFilters={activeFilter === 'todos' ? [] : [STATUS_FILTERS.find(f => f.key === activeFilter)?.label]}
                     onClear={() => setActiveFilter('todos')}
@@ -326,7 +322,7 @@ export default function TicketsList({ user }) {
                 <div className="flex flex-col items-center justify-center p-16 gap-4 text-center">
                   <span className="material-symbols-outlined text-5xl" style={{ color: C.muted }}>filter_list</span>
                   <div className="space-y-1">
-                    <p className="font-black text-lg" style={{ color: C.ink }}>Nenhum chamado neste filtro.</p>
+                    <p className="font-extrabold text-lg" style={{ color: C.ink }}>Nenhum chamado neste filtro.</p>
                     <p style={{ color: C.ink2 }}>Tente outro status ou visualize todos.</p>
                   </div>
                   <button
@@ -344,7 +340,7 @@ export default function TicketsList({ user }) {
                 <div className="p-2 md:p-4">
                   <ResponsiveTable
                     columns={[
-                      { key: 'id', header: 'ID', render: (v, row) => <span className="font-black" style={{ color: C.accent }}>#{v || row.id}</span> },
+                      { key: 'id', header: 'ID', render: (v, row) => <span className="font-extrabold" style={{ color: C.accent }}>#{v || row.id}</span> },
                       { key: 'mensagem', header: 'Assunto', fullWidth: true, render: (v) => (
                         <span className="font-bold text-xs line-clamp-2" style={{ color: C.ink2 }}>{parseTicketMessage(v) || 'Suporte de TI'}</span>
                       )},

@@ -17,6 +17,15 @@
         ],
         "createdAt": "2026-09-06T14:52:19.689Z",
         "reason": "Sidebar collapse/expand toggle: width/padding drive real sibling layout (72px<->248px), not decorative motion. Single element, 0.2s, user-triggered, infrequent -- not scroll-linked or repeated. Fixing via grid-template-columns would require restructuring the whole app shell from flex to CSS grid, out of scope here."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/components/Dashboard.jsx"
+        ],
+        "createdAt": "2026-09-06T15:42:49.008Z",
+        "reason": "Dense list rows (birthday feed, comunicados feed), not standalone cards. This instance (L1008) is a binary on/off highlight (imminent birthday, 2px, single color or transparent) not multi-category coding -- different from the standalone ComunicadoCard/AdminComunicados card pattern already fixed with a top-stripe. Converting to a top-stripe would visually segment a compact scrolling list into many horizontal bands. Same reasoning already applied to this file's TAG_STYLES chip left-borders in the earlier color audit."
       }
     ]
   }

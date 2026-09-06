@@ -142,7 +142,7 @@ export default function CoverageHero({
                             contador "N de M no mapa" já dizem. */}
                         {/* Mesma escala do ServicesHero — as duas telas são irmãs
                             e liam como produtos diferentes só por causa disto. */}
-                        <h1 className="m-0 text-[26px] font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:text-[30px] 2xl:text-[34px]">
+                        <h1 className="m-0 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
                             Central de Cobertura de Rede
                         </h1>
                         <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">

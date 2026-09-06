@@ -74,7 +74,7 @@ export default function RankingPodium({
                                 }`}
                             >
                                 <div className="mb-3 flex items-center justify-between">
-                                    <div className={`flex items-center justify-center rounded-full font-black ${rc.numBg} ${isGold ? 'h-8 w-8 text-sm sm:h-9 sm:w-9 sm:text-base' : 'h-6 w-6 text-[10px] sm:h-7 sm:w-7 sm:text-xs'}`}>
+                                    <div className={`flex items-center justify-center rounded-full font-extrabold ${rc.numBg} ${isGold ? 'h-8 w-8 text-sm sm:h-9 sm:w-9 sm:text-base' : 'h-6 w-6 text-[10px] sm:h-7 sm:w-7 sm:text-xs'}`}>
                                         {rank}
                                     </div>
                                     <span className={`inline-flex items-center gap-0.5 rounded-full font-bold uppercase tracking-wider ${rc.badgeColor} ${isGold ? 'px-2 py-0.5 text-[9px] sm:px-2.5 sm:py-1 sm:text-[10px]' : 'px-1.5 py-0.5 text-[8px] sm:px-2 sm:py-0.5 sm:text-[9px]'}`}>

@@ -123,7 +123,7 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
                 )}
 
                 <div className="flex items-baseline gap-1">
-                    <span className="text-2xl sm:text-3xl font-black tracking-tight">
+                    <span className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                         {formatCurrency(plan.valor_mensal)}
                     </span>
                     <span className="text-xs font-semibold opacity-80">/mês</span>

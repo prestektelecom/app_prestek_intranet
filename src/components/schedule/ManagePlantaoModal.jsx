@@ -67,9 +67,9 @@ export default function ManagePlantaoModal({
             >
                 <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[16px] text-[var(--muted-bento)]">{icon}</span>
-                    <span className="text-[11px] font-black uppercase text-[var(--muted-bento)] tracking-widest">{label}</span>
+                    <span className="text-[11px] font-extrabold uppercase text-[var(--muted-bento)] tracking-widest">{label}</span>
                     {count > 0 && (
-                        <span className="text-[10px] bg-[var(--accent-soft)] text-[var(--accent-dark)] px-1.5 py-0.5 rounded-full font-black">
+                        <span className="text-[10px] bg-[var(--accent-soft)] text-[var(--accent-dark)] px-1.5 py-0.5 rounded-full font-extrabold">
                             {count} selecionado{count > 1 ? 's' : ''}
                         </span>
                     )}
@@ -100,7 +100,7 @@ export default function ManagePlantaoModal({
                 <div className="px-5 py-4 border-b border-[var(--line)] flex justify-between items-center bg-[var(--surface-soft)] shrink-0 rounded-t-3xl">
                     <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[var(--accent-dark)] text-[20px]">edit_calendar</span>
-                        <h2 id="manage-plantao-title" className="text-base font-black text-[var(--ink)]">Gerenciar Plantão</h2>
+                        <h2 id="manage-plantao-title" className="font-display text-xl font-bold text-[var(--ink)]">Gerenciar Plantão</h2>
                     </div>
                     <button
                         type="button"
@@ -117,7 +117,7 @@ export default function ManagePlantaoModal({
                         {/* Data */}
                         <div className="flex gap-2 items-center bg-[var(--accent-soft)] text-[var(--accent-deep)] px-3 py-2.5 rounded-lg border border-[var(--accent)]/20">
                             <span className="material-symbols-outlined text-[18px] shrink-0">calendar_today</span>
-                            <span className="font-black text-xs">
+                            <span className="font-extrabold text-xs">
                                 {selectedDate?.split('-').reverse().join('/')}
                             </span>
                             {diaSemana && (
@@ -128,7 +128,7 @@ export default function ManagePlantaoModal({
                         {/* Aviso de plantão existente */}
                         {existingPlantao && (
                             <div className="flex flex-col gap-1.5 bg-[var(--warning-soft)] border border-[var(--warning-bento)]/30 text-[var(--warning-strong)] px-3 py-2.5 rounded-lg text-xs">
-                                <div className="flex items-center gap-1.5 font-black uppercase tracking-wider text-[10px]">
+                                <div className="flex items-center gap-1.5 font-extrabold uppercase tracking-wider text-[10px]">
                                     <span className="material-symbols-outlined text-[16px]">warning</span>
                                     Já existe um plantão — salvar irá substituir.
                                 </div>
@@ -221,18 +221,18 @@ export default function ManagePlantaoModal({
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-1">
                                                                 <span className="material-symbols-outlined text-[12px] text-[var(--accent-dark)]">manage_accounts</span>
-                                                                <span className="text-[10px] font-black text-[var(--ink)]">{h.admin_nome || 'Desconhecido'}</span>
+                                                                <span className="text-[10px] font-extrabold text-[var(--ink)]">{h.admin_nome || 'Desconhecido'}</span>
                                                             </div>
                                                             <span className="text-[9px] text-[var(--muted-bento)] font-medium">{fmt}</span>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px] text-[var(--muted-bento)] mt-0.5">
-                                                            <div className="col-span-2 font-black text-[9px] uppercase tracking-wider text-[var(--muted-bento)]/70 mb-0.5">Antes → Depois</div>
-                                                            <div><span className="font-black text-[var(--ink)]/60">N1:</span> {h.n1_anterior || '—'}</div>
-                                                            <div><span className="font-black text-[var(--accent-dark)]">N1:</span> {h.n1_novo || '—'}</div>
-                                                            <div><span className="font-black text-[var(--ink)]/60">N2:</span> {h.n2_anterior || '—'}</div>
-                                                            <div><span className="font-black text-[var(--accent-dark)]">N2:</span> {h.n2_novo || '—'}</div>
-                                                            <div><span className="font-black text-[var(--ink)]/60">Sup:</span> {h.gerente_anterior || '—'}</div>
-                                                            <div><span className="font-black text-[var(--accent-dark)]">Sup:</span> {h.gerente_novo || '—'}</div>
+                                                            <div className="col-span-2 font-extrabold text-[9px] uppercase tracking-wider text-[var(--muted-bento)]/70 mb-0.5">Antes → Depois</div>
+                                                            <div><span className="font-extrabold text-[var(--ink)]/60">N1:</span> {h.n1_anterior || '—'}</div>
+                                                            <div><span className="font-extrabold text-[var(--accent-dark)]">N1:</span> {h.n1_novo || '—'}</div>
+                                                            <div><span className="font-extrabold text-[var(--ink)]/60">N2:</span> {h.n2_anterior || '—'}</div>
+                                                            <div><span className="font-extrabold text-[var(--accent-dark)]">N2:</span> {h.n2_novo || '—'}</div>
+                                                            <div><span className="font-extrabold text-[var(--ink)]/60">Sup:</span> {h.gerente_anterior || '—'}</div>
+                                                            <div><span className="font-extrabold text-[var(--accent-dark)]">Sup:</span> {h.gerente_novo || '—'}</div>
                                                         </div>
                                                     </div>
                                                 );
@@ -267,7 +267,7 @@ export default function ManagePlantaoModal({
                         <button
                             type="submit"
                             disabled={salvando || deletando}
-                            className="flex-1 px-3 py-2.5 bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent)] text-white font-black rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[var(--accent)]/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="flex-1 px-3 py-2.5 bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent)] text-white font-extrabold rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[var(--accent)]/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             <span className="material-symbols-outlined text-[18px]">save</span>
                             <span>{salvando ? 'Salvando...' : 'Salvar'}</span>

@@ -28,7 +28,7 @@ export default function PageShell({
           <div className="min-w-0">
             {title && (
               <h1
-                className="text-xl sm:text-2xl font-extrabold tracking-tight truncate"
+                className="font-display text-3xl font-extrabold tracking-tight truncate"
                 style={{ color: C.ink }}
               >
                 {title}

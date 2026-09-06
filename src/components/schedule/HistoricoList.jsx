@@ -17,7 +17,7 @@ export function DiffBadge({ anterior, novo, label }) {
     if (!mudou && !anterior && !novo) return null;
     return (
         <div className="flex flex-col gap-0.5">
-            <span className="text-[9px] font-black uppercase tracking-widest text-[var(--ink2)]">{label}</span>
+            <span className="text-[9px] font-extrabold uppercase tracking-widest text-[var(--ink2)]">{label}</span>
             {mudou ? (
                 <div className="flex flex-wrap items-center gap-1 text-xs">
                     <span className="bg-[var(--danger-soft)] text-[var(--danger-bento)] px-2 py-0.5 rounded-md line-through font-medium">
@@ -37,7 +37,7 @@ export function DiffBadge({ anterior, novo, label }) {
 
 export function HistoricoColumnHeader() {
     return (
-        <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_auto] gap-4 px-6 py-3 bg-[var(--surface-soft)] border-b border-[var(--line)] text-[10px] font-black text-[var(--ink2)] uppercase tracking-widest">
+        <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_auto] gap-4 px-6 py-3 bg-[var(--surface-soft)] border-b border-[var(--line)] text-[10px] font-extrabold text-[var(--ink2)] uppercase tracking-widest">
             <div>Data do Plantão</div>
             <div>Alterado por</div>
             <div>Quando</div>
@@ -65,7 +65,7 @@ export function HistoricoEmptyState({ title, description, action }) {
         <div className="flex flex-col items-center justify-center py-16 gap-4">
             <span className="material-symbols-outlined text-5xl text-[var(--muted-bento)]/40">history</span>
             <div className="text-center">
-                <p className="font-black text-[var(--ink)] text-base">{title}</p>
+                <p className="font-extrabold text-[var(--ink)] text-base">{title}</p>
                 <p className="text-[var(--ink2)] text-sm mt-1">{description}</p>
             </div>
             {action}
@@ -92,12 +92,12 @@ export function HistoricoRows({ historico, expandido, onToggle }) {
                         >
                             <div className="flex items-center gap-2">
                                 <span className={cn('w-2 h-2 rounded-full shrink-0', temAlteracao ? 'bg-[var(--warning-bento)]' : 'bg-[var(--line)]')} />
-                                <span className="text-sm font-black text-[var(--ink)]">
+                                <span className="text-sm font-extrabold text-[var(--ink)]">
                                     {formatarDataPlantao(h.plantao_data)}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 pl-4 md:pl-0">
-                                <div className="w-7 h-7 rounded-full bg-[var(--accent-soft)] text-[var(--accent-dark)] flex items-center justify-center text-xs font-black shrink-0">
+                                <div className="w-7 h-7 rounded-full bg-[var(--accent-soft)] text-[var(--accent-dark)] flex items-center justify-center text-xs font-extrabold shrink-0">
                                     {(h.admin_nome || '?').charAt(0).toUpperCase()}
                                 </div>
                                 <span
@@ -112,7 +112,7 @@ export function HistoricoRows({ historico, expandido, onToggle }) {
                             </div>
                             <div className="flex items-center justify-end gap-1 pl-4 md:pl-0">
                                 <span className={cn(
-                                    'text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full',
+                                    'text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full',
                                     temAlteracao ? 'bg-[var(--warning-soft)] text-[var(--warning-strong)]' : 'bg-[var(--surface-soft)] text-[var(--ink2)]'
                                 )}>
                                     {temAlteracao ? 'Alterado' : 'Sem mudança'}

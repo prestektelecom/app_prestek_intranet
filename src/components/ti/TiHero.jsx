@@ -65,7 +65,7 @@ export default function TiHero({ ferramenta, kpis = [], isLoading = false, etapa
                 <div className="flex flex-col gap-4 2xl:col-span-6">
                     <div>
                         <div className={LABEL_MONO}>Setor de TI</div>
-                        <h1 className="m-0 mt-1.5 text-[26px] font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:text-[30px] lg:text-[34px]">
+                        <h1 className="m-0 mt-1.5 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
                             {ferramenta?.label || 'Ferramentas de TI'}
                         </h1>
                         <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">

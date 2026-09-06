@@ -65,7 +65,7 @@ export default function SectorsHero({ kpis = [], isLoading = false }) {
             <div className="relative grid grid-cols-1 gap-6 2xl:grid-cols-12 2xl:items-center 2xl:gap-8">
                 <div className="2xl:col-span-6">
                     <div className={LABEL_MONO}>Estrutura Organizacional</div>
-                    <h1 className="m-0 mt-1.5 text-[26px] font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:text-[30px] lg:text-[34px]">
+                    <h1 className="m-0 mt-1.5 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
                         Setores e Departamentos
                     </h1>
                     {/* Substantivos concretos: o texto anterior prometia
@@ -81,7 +81,7 @@ export default function SectorsHero({ kpis = [], isLoading = false }) {
                         <span className={LABEL_MONO}>Estrutura</span>
                     </div>
 
-                    <dl className="mt-3 grid grid-cols-3 gap-3">
+                    <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {isLoading
                             ? Array.from({ length: 3 }, (_, i) => <KpiEsqueleto key={i} />)
                             : kpis.map(k => <KpiTile key={k.label} {...k} />)}

@@ -46,7 +46,7 @@ export default function LoginForm({
 }) {
     return (
         <div className="flex flex-col justify-center p-14 bg-white min-h-[600px]">
-            <h1 className="text-[30px] font-bold text-[#1C2B3A] m-0 tracking-tight leading-tight">
+            <h1 className="font-display text-3xl font-extrabold text-[#1C2B3A] m-0 tracking-tight leading-tight">
                 Bem-vindo à Prestek Inc.
             </h1>
             <div className="w-12 h-[3px] bg-[#EC7D23] rounded mt-3.5" />

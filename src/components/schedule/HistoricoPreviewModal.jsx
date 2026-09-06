@@ -74,11 +74,11 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                     <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-[#C2410C] text-[22px]">manage_history</span>
                         <div>
-                            <h2 className="text-base font-black text-[#0B1B2E] leading-tight">Histórico de Alterações</h2>
+                            <h2 className="font-display text-xl font-bold text-[#0B1B2E] leading-tight">Histórico de Alterações</h2>
                             <p className="text-[11px] text-[#475467] font-medium capitalize">{monthLabel}</p>
                         </div>
                         {!loading && total > 0 && (
-                            <span className="text-[11px] bg-[#FFF7ED] text-[#C2410C] px-2 py-0.5 rounded-full font-black">
+                            <span className="text-[11px] bg-[#FFF7ED] text-[#C2410C] px-2 py-0.5 rounded-full font-extrabold">
                                 {total} registro{total !== 1 ? 's' : ''}
                             </span>
                         )}
@@ -127,15 +127,15 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                         <table className="w-full text-sm border-collapse">
                             <thead className="sticky top-0 z-10 bg-[#F7FAFD] border-b border-[#E4ECF5]">
                                 <tr>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">Data</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">Alterado Por</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">Momento</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">N1 Anterior</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">N1 Novo</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">N2 Anterior</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">N2 Novo</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">Sup. Anterior</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[#475467] whitespace-nowrap">Sup. Novo</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Data</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Alterado Por</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Momento</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N1 Anterior</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N1 Novo</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N2 Anterior</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N2 Novo</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Sup. Anterior</th>
+                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Sup. Novo</th>
                                 </tr>
                             </thead>
                             <tbody>

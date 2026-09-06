@@ -35,7 +35,7 @@ export default function ScheduleMobileCard({
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
           <div
-            className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center font-black text-sm ${
+            className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center font-extrabold text-sm ${
               isToday
                 ? 'bg-[var(--accent)] text-white shadow-md shadow-[var(--accent)]/30'
                 : isWeekend
@@ -47,7 +47,7 @@ export default function ScheduleMobileCard({
             <span className="text-lg leading-none mt-0.5">{date.split('/')[0]}</span>
           </div>
           <div>
-            <div className={`font-black text-base ${isToday ? 'text-[var(--accent-dark)]' : 'text-foreground'}`}>
+            <div className={`font-extrabold text-base ${isToday ? 'text-[var(--accent-dark)]' : 'text-foreground'}`}>
               {date}
             </div>
             <div className={`text-xs font-bold ${isWeekend ? 'text-faint/70' : 'text-faint'}`}>
@@ -70,15 +70,15 @@ export default function ScheduleMobileCard({
 
       <div className="space-y-3">
         <div>
-          <div className="text-[10px] uppercase tracking-wider font-black text-faint mb-1.5">N1 - Atendimento/NOC</div>
+          <div className="text-[10px] uppercase tracking-wider font-extrabold text-faint mb-1.5">N1 - Atendimento/NOC</div>
           {renderList(n1, false)}
         </div>
         <div>
-          <div className="text-[10px] uppercase tracking-wider font-black text-faint mb-1.5">N2 - Suporte/Serviços</div>
+          <div className="text-[10px] uppercase tracking-wider font-extrabold text-faint mb-1.5">N2 - Suporte/Serviços</div>
           {renderList(n2, true)}
         </div>
         <div>
-          <div className="text-[10px] uppercase tracking-wider font-black text-faint mb-1.5">Supervisão</div>
+          <div className="text-[10px] uppercase tracking-wider font-extrabold text-faint mb-1.5">Supervisão</div>
           <div className="flex flex-col gap-2">
             {Array.isArray(mgr) ? (
               mgr.map((u, i) => (

@@ -41,7 +41,7 @@ export default function ScheduleHistoricoTab({ filterMonth, filterYear, user, on
             {/* Header row */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h2 className="text-xl font-black text-[var(--ink)] tracking-tight flex items-center gap-2">
+                    <h2 className="font-display text-xl font-bold text-[var(--ink)] flex items-center gap-2">
                         <span className="material-symbols-outlined text-[var(--accent-dark)] text-[22px]">history</span>
                         Alterações Recentes
                     </h2>

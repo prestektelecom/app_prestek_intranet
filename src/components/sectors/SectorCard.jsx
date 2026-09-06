@@ -298,7 +298,7 @@ function ComposicaoGrupos({ grupos, marca, tinta, C }) {
                         {g.supervisor && (
                             <span className="material-symbols-outlined text-[13px]" aria-hidden="true">stars</span>
                         )}
-                        <span className="max-w-[10rem] truncate">{g.nome}</span>
+                        <span className="max-w-[13rem] truncate">{g.nome}</span>
                         <span className="font-mono tabular-nums opacity-70">{g.total}</span>
                     </li>
                 ))}

@@ -160,7 +160,7 @@ export default function Sectors({ user, setCurrentView }) {
 
                 <section className="flex flex-col gap-6">
                     <div className="border-b pb-4" style={{ borderColor: C.line }}>
-                        <h2 className="m-0 text-2xl font-extrabold tracking-[-0.02em]" style={{ color: C.ink }}>
+                        <h2 className="font-display m-0 text-xl font-bold tracking-[-0.02em]" style={{ color: C.ink }}>
                             Diretório de Setores
                         </h2>
                     </div>

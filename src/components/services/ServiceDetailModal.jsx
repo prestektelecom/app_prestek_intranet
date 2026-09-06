@@ -206,7 +206,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                             </div>
 
                             <div>
-                                <h2 id={tituloId} className="text-2xl font-black leading-tight tracking-tight sm:text-3xl">
+                                <h2 id={tituloId} className="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
                                     {p.titulo}
                                 </h2>
                                 {p.subtitulo && (
@@ -227,7 +227,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                                     {isPlan ? 'Valor / Mensalidade' : 'Valor'}
                                 </span>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-black tracking-tight text-[var(--accent)]">
+                                    <span className="text-3xl font-extrabold tracking-tight text-[var(--accent)]">
                                         {p.valor}
                                     </span>
                                     {p.sufixoValor && (
@@ -296,7 +296,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                                         <BarChart2 className="h-4 w-4 text-[var(--accent)]" />
                                         Vendas no mês vigente
                                     </span>
-                                    <span className="font-mono text-sm font-black text-[var(--accent)]">
+                                    <span className="font-mono text-sm font-extrabold text-[var(--accent)]">
                                         {p.vendas} {p.vendas === 1 ? 'contratação' : 'contratações'}
                                     </span>
                                 </div>

@@ -1,17 +1,13 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { PROCESSOS, STATUS_CONFIG } from '../data/processosData';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { tone } from '../utils/tone';
+import { fundoHero } from './ui/heroGradiente';
 
 // Pseudo-categoria "todas" — só existe no front, nunca é persistida no banco
 const CATEGORIA_TODOS = { id: 'todos', label: 'Todas as Categorias', icon: 'grid_view' };
 
 // Paleta Bento Blue Prestek (alinhada com Dashboard/Serviços/Escala/Escritórios)
-
-function tone(hex, a) {
-  const h = hex.replace('#', '');
-  const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
-  return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
-}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -42,9 +38,23 @@ function gerarId(categoria, lista, categorias) {
 function StatusBadge({ status }) {
     const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.rascunho;
     return (
-        <span className={`px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-black uppercase tracking-wider rounded-full ${cfg.bg} ${cfg.text}`}>
+        <span className={`px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-extrabold uppercase tracking-wider rounded-full ${cfg.bg} ${cfg.text}`}>
             {cfg.label}
         </span>
+    );
+}
+
+const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
+
+function KpiTile({ label, value, icon }) {
+    return (
+        <div className="flex min-w-0 items-center gap-2.5">
+            <span className="material-symbols-outlined shrink-0 text-white/70 text-[18px]" aria-hidden="true">{icon}</span>
+            <div className="min-w-0">
+                <div className={LABEL_MONO}>{label}</div>
+                <div className="mt-0.5 truncate text-[17px] font-extrabold leading-none tracking-tight text-white tabular-nums">{value}</div>
+            </div>
+        </div>
     );
 }
 
@@ -58,72 +68,54 @@ function ProcessosHero({ total, ativos, revisao, categorias, onAdd }) {
     ];
 
     return (
-        <div style={{
-            background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)`,
-            borderRadius: 24, padding: '28px 32px', color: 'white',
-            position: 'relative', overflow: 'hidden',
-            boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
-        }}>
-            <svg style={{ position: 'absolute', inset: 0, opacity: 0.12 }} width="100%" height="100%">
-                <defs><pattern id="processos-hero-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" /></pattern></defs>
+        <div
+            className="relative shrink-0 overflow-hidden rounded-[24px] p-6 text-white sm:p-8"
+            style={{
+                background: fundoHero(C),
+                boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
+            }}
+        >
+            <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.22, pointerEvents: 'none' }}>
+                <defs>
+                    <pattern id="processos-hero-grid" width="22" height="22" patternUnits="userSpaceOnUse">
+                        <circle cx="1" cy="1" r="1" fill="white" />
+                    </pattern>
+                </defs>
                 <rect width="100%" height="100%" fill="url(#processos-hero-grid)" />
             </svg>
-            <div style={{ position: 'absolute', top: -100, right: -60, width: 320, height: 320, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)' }} />
 
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
-                <div style={{ maxWidth: 560 }}>
-                    <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 6,
-                        padding: '5px 11px', borderRadius: 999,
-                        background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)',
-                        fontSize: 11.5, fontWeight: 600, fontFamily: '"JetBrains Mono", monospace',
-                        letterSpacing: '0.12em', textTransform: 'uppercase',
-                    }}>
-                        <span style={{ width: 6, height: 6, borderRadius: 3, background: '#7FD8B8' }} />
-                        Procedimentos Internos
+            <div className="relative grid grid-cols-1 gap-6 2xl:grid-cols-12 2xl:items-center 2xl:gap-8">
+                <div className="flex flex-col gap-4 2xl:col-span-6">
+                    <div>
+                        <div className={LABEL_MONO}>Procedimentos Internos</div>
+                        <h1 className="m-0 mt-1.5 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
+                            Processos Operacionais
+                        </h1>
+                        <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">
+                            Gerencie e visualize procedimentos internos, fluxos de trabalho e POPs para todos os departamentos.
+                        </p>
                     </div>
-                    <h1 style={{ margin: '14px 0 6px', fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.08 }}>
-                        Processos Operacionais
-                    </h1>
-                    <p style={{ margin: 0, fontSize: 15, opacity: 0.85, lineHeight: 1.5 }}>
-                        Gerencie e visualize procedimentos internos, fluxos de trabalho e POPs para todos os departamentos.
-                    </p>
-                </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
-                    <button onClick={onAdd} style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 6,
-                        padding: '10px 16px', borderRadius: 10,
-                        background: C.surface, color: C.accentDeep,
-                        fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.12)', border: 'none',
-                    }}>
+                    <button
+                        onClick={onAdd}
+                        className="inline-flex w-fit items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-bold shadow-sm transition-colors hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        style={{ background: C.surface, color: C.accentDeep }}
+                    >
                         <span className="material-symbols-outlined text-[18px]">add</span>
                         Novo Processo
                     </button>
                 </div>
-            </div>
 
-            <div style={{ position: 'relative', display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 22 }}>
-                {kpis.map((kpi, idx) => (
-                    <div key={idx} style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '10px 14px', borderRadius: 14,
-                        background: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(6px)',
-                        border: '1px solid rgba(255,255,255,0.22)',
-                    }}>
-                        <div style={{
-                            width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.22)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                            <span className="material-symbols-outlined text-[18px]">{kpi.icon}</span>
-                        </div>
-                        <div>
-                            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9.5, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.8 }}>{kpi.label}</div>
-                            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{kpi.value}</div>
-                        </div>
+                <div className="rounded-2xl border border-white/15 bg-black/60 p-4 2xl:col-span-6">
+                    <div className="flex items-center gap-2 border-b border-white/[0.15] pb-2">
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-white/80" aria-hidden="true" />
+                        <span className={LABEL_MONO}>Panorama</span>
                     </div>
-                ))}
+
+                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        {kpis.map(k => <KpiTile key={k.label} {...k} />)}
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -145,7 +137,7 @@ const FORM_VAZIO = {
 function CampoSecao({ titulo, children }) {
     return (
         <div>
-            <h3 className="text-[11px] font-black text-[var(--accent-dark)] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+            <h3 className="text-[11px] font-extrabold text-[var(--accent-dark)] uppercase tracking-widest mb-3 flex items-center gap-1.5">
                 <span className="w-1 h-3 rounded-full bg-gradient-to-b from-[#9A3412] to-[#EC7D23]" />
                 {titulo}
             </h3>
@@ -258,7 +250,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
 
     const inputCls = "w-full px-3 py-2.5 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
     const inputErroCls = "border-[#E84545] focus:ring-[#E84545]";
-    const labelCls = "block text-[10px] font-black text-faint uppercase tracking-widest mb-1.5";
+    const labelCls = "block text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1.5";
 
     return (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
@@ -280,7 +272,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                             </span>
                         </div>
                         <div>
-                            <h2 id={tituloId} className="text-foreground font-black text-lg">
+                            <h2 id={tituloId} className="font-display text-foreground font-bold text-xl">
                                 {isEdicao ? 'Editar Processo' : 'Novo Processo'}
                             </h2>
                             <p className="text-xs text-faint mt-0.5">
@@ -307,7 +299,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                     <CampoSecao titulo="Informações Básicas">
                         <div className="sm:col-span-2">
                             <div className="flex items-baseline justify-between mb-1.5">
-                                <label htmlFor="processo-nome" className="text-[10px] font-black text-faint uppercase tracking-widest">Nome do Processo *</label>
+                                <label htmlFor="processo-nome" className="text-[10px] font-extrabold text-faint uppercase tracking-widest">Nome do Processo *</label>
                                 <span className="text-[10px] font-bold text-muted tabular-nums">{form.nome.length}/100</span>
                             </div>
                             <input
@@ -355,7 +347,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
 
                         <div className="sm:col-span-2">
                             <div className="flex items-baseline justify-between mb-1.5">
-                                <label htmlFor="processo-descricao" className="text-[10px] font-black text-faint uppercase tracking-widest">Descrição *</label>
+                                <label htmlFor="processo-descricao" className="text-[10px] font-extrabold text-faint uppercase tracking-widest">Descrição *</label>
                                 <span className="text-[10px] font-bold text-muted tabular-nums">{form.descricao.length}/500</span>
                             </div>
                             <textarea
@@ -519,7 +511,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
     const [erro, setErro] = useState('');
 
     const inputCls = "w-full px-3 py-2 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
-    const labelCls = "block text-[10px] font-black text-faint uppercase tracking-widest mb-1";
+    const labelCls = "block text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1";
 
     function set(campo, valor) {
         setForm(f => ({ ...f, [campo]: valor }));
@@ -602,7 +594,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                             <span className="material-symbols-outlined text-white text-2xl" aria-hidden="true">tune</span>
                         </div>
                         <div>
-                            <h2 id="categorias-admin-titulo" className="text-foreground font-black text-lg">Gerenciar Categorias</h2>
+                            <h2 id="categorias-admin-titulo" className="font-display text-foreground font-bold text-xl">Gerenciar Categorias</h2>
                             <p className="text-xs text-faint mt-0.5">Adicione, edite ou remova as categorias de processos.</p>
                         </div>
                     </div>
@@ -634,7 +626,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-3 border-t border-border pt-5">
-                        <h3 className="text-[11px] font-black text-[var(--accent-dark)] uppercase tracking-widest">
+                        <h3 className="text-[11px] font-extrabold text-[var(--accent-dark)] uppercase tracking-widest">
                             {editandoId ? `Editando "${editandoId}"` : 'Nova categoria'}
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
@@ -697,7 +689,7 @@ function EmptyState({ onAdd }) {
             <div className="bg-[var(--accent-soft)] p-4 rounded-2xl text-[var(--accent-dark)] mb-5">
                 <span className="material-symbols-outlined text-4xl">folder_off</span>
             </div>
-            <h2 className="text-foreground font-black text-lg mb-2">Nenhum processo cadastrado ainda</h2>
+            <h2 className="font-display text-foreground font-bold text-xl mb-2">Nenhum processo cadastrado ainda</h2>
             <p className="text-faint text-sm max-w-md mb-6">
                 Cadastre o primeiro procedimento operacional para começar a organizar os fluxos de trabalho do seu setor.
             </p>
@@ -824,7 +816,7 @@ export default function Processos({ user, setCurrentView }) {
             />
         )}
 
-        <main className="flex-1 flex flex-col px-4 md:px-10 py-6 max-w-[1400px] mx-auto w-full overflow-y-auto no-scrollbar" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: C.bg }}>
+        <main className="flex-1 flex flex-col px-4 md:px-10 py-6 max-w-[1200px] mx-auto w-full overflow-y-auto no-scrollbar" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: C.bg }}>
             {/* Hero */}
             <ProcessosHero
                 total={lista.length}
@@ -928,7 +920,7 @@ export default function Processos({ user, setCurrentView }) {
                                 <span className="font-mono font-bold text-[var(--accent-dark)] text-sm">{p.id}</span>
                                 <StatusBadge status={p.status} />
                             </div>
-                            <h3 className="font-black text-foreground text-base leading-snug">{p.nome}</h3>
+                            <h3 className="font-extrabold text-foreground text-base leading-snug">{p.nome}</h3>
                             <p className="text-xs text-faint mb-1">{p.responsavel.setor} · v{p.versao}</p>
                             <p className="text-sm text-faint line-clamp-2 mb-3">{p.descricao}</p>
                             <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
@@ -978,12 +970,12 @@ export default function Processos({ user, setCurrentView }) {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-surface-raised border-b border-border">
-                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-28">ID</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-1/4">PROCESSO</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest">DESCRIÇÃO</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-24 text-center">VERSÃO</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-36 text-center">STATUS</th>
-                                <th className="px-6 py-4 text-[11px] font-black text-faint uppercase tracking-widest w-28 text-right">AÇÕES</th>
+                                <th className="px-6 py-4 text-[11px] font-extrabold text-faint uppercase tracking-widest w-28">ID</th>
+                                <th className="px-6 py-4 text-[11px] font-extrabold text-faint uppercase tracking-widest w-1/4">PROCESSO</th>
+                                <th className="px-6 py-4 text-[11px] font-extrabold text-faint uppercase tracking-widest">DESCRIÇÃO</th>
+                                <th className="px-6 py-4 text-[11px] font-extrabold text-faint uppercase tracking-widest w-24 text-center">VERSÃO</th>
+                                <th className="px-6 py-4 text-[11px] font-extrabold text-faint uppercase tracking-widest w-36 text-center">STATUS</th>
+                                <th className="px-6 py-4 text-[11px] font-extrabold text-faint uppercase tracking-widest w-28 text-right">AÇÕES</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border bg-surface">
@@ -1100,7 +1092,7 @@ export default function Processos({ user, setCurrentView }) {
                                 <div className="bg-[var(--accent-soft)] p-3 rounded-[14px] text-[var(--accent-dark)] group-hover:bg-gradient-to-br group-hover:from-[#9A3412] group-hover:to-[#EC7D23] group-hover:text-white transition-all">
                                     <span className="material-symbols-outlined text-3xl">{cat.icon}</span>
                                 </div>
-                                <span className="text-3xl font-black text-foreground">{total}</span>
+                                <span className="text-3xl font-extrabold text-foreground">{total}</span>
                             </div>
                             <h3 className="text-base font-bold text-foreground mb-1">{cat.label}</h3>
                             <p className="text-faint text-xs">

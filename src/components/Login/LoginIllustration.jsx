@@ -90,7 +90,7 @@ export default function LoginIllustration() {
 
             {/* Bottom Row: Tagline & Stats */}
             <div className="relative z-10 mt-auto">
-                <h2 className="text-[22px] font-bold text-[#1C2B3A] tracking-tight leading-tight">
+                <h2 className="font-display text-xl font-bold text-[#1C2B3A] tracking-tight leading-tight">
                     Uma plataforma para cada fluxo de trabalho.
                 </h2>
                 <p className="text-[13.5px] text-[#475467] mt-2 mb-6 leading-relaxed">

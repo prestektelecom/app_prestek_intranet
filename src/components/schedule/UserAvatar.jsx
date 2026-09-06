@@ -26,12 +26,12 @@ export default function UserAvatar({ user, allowEmpty, hideName, className, size
                     />
                 </div>
             ) : (
-                <div className={cn(size, 'rounded-full bg-[var(--accent-soft)] text-[var(--accent-dark)] flex items-center justify-center font-black text-[11px] border-2 border-[var(--accent)]/10 shadow-sm shrink-0 uppercase group-hover/avatar:border-[var(--accent)]/30 transition-colors')}>
+                <div className={cn(size, 'rounded-full bg-[var(--accent-soft)] text-[var(--accent-dark)] flex items-center justify-center font-extrabold text-[11px] border-2 border-[var(--accent)]/10 shadow-sm shrink-0 uppercase group-hover/avatar:border-[var(--accent)]/30 transition-colors')}>
                     {user.initials}
                 </div>
             )}
             {!hideName && (
-                <span className="font-black text-foreground tracking-tight group-hover/avatar:text-[var(--accent-dark)] transition-colors break-words">{user.name}</span>
+                <span className="font-extrabold text-foreground tracking-tight group-hover/avatar:text-[var(--accent-dark)] transition-colors break-words">{user.name}</span>
             )}
         </div>
     );

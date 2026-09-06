@@ -87,7 +87,7 @@ export default function AdminUsuarios({ adminEmail }) {
             {/* Header + Busca */}
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Gerenciar Usuários</h1>
+                    <h1 className="font-display text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Gerenciar Usuários</h1>
                     <p className="mt-1 text-sm" style={{ color: C.muted }}>Gerencie permissões e visualize todos os colaboradores sincronizados.</p>
                 </div>
                 <form onSubmit={handleBusca} className="flex gap-2">

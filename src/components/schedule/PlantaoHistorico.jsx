@@ -98,12 +98,12 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
     };
 
     return (
-        <div className="flex-1 flex flex-col w-full max-w-[1400px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: '#F5F9FF' }}>
+        <div className="flex-1 flex flex-col w-full max-w-[1200px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: '#F5F9FF' }}>
             <main className="flex-1 flex flex-col gap-8">
                 <div className="flex flex-col gap-2">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
-                            <h1 className="text-4xl md:text-5xl font-black text-[#0B1B2E] tracking-tighter">Histórico de Plantões</h1>
+                            <h1 className="font-display text-3xl font-extrabold tracking-tight text-[#0B1B2E]">Histórico de Plantões</h1>
                             <p className="text-[#475467] font-medium mt-1">Auditoria completa de todas as alterações realizadas na escala.</p>
                         </div>
                         <button

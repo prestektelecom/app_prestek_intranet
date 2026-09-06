@@ -56,7 +56,7 @@ export default function AdminAuditoria({ adminEmail }) {
     return (
         <div className="flex flex-col gap-6">
             <div>
-                <h1 className="text-foreground text-3xl font-extrabold tracking-tight">Logs de Auditoria</h1>
+                <h1 className="text-foreground font-display text-3xl font-extrabold tracking-tight">Logs de Auditoria</h1>
                 <p className="text-muted text-sm mt-1">Histórico de ações administrativas realizadas na intranet.</p>
             </div>
 

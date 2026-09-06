@@ -117,7 +117,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
 
     return (
         <div style={{
-            position: 'fixed', inset: 0, zIndex: 100,
+            position: 'fixed', inset: 0, zIndex: 1100,
             background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
         }} onClick={onClose}>
@@ -133,7 +133,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                 {/* Header */}
                 <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.line}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: C.ink }}>Editar Organograma</h2>
+                        <h2 className="font-display" style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.ink }}>Editar Organograma</h2>
                         <p style={{ margin: '4px 0 0', fontSize: 12.5, color: C.muted }}>Edite textos sem precisar alterar código.</p>
                     </div>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>

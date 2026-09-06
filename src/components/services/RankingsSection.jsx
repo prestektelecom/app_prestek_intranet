@@ -25,7 +25,7 @@ function VendorIdentity({ vendor, isGold, rc }) {
                     )}
                 </div>
             </div>
-            <h4 className={`truncate text-center font-black leading-tight ${rc.titleColor} ${isGold ? 'mt-2 text-sm sm:text-base' : 'mt-1.5 text-xs sm:text-sm'}`} title={vendor.nome}>
+            <h4 className={`truncate text-center font-extrabold leading-tight ${rc.titleColor} ${isGold ? 'mt-2 text-sm sm:text-base' : 'mt-1.5 text-xs sm:text-sm'}`} title={vendor.nome}>
                 {primeiroNome}
             </h4>
             <p className={`text-center ${rc.subColor} ${isGold ? 'mt-1 text-[10px] sm:text-[11px]' : 'mt-0.5 text-[9px] sm:text-[10px]'}`}>Vendedora</p>
@@ -87,12 +87,12 @@ export default function RankingsSection({ topPlans, topVendors, topTicket, loadi
                         metricFloor={10}
                         renderIdentity={(plan, isGold, rc) => (
                             <>
-                                <h4 className={`truncate font-black leading-tight ${rc.titleColor} ${isGold ? 'mt-1 text-sm sm:text-base' : 'text-xs sm:text-sm'}`} title={plan.descricao}>
+                                <h4 className={`truncate font-extrabold leading-tight ${rc.titleColor} ${isGold ? 'mt-1 text-sm sm:text-base' : 'text-xs sm:text-sm'}`} title={plan.descricao}>
                                     {plan.descricao}
                                 </h4>
                                 <p className={`${rc.subColor} ${isGold ? 'mt-1 text-[10px] sm:text-[11px]' : 'mt-0.5 text-[9px] sm:text-[10px]'}`}>Sincronizado via IXC</p>
                                 <div className={`flex items-baseline gap-1 ${isGold ? 'mt-3 sm:mt-4' : 'mt-2 sm:mt-3'}`}>
-                                    <span className={`font-black ${rc.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>
+                                    <span className={`font-extrabold ${rc.titleColor} ${isGold ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'}`}>
                                         {formatCurrency(plan.valor_mensal)}
                                     </span>
                                     <span className="text-[10px] font-semibold text-[#E4ECF5]/70 sm:text-xs">/mês</span>

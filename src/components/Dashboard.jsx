@@ -12,7 +12,7 @@ const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 /* ── Tokens utilitários do design system semântico (vars em index.css) ── */
 const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-muted'
-const CARD_TITLE = 'text-[17px] font-bold tracking-tight text-foreground'
+const CARD_TITLE = 'font-display text-xl font-bold tracking-tight text-foreground'
 const CARD = 'bento-hover-border flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm'
 const ACTION_BTN = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
 
@@ -91,7 +91,7 @@ function DashboardHeader({ firstName, cargoName, currentTime, currentDate, city 
   return (
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+        <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">
           Olá, {firstName} 👋
         </h1>
         <p className="mt-1 text-sm text-faint">
@@ -449,7 +449,7 @@ function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
 
         {/* Detalhamento por Status (4 Mini KPIs) */}
         {!osLoading && !allGood && (
-          <div className="mt-4 grid grid-cols-4 gap-1.5">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
               <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-deep)] truncate" title="Assumidas">
                 ⚡ Assumidas
@@ -789,11 +789,11 @@ function ComunicadosCard({ setCurrentView }) {
                   </div>
                   <div className="truncate text-[12px] text-faint">{preview}</div>
                 </div>
-                <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[88px]">
+                <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[140px]">
                   <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[10.5px] text-muted">
                     {relativeTime(it.criado_em)}
                   </div>
-                  <div className="truncate max-w-[88px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
+                  <div title={it.departamento_autor || ''} className="truncate max-w-[140px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
                 </div>
               </div>
             );
@@ -1267,7 +1267,7 @@ export default function Dashboard({ setCurrentView, user }) {
 
   return (
     <main className="flex-1 overflow-y-auto bg-background text-foreground">
-      <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-7 md:px-8">
+      <div className="mx-auto max-w-[1200px] px-6 pb-10 pt-7 md:px-8">
 
         <DashboardHeader firstName={firstName} cargoName={cargoName} currentTime={currentTime} currentDate={currentDate} city={location.city} />
 

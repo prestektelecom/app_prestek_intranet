@@ -136,7 +136,7 @@ export default function AdminComunicados({ adminEmail }) {
             {/* Header */}
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Gerenciar Comunicados</h1>
+                    <h1 className="font-display text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Gerenciar Comunicados</h1>
                     <p className="mt-1 text-sm" style={{ color: C.muted }}>Crie, edite e exclua os comunicados exibidos na intranet.</p>
                 </div>
                 <button
@@ -317,13 +317,13 @@ export default function AdminComunicados({ adminEmail }) {
 
             {/* Modal */}
             {modalAberto && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(11, 27, 46, 0.5)', backdropFilter: 'blur(4px)' }}>
+                <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4" style={{ background: 'rgba(11, 27, 46, 0.5)', backdropFilter: 'blur(4px)' }}>
                     <div className="w-full max-w-[520px] overflow-hidden rounded-2xl border shadow-2xl" style={{ background: C.surface, borderColor: C.line }}>
                         <div
                             className="flex items-center justify-between px-5 py-4 text-white"
                             style={{ background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accent})` }}
                         >
-                            <h2 className="flex items-center gap-2 text-base font-bold">
+                            <h2 className="font-display flex items-center gap-2 text-xl font-bold">
                                 <span className="material-symbols-outlined text-xl">{editando ? 'edit' : 'campaign'}</span>
                                 {editando ? 'Editar Comunicado' : 'Novo Comunicado'}
                             </h2>

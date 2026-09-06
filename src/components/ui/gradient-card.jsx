@@ -108,7 +108,7 @@ const GradientCard = React.forwardRef(
           <div className="relative z-10 flex flex-col flex-grow justify-between">
             <div>
               {title && (
-                <h3 className="text-xl sm:text-2xl font-black tracking-tight leading-tight drop-shadow-xs">
+                <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight leading-tight drop-shadow-xs">
                   {title}
                 </h3>
               )}

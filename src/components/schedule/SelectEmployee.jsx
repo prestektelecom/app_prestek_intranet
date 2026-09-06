@@ -5,7 +5,7 @@ export default function SelectEmployee({ label, value, onChange, options, allowE
     const C = useBentoTheme();
     return (
         <label className="flex flex-col gap-2">
-            <span className="text-xs sm:text-[10px] font-black uppercase text-[#475467] tracking-widest flex items-center gap-1.5 ml-1">
+            <span className="text-xs sm:text-[10px] font-extrabold uppercase text-[#475467] tracking-widest flex items-center gap-1.5 ml-1">
                 {label} {allowEmpty && <span className="text-[8px] opacity-60 font-medium">(Opcional)</span>}
             </span>
             <div className="relative group">

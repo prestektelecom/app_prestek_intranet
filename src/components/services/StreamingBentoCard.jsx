@@ -40,7 +40,7 @@ export default function StreamingBentoCard({ service, isAdmin, onEditClick, onDe
             }
         >
             <div className="flex items-baseline gap-1 pt-2">
-                <span className="text-xl sm:text-2xl font-black tracking-tight">
+                <span className="text-xl sm:text-2xl font-extrabold tracking-tight">
                     {service.value}
                 </span>
                 <span className="text-xs font-semibold opacity-80">

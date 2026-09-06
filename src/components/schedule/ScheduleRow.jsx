@@ -13,12 +13,12 @@ export default function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr
             aria-label={isAdmin ? `Editar plantão do dia ${date}` : undefined}
             role={isAdmin ? 'button' : 'row'}
         >
-            <td className={`p-4 pl-8 font-black relative ${isToday ? 'text-[var(--accent-dark)]' : 'text-foreground'}`}>
+            <td className={`p-4 pl-8 font-extrabold relative ${isToday ? 'text-[var(--accent-dark)]' : 'text-foreground'}`}>
                 <div className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${isToday ? 'bg-[var(--accent)]' : (isAdmin ? 'group-hover:bg-[var(--accent)]/40 bg-transparent' : 'bg-transparent')}`}></div>
                 <div className="flex items-center gap-2">
                     {date}
                     {isToday && (
-                        <span className="text-[9px] font-black uppercase tracking-widest bg-[var(--accent)] text-white px-1.5 py-0.5 rounded-full">Hoje</span>
+                        <span className="text-[9px] font-extrabold uppercase tracking-widest bg-[var(--accent)] text-white px-1.5 py-0.5 rounded-full">Hoje</span>
                     )}
                 </div>
             </td>
