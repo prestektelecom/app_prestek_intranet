@@ -136,7 +136,7 @@ export default function ResponsaveisManual() {
     const stats = [
         { label: 'Total de Setores', valor: totalSetores, icon: 'domain', cor: C.accent, bg: C.accentSoft },
         { label: 'Definidos Manualmente', valor: totalManuais, icon: 'edit_note', cor: C.success, bg: C.successSoft },
-        { label: 'Automáticos', valor: totalAutomaticos, icon: 'autorenew', cor: C.accentDeep, bg: C.accentSoft },
+        { label: 'Automáticos', valor: totalAutomaticos, icon: 'autorenew', cor: C.info, bg: tone(C.info, 0.15) },
     ];
 
     if (carregando) {
@@ -193,7 +193,7 @@ export default function ResponsaveisManual() {
             {erro && (
                 <div
                     className="flex items-center gap-2 rounded-xl border p-3 text-sm"
-                    style={{ background: C.dangerSoft, borderColor: '#F5B0B0', color: C.danger }}
+                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.danger }}
                 >
                     <span className="material-symbols-outlined text-base">error</span>
                     {erro}

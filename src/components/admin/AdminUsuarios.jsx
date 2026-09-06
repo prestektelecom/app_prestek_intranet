@@ -79,7 +79,7 @@ export default function AdminUsuarios({ adminEmail }) {
     const stats = [
         { label: 'Total de Usuários', valor: totalUsuarios, icon: 'group', cor: C.accent, bg: C.accentSoft },
         { label: 'Administradores', valor: totalAdmins, icon: 'verified_user', cor: C.success, bg: C.successSoft },
-        { label: 'Usuários Comuns', valor: totalUsuariosComuns, icon: 'person', cor: C.accentDeep, bg: C.accentSoft },
+        { label: 'Usuários Comuns', valor: totalUsuariosComuns, icon: 'person', cor: C.info, bg: tone(C.info, 0.15) },
     ];
 
     return (
@@ -152,7 +152,7 @@ export default function AdminUsuarios({ adminEmail }) {
             {erro && (
                 <div
                     className="rounded-xl border p-4 text-sm"
-                    style={{ background: C.dangerSoft, borderColor: '#F5B0B0', color: C.danger }}
+                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.danger }}
                 >
                     {erro}
                 </div>

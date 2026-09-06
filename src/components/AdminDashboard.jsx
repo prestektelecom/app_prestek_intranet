@@ -33,7 +33,7 @@ function BentoLogo({ C, size = 32 }) {
             <rect x="4" y="4" width="14" height="14" rx="4" fill={C.accent} />
             <rect x="4" y="23" width="14" height="21" rx="4" fill={C.accentDark} />
             <rect x="23" y="4" width="21" height="14" rx="4" fill={C.accentSoft} />
-            <rect x="23" y="23" width="21" height="21" rx="4" fill={C.cyan} />
+            <rect x="23" y="23" width="21" height="21" rx="4" fill={C.info} />
         </svg>
     );
 }
@@ -121,7 +121,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
         grant_admin: { icon: 'verified_user', cor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' },
         revoke_admin: { icon: 'person_off', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
         update_comunicado: { icon: 'edit_document', cor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' },
-        create_comunicado: { icon: 'add_circle', cor: 'bg-[#FFF7ED] text-[#C2410C]' },
+        create_comunicado: { icon: 'add_circle', cor: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' },
         delete_comunicado: { icon: 'delete', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
         update_config: { icon: 'settings', cor: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' },
     };
@@ -258,7 +258,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     {[
                                         { label: 'Usuários Ativos', valor: stats?.total_usuarios, icon: 'group', stripe: C.accent, iconCor: C.accent, iconBg: C.accentSoft },
-                                        { label: 'Comunicações', valor: stats?.total_comunicados, icon: 'campaign', stripe: C.cyan, iconCor: '#9A3412', iconBg: C.cyanSoft },
+                                        { label: 'Comunicações', valor: stats?.total_comunicados, icon: 'campaign', stripe: C.info, iconCor: C.info, iconBg: tone(C.info, 0.15) },
                                         { label: 'Ações (g)', valor: stats?.acoes_recentes, icon: 'edit_document', stripe: C.success, iconCor: C.success, iconBg: C.successSoft },
                                     ].map(kpi => (
                                         <div
@@ -318,7 +318,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                     ) : (
                                         <div className="flex flex-col gap-5">
                                             {logsRecentes.map(log => {
-                                                const { icon, cor } = ICONE_ACAO[log.acao] || { icon: 'info', cor: 'bg-[#F7FAFD] text-[#8896A8]' };
+                                                const { icon, cor } = ICONE_ACAO[log.acao] || { icon: 'info', cor: 'bg-gray-100 dark:bg-gray-800/40 text-gray-500 dark:text-gray-400' };
                                                 return (
                                                     <div key={log.id} className="flex items-start gap-4">
                                                         <div className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cor}`}>
@@ -380,7 +380,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                         onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${C.accent}66`; e.currentTarget.style.background = C.accentSoft; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.background = C.surface; }}
                                     >
-                                        <div style={sIconBox('#8B5CF6', '#F5F3FF')} className="mb-4">
+                                        <div style={sIconBox(C.violet, tone(C.violet, 0.15))} className="mb-4">
                                             <span className="material-symbols-outlined">description</span>
                                         </div>
                                         <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Logs de Auditoria</h3>

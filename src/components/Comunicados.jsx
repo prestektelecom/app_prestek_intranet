@@ -401,7 +401,6 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kp
             </svg>
             {/* Blur orbs */}
             <div style={{ position: 'absolute', top: -120, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(255,255,255,0.10)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: -100, right: 160, width: 220, height: 220, borderRadius: '50%', background: `rgba(${hexToRgb(C.cyan)}, 0.25)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
 
             <div style={{ position: 'relative', maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
                 
@@ -562,9 +561,6 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                 background: C.surface,
                 borderRadius: 18,
                 border: `1px solid ${hover ? tone(meta.color, 0.4) : C.line}`,
-                borderLeftWidth: 4,
-                borderLeftStyle: 'solid',
-                borderLeftColor: meta.color,
                 boxShadow: hover
                     ? `0 12px 32px rgba(${rgb}, 0.15), 0 2px 8px rgba(0,0,0,0.06)`
                     : `0 1px 3px rgba(0,0,0,0.06)`,
@@ -578,8 +574,9 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                 overflow: 'hidden'
             }}
         >
+            <div style={{ height: 4, background: meta.color }} />
             <div style={{ padding: '24px 24px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                
+
                 {/* Header do Card (Tipo + Metadata + Ações) */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
@@ -746,7 +743,6 @@ function SkeletonCard() {
             background: C.surface,
             borderRadius: 18,
             border: `1px solid ${C.line}`,
-            borderLeft: `4px solid ${C.line}`,
             overflow: 'hidden',
             animation: 'pulse 1.5s ease-in-out infinite',
             height: 220

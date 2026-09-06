@@ -463,7 +463,7 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
                 background: C.surface,
                 border: `1px solid ${C.line}`,
                 borderRadius: 12,
-                boxShadow: C.shadowLg || '0 10px 25px rgba(11,27,46,0.12)',
+                boxShadow: '0 10px 25px rgba(11,27,46,0.12)',
                 padding: '6px',
                 zIndex: 1000,
                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
@@ -516,13 +516,13 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
                   padding: '4px 10px 8px 38px',
                   display: 'flex', alignItems: 'center', gap: 8,
                 }}>
-                  {/* Cyber (blue) */}
+                  {/* Cyber (blue/neon) */}
                   <button
                     onClick={(e) => { e.stopPropagation(); setDarkVariant('cyber'); }}
                     title="Cyber-Obsidian"
                     style={{
                       width: 16, height: 16, borderRadius: '50%',
-                      background: '#FB923C', border: darkVariant === 'cyber' ? `2px solid ${C.ink}` : '2px solid transparent',
+                      background: '#00F5D4', border: darkVariant === 'cyber' ? `2px solid ${C.ink}` : '2px solid transparent',
                       cursor: 'pointer', padding: 0,
                     }}
                   />
@@ -575,7 +575,7 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = C.dangerSoft || 'rgba(239, 68, 68, 0.1)';
-                  e.currentTarget.style.color = C.dangerDeep || '#dc2626';
+                  e.currentTarget.style.color = C.danger || '#ef4444';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';

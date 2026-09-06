@@ -9,6 +9,12 @@ export const BENTO_LIGHT = {
   accentDeep: '#7C2D12',
   accentSoft: '#FFF7ED',
   cyan: '#FDBA74',
+  // Categoria secundária (dados organizacionais/IXC, somente leitura) — precisa de um
+  // hue realmente distinto do accent; `cyan` acima é a mesma família laranja e não serve.
+  info: '#2563EB',
+  // Terceira categoria (ex.: logs de auditoria) — mantém o roxo que já existia
+  // hardcoded em alguns cards, só que agora reagindo a tema.
+  violet: '#8B5CF6',
   ink: '#0B1B2E',
   ink2: '#475467',
   muted: '#8896A8',
@@ -33,6 +39,8 @@ export const BENTO_DARK_CYBER = {
   accentDeep: '#7C2D12',
   accentSoft: 'rgba(249, 115, 22, 0.12)',
   cyan: '#FDBA74',
+  info: '#3B82F6',
+  violet: '#A78BFA',
   ink: '#F5F9FF',
   ink2: '#8896A8',
   muted: '#8896A8',
@@ -55,6 +63,8 @@ export const BENTO_DARK_AURORA = {
   accentDeep: '#9A3412',
   accentSoft: 'rgba(251, 146, 60, 0.15)',
   cyan: '#FDBA74',
+  info: '#818CF8',
+  violet: '#A78BFA',
   ink: '#F5F9FF',
   ink2: '#A398CD',
   muted: '#8896A8',
@@ -77,6 +87,8 @@ export const BENTO_DARK_AMOLED = {
   accentDeep: '#7C2D12',
   accentSoft: 'rgba(249, 115, 22, 0.15)',
   cyan: '#FDBA74',
+  info: '#3B82F6',
+  violet: '#A78BFA',
   ink: '#FFFFFF',
   ink2: '#888888',
   muted: '#888888',

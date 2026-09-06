@@ -247,8 +247,10 @@ export default function Configuracoes({ user, setCurrentView }) {
                 })
             );
             const respostasPrefs = await Promise.all(promessas);
-            if (respostasPrefs.some(res => !res.ok)) {
-                throw new Error('Falha ao salvar preferências');
+            const respPrefFalha = respostasPrefs.find(res => !res.ok);
+            if (respPrefFalha) {
+                const corpo = await respPrefFalha.json().catch(() => null);
+                throw new Error(`Falha ao salvar preferências (HTTP ${respPrefFalha.status}): ${corpo?.erro || 'sem detalhe'}`);
             }
 
             // Sincroniza dados críticos (como celular, nome, ramal) com a API IXC
@@ -260,7 +262,8 @@ export default function Configuracoes({ user, setCurrentView }) {
                 body: JSON.stringify(formDataSemAvatar)
             });
             if (!respFuncionario.ok) {
-                throw new Error('Falha ao sincronizar dados do funcionário');
+                const corpo = await respFuncionario.json().catch(() => null);
+                throw new Error(`Falha ao sincronizar dados do funcionário (HTTP ${respFuncionario.status}): ${corpo?.erro || 'sem detalhe'}`);
             }
 
             // Salva no localStorage com mesmo formato compacto
@@ -500,10 +503,10 @@ export default function Configuracoes({ user, setCurrentView }) {
 
                     {/* Setor e Função */}
                     <div style={sCard}>
-                        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.cyan}, ${tone(C.cyan, 0.3)})` }} />
+                        <div style={{ height: 4, background: `linear-gradient(90deg, ${C.info}, ${tone(C.info, 0.3)})` }} />
                         <div style={sSection}>
                             <div style={sSectionHead}>
-                                <div style={sIconBox(C.cyan, tone(C.cyan, 0.15))}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>work</span></div>
+                                <div style={sIconBox(C.info, tone(C.info, 0.15))}><span className="material-symbols-outlined" style={{ fontSize: 18 }}>work</span></div>
                                 <h3 style={sH3}>Setor e Função</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 18 }}>

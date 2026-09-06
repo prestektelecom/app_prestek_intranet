@@ -252,7 +252,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                                         onChange={e => updateChild(idx, cidx, e.target.value)}
                                                         style={{ flex: 1, boxSizing: 'border-box', padding: 10, borderRadius: 8, border: `1px solid ${C.line}`, background: C.surface, color: C.ink, fontSize: 13, fontFamily: FONT }}
                                                     />
-                                                    <button onClick={() => removeChild(idx, cidx)} style={{ padding: 8, borderRadius: 8, border: 'none', background: C.dangerSoft || tone('#ef4444', 0.12), color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                                    <button onClick={() => removeChild(idx, cidx)} style={{ padding: 8, borderRadius: 8, border: 'none', background: C.dangerSoft, color: C.danger, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                                                         <span className="material-symbols-outlined" style={{ fontSize: 18 }}>delete</span>
                                                     </button>
                                                 </div>
