@@ -106,6 +106,12 @@
   --hover-border-from:  #EC7D23;
   --hover-border-to:    #C2410C;
   --hover-border-glow:  rgba(236, 125, 35, 0.40);
+
+  /* Chrome global: alturas que o shell e as páginas precisam concordar.
+     A barra inferior soma a safe-area do aparelho (iPhone com gesto). */
+  --header-h:       64px;
+  --bottom-nav-h:   calc(64px + env(safe-area-inset-bottom, 0px));
+  --sidebar-w:      248px;
 }
 
 .dark {
@@ -669,6 +675,25 @@
   color: var(--primary) !important;
 }
 
+/* ── Sheets do chrome mobile ─────────────────────────────────
+   MobileMoreSheet e MobileProfileSheet compartilham a entrada. */
+@keyframes sheet-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* ── Foco visível ────────────────────────────────────────────
+   Anel único do sistema (DESIGN.md: ring-2 em accent). Só em
+   :focus-visible, então clique com mouse não desenha nada. Nenhum
+   componente do chrome define foco próprio nem usa `outline: none`. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-offset: 0;
+}
+
 /* ── Movimento reduzido ──────────────────────────────────────
    O projeto tem 23 animações infinitas (animate-ping, animate-pulse,
    bento-aurora-spin, glow-pulse, login-pulse, bell-ring, float-gentle) e
@@ -769,7 +794,8 @@
      500    overlays de mapa (MapLegend) — acima do conteúdo,
             abaixo do chrome global
      1000   chrome global (header, sidebar, bottom-nav)
-     1100   drawers e modais (MobileDrawer, OverrideModal, ...)
+     1001   chrome +1 (MobileMoreSheet, MobileProfileSheet)
+     1100   drawers e modais (OverrideModal, TiSupportModal, ...)
      9999   alertas críticos / toasts (acima de tudo)
    ═══════════════════════════════════════════════════════════ */
 

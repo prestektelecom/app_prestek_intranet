@@ -19,9 +19,12 @@ import Ti from './components/Ti'
 import NotFound from './components/NotFound'
 
 import { usePresence } from './hooks/usePresence'
+import { canAccess } from './navigation'
+import { HeaderActionsProvider } from './contexts/HeaderActionsContext'
 import MobileBottomNav from './components/MobileBottomNav'
 import MobileMoreSheet from './components/MobileMoreSheet'
-import MobileDrawer from './components/responsive/MobileDrawer'
+
+const VIEWS = ['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'plantao-historico', 'processes', 'announcements', 'settings', 'tickets', 'offices', 'ti']
 
 export default function App() {
     const [user, setUser] = useState(() => {
@@ -64,7 +67,6 @@ export default function App() {
     })
 
     const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false)
-    const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
 
     useEffect(() => {
         if (currentView !== 'login') {
@@ -118,7 +120,6 @@ export default function App() {
         } catch (_) {}
     }, [user?.id, user?.funcionario?.id])
 
-    // Simulador de is admin status, permitindo apenas mostrar interface de admin se selecionado
     // Tela de login — renderizada isoladamente sem Header/Sidebar
     if (!user && currentView !== 'login') {
         return <NotFound setCurrentView={setCurrentView} user={null} />
@@ -146,64 +147,60 @@ export default function App() {
         }} setCurrentView={setCurrentView} />
     }
 
-    if (currentView === 'admin') {
+    // Gate de papel (PRODUCT.md, princípio 4): esconder o item no menu não
+    // basta, a view persistida na sessão chega aqui sem passar pelo menu.
+    const permitido = canAccess(currentView, user)
+
+    if (currentView === 'admin' && permitido) {
         return <AdminDashboard setCurrentView={setCurrentView} user={user} />
     }
 
+    const renderView = () => {
+        if (!permitido) return <NotFound setCurrentView={setCurrentView} user={user} variant="sem-permissao" />
+        switch (currentView) {
+            case 'dashboard': return <Dashboard setCurrentView={setCurrentView} user={user} />
+            case 'services': return <ServicesDirectory setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} />
+            case 'coverage': return <Coverage user={user} setCurrentView={setCurrentView} />
+            case 'directory': return <Directory user={user} setCurrentView={setCurrentView} />
+            case 'sectors': return <Sectors user={user} setCurrentView={setCurrentView} />
+            case 'schedule': return <Schedule user={user} setCurrentView={setCurrentView} />
+            case 'plantao-historico': return <PlantaoHistorico user={user} setCurrentView={setCurrentView} />
+            case 'processes': return <Processos user={user} setCurrentView={setCurrentView} />
+            case 'announcements': return <Comunicados user={user} setCurrentView={setCurrentView} />
+            case 'settings': return <Configuracoes user={user} setCurrentView={setCurrentView} />
+            case 'tickets': return <TicketsList user={user} setCurrentView={setCurrentView} />
+            case 'offices': return <Offices user={user} setCurrentView={setCurrentView} />
+            case 'ti': return <Ti user={user} setCurrentView={setCurrentView} />
+            default: return <NotFound setCurrentView={setCurrentView} user={user} />
+        }
+    }
+
     return (
-        <div className="bg-background text-foreground font-jakarta h-screen h-dvh flex transition-colors duration-200">
-            <Sidebar currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-            <div className="flex flex-1 flex-col overflow-hidden">
-                <Header currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onMenuClick={() => setIsMobileDrawerOpen(true)} />
-                <div className="flex-1 flex overflow-hidden pb-[64px] lg:pb-0">
-                    {/* Renderização baseada em currentView */}
-                    {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} user={user} />}
-                    {currentView === 'services' && <ServicesDirectory setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} />}
-                    {currentView === 'coverage' && <Coverage user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'directory' && <Directory user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'sectors' && <Sectors user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'schedule' && <Schedule user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'plantao-historico' && user?.is_admin && <PlantaoHistorico user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'plantao-historico' && !user?.is_admin && <NotFound setCurrentView={setCurrentView} user={user} />}
-                    {currentView === 'processes' && <Processos user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'announcements' && <Comunicados user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'settings' && <Configuracoes user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'tickets' && <TicketsList user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'offices' && <Offices user={user} setCurrentView={setCurrentView} />}
-                    {/* Aba TI — restrita a admin, mesmo par de linhas do plantao-historico.
-                        Cadastrar pessoa no ERP não é ação para qualquer usuário logado. */}
-                    {currentView === 'ti' && user?.is_admin && <Ti user={user} setCurrentView={setCurrentView} />}
-                    {currentView === 'ti' && !user?.is_admin && <NotFound setCurrentView={setCurrentView} user={user} />}
-                    {/* Fallback para outros menus não implementados ou páginas inexistentes */}
-                    {!['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'plantao-historico', 'processes', 'announcements', 'settings', 'tickets', 'offices', 'ti'].includes(currentView) && (
-                        <NotFound setCurrentView={setCurrentView} user={user} />
-                    )}
+        <HeaderActionsProvider>
+            <div className="bg-background text-foreground font-jakarta h-screen h-dvh flex transition-colors duration-200">
+                <Sidebar currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                <div className="flex flex-1 flex-col overflow-hidden">
+                    <Header currentView={currentView} setCurrentView={setCurrentView} user={user} />
+                    {/* Abaixo de lg a barra inferior é fixa; o conteúdo reserva a altura dela. */}
+                    <div className="flex-1 flex overflow-hidden pb-[var(--bottom-nav-h)] lg:pb-0">
+                        {VIEWS.includes(currentView) || !permitido ? renderView() : <NotFound setCurrentView={setCurrentView} user={user} />}
+                    </div>
                 </div>
+                <MobileBottomNav
+                    currentView={currentView}
+                    setCurrentView={setCurrentView}
+                    isMoreSheetOpen={isMoreSheetOpen}
+                    setIsMoreSheetOpen={setIsMoreSheetOpen}
+                    user={user}
+                />
+                <MobileMoreSheet
+                    isOpen={isMoreSheetOpen}
+                    onClose={() => setIsMoreSheetOpen(false)}
+                    currentView={currentView}
+                    setCurrentView={setCurrentView}
+                    user={user}
+                />
             </div>
-            {/* Mobile Navigation */}
-            <MobileBottomNav
-                currentView={currentView}
-                setCurrentView={setCurrentView}
-                isMoreSheetOpen={isMoreSheetOpen}
-                setIsMoreSheetOpen={setIsMoreSheetOpen}
-            />
-            <MobileMoreSheet
-                isOpen={isMoreSheetOpen}
-                onClose={() => setIsMoreSheetOpen(false)}
-                currentView={currentView}
-                setCurrentView={setCurrentView}
-                user={user}
-            />
-            <MobileDrawer
-                isOpen={isMobileDrawerOpen}
-                onClose={() => setIsMobileDrawerOpen(false)}
-                currentView={currentView}
-                setCurrentView={setCurrentView}
-                user={user}
-            />
-        </div>
+        </HeaderActionsProvider>
     )
 }
-
-
-

@@ -266,6 +266,9 @@ export default function Configuracoes({ user, setCurrentView }) {
             // Salva no localStorage com mesmo formato compacto
             if (safeId) {
                 localStorage.setItem(`stitch_profile_${safeId}`, JSON.stringify(dadosFinais));
+                // Sidebar e Header ouvem este evento em vez de sondar o
+                // localStorage a cada 1,5s.
+                window.dispatchEvent(new CustomEvent('stitch:avatar', { detail: { id: safeId } }));
             }
             setFormData(prev => ({ ...prev, avatarUrl }));
 

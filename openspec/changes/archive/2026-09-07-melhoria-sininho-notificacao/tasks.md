@@ -72,8 +72,10 @@
 
 ## 13. Verificação Final
 
-- [ ] 13.1 Testar no browser: badge aparece/some corretamente ao marcar lidas
-- [ ] 13.2 Testar animação shake no hover com e sem notificações não lidas
-- [ ] 13.3 Testar agrupamento com cenários: só Urgente, só Importante, ambos, nenhum
-- [ ] 13.4 Testar tempo relativo com datas de hoje, ontem, 5 dias atrás, 40 dias atrás
-- [ ] 13.5 Testar persistência: marcar itens como lidos → recarregar página → verificar que continuam lidos
+- [x] 13.1 Testar no browser: badge aparece/some corretamente ao marcar lidas — 2026-09-07, Playwright MCP em `localhost:5000`: 4 → 3 ao clicar um item, some ao "Marcar todas"; `aria-label` acompanha ("4 não lidas" → "sem novas")
+- [x] 13.2 Testar animação shake no hover com e sem notificações não lidas — classe `bell-shake-hover` presente só com não lidas; com tudo lido, `animationName` computado no hover é `none`
+- [x] 13.3 Testar agrupamento com cenários: só Urgente, só Importante, ambos, nenhum — `fetch` sobrescrito no navegador com 4 cenários; grupo vazio omitido, ordem Urgente → Importante, badge vermelho se houver urgente e amarelo se só importante, vazio mostra "Tudo tranquilo!"
+- [x] 13.4 Testar tempo relativo com datas de hoje, ontem, 5 dias atrás, 40 dias atrás — "há 15 minutos", "há 3 horas", "ontem", "há 5 dias", "29 de jul." (40 dias vira data absoluta)
+- [x] 13.5 Testar persistência: marcar itens como lidos → recarregar página → verificar que continuam lidos — `notif_seen_<id>` sobrevive ao reload; badge continua ausente
+
+Achados registrados para a Fase 1 do `programa-impeccable` (não bloqueiam esta change): descrição do item renderiza inteira sem clamp, deixando o dropdown com itens de 8+ linhas; "1 não lidas" no `aria-label` (concordância).

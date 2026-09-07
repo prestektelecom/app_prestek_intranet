@@ -1,26 +1,32 @@
 import { Icons } from './common/Icons';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useNotificacoes } from '../hooks/useComunicados';
+import { mobileSlots, viewInSheet } from '../navigation';
 
-export default function MobileBottomNav({ currentView, setCurrentView, isMoreSheetOpen, setIsMoreSheetOpen }) {
+// Barra inferior do celular: quatro slots por frequência de uso (fonte única
+// em navigation.js) e "Mais". O rótulo ativo usa `ink`, nunca `accentDeep`:
+// como texto, o laranja profundo dava 1,9:1 nos temas escuros.
+
+export default function MobileBottomNav({ currentView, setCurrentView, isMoreSheetOpen, setIsMoreSheetOpen, user }) {
   const C = useBentoTheme();
+  const { naoLidos } = useNotificacoes(user);
 
-  // Mapeia quais views pertencem aos slots principais
-  const primaryViews = ['dashboard', 'services', 'coverage', 'directory'];
-
-  // O botão "Mais" é considerado ativo se o sheet estiver aberto OR se a view atual for secundária
-  const isMoreActive = isMoreSheetOpen || !primaryViews.includes(currentView);
+  const slots = mobileSlots(user).map((item) => ({
+    id: item.id,
+    label: item.mobileLabel ?? item.label,
+    icon: item.icon,
+    badge: item.badge === 'comunicados' ? naoLidos : 0,
+    active: !isMoreSheetOpen && currentView === item.id,
+  }));
 
   const navItems = [
-    { id: 'dashboard', label: 'Início', icon: 'Dashboard', active: currentView === 'dashboard' },
-    { id: 'services', label: 'Serviços', icon: 'Tools', active: currentView === 'services' },
-    { id: 'coverage', label: 'Cobertura', icon: 'Shield', active: currentView === 'coverage' },
-    { id: 'directory', label: 'Equipe', icon: 'People', active: currentView === 'directory' },
-    { id: 'more', label: 'Mais', icon: 'More', active: isMoreActive }
+    ...slots,
+    { id: 'more', label: 'Mais', icon: 'More', badge: 0, active: isMoreSheetOpen || viewInSheet(currentView) },
   ];
 
   const handleItemClick = (id) => {
     if (id === 'more') {
-      setIsMoreSheetOpen(prev => !prev);
+      setIsMoreSheetOpen((prev) => !prev);
     } else {
       setIsMoreSheetOpen(false);
       setCurrentView(id);
@@ -30,64 +36,58 @@ export default function MobileBottomNav({ currentView, setCurrentView, isMoreShe
   return (
     <nav
       className="flex lg:hidden"
+      aria-label="Navegação principal"
       style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 64,
-        background: C.surface,
-        borderTop: `1px solid ${C.line}`,
-        boxShadow: `0 -4px 16px ${C.ink}0A`,
-        zIndex: 1000,
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        padding: '0 8px',
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        height: 'var(--bottom-nav-h)', paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        background: C.popover, borderTop: `1px solid ${C.line}`, boxShadow: 'var(--shadow-md)',
+        zIndex: 1000, alignItems: 'stretch', justifyContent: 'space-around', padding: '0 4px',
         fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
       }}
     >
       {navItems.map((item) => {
         const IconComponent = Icons[item.icon];
+        const isMore = item.id === 'more';
+        const badgeLabel = item.badge > 9 ? '9+' : item.badge;
         return (
           <button
             key={item.id}
+            type="button"
             onClick={() => handleItemClick(item.id)}
+            aria-current={!isMore && item.active ? 'page' : undefined}
+            aria-expanded={isMore ? isMoreSheetOpen : undefined}
+            aria-haspopup={isMore ? 'dialog' : undefined}
+            aria-label={item.badge > 0 ? `${item.label}, ${item.badge} não lidos` : undefined}
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-              border: 'none',
-              background: 'transparent',
-              width: '20%',
-              height: '100%',
-              cursor: 'pointer',
-              color: item.active ? C.accentDeep : C.muted,
-              transition: 'all 0.15s ease',
-              padding: '4px 0',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+              border: 'none', background: 'transparent', width: '20%', minHeight: 64, cursor: 'pointer',
+              color: item.active ? C.ink : C.ink2, padding: '6px 0', borderRadius: 8,
+              transition: 'color 0.15s ease',
             }}
           >
             <span
+              aria-hidden="true"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: item.active ? C.accent : C.muted,
+                position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: item.active ? C.accent : C.ink2,
                 transform: item.active ? 'scale(1.08)' : 'scale(1)',
                 transition: 'transform 0.15s ease, color 0.15s ease',
               }}
             >
               {IconComponent && <IconComponent />}
+              {item.badge > 0 && (
+                <span style={{
+                  position: 'absolute', top: -6, right: -10, minWidth: 16, height: 16, padding: '0 4px',
+                  borderRadius: 999, background: C.danger, color: '#FFFFFF',
+                  fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: `2px solid ${C.popover}`, boxSizing: 'border-box',
+                }}>
+                  {badgeLabel}
+                </span>
+              )}
             </span>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: item.active ? 700 : 500,
-                letterSpacing: '0.02em',
-                transition: 'color 0.15s ease, font-weight 0.15s ease',
-              }}
-            >
+            <span style={{ fontSize: 11, fontWeight: item.active ? 700 : 500, letterSpacing: '0.01em' }}>
               {item.label}
             </span>
           </button>

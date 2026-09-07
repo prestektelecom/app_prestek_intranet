@@ -1,104 +1,110 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Lottie from 'lottie-react'
+import { useBentoTheme } from '../hooks/useBentoTheme'
 
-// Ícone de seta elegante para o botão de retorno
+// Duas situações, duas verdades:
+// - `nao-encontrado`: a view não existe (ou a sessão caiu).
+// - `sem-permissao`: a view existe, mas é de admin/TI. Antes esta tela dizia
+//   "em fase de construção" para quem não tinha permissão, o que era mentira.
+
 function ArrowLeftIcon() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="group-hover:-translate-x-0.5 transition-transform">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true" className="group-hover:-translate-x-0.5 transition-transform">
             <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     )
 }
 
-const NotFound = ({ setCurrentView, user }) => {
+const COPY = {
+    'nao-encontrado': {
+        titulo: 'Esta página não existe',
+        texto: 'O endereço pode ter mudado ou a área ainda não foi publicada. Volte para o Início e siga pelo menu.',
+    },
+    'sem-permissao': {
+        titulo: 'Você não tem acesso a esta área',
+        texto: 'Esta área é restrita à equipe de TI e aos administradores. Se você precisa dela para o seu trabalho, fale com a TI.',
+    },
+}
+
+const NotFound = ({ setCurrentView, user, variant = 'nao-encontrado' }) => {
+    const C = useBentoTheme()
     const [animationData, setAnimationData] = useState(null)
     const [loading, setLoading] = useState(true)
+    const copy = COPY[variant] ?? COPY['nao-encontrado']
 
     useEffect(() => {
-        // Carrega o arquivo Lottie do 404 local de forma assíncrona
         import('../../lottieflow-404-12-4-000000-easey.json')
-            .then((module) => {
-                setAnimationData(module.default)
-                setLoading(false)
-            })
-            .catch((err) => {
-                console.error('Falha ao carregar animação Lottie 404:', err)
-                setLoading(false)
-            })
+            .then((module) => { setAnimationData(module.default); setLoading(false) })
+            .catch((err) => { console.error('Falha ao carregar animação Lottie 404:', err); setLoading(false) })
     }, [])
 
-    const handleBack = () => {
-        setCurrentView(user ? 'dashboard' : 'login')
-    }
+    const handleBack = () => setCurrentView(user ? 'dashboard' : 'login')
 
     return (
-        <div className="min-h-screen w-full relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-[#FFF7ED] via-[#F0F8FF] to-[#FAFCFF] font-sans selection:bg-[#EC7D23]/20 px-4 py-8">
-            {/* Dotted backdrop */}
-            <svg className="absolute inset-0 opacity-[0.25] pointer-events-none" width="100%" height="100%">
+        <div
+            className="min-h-full w-full relative overflow-hidden flex flex-col items-center justify-center px-4 py-8"
+            style={{ background: C.bg, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+        >
+            <svg className="absolute inset-0 pointer-events-none" width="100%" height="100%" aria-hidden="true" style={{ opacity: 0.25 }}>
                 <defs>
                     <pattern id="dots-bg" width="32" height="32" patternUnits="userSpaceOnUse">
-                        <circle cx="2" cy="2" r="1.1" fill="#EC7D23" opacity="0.25" />
+                        <circle cx="2" cy="2" r="1.1" fill={C.accent} opacity="0.25" />
                     </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#dots-bg)" />
             </svg>
 
-            {/* Soft Ambient Blobs */}
-            <div className="absolute -top-40 -left-28 w-[460px] h-[460px] rounded-full bg-[#EC7D23]/15 filter blur-[80px] pointer-events-none" />
-            <div className="absolute -bottom-40 -right-24 w-[420px] h-[420px] rounded-full bg-[#EC7D23]/10 filter blur-[80px] pointer-events-none" />
-
-            {/* Premium Glassmorphic Card */}
-            <div className="relative z-10 w-full max-w-[580px] bg-white/75 backdrop-blur-md rounded-[32px] p-8 md:p-12 shadow-[0_50px_100px_-30px_rgba(236,125,35,0.22),_0_0_0_1px_rgba(255,255,255,0.8)] border border-[#FFF7ED] flex flex-col items-center text-center">
-                
-                {/* Brand Logo */}
-                <div className="flex items-center gap-2.5 mb-8 select-none">
-                    <span className="font-sans font-extrabold text-2xl tracking-tight text-[#1C2B3A]">
-                        Prestek
-                    </span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#EC7D23]" />
-                    <span className="font-mono font-bold text-[10px] tracking-widest text-[#9AA5B4] uppercase mt-0.5">
-                        SISTEMAS
-                    </span>
+            <div
+                className="relative z-10 w-full max-w-[580px] rounded-[24px] p-8 md:p-12 flex flex-col items-center text-center"
+                style={{ background: C.surface, border: `1px solid ${C.line}`, boxShadow: 'var(--shadow-xl)' }}
+            >
+                <div className="flex items-center gap-2.5 mb-8 select-none" aria-hidden="true">
+                    <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', color: C.ink }}>Prestek</span>
+                    <span style={{ width: 6, height: 6, borderRadius: 3, background: C.accent, display: 'block' }} />
+                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.ink2 }}>Intranet</span>
                 </div>
 
-                {/* Animated Lottie Container */}
-                <div className="w-full max-w-[280px] aspect-square flex items-center justify-center mb-6">
-                    {loading ? (
-                        <div className="w-16 h-16 rounded-full border-4 border-[#EC7D23]/10 border-t-[#EC7D23] animate-spin" />
-                    ) : (
-                        animationData && (
-                            <Lottie 
-                                animationData={animationData} 
-                                loop={true} 
-                                style={{ width: '100%', height: '100%' }} 
-                            />
-                        )
-                    )}
-                </div>
+                {variant === 'sem-permissao' ? (
+                    <div className="flex items-center justify-center mb-8" aria-hidden="true"
+                        style={{ width: 96, height: 96, borderRadius: '50%', background: C.accentSoft, color: C.accentDark }}>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="4" y="10" width="16" height="11" rx="2.5" />
+                            <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+                        </svg>
+                    </div>
+                ) : (
+                    <div className="w-full max-w-[260px] aspect-square flex items-center justify-center mb-6" aria-hidden="true">
+                        {loading ? (
+                            <div className="w-16 h-16 rounded-full animate-spin" style={{ border: `4px solid ${C.accentSoft}`, borderTopColor: C.accent }} />
+                        ) : (
+                            animationData && <Lottie animationData={animationData} loop style={{ width: '100%', height: '100%' }} />
+                        )}
+                    </div>
+                )}
 
-                {/* Text Content */}
-                <div className="space-y-3.5 mb-9">
-                    <h1 className="font-display text-3xl font-extrabold text-[#1C2B3A] tracking-tight leading-tight">
-                        Estamos Trabalhando Aqui
+                <div className="space-y-3 mb-9">
+                    <h1 className="font-display text-3xl font-extrabold tracking-tight leading-tight" style={{ color: C.ink }}>
+                        {copy.titulo}
                     </h1>
-                    <p className="text-[14.5px] text-[#475467] leading-relaxed max-w-md mx-auto">
-                        Esta área ou serviço está passando por atualizações importantes ou ainda está em fase de construção por nossa equipe técnica.
+                    <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: C.ink2 }}>
+                        {copy.texto}
                     </p>
                 </div>
 
-                {/* CTA Button */}
                 <button
+                    type="button"
                     onClick={handleBack}
-                    className="group w-full md:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-[#EC7D23] hover:bg-[#C2410C] text-white font-bold text-[14.5px] rounded-2xl transition-all duration-300 transform hover:scale-[1.02] shadow-[0_12px_24px_rgba(236,125,35,0.25)] hover:shadow-[0_16px_32px_rgba(236,125,35,0.35)]"
+                    className="group w-full md:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3 font-bold text-sm rounded-xl transition-colors"
+                    style={{ background: C.accent, color: '#FFFFFF' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = C.accentDark }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = C.accent }}
                 >
                     <ArrowLeftIcon />
-                    <span>
-                        {user ? 'Voltar para a Dashboard' : 'Voltar para o Login'}
-                    </span>
+                    <span>{user ? 'Voltar para o Início' : 'Voltar para o login'}</span>
                 </button>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default NotFound;
+export default NotFound

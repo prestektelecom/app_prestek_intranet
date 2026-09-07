@@ -1,0 +1,168 @@
+## 0. Fundação
+
+- [x] 0.1 Decidir e montar a ferramenta de navegador para o skill (Chrome DevTools MCP ou Playwright MCP); confirmar com `impeccable signals` que `devServer.running` fica `true` com `npm run dev` no ar — Playwright MCP (`@playwright/mcp` 0.0.80, resolvido via npx) adicionado ao `.mcp.json`; o tool só aparece após reiniciar a sessão. Ressalva: o `signals` sonda portas fixas e não lê o `vite.config.js` (porta 5000), então `devServer.running` fica `false` mesmo com o Vite no ar; nas fases seguintes, passar a URL `http://localhost:5000` explicitamente ao critique/audit em vez de confiar nesse sinal
+- [x] 0.2 Rodar `/impeccable doctor`; aplicar apenas findings `auto`; anotar os `mention`/`route` — resultado 2026-09-07: nenhum `auto`; um `mention` (`design-md-coverage`: DESIGN.md sem seções Colors/Components no esquema lido pelo skill), resolvido pela tarefa 0.3
+- [x] 0.3 Rodar `/impeccable document` para reescrever `DESIGN.md` a partir do código atual (tokens de `index.css`, `useBentoTheme`, componentes de `ui/` e `common/`) e gerar `.impeccable/design.json` — modo mesclar; frontmatter com 30 cores, 7 papéis tipográficos, 6 raios, 5 espaçamentos, 12 componentes; corpo nas 8 seções canônicas; sidecar schemaVersion 2 com rampas OKLCH calculadas, 9 componentes com HTML/CSS autocontidos, tabela dos 5 temas; `doctor` voltou com zero findings
+- [x] 0.4 Conferir o novo `DESIGN.md` contra `src/docs/Manual-da-Marca-Prestek-Telecom.pdf`; remover qualquer resíduo bege (`#eaddcd`, `#f4eee6`) e registrar os 4 temas escuros como estão em código — manual (12 páginas, extraído com pdf-parse) fixa `#D97738`/`#384C9C` e proíbe distorcer, rotacionar, recolorir ou trocar a tipografia do logo; divergência do accent documentada (The Manual Divergence Rule); bege removido; verdade da fonte corrigida (Manrope só em títulos, Plus Jakarta Sans no corpo, JetBrains Mono em números); 4 temas escuros tabelados a partir do `index.css`
+- [x] 0.5 Criar `.impeccable/critique/ignore.md` com o formato de exceção (finding, motivo, data, quem decidiu) — criado com a primeira exceção (divergência de cor do manual)
+- [x] 0.6 Confirmar `/impeccable hooks status` ligado e limpar `ignoreValues` obsoletos em `.impeccable/config.json` — hook `enabled`; as 3 exceções (`overused-font=plus jakarta sans`, `layout-transition` na Sidebar, `side-tab` no Dashboard) continuam válidas e ficam
+- [x] 0.7 Registrar as decisões 1–4 do proposal.md como tomadas (navegador, changes abertas, temas, rastreio) — registradas no proposal.md como 7 decisões (as 4 previstas mais DESIGN.md mesclado, cor da marca e linguagem do sistema)
+
+## 1. Chrome global
+
+- [x] 1.1 Resolver changes abertas que tocam o chrome: `melhoria-sininho-notificacao` (36/41) — os 5 testes de navegador restantes rodados com Playwright MCP (sessão injetada via `sessionStorage['@Stitch:user']`, sem credencial IXC); 41/41; change arquivada. `notification-bell-improvements` (19/19, nunca arquivada) arquivada junto. O `openspec archive` falha no rename da pasta nesta máquina (EPERM), então as duas foram movidas à mão para `changes/archive/2026-09-07-*` e os 8 specs principais `notification-*` escritos a partir dos deltas (todos ADDED)
+- [x] 1.2 `critique src/App.jsx` — 2026-09-07, dual-agent com navegador (2 papéis × claro/Cyber × 1440 e 390): **19/40**, 1 P0 (Painel Admin visível e roteável para não-admin), 3 P1 (teclado/Escape/foco; contraste e overlays translúcidos no escuro; header vazio e busca que só filtra Serviços), 1 P2 (chrome mobile sem identidade/saída, drawer morto). Snapshot `.impeccable/critique/2026-09-07T22-51-04Z__src-app-jsx.md`. Achado estrutural: "Default Dark" não é alcançável pela UI (`ThemeContext` sempre aplica `dark-<variante>`)
+- [x] 1.3 `audit` em Header, Sidebar, MobileBottomNav, MobileMoreSheet, responsive/, notifications/, ThemeSwitcher — **9/20** (a11y 1, perf 2, responsivo 2, tema 2, integridade 2); 1 P0, 7 P1, 8 P2, 6 P3; relatório em `docs/impeccable/audit-chrome-2026-09-07.md`. Achados além da crítica: `NavRow`/`GroupLabel` definidos dentro do render da Sidebar (remontam a nav a cada estado); 4 componentes mortos em `responsive/` (`MobileDrawer`, `PageShell`, `ResponsiveBreadcrumb`, `TouchFriendlyActions`) e DESIGN.md descrevendo `PageShell` como universal; 3 listas de navegação duplicadas; `ThemeSwitcher.tsx` inteiro em hex
+- [x] 1.4 Consolidar backlog: sidebar colapsada e expandida, sheet "Mais", sino com e sem notificações, troca entre os 5 temas, foco de teclado no chrome inteiro, 2 papéis (item TI/Admin só para admin) — passagem manual: claro desktop (executor), claro/Cyber × 1440/390 × 2 papéis (Avaliação A), AMOLED desktop (sino + perfil) e Aurora celular (sheet) por amostragem. Extras da passagem: dropdown vira spinner a cada poll; "Sair da Conta" 3,9:1 no AMOLED; swatch AMOLED invisível; "Mais" ativo `#9A3412` sobre índigo no Aurora; sem rolagem horizontal a 390px. Backlog virou `openspec/changes/impeccable-chrome/tasks.md` (4 novas capabilities, 3 modificadas, 3 removidas)
+- [ ] 1.5 Criar change filha `impeccable-chrome` e corrigir (polish → direcionados)
+- [ ] 1.6 Verificar (build, diff, finish-reviewer, critique, audit) e passar o portão
+- [ ] 1.7 Commit
+
+## 2. Login + NotFound
+
+- [ ] 2.1 `critique src/components/Login.jsx`
+- [ ] 2.2 `audit src/components/Login src/components/NotFound.jsx`
+- [ ] 2.3 Consolidar backlog: erro de credencial, lembrar-me, ilustração em mobile, rota inexistente para os 2 papéis
+- [ ] 2.4 Criar change filha `impeccable-login` e corrigir
+- [ ] 2.5 Verificar e passar o portão
+- [ ] 2.6 Commit
+
+## 3. Dashboard
+
+- [ ] 3.1 Resolver `dashboard-hero-slideshow` (23/30) e decidir o destino do código morto HeroCard/HeroBgModal
+- [ ] 3.2 Reabrir os 3 P0 do snapshot fechado de 2026-09-07T13-39-40Z: horário de plantão inventado (SELECT sem `horario_inicio`/`horario_fim`), `sem_dados` tratado como erro, comunicados sem teclado e carrossel sem pausa por foco
+- [ ] 3.3 `critique src/components/Dashboard.jsx` (3ª rodada, agora com navegador)
+- [ ] 3.4 `audit src/components/Dashboard.jsx src/components/TiSupportModal.jsx src/components/common`
+- [ ] 3.5 Consolidar backlog nos 2 papéis: o que um não-técnico vê nos widgets OsBento/SetorBento; 4 fetches que ainda engolem erro; SetorBento sobrepondo Plantão em xs; 9 GlowingEffect fora da paleta; grid travado vs PRODUCT.md
+- [ ] 3.6 Criar change filha `impeccable-dashboard` e corrigir
+- [ ] 3.7 Verificar e passar o portão (tendência esperada: 15 → 25+)
+- [ ] 3.8 Commit
+
+## 4. Plantão
+
+- [ ] 4.1 Resolver `escala-botao-criar-plantao` (0/11) e `modernizar-visao-geral-escala` (já completa, arquivar se ainda não foi)
+- [ ] 4.2 `critique src/components/Schedule.jsx`
+- [ ] 4.3 `audit src/components/schedule`
+- [ ] 4.4 Consolidar backlog: aba Escala, aba Histórico, ManagePlantaoModal, HistoricoPreviewModal, ScheduleMobileCard, MultiSelectEmployee com nome longo do IXC, estados vazio/erro
+- [ ] 4.5 Criar change filha `impeccable-plantao` e corrigir
+- [ ] 4.6 Verificar e passar o portão
+- [ ] 4.7 Commit
+
+## 5. Comunicados
+
+- [ ] 5.1 `critique src/components/Comunicados.jsx`
+- [ ] 5.2 `audit src/components/Comunicados.jsx`
+- [ ] 5.3 Consolidar backlog: lista, leitura, urgentes, imagem em carrossel, teclado
+- [ ] 5.4 Criar change filha `impeccable-comunicados` e corrigir
+- [ ] 5.5 Verificar e passar o portão
+- [ ] 5.6 Commit
+
+## 6. Colaboradores
+
+- [ ] 6.1 Resolver `colaboradores-reformulacao-visual` (55/63)
+- [ ] 6.2 `critique src/components/Directory.jsx`
+- [ ] 6.3 `audit src/components/directory`
+- [ ] 6.4 Consolidar backlog: hero, toolbar, cards vs linhas, grupos, busca vazia, foto quebrada, neumorfismo nos 4 temas escuros
+- [ ] 6.5 Criar change filha `impeccable-colaboradores` e corrigir
+- [ ] 6.6 Verificar e passar o portão
+- [ ] 6.7 Commit
+
+## 7. Setores + Organograma
+
+- [ ] 7.1 `critique src/components/Sectors.jsx`
+- [ ] 7.2 `audit src/components/sectors src/components/OrgChartEditor.jsx`
+- [ ] 7.3 Consolidar backlog: hero, toolbar, cards, OrgChart em mobile, editor (abas ceo, áreas, json) só para admin
+- [ ] 7.4 Criar change filha `impeccable-setores` e corrigir
+- [ ] 7.5 Verificar e passar o portão
+- [ ] 7.6 Commit
+
+## 8. Meus Chamados
+
+- [ ] 8.1 Decidir o destino de `tickets-pivot-para-os` (0/20) e `tickets-theme-cores-adaptativas` (0/16): executar antes, ou abandonar e deixar o backlog do impeccable substituí-las
+- [ ] 8.2 `critique src/components/TicketsList.jsx`
+- [ ] 8.3 `audit src/components/TicketsList.jsx`
+- [ ] 8.4 Consolidar backlog: lista, protocolo com overflow (`corrigir-overflow-protocolo-suporte` 2/3), estados, cores de status nos 5 temas
+- [ ] 8.5 Criar change filha `impeccable-chamados` e corrigir
+- [ ] 8.6 Verificar e passar o portão
+- [ ] 8.7 Commit
+
+## 9. Cobertura
+
+- [ ] 9.1 Resolver `coverage-layout-proporcional` (21/39), `cobertura-resolver-endereco-cliente` (35/42), `cobertura-warmup-swr-cache` (18/21)
+- [ ] 9.2 `critique src/components/Coverage.jsx`
+- [ ] 9.3 `audit src/components/coverage src/components/CoverageMap.jsx`
+- [ ] 9.4 Consolidar backlog: hero, filtros, mapa nos 5 temas, legenda e z-index (DESIGN.md §6), RegionPanel, OverrideModal, MapaPicker, geocoding lento/falhando
+- [ ] 9.5 Criar change filha `impeccable-cobertura` e corrigir
+- [ ] 9.6 Verificar e passar o portão
+- [ ] 9.7 Commit
+
+## 10. Serviços
+
+- [ ] 10.1 Resolver `services-directory-confetti-carousel-ux` (10/14)
+- [ ] 10.2 `critique src/components/ServicesDirectory.jsx`
+- [ ] 10.3 `audit src/components/services`
+- [ ] 10.4 Consolidar backlog: hero, filtros, grid de planos, rankings/pódio, comparador, ServiceDetailModal, PlanEditModal, StreamingServiceModal, TechServiceModal, dados de seed vs IXC
+- [ ] 10.5 Criar change filha `impeccable-servicos` e corrigir
+- [ ] 10.6 Verificar e passar o portão
+- [ ] 10.7 Commit
+
+## 11. Escritórios
+
+- [ ] 11.1 `critique src/components/Offices.jsx`
+- [ ] 11.2 `audit src/components/Offices.jsx`
+- [ ] 11.3 Consolidar backlog: lista, modo editar, multi-unidade (PRODUCT.md), endereço longo
+- [ ] 11.4 Criar change filha `impeccable-escritorios` e corrigir
+- [ ] 11.5 Verificar e passar o portão
+- [ ] 11.6 Commit
+
+## 12. Processos
+
+- [ ] 12.1 `critique src/components/Processos.jsx`
+- [ ] 12.2 `audit src/components/Processos.jsx`
+- [ ] 12.3 Consolidar backlog: categorias, modo novo, modo editar, conteúdo longo, permissões de edição
+- [ ] 12.4 Criar change filha `impeccable-processos` e corrigir
+- [ ] 12.5 Verificar e passar o portão
+- [ ] 12.6 Commit
+
+## 13. Configurações
+
+- [ ] 13.1 `critique src/components/Configuracoes.jsx`
+- [ ] 13.2 `audit src/components/Configuracoes.jsx`
+- [ ] 13.3 Consolidar backlog: Informações Pessoais, Setor e Função, Preferências, troca de tema a partir daqui, upload de foto
+- [ ] 13.4 Criar change filha `impeccable-configuracoes` e corrigir
+- [ ] 13.5 Verificar e passar o portão
+- [ ] 13.6 Commit
+
+## 14. TI
+
+- [ ] 14.1 Resolver `ti-hub-cadastro-colaborador` (80/102)
+- [ ] 14.2 `critique src/components/Ti.jsx`
+- [ ] 14.3 `audit src/components/ti`
+- [ ] 14.4 Consolidar backlog: hero, Cadastro de Colaborador (seções do formulário, validação, UploadFicha, DryRunResultado, PainelLateral, CidadeCombobox com dados do IXC), acesso negado para não-admin
+- [ ] 14.5 Criar change filha `impeccable-ti` e corrigir
+- [ ] 14.6 Verificar e passar o portão
+- [ ] 14.7 Commit
+
+## 15. Painel Admin
+
+- [ ] 15.1 `critique src/components/AdminDashboard.jsx`
+- [ ] 15.2 `audit src/components/admin src/components/ResponsaveisManual.jsx src/components/schedule/PlantaoHistorico.jsx`
+- [ ] 15.3 Consolidar backlog aba por aba: Painel, Usuários, Responsáveis, Comunicados, Auditoria, Plantões; acesso negado para não-admin
+- [ ] 15.4 Criar change filha `impeccable-admin` e corrigir
+- [ ] 15.5 Verificar e passar o portão
+- [ ] 15.6 Commit
+
+## 16. Encerramento
+
+- [ ] 16.1 Revisar a seção Transversal abaixo e rodar `/impeccable extract` para cada padrão com 3+ ocorrências
+- [ ] 16.2 `/impeccable document` final e conferir contra o Manual da Marca
+- [ ] 16.3 `/impeccable audit src` global, com passagem explícita de tema em Cyber-Obsidian, Deep-Space Aurora e AMOLED em todas as páginas
+- [ ] 16.4 `/impeccable doctor` limpo
+- [ ] 16.5 Consolidar placares por superfície (crítica antes/depois, audit antes/depois) em `docs/`
+- [ ] 16.6 Arquivar esta change
+
+## Transversal
+
+Padrões que apareceram em 3+ superfícies. Preencher durante o programa; resolver em 16.1.
+
+- (vazio)

@@ -1,7 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
-export type DarkVariant = 'cyber' | 'aurora' | 'amoled';
+// `default` é o bloco `.dark` do index.css sem sufixo (Default Dark). As outras
+// três adicionam `.dark-<variante>` por cima.
+export type DarkVariant = 'default' | 'cyber' | 'aurora' | 'amoled';
+
+const DARK_VARIANTS: DarkVariant[] = ['default', 'cyber', 'aurora', 'amoled'];
 
 interface ThemeContextType {
     theme: Theme;
@@ -12,21 +16,28 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
+export function isDarkTheme(theme: Theme): boolean {
+    return (
+        theme === 'dark' ||
+        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    );
+}
+
 function applyThemeClasses(theme: Theme, darkVariant: DarkVariant) {
     const root = window.document.documentElement;
-    // Remove variantes de escuridão existentes
     root.classList.remove('dark-cyber', 'dark-aurora', 'dark-amoled');
 
-    const isDark =
-        theme === 'dark' ||
-        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-    if (isDark) {
+    if (isDarkTheme(theme)) {
         root.classList.add('dark');
-        root.classList.add(`dark-${darkVariant}`);
+        if (darkVariant !== 'default') root.classList.add(`dark-${darkVariant}`);
     } else {
         root.classList.remove('dark');
     }
+}
+
+function readVariant(): DarkVariant {
+    const saved = localStorage.getItem('dark_theme_variant');
+    return DARK_VARIANTS.includes(saved as DarkVariant) ? (saved as DarkVariant) : 'default';
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -35,10 +46,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         return saved || 'system';
     });
 
-    const [darkVariant, setDarkVariantState] = useState<DarkVariant>(() => {
-        const saved = localStorage.getItem('dark_theme_variant') as DarkVariant | null;
-        return saved || 'cyber';
-    });
+    const [darkVariant, setDarkVariantState] = useState<DarkVariant>(readVariant);
 
     // Aplica classes no root e persiste no localStorage
     useEffect(() => {

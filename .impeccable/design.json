@@ -1,0 +1,748 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-07T20:29:19.707Z",
+  "title": "Design System: Prestek Intranet",
+  "extensions": {
+    "colorMeta": {
+      "laranja-prestek": {
+        "role": "primary",
+        "displayName": "Laranja Prestek",
+        "canonical": "oklch(70.2% 0.165 53.3)",
+        "tonalRamp": [
+          "#130803",
+          "#3C1900",
+          "#6B2900",
+          "#9D3A00",
+          "#C65F00",
+          "#D99162",
+          "#EAC1A8",
+          "#FDEADF"
+        ]
+      },
+      "laranja-prestek-hover": {
+        "role": "primary",
+        "displayName": "Laranja Prestek Hover",
+        "canonical": "oklch(55.3% 0.174 38.4)",
+        "tonalRamp": [
+          "#140704",
+          "#3F1507",
+          "#702103",
+          "#A52C00",
+          "#CF542A",
+          "#E18B6F",
+          "#EFBEAE",
+          "#FFE9E2"
+        ]
+      },
+      "laranja-prestek-profundo": {
+        "role": "primary",
+        "displayName": "Laranja Prestek Profundo",
+        "canonical": "oklch(40.8% 0.116 38.2)",
+        "tonalRamp": [
+          "#120906",
+          "#371B13",
+          "#622F1F",
+          "#91442B",
+          "#B8674E",
+          "#CF9482",
+          "#E3C2B8",
+          "#FAEBE6"
+        ]
+      },
+      "laranja-prestek-suave": {
+        "role": "primary",
+        "displayName": "Laranja Prestek Suave",
+        "canonical": "oklch(98.0% 0.016 73.7)",
+        "tonalRamp": [
+          "#0C0B0A",
+          "#262421",
+          "#433F3A",
+          "#635C55",
+          "#867F77",
+          "#A9A49E",
+          "#CDCAC7",
+          "#EFEEED"
+        ]
+      },
+      "laranja-prestek-pessego": {
+        "role": "primary",
+        "displayName": "Laranja Prestek Pêssego",
+        "canonical": "oklch(83.7% 0.117 66.3)",
+        "tonalRamp": [
+          "#100A04",
+          "#331F08",
+          "#5B3605",
+          "#864E00",
+          "#AC712E",
+          "#C59C71",
+          "#DDC6AF",
+          "#F7ECE3"
+        ]
+      },
+      "azul-informativo": {
+        "role": "secondary",
+        "displayName": "Azul Informativo",
+        "canonical": "oklch(54.6% 0.215 262.9)",
+        "tonalRamp": [
+          "#050B19",
+          "#0C214D",
+          "#12388B",
+          "#164FCE",
+          "#3976F8",
+          "#75A3FC",
+          "#B1CBFD",
+          "#E3EFFF"
+        ]
+      },
+      "violeta-auditoria": {
+        "role": "secondary",
+        "displayName": "Violeta Auditoria",
+        "canonical": "oklch(60.6% 0.219 292.7)",
+        "tonalRamp": [
+          "#0C0818",
+          "#27184A",
+          "#462785",
+          "#6735C5",
+          "#895DEE",
+          "#A892F5",
+          "#CCC2F9",
+          "#EFEBFF"
+        ]
+      },
+      "verde-ok": {
+        "role": "tertiary",
+        "displayName": "Verde OK",
+        "canonical": "oklch(56.3% 0.119 158.9)",
+        "tonalRamp": [
+          "#050D08",
+          "#0B2B1B",
+          "#094C30",
+          "#007045",
+          "#369467",
+          "#7AB493",
+          "#B5D3C1",
+          "#E5F2EA"
+        ]
+      },
+      "verde-ok-texto": {
+        "role": "tertiary",
+        "displayName": "Verde OK (texto)",
+        "canonical": "oklch(43.4% 0.093 159.3)",
+        "tonalRamp": [
+          "#060D09",
+          "#132A1D",
+          "#1E4A34",
+          "#286D4B",
+          "#4D906D",
+          "#84B197",
+          "#B9D1C3",
+          "#E7F1EB"
+        ]
+      },
+      "verde-ok-suave": {
+        "role": "tertiary",
+        "displayName": "Verde OK Suave",
+        "canonical": "oklch(95.5% 0.018 161.1)",
+        "tonalRamp": [
+          "#0A0B0B",
+          "#212523",
+          "#3A423E",
+          "#55615A",
+          "#78847D",
+          "#9EA7A2",
+          "#C7CCC9",
+          "#EDEFEE"
+        ]
+      },
+      "amarelo-aviso": {
+        "role": "tertiary",
+        "displayName": "Amarelo Aviso",
+        "canonical": "oklch(68.1% 0.142 75.8)",
+        "tonalRamp": [
+          "#100A03",
+          "#341F00",
+          "#5C3600",
+          "#884F00",
+          "#AE7200",
+          "#C69D60",
+          "#DEC7A7",
+          "#F7EDDF"
+        ]
+      },
+      "amarelo-aviso-texto": {
+        "role": "tertiary",
+        "displayName": "Amarelo Aviso (texto)",
+        "canonical": "oklch(47.3% 0.099 77.4)",
+        "tonalRamp": [
+          "#0F0A05",
+          "#2F210C",
+          "#533B10",
+          "#7B5610",
+          "#9F793A",
+          "#BBA077",
+          "#D7C8B2",
+          "#F4EDE4"
+        ]
+      },
+      "amarelo-aviso-suave": {
+        "role": "tertiary",
+        "displayName": "Amarelo Aviso Suave",
+        "canonical": "oklch(98.7% 0.026 102.2)",
+        "tonalRamp": [
+          "#0B0B09",
+          "#25241F",
+          "#414036",
+          "#605E4E",
+          "#838170",
+          "#A6A599",
+          "#CBCBC4",
+          "#EFEEEC"
+        ]
+      },
+      "vermelho-alerta": {
+        "role": "tertiary",
+        "displayName": "Vermelho Alerta",
+        "canonical": "oklch(62.6% 0.200 25.1)",
+        "tonalRamp": [
+          "#160605",
+          "#430F0F",
+          "#771216",
+          "#B00A1D",
+          "#DB4241",
+          "#EB827B",
+          "#F5B9B4",
+          "#FFE7E4"
+        ]
+      },
+      "vermelho-alerta-texto": {
+        "role": "tertiary",
+        "displayName": "Vermelho Alerta (texto)",
+        "canonical": "oklch(49.2% 0.179 26.9)",
+        "tonalRamp": [
+          "#150706",
+          "#401310",
+          "#721C19",
+          "#A82322",
+          "#D24D45",
+          "#E4877D",
+          "#F1BCB5",
+          "#FFE8E5"
+        ]
+      },
+      "vermelho-alerta-suave": {
+        "role": "tertiary",
+        "displayName": "Vermelho Alerta Suave",
+        "canonical": "oklch(95.9% 0.017 17.5)",
+        "tonalRamp": [
+          "#0C0B0B",
+          "#272323",
+          "#463D3D",
+          "#675A5A",
+          "#8A7C7C",
+          "#ACA2A2",
+          "#CEC9C9",
+          "#F0EEEE"
+        ]
+      },
+      "azul-gelo": {
+        "role": "neutral",
+        "displayName": "Azul-gelo",
+        "canonical": "oklch(98.1% 0.009 258.3)",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#232426",
+          "#3E4043",
+          "#5B5E63",
+          "#7D8085",
+          "#A2A5A8",
+          "#C9CACC",
+          "#EEEEEF"
+        ]
+      },
+      "branco-superficie": {
+        "role": "neutral",
+        "displayName": "Branco Superfície",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#242424",
+          "#404040",
+          "#5D5D5D",
+          "#808080",
+          "#A4A4A4",
+          "#CACACA",
+          "#EEEEEE"
+        ]
+      },
+      "azul-gelo-elevado": {
+        "role": "neutral",
+        "displayName": "Azul-gelo Elevado",
+        "canonical": "oklch(98.4% 0.005 247.9)",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#232425",
+          "#3E4041",
+          "#5B5E60",
+          "#7E8083",
+          "#A3A5A6",
+          "#C9CACB",
+          "#EEEEEF"
+        ]
+      },
+      "borda-gelo": {
+        "role": "neutral",
+        "displayName": "Borda Gelo",
+        "canonical": "oklch(94.0% 0.015 251.2)",
+        "tonalRamp": [
+          "#0A0B0C",
+          "#222427",
+          "#3C4045",
+          "#585E66",
+          "#7A8189",
+          "#A0A5AB",
+          "#C8CBCE",
+          "#EDEEF0"
+        ]
+      },
+      "borda-sutil": {
+        "role": "neutral",
+        "displayName": "Borda Sutil",
+        "canonical": "oklch(96.5% 0.010 252.8)",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#232426",
+          "#3D4043",
+          "#5A5E63",
+          "#7C8186",
+          "#A2A5A8",
+          "#C9CBCD",
+          "#EEEEEF"
+        ]
+      },
+      "azul-profundo": {
+        "role": "neutral",
+        "displayName": "Azul Profundo",
+        "canonical": "oklch(21.9% 0.043 253.9)",
+        "tonalRamp": [
+          "#090B0E",
+          "#1E252C",
+          "#35414F",
+          "#4E5F75",
+          "#6F8299",
+          "#99A6B6",
+          "#C4CBD4",
+          "#EBEFF3"
+        ]
+      },
+      "azul-mesclado": {
+        "role": "neutral",
+        "displayName": "Azul Mesclado",
+        "canonical": "oklch(44.2% 0.035 257.8)",
+        "tonalRamp": [
+          "#0A0B0D",
+          "#20242B",
+          "#38404D",
+          "#525E71",
+          "#748195",
+          "#9CA5B3",
+          "#C6CBD3",
+          "#ECEFF2"
+        ]
+      },
+      "azul-neblina": {
+        "role": "neutral",
+        "displayName": "Azul Neblina",
+        "canonical": "oklch(66.8% 0.031 254.7)",
+        "tonalRamp": [
+          "#0A0B0D",
+          "#20242A",
+          "#38404B",
+          "#525F6E",
+          "#758192",
+          "#9CA6B1",
+          "#C6CBD2",
+          "#ECEFF2"
+        ]
+      },
+      "laranja-brasa": {
+        "role": "primary",
+        "displayName": "Laranja Brasa (temas Default Dark, Cyber, AMOLED)",
+        "canonical": "oklch(70.5% 0.187 47.6)",
+        "tonalRamp": [
+          "#150703",
+          "#3F1500",
+          "#712100",
+          "#A72C00",
+          "#D05500",
+          "#E28C5F",
+          "#EFBEA6",
+          "#FFE9DF"
+        ]
+      },
+      "laranja-aurora": {
+        "role": "primary",
+        "displayName": "Laranja Aurora (tema Aurora)",
+        "canonical": "oklch(75.8% 0.159 55.9)",
+        "tonalRamp": [
+          "#130803",
+          "#3A1A00",
+          "#682C00",
+          "#9A3E00",
+          "#C26300",
+          "#D69363",
+          "#E8C2A8",
+          "#FCEBE0"
+        ]
+      },
+      "noite-bento": {
+        "role": "neutral",
+        "displayName": "Noite Bento (fundo Default Dark e Cyber)",
+        "canonical": "oklch(14.9% 0.019 262.4)",
+        "tonalRamp": [
+          "#0A0B0C",
+          "#222428",
+          "#3C4047",
+          "#585E68",
+          "#7A808B",
+          "#A0A5AC",
+          "#C8CBCF",
+          "#EDEEF0"
+        ]
+      },
+      "noite-aurora": {
+        "role": "neutral",
+        "displayName": "Noite Aurora (fundo Aurora)",
+        "canonical": "oklch(17.1% 0.041 288.2)",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#23232C",
+          "#3F3E4E",
+          "#5C5A73",
+          "#7F7D97",
+          "#A3A2B5",
+          "#CAC9D4",
+          "#EEEEF2"
+        ]
+      },
+      "noite-amoled": {
+        "role": "neutral",
+        "displayName": "Noite AMOLED (fundo AMOLED)",
+        "canonical": "oklch(0.0% 0.000 0.0)",
+        "tonalRamp": [
+          "#000000",
+          "#0A0A0A",
+          "#121212",
+          "#1A1A1A",
+          "#222222",
+          "#333333",
+          "#444444",
+          "#888888"
+        ]
+      },
+      "anel-foco": {
+        "role": "primary",
+        "displayName": "Anel de Foco",
+        "canonical": "rgba(236, 125, 35, 0.35)",
+        "tonalRamp": [
+          "#130803",
+          "#3C1900",
+          "#6B2900",
+          "#9D3A00",
+          "#C65F00",
+          "#D99162",
+          "#EAC1A8",
+          "#FDEADF"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Título de página, um por tela. Manrope 800."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título de seção e painel lateral. Manrope 700."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Título de card e modal. Plus Jakarta Sans 700."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto de trabalho. Plus Jakarta Sans 400, medida até 70ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Botões, chips, navegação, rótulos. 600, 700 quando ativo."
+      },
+      "overline": {
+        "displayName": "Overline",
+        "purpose": "Eyebrows e badges em caixa alta. Poucos por tela."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Números que se comparam em coluna: contadores, KPIs, protocolos."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sussurro",
+        "value": "0 1px 3px rgba(11,27,46,.06), 0 1px 2px rgba(11,27,46,.04)",
+        "purpose": "Card em repouso (--shadow-sm)."
+      },
+      {
+        "name": "resposta",
+        "value": "0 4px 16px rgba(11,27,46,.08), 0 2px 6px rgba(11,27,46,.04)",
+        "purpose": "Card em hover, dropdown aberto (--shadow-md)."
+      },
+      {
+        "name": "elevado",
+        "value": "0 12px 32px rgba(11,27,46,.10), 0 4px 12px rgba(11,27,46,.06)",
+        "purpose": "Popover, painel lateral, popup do mapa (--shadow-lg)."
+      },
+      {
+        "name": "modal",
+        "value": "0 24px 48px rgba(11,27,46,.12), 0 8px 20px rgba(11,27,46,.06)",
+        "purpose": "Diálogos e drawers (--shadow-xl)."
+      },
+      {
+        "name": "brilho-de-sinal",
+        "value": "0 0 28px 4px rgba(236,125,35,.40)",
+        "purpose": "Só no hover de card com bento-hover-border, junto da borda cônica animada."
+      },
+      {
+        "name": "anel-amoled",
+        "value": "0 0 0 1px #222222",
+        "purpose": "No AMOLED a elevação é um anel de 1px (#222, #333, #444), nunca sombra."
+      }
+    ],
+    "motion": [
+      {
+        "name": "padrao",
+        "value": "200ms ease",
+        "purpose": "Duração padrão de transição (Tailwind transitionDuration DEFAULT)."
+      },
+      {
+        "name": "rapida",
+        "value": "120ms ease",
+        "purpose": "Itens de navegação e hovers de alta frequência."
+      },
+      {
+        "name": "borda-aurora",
+        "value": "3s linear infinite",
+        "purpose": "Giro do conic-gradient da borda de card no hover."
+      },
+      {
+        "name": "modal-entrada",
+        "value": "200ms fade-in + zoom-in",
+        "purpose": "Entrada do ModalShell."
+      },
+      {
+        "name": "movimento-reduzido",
+        "value": "animation-duration 0.01ms; iteration-count 1",
+        "purpose": "Regra global em index.css para prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ],
+    "themes": [
+      {
+        "name": "Claro",
+        "className": "",
+        "bg": "#F5F9FF",
+        "surface": "#FFFFFF",
+        "accent": "#EC7D23",
+        "success": "#1F8A5B"
+      },
+      {
+        "name": "Default Dark",
+        "className": "dark",
+        "bg": "#070B13",
+        "surface": "#111C2C",
+        "accent": "#F97316",
+        "success": "#2DB37F"
+      },
+      {
+        "name": "Cyber-Obsidian",
+        "className": "dark dark-cyber",
+        "bg": "#070B13",
+        "surface": "rgba(17,28,44,.85)",
+        "accent": "#F97316",
+        "success": "#00F5D4"
+      },
+      {
+        "name": "Deep-Space Aurora",
+        "className": "dark dark-aurora",
+        "bg": "#0F0C20",
+        "surface": "#1D1742",
+        "accent": "#FB923C",
+        "success": "#00FF87"
+      },
+      {
+        "name": "AMOLED",
+        "className": "dark dark-amoled",
+        "bg": "#000000",
+        "surface": "#121212",
+        "accent": "#F97316",
+        "success": "#00C853"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão Primário",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal de um card ou formulário. Sólido em laranja; um por grupo visual.",
+      "html": "<button class=\"ds-btn-primary\">Salvar alterações</button>",
+      "css": ".ds-btn-primary { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 10px 20px; border: none; border-radius: 12px; background: var(--accent, #EC7D23); color: #FFFFFF; cursor: pointer; transition: background .2s, box-shadow .2s; } .ds-btn-primary:hover { background: var(--accent-dark, #C2410C); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface, #FFFFFF), 0 0 0 4px var(--accent, #EC7D23); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:disabled { opacity: .7; cursor: not-allowed; }"
+    },
+    {
+      "name": "Botão Primário (gradiente)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Variante dominante em modais e formulários hoje (25 ocorrências). Hardcoda #9A3412; ao tocar, migrar para tokens.",
+      "html": "<button class=\"ds-btn-gradient\">Salvar alterações</button>",
+      "css": ".ds-btn-gradient { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 10px 20px; border: none; border-radius: 12px; background: linear-gradient(90deg, #9A3412, #EC7D23); color: #FFFFFF; box-shadow: 0 4px 12px rgba(236,125,35,.25); cursor: pointer; transition: opacity .2s; } .ds-btn-gradient:hover { opacity: .9; } .ds-btn-gradient:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface, #FFFFFF), 0 0 0 4px var(--accent, #EC7D23); } .ds-btn-gradient:disabled { opacity: .7; cursor: not-allowed; }"
+    },
+    {
+      "name": "Botão Secundário",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Cancelar, voltar, ação de apoio. Borda gelo sobre superfície.",
+      "html": "<button class=\"ds-btn-secondary\">Cancelar</button>",
+      "css": ".ds-btn-secondary { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; height: 40px; padding: 10px 20px; border: 1px solid var(--border, #E4ECF5); border-radius: 12px; background: var(--surface, #FFFFFF); color: var(--foreground-faint, #475467); cursor: pointer; transition: background .2s, color .2s; } .ds-btn-secondary:hover { background: var(--surface-raised, #F7FAFD); color: var(--foreground, #0B1B2E); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface, #FFFFFF), 0 0 0 4px var(--accent, #EC7D23); }"
+    },
+    {
+      "name": "Chip de Filtro",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "Filtro com contagem (ui/ChipButton.jsx). Ativo vira laranja com halo e aria-pressed.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\" aria-pressed=\"false\">Todos <span class=\"ds-chip-count\">42</span></button><button class=\"ds-chip\" aria-pressed=\"true\">Urgentes <span class=\"ds-chip-count\">3</span></button></div>",
+      "css": ".ds-chips { display: flex; gap: 8px; } .ds-chip { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--border, #E4ECF5); background: var(--surface, #FFFFFF); color: var(--foreground-faint, #475467); cursor: pointer; transition: background .2s, border-color .2s, color .2s, box-shadow .2s; } .ds-chip:hover { border-color: var(--accent, #EC7D23); color: var(--accent-dark, #C2410C); } .ds-chip[aria-pressed=\"true\"] { font-weight: 700; border-color: var(--accent, #EC7D23); background: rgba(236,125,35,.12); color: var(--accent, #EC7D23); box-shadow: 0 0 0 3px rgba(236,125,35,.12); } .ds-chip:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface, #FFFFFF), 0 0 0 4px var(--accent, #EC7D23); } .ds-chip-count { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--surface-raised, #F7FAFD); color: var(--foreground-muted, #8896A8); } .ds-chip[aria-pressed=\"true\"] .ds-chip-count { background: rgba(236,125,35,.18); color: var(--accent, #EC7D23); }"
+    },
+    {
+      "name": "Card Bento",
+      "kind": "card",
+      "refersTo": "card-bento",
+      "description": "Container padrão de conteúdo (common/BentoCard.jsx). Plano em repouso; sombra e brilho só no hover.",
+      "html": "<article class=\"ds-card\"><p class=\"ds-card-eyebrow\">Próximo plantão</p><h3 class=\"ds-card-title\">Sábado, 12 de setembro</h3><p class=\"ds-card-body\">Equipe de suporte N1 · 08:00 às 18:00</p><span class=\"ds-card-kpi\">3</span></article>",
+      "css": ".ds-card { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 24px; border-radius: 20px; border: 1px solid var(--line, #E4ECF5); background: var(--surface, #FFFFFF); color: var(--ink, #0B1B2E); box-shadow: 0 1px 2px rgba(124,45,18,.04); transition: box-shadow .3s; font-family: 'Plus Jakarta Sans', sans-serif; } .ds-card:hover { box-shadow: 0 4px 16px rgba(11,27,46,.08), 0 0 28px 4px rgba(236,125,35,.40); } .ds-card-eyebrow { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-bento, #8896A8); } .ds-card-title { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.3; } .ds-card-body { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink2, #475467); } .ds-card-kpi { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: var(--accent, #EC7D23); }"
+    },
+    {
+      "name": "Campo de Formulário",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Input com label e hint (constantes de services/modals/ModalShell.jsx). Foco em anel laranja.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Ramal</span><input class=\"ds-field-input\" type=\"text\" placeholder=\"Ex.: 2041\"><span class=\"ds-field-hint\">Quatro dígitos, sem o zero inicial.</span></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; font-family: 'Plus Jakarta Sans', sans-serif; max-width: 320px; } .ds-field-label { font-size: 14px; font-weight: 600; color: var(--foreground, #0B1B2E); } .ds-field-input { height: 40px; padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border, #E4ECF5); background: var(--surface, #FFFFFF); color: var(--foreground, #0B1B2E); font-size: 14px; font-family: inherit; transition: box-shadow .2s, border-color .2s; } .ds-field-input::placeholder { color: var(--foreground-muted, #8896A8); } .ds-field-input:focus { outline: none; border-color: transparent; box-shadow: 0 0 0 2px var(--accent, #EC7D23); } .ds-field-hint { font-size: 12px; color: var(--foreground-muted, #8896A8); }"
+    },
+    {
+      "name": "Busca do Hero",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Campo de vidro sobre o gradiente do hero (ui/HeroSearchInput.jsx). Foco com outline branco sólido.",
+      "html": "<div class=\"ds-hero\"><h1 class=\"ds-hero-title\">Colaboradores</h1><div class=\"ds-hero-search\"><span class=\"ds-hero-icon\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.5-3.5\"/></svg></span><input type=\"text\" placeholder=\"Buscar por nome, setor ou ramal\" aria-label=\"Buscar\"></div></div>",
+      "css": ".ds-hero { padding: 28px 32px; border-radius: 24px; background: radial-gradient(circle at 6% 132%, transparent 0 118px, rgba(255,255,255,.075) 118px 120px, transparent 120px 218px, rgba(255,255,255,.055) 218px 220px, transparent 220px 338px, rgba(255,255,255,.04) 338px 340px, transparent 340px), linear-gradient(120deg, #7C2D12 0%, #C2410C 55%, #EC7D23 100%); color: #FFFFFF; } .ds-hero-title { margin: 0 0 16px; font-family: 'Manrope', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; } .ds-hero-search { position: relative; max-width: 560px; } .ds-hero-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.75); display: flex; pointer-events: none; } .ds-hero-search input { width: 100%; box-sizing: border-box; padding: 14px 48px 14px 50px; border-radius: 14px; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.15); backdrop-filter: blur(8px); color: #FFFFFF; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500; outline: 2px solid transparent; outline-offset: 2px; transition: background .2s, border-color .2s, outline-color .2s; } .ds-hero-search input::placeholder { color: rgba(255,255,255,.7); } .ds-hero-search input:focus { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.6); outline-color: #FFFFFF; }"
+    },
+    {
+      "name": "Item da Sidebar",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Navegação lateral. Ativo tem fundo laranja suave, texto laranja e badge de contagem.",
+      "html": "<nav class=\"ds-nav\"><p class=\"ds-nav-section\">Menu</p><a class=\"ds-nav-item\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/></svg><span>Plantão</span></a><a class=\"ds-nav-item is-active\" href=\"#\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/></svg><span>Comunicados</span><span class=\"ds-nav-badge\">3</span></a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 2px; width: 220px; padding: 8px; background: var(--surface, #FFFFFF); font-family: 'Plus Jakarta Sans', sans-serif; } .ds-nav-section { margin: 4px 12px 6px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--foreground-muted, #8896A8); } .ds-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: var(--foreground-muted, #8896A8); text-decoration: none; transition: all .12s; } .ds-nav-item:hover { color: var(--accent, #EC7D23); background: var(--surface-raised, #F7FAFD); } .ds-nav-item.is-active { font-weight: 600; color: var(--accent, #EC7D23); background: var(--accent-soft, #FFF7ED); } .ds-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent, #EC7D23); } .ds-nav-badge { margin-left: auto; min-width: 18px; height: 18px; padding: 0 6px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; background: var(--accent, #EC7D23); color: #FFFFFF; }"
+    },
+    {
+      "name": "Badge de Contagem",
+      "kind": "chip",
+      "refersTo": "badge-count",
+      "description": "Contador em pílula: laranja quando é do item ativo, vermelho suave para urgência em item inativo.",
+      "html": "<div class=\"ds-badges\"><span class=\"ds-badge\">7</span><span class=\"ds-badge is-alert\">2</span></div>",
+      "css": ".ds-badges { display: flex; gap: 8px; } .ds-badge { min-width: 18px; height: 18px; padding: 0 6px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10.5px; font-weight: 700; background: var(--accent, #EC7D23); color: #FFFFFF; } .ds-badge.is-alert { background: var(--danger-soft, #FDEDED); color: var(--danger-bento, #E84545); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Sinal Quente sobre Gelo",
+    "overview": "O portal é a superfície fria e limpa por onde o sinal da Prestek corre. O azul-gelo (#F5F9FF) e o branco são o fundo de quase tudo; o laranja da marca é o sinal, e sinal é raro por definição: aparece onde há ação, estado ativo, contagem ou foco, e em nenhum outro lugar. Os anéis concêntricos que saem do canto dos heroes de Cobertura e Serviços são a expressão literal disso, propagação de sinal como decoração que significa alguma coisa. O calor da marca vem desse contraste, não de fundos quentes: o antigo bege foi retirado do sistema e não volta.\n\nÉ um produto do modo Operar. Colaboradores da empresa inteira o abrem várias vezes por dia para conferir plantão, ler um comunicado, achar um colega, abrir um chamado. Escaneabilidade, consistência entre páginas e previsibilidade valem mais do que expressão. A personalidade mora nos detalhes: nomes brasileiros tratados com cuidado, vocabulário do IXC, o pódio de vendas, o carrossel de comunicados. Densidade balanceada: cards com respiro interno de 24px, mas grids que aproveitam a largura.\n\nO sistema tem cinco temas e trata isso como capacidade permanente, não como casca. O claro é o canônico; Default Dark, Cyber-Obsidian, Deep-Space Aurora e AMOLED trocam a temperatura da superfície e a intensidade do laranja, mas nunca a hierarquia nem a posição das coisas.",
+    "keyCharacteristics": [
+      "Um único accent, usado com parcimônia, sobre superfícies azul-gelo e brancas.",
+      "Plano por padrão; sombra, brilho e borda animada só como resposta a hover, foco ou elevação.",
+      "Duas famílias tipográficas com papéis fixos: Manrope para títulos, Plus Jakarta Sans para todo o resto, JetBrains Mono para números que se comparam.",
+      "Cinco temas com os mesmos tokens semânticos; a cor muda, a estrutura não.",
+      "Português do Brasil em toda a interface, sem internacionalização."
+    ],
+    "rules": [
+      {
+        "name": "The Rare Signal Rule",
+        "body": "O laranja ocupa no máximo um elemento por grupo visual: um botão primário por card, um item ativo por lista, um badge por ícone. Se dois laranjas competem no mesmo bloco, um deles vira azul mesclado.",
+        "section": "colors"
+      },
+      {
+        "name": "The Orange Is Fill Rule",
+        "body": "#EC7D23 nunca é cor de texto sobre branco. Texto laranja usa #C2410C; texto sobre laranja é branco.",
+        "section": "colors"
+      },
+      {
+        "name": "The Manual Divergence Rule",
+        "body": "O manual de identidade visual registra #D97738 como laranja institucional e #384C9C como azul. O sistema adota o laranja extraído do asset do logo (#EC7D23) para que accent e logo renderizado coincidam na tela, e não adota o azul institucional. Decisão registrada em .impeccable/critique/ignore.md, revisão prevista para o encerramento do programa Impeccable ou quando houver logo em SVG.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Voices Rule",
+        "body": "Manrope só em display e headline. Se um h3 de card está em Manrope, está errado.",
+        "section": "typography"
+      },
+      {
+        "name": "The Numbers Align Rule",
+        "body": "Número que aparece em lista ou coluna vai em JetBrains Mono. Número dentro de frase corrida fica em Plus Jakarta Sans.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat At Rest Rule",
+        "body": "Nenhuma superfície tem brilho, borda animada ou sombra acima de Sussurro em repouso. Profundidade é resposta a hover, foco ou elevação de camada.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Tonal Dark Rule",
+        "body": "No escuro, elevar é clarear a superfície um degrau, não adicionar sombra. No AMOLED, elevar é adicionar um anel de 1px.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use os tokens semânticos (C.* de useBentoTheme ou as variáveis CSS) para toda cor. Um hex literal em componente só é aceitável quando os cinco temas o compartilham de propósito, como o #C2410C do meio do hero, e vem com comentário explicando.",
+      "Do mantenha o laranja raro: um por grupo, sempre como preenchimento ou ícone, nunca como texto pequeno sobre branco.",
+      "Do escolha o raio pela escala (8, 12, 16, 20, 24, pílula) e nada entre eles.",
+      "Do dê a todo controle os estados default, hover, focus-visible, active, disabled e loading, com foco visível em ring-2 laranja.",
+      "Do verifique todo componente novo nos cinco temas antes de considerar pronto; AMOLED é onde hex fixo quebra primeiro.",
+      "Do desligue efeitos de proximidade do mouse em toque e respeite prefers-reduced-motion, que o index.css já cobre globalmente.",
+      "Do escreva em português do Brasil, com vocabulário do IXC onde o dado vem de lá."
+    ],
+    "donts": [
+      "Don't reintroduza bege, âmbar ou qualquer fundo quente: o calor do sistema vem do laranja sobre gelo, não de superfícies quentes.",
+      "Don't use #EC7D23 como cor de texto sobre fundo claro; o texto laranja é #C2410C.",
+      "Don't coloque brilho, borda animada ou sombra acima de Sussurro em um card em repouso.",
+      "Don't invente um raio (10px, 18px) ou um z-index (z-[1137]) fora das tabelas.",
+      "Don't use Manrope abaixo de headline, nem número alinhado em coluna fora de JetBrains Mono.",
+      "Don't aplique o gradiente do hero em botões ou cards; ele é a assinatura da faixa de topo.",
+      "Don't hardcode #9A3412 ou qualquer valor de um tema específico em código que roda nos cinco temas."
+    ]
+  }
+}

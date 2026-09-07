@@ -1,237 +1,109 @@
-import { useState, useEffect } from 'react';
+import { useRef } from 'react';
 import { Icons } from './common/Icons';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useDismissable } from '../hooks/useDismissable';
+import { sheetItems } from '../navigation';
+import { CloseIcon } from './common/CloseIcon';
+
+// Sheet "Mais": tudo que não tem slot na barra inferior, vindo da fonte única.
+// Diálogo de verdade: Escape fecha, foco entra, fundo não rola.
+
+function SheetItem({ C, item, active, onClick }) {
+  const IconComponent = Icons[item.icon];
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(item.id)}
+      aria-current={active ? 'page' : undefined}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', minHeight: 44,
+        borderRadius: 12, border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer',
+        background: active ? C.accentSoft : 'transparent',
+        color: active ? C.ink : C.ink2, fontWeight: active ? 700 : 500, fontSize: 14,
+        fontFamily: 'inherit', transition: 'background 0.15s ease, color 0.15s ease',
+      }}
+    >
+      <span aria-hidden="true" style={{ display: 'flex', color: active ? C.accent : C.ink2 }}>
+        {IconComponent && <IconComponent />}
+      </span>
+      <span style={{ flex: 1 }}>{item.label}</span>
+    </button>
+  );
+}
 
 export default function MobileMoreSheet({ isOpen, onClose, currentView, setCurrentView, user }) {
   const C = useBentoTheme();
-  const [urgentCount, setUrgentCount] = useState(0);
-
-  // Busca comunicados urgentes para exibir badge
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchUrgents = async () => {
-      try {
-        const res = await fetch('/api/comunicados');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.sucesso && data.comunicados) {
-            setUrgentCount(data.comunicados.filter(item => item.tipo === 'Urgente').length);
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao carregar urgentes no sheet:', error);
-      }
-    };
-
-    fetchUrgents();
-    const id = setInterval(fetchUrgents, 30000);
-    return () => clearInterval(id);
-  }, [isOpen]);
+  const panelRef = useRef(null);
+  useDismissable(panelRef, { open: isOpen, onClose, lockScroll: true, closeOnOutside: false });
 
   if (!isOpen) return null;
 
-  const secondaryItems = [
-    { id: 'sectors', icon: 'Pie', label: 'Setores' },
-    { id: 'schedule', icon: 'Clock', label: 'Plantão' },
-    { id: 'offices', icon: 'Building', label: 'Escritórios' },
-    { id: 'processes', icon: 'Doc', label: 'Processos' },
-    { id: 'tickets', icon: 'Ticket', label: 'Meus Chamados' },
-    {
-      id: 'announcements',
-      icon: 'Megaphone',
-      label: 'Comunicados',
-      badge: urgentCount > 0 ? String(urgentCount) : null
-    },
-    { id: 'settings', icon: 'Settings', label: 'Configurações' },
-  ];
-
-  // Adiciona a aba TI e o painel admin se for administrador
-  if (user?.is_admin) {
-    secondaryItems.push({ id: 'ti', icon: 'Chip', label: 'TI' });
-    secondaryItems.push({ id: 'admin', icon: 'Admin', label: 'Painel Admin' });
-  }
-
+  const { comuns, admin } = sheetItems(user);
   const handleItemClick = (id) => {
     setCurrentView(id);
     onClose();
   };
 
   return (
-    <div
-      className="block lg:hidden"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 1001,
-        fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-      }}
-    >
-      {/* Backdrop */}
+    <div className="block lg:hidden" style={{ position: 'fixed', inset: 0, zIndex: 1001, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
       <div
         onClick={onClose}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(11, 27, 46, 0.5)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-          animation: 'fadeIn 0.2s ease-out forwards',
-        }}
+        aria-hidden="true"
+        style={{ position: 'absolute', inset: 0, background: C.scrim, animation: 'sheet-fade-in 0.2s ease-out forwards' }}
       />
 
-      {/* Sheet Content */}
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mais opções"
         style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: C.surface,
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          boxShadow: `0 -8px 32px ${C.ink}1F`,
-          padding: '16px 20px 32px',
-          maxHeight: '75vh',
-          display: 'flex',
-          flexDirection: 'column',
-          animation: 'slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          background: C.popover, borderTopLeftRadius: 24, borderTopRightRadius: 24,
+          boxShadow: 'var(--shadow-xl)',
+          padding: '12px 16px calc(16px + env(safe-area-inset-bottom, 0px))',
+          maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+          animation: 'sheet-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         }}
       >
-        {/* Handle */}
-        <div
-          style={{
-            width: 40,
-            height: 5,
-            borderRadius: 2.5,
-            background: C.line,
-            margin: '0 auto 16px',
-            cursor: 'pointer',
-          }}
-          onClick={onClose}
-        />
+        <div aria-hidden="true" style={{ width: 40, height: 4, borderRadius: 2, background: C.line, margin: '0 auto 12px' }} />
 
-        {/* Header do Sheet */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 16,
-            padding: '0 4px',
-          }}
-        >
-          <span style={{ fontWeight: 800, fontSize: 16, color: C.ink }}>
-            Mais Opções
-          </span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, padding: '0 4px' }}>
+          <span style={{ fontWeight: 800, fontSize: 16, color: C.ink }}>Mais opções</span>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Fechar"
             style={{
-              background: C.surfaceSoft,
-              border: `1px solid ${C.line}`,
-              borderRadius: 12,
-              width: 32,
-              height: 32,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: C.ink2,
+              width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.line}`,
+              background: C.surfaceSoft, color: C.ink2, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-              close
-            </span>
+            <CloseIcon />
           </button>
         </div>
 
-        {/* Lista de Itens */}
-        <div
-          style={{
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6,
-            paddingBottom: 8,
-          }}
-        >
-          {secondaryItems.map((item) => {
-            const IconComponent = Icons[item.icon];
-            const isActive = currentView === item.id;
+        <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 4 }}>
+          {comuns.map((item) => (
+            <SheetItem key={item.id} C={C} item={item} active={currentView === item.id} onClick={handleItemClick} />
+          ))}
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleItemClick(item.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '12px 14px',
-                  borderRadius: 12,
-                  border: 'none',
-                  background: isActive ? C.accentSoft : 'transparent',
-                  color: isActive ? C.accentDeep : C.ink2,
-                  fontWeight: isActive ? 700 : 500,
-                  fontSize: 14,
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  width: '100%',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <span
-                  style={{
-                    display: 'flex',
-                    color: isActive ? C.accent : C.muted,
-                    transition: 'color 0.15s ease',
-                  }}
-                >
-                  {IconComponent && <IconComponent />}
+          {admin.length > 0 && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px 4px' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.ink2 }}>
+                  Administração
                 </span>
-                <span style={{ flex: 1 }}>{item.label}</span>
-                {item.badge != null && (
-                  <span
-                    style={{
-                      background: isActive ? C.accent : C.dangerSoft,
-                      color: isActive ? C.surface : C.danger,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      minWidth: 18,
-                      height: 18,
-                      padding: '0 6px',
-                      borderRadius: 9,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                <hr style={{ flex: 1, border: 'none', borderTop: `1px solid ${C.line}`, margin: 0 }} />
+              </div>
+              {admin.map((item) => (
+                <SheetItem key={item.id} C={C} item={item} active={currentView === item.id} onClick={handleItemClick} />
+              ))}
+            </>
+          )}
         </div>
       </div>
-
-      {/* Estilos para animação via tags de estilo local */}
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }

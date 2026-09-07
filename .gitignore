@@ -62,3 +62,6 @@ lpt9
 
 # Pasta do Gemini/Antigravity (ferramentas de IA)
 
+# Saída do Playwright MCP (snapshots, screenshots, console)
+.playwright-mcp/
+

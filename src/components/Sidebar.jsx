@@ -1,662 +1,371 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Icons } from './common/Icons';
 import logoP from '../image/logos/Logo_P.webp';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 import { resolveNomeSetor } from '../utils/resolveSetor';
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs';
-import { useTheme } from '../hooks/useTheme';
+import { useNotificacoes } from '../hooks/useComunicados';
+import { useDismissable } from '../hooks/useDismissable';
+import { visibleNav } from '../navigation';
+import { nomeCurto } from '../utils/nomeExibicao';
+import ProfileMenu from './ProfileMenu';
 
 const defaultAvatar = AVATAR_PNGS[7];
-
-const menuItems = [
-  { id: 'services',  icon: 'Tools',    label: 'Serviços',      group: 'menu' },
-  { id: 'coverage',  icon: 'Shield',   label: 'Cobertura',     group: 'menu' },
-  { id: 'directory', icon: 'People',   label: 'Colaboradores', group: 'menu' },
-  { id: 'sectors',   icon: 'Pie',      label: 'Setores',       group: 'menu' },
-  { id: 'schedule',  icon: 'Clock',    label: 'Plantão',       group: 'menu' },
-  { id: 'offices',   icon: 'Building', label: 'Escritórios',   group: 'menu' },
-  { id: 'processes', icon: 'Doc',      label: 'Processos',     group: 'menu' },
-  { id: 'tickets',   icon: 'Ticket',   label: 'Meus Chamados', group: 'menu' },
-  { id: 'ti',        icon: 'Chip',     label: 'TI',            group: 'menu', somenteAdmin: true },
-];
+const FONT = '"Plus Jakarta Sans", system-ui, sans-serif';
 
 const CollapseIcon = ({ collapsed }) => (
-  <svg 
-    width="18" 
-    height="18" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="1.8" 
-    strokeLinecap="round" 
-    strokeLinejoin="round"
-    style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
-  >
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+    style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>
     <rect width="18" height="18" x="3" y="3" rx="2" />
     <path d="M9 3v18" />
   </svg>
 );
 
-const MoonIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'flex' }}>
-    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-  </svg>
-);
-
 const ChevronUpDownIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'flex' }}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: 'flex' }}>
     <path d="m7 15 5 5 5-5M7 9l5-5 5 5" />
   </svg>
 );
 
-function ToggleSwitch({ checked, C }) {
+// Componentes de linha no escopo do módulo: definidos dentro do render da
+// Sidebar, cada estado (hover do perfil, poll do badge) recriava o tipo e o
+// React remontava os 12 botões da nav, perdendo hover e foco.
+
+function GroupLabel({ C, collapsed, children, showSeparator = true }) {
+  if (collapsed) {
+    return showSeparator
+      ? <hr style={{ border: 'none', borderTop: `1px solid ${C.line}`, margin: '14px 4px 10px', opacity: 0.7 }} />
+      : <div style={{ height: 10 }} />;
+  }
   return (
-    <div style={{
-      width: 32, height: 18, borderRadius: 9,
-      background: checked ? C.accent : C.line,
-      position: 'relative', transition: 'background 0.2s',
-      cursor: 'pointer', flexShrink: 0,
-    }}>
+    <>
+      {showSeparator && <hr style={{ border: 'none', borderTop: `1px solid ${C.line}`, margin: '14px 4px 10px', opacity: 0.7 }} />}
       <div style={{
-        width: 12, height: 12, borderRadius: '50%',
-        background: '#fff',
-        position: 'absolute', top: 3,
-        left: checked ? 17 : 3,
-        transition: 'left 0.2s ease',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
-      }} />
-    </div>
+        marginTop: showSeparator ? 0 : 12, marginBottom: 6, padding: '0 12px',
+        fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.ink2,
+      }}>
+        {children}
+      </div>
+    </>
+  );
+}
+
+function NavRow({ C, collapsed, id, icon, label, active, badge, onClick }) {
+  const [hover, setHover] = useState(false);
+  const IconComponent = Icons[icon];
+  const badgeLabel = badge > 9 ? '9+' : badge;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(id)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      aria-current={active ? 'page' : undefined}
+      aria-label={collapsed ? (badge ? `${label}, ${badge} não lidos` : label) : undefined}
+      title={collapsed ? label : undefined}
+      style={{
+        position: 'relative', display: 'flex', alignItems: 'center',
+        justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 12,
+        padding: '9px 12px', borderRadius: 8, cursor: 'pointer', width: '100%', textAlign: 'left',
+        // Item ativo como o DESIGN.md documenta (nav-item-active): fundo
+        // Laranja Suave, texto no laranja de texto, ícone no accent.
+        background: active ? C.accentSoft : (hover ? C.surface : 'transparent'),
+        color: active ? C.accentDark : (hover ? C.ink : C.ink2),
+        border: 'none',
+        fontWeight: active ? 700 : 500, fontSize: 13, fontFamily: FONT,
+        transition: 'background .12s, color .12s',
+      }}
+    >
+      <span style={{ display: 'flex', color: active || hover ? C.accent : C.ink2 }} aria-hidden="true">
+        {IconComponent && <IconComponent />}
+      </span>
+      {!collapsed && <span style={{ flex: 1 }}>{label}</span>}
+      {!collapsed && badge > 0 && (
+        <span
+          aria-label={`${badge} não lidos`}
+          style={{
+            background: active ? C.accent : C.dangerSoft,
+            color: active ? C.surface : C.dangerStrong,
+            fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 700,
+            minWidth: 18, height: 18, padding: '0 6px', borderRadius: 999,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          {badgeLabel}
+        </span>
+      )}
+      {collapsed && badge > 0 && (
+        <span aria-hidden="true" style={{
+          position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4,
+          background: active ? C.accent : C.danger,
+        }} />
+      )}
+    </button>
   );
 }
 
 export default function Sidebar({ currentView, setCurrentView, user, searchQuery, setSearchQuery }) {
   const C = useBentoTheme();
-  const { theme, setTheme, darkVariant, setDarkVariant } = useTheme();
-  
-  const [profileHover, setProfileHover] = useState(false);
+  const { naoLidos } = useNotificacoes(user);
+
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef(null);
+  const [profileHover, setProfileHover] = useState(false);
+  const profileRef = useRef(null);
+  const closeProfile = useCallback(() => setIsProfileMenuOpen(false), []);
+  useDismissable(profileRef, { open: isProfileMenuOpen, onClose: closeProfile });
 
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    return localStorage.getItem('@PrestekIntranet:sidebarCollapsed') === 'true';
-  });
-
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('@PrestekIntranet:sidebarCollapsed', String(next));
-      return next;
-    });
-  };
-
-  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
+    () => localStorage.getItem('@PrestekIntranet:sidebarCollapsed') === 'true'
+  );
+  const setCollapsed = useCallback((next) => {
+    setIsSidebarCollapsed(next);
+    localStorage.setItem('@PrestekIntranet:sidebarCollapsed', String(next));
+  }, []);
 
   const func = user?.funcionario ?? {};
   const safeName = func.funcionario || user?.nome || 'Usuário';
   const safeRole = func.id_funcao || 'Colaborador';
   const safeDepto = func.id_departamento || '';
   const safeId = func.id ?? user?.id ?? null;
+  const displayName = nomeCurto(safeName) || 'Usuário';
 
-  const [avatarUrl, setAvatarUrl] = useState(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
+  const [avatarUrl, setAvatarUrl] = useState(resolveAvatarUrl(func.foto_perfil) || defaultAvatar);
   const [cargoName, setCargoName] = useState(safeRole);
   const searchInputRef = useRef(null);
 
   useEffect(() => {
-    setAvatarUrl(resolveAvatarUrl(user?.funcionario?.foto_perfil) || defaultAvatar);
-  }, [user?.funcionario?.foto_perfil]);
-
-  useEffect(() => {
     resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo)
       .then(setCargoName)
-      .catch(err => console.error('Erro ao resolver setor no sidebar:', err));
+      .catch((err) => console.error('Erro ao resolver setor no sidebar:', err));
   }, [safeDepto, safeRole, user?.nome_grupo]);
 
+  // Avatar: foto do IXC, sobrescrita pelo que Configurações salvou localmente.
+  // Sem polling: Configurações dispara `stitch:avatar` ao salvar.
   useEffect(() => {
-    if (!safeId) return;
-    const syncAvatar = () => {
-      const saved = localStorage.getItem(`stitch_profile_${safeId}`);
-      if (saved) {
+    const sync = () => {
+      let resolved = resolveAvatarUrl(func.foto_perfil) || defaultAvatar;
+      if (safeId) {
         try {
-          const parsed = JSON.parse(saved);
-          if (parsed.avatarUrl) {
-            const resolved = resolveAvatarUrl(parsed.avatarUrl) || defaultAvatar;
-            setAvatarUrl(resolved);
-          }
-        } catch (_) {}
+          const saved = JSON.parse(localStorage.getItem(`stitch_profile_${safeId}`) || 'null');
+          if (saved?.avatarUrl) resolved = resolveAvatarUrl(saved.avatarUrl) || resolved;
+        } catch (_) { /* ignora perfil local corrompido */ }
       }
+      setAvatarUrl(resolved);
     };
-    syncAvatar();
-    const id = setInterval(syncAvatar, 1500);
-    return () => clearInterval(id);
-  }, [safeId]);
+    sync();
+    window.addEventListener('stitch:avatar', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('stitch:avatar', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, [safeId, func.foto_perfil]);
+
+  // Busca só existe em Serviços (é o único consumidor de `searchQuery`).
+  const showSearch = currentView === 'services';
 
   useEffect(() => {
-    const handleGlobalKeyDown = (e) => {
+    if (!showSearch) return undefined;
+    const onKey = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        if (isSidebarCollapsed) {
-          setIsSidebarCollapsed(false);
-          localStorage.setItem('@PrestekIntranet:sidebarCollapsed', 'false');
-        }
-        setTimeout(() => {
-          if (searchInputRef.current) {
-            searchInputRef.current.focus();
-          }
-        }, 100);
+        if (isSidebarCollapsed) setCollapsed(false);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
       }
     };
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isSidebarCollapsed]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showSearch, isSidebarCollapsed, setCollapsed]);
 
-  // A sidebar é sticky dentro do flex, mas overlays `fixed` (o comparador de
-  // planos) se posicionam pela viewport e ficariam por baixo dela. Publicar a
-  // largura permite que eles se afastem sem duplicar o número.
+  // Overlays `fixed` (comparador de planos) leem a largura publicada aqui.
   useEffect(() => {
     document.documentElement.style.setProperty('--sidebar-w', isSidebarCollapsed ? '72px' : '248px');
   }, [isSidebarCollapsed]);
 
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
-        setIsProfileMenuOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const nav = visibleNav(user);
+  const inicio = nav.filter((i) => i.group === 'inicio');
+  const menu = nav.filter((i) => i.group === 'menu');
+  const sistema = nav.filter((i) => i.group === 'sistema');
+  const badgeFor = (item) => (item.badge === 'comunicados' ? naoLidos : undefined);
 
-  const nameParts = safeName.split(' ');
-  const displayName = nameParts.length > 2
-    ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
-    : safeName;
-
-  function GroupLabel({ children, showSeparator = true }) {
-    if (isSidebarCollapsed) {
-      return showSeparator ? (
-        <hr style={{ border: 'none', borderTop: `1px solid ${C.line}`, margin: '14px 4px 10px', opacity: 0.7 }} />
-      ) : <div style={{ height: 10 }} />;
-    }
-    return (
-      <>
-        {showSeparator && (
-          <hr style={{ border: 'none', borderTop: `1px solid ${C.line}`, margin: '14px 4px 10px', opacity: 0.7 }} />
-        )}
-        <div style={{
-          marginTop: showSeparator ? 0 : 12, marginBottom: 6, padding: '0 12px',
-          fontFamily: '"JetBrains Mono", monospace', fontSize: 10,
-          letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', fontWeight: 600,
-        }}>
-          {children}
-        </div>
-      </>
-    );
-  }
-
-  function NavRow({ id, icon, label, active, badge, onClick }) {
-    const [hover, setHover] = useState(false);
-    const IconComponent = Icons[icon];
-
-    const isActive = active;
-    const bgStyle = isActive 
-      ? C.surface 
-      : (hover ? C.surfaceSoft : 'transparent');
-    const colorStyle = isActive 
-      ? C.ink 
-      : (hover ? C.ink : C.ink2);
-    const shadowStyle = isActive 
-      ? '0 1px 3px rgba(11, 27, 46, 0.06), 0 1px 2px rgba(11, 27, 46, 0.04)' 
-      : 'none';
-    const borderLeftStyle = isActive
-      ? `3px solid ${C.accent}`
-      : '3px solid transparent';
-
-    return (
-      <button
-        onClick={() => onClick(id)}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        title={isSidebarCollapsed ? label : undefined}
-        style={{
-          position: 'relative',
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-          gap: isSidebarCollapsed ? 0 : 12,
-          padding: '9px 12px', borderRadius: 10, cursor: 'pointer',
-          background: bgStyle,
-          color: colorStyle,
-          boxShadow: shadowStyle,
-          border: 'none',
-          borderLeft: borderLeftStyle,
-          fontWeight: isActive ? 600 : 500, fontSize: 13.5,
-          transition: 'all .12s',
-          width: '100%', textAlign: 'left',
-          fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-        }}
-      >
-        <span style={{ display: 'flex', color: isActive ? C.accent : (hover ? C.accent : C.muted) }}>
-          {IconComponent && <IconComponent />}
-        </span>
-        {!isSidebarCollapsed && <span style={{ flex: 1 }}>{label}</span>}
-        {!isSidebarCollapsed && badge != null && (
-          <span style={{
-            background: isActive ? C.accent : C.dangerSoft,
-            color: isActive ? C.surface : C.danger,
-            fontSize: 10.5, fontWeight: 700,
-            minWidth: 18, height: 18, padding: '0 6px', borderRadius: 9,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {badge}
-          </span>
-        )}
-        {isSidebarCollapsed && badge != null && (
-          <span style={{
-            position: 'absolute',
-            top: 6, right: 6,
-            width: 8, height: 8,
-            borderRadius: 4,
-            background: isActive ? C.accent : C.danger,
-          }} />
-        )}
-      </button>
-    );
-  }
-
-  const [urgentCount, setUrgentCount] = useState(0);
-
-  useEffect(() => {
-    const fetchUrgents = async () => {
-      try {
-        const res = await fetch('/api/comunicados');
-        const data = await res.json();
-        if (data.sucesso) {
-          setUrgentCount(data.comunicados.filter(item => item.tipo === 'Urgente').length);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar urgentes no sidebar:', error);
-      }
-    };
-    fetchUrgents();
-    const id = setInterval(fetchUrgents, 30000);
-    return () => clearInterval(id);
-  }, []);
-
-  const systemItems = [
-    { id: 'announcements', icon: 'Megaphone', label: 'Comunicados', badge: urgentCount > 0 ? String(urgentCount) : null, group: 'sistema' },
-    { id: 'settings',      icon: 'Settings',  label: 'Configurações', group: 'sistema' },
-    { id: 'admin',         icon: 'Admin',     label: 'Painel Admin',  group: 'sistema' },
-  ];
+  const renderRow = (item) => (
+    <NavRow
+      key={item.id}
+      C={C}
+      collapsed={isSidebarCollapsed}
+      id={item.id}
+      icon={item.icon}
+      label={item.label}
+      active={currentView === item.id}
+      badge={badgeFor(item)}
+      onClick={setCurrentView}
+    />
+  );
 
   return (
     <aside
       className="hidden lg:flex flex-col"
+      aria-label="Barra lateral"
       style={{
-        width: isSidebarCollapsed ? 72 : 248, 
-        flexShrink: 0,
-        background: C.surfaceSoft,
-        borderRight: `1px solid ${C.line}`,
+        width: isSidebarCollapsed ? 72 : 248, flexShrink: 0,
+        background: C.surfaceSoft, borderRight: `1px solid ${C.line}`,
         padding: isSidebarCollapsed ? '20px 8px 20px' : '20px 14px 20px',
-        position: 'sticky', top: 0, height: '100vh',
-        overflowY: 'auto',
-        gap: 2,
-        transition: 'width 0.2s ease, padding 0.2s ease',
+        position: 'sticky', top: 0, height: '100dvh',
+        // `visible` para o popup do perfil poder sair da coluna no modo
+        // colapsado; a rolagem fica no <nav>.
+        overflow: 'visible', zIndex: 1000,
+        gap: 2, transition: 'width 0.2s ease, padding 0.2s ease',
       }}
     >
-      {/* Brand & Toggle */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: isSidebarCollapsed ? 'center' : 'space-between', 
+      {/* Marca e colapsar */}
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
         padding: isSidebarCollapsed ? '6px 0 16px' : '6px 4px 16px',
-        flexDirection: isSidebarCollapsed ? 'column' : 'row',
-        gap: isSidebarCollapsed ? 12 : 0,
+        flexDirection: isSidebarCollapsed ? 'column' : 'row', gap: isSidebarCollapsed ? 12 : 0,
       }}>
-        {!isSidebarCollapsed ? (
-          <button
-            onClick={() => setCurrentView('dashboard')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 11,
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-              padding: 0,
-            }}
-          >
-            <img src={logoP} alt="Prestek" style={{ width: 30, height: 30, objectFit: 'contain' }} />
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-              <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', color: C.ink }}>
-                Prestek
-              </span>
-              <span style={{
-                fontFamily: '"JetBrains Mono", monospace', fontWeight: 500,
-                fontSize: 9.5, letterSpacing: '0.22em', color: C.muted,
-                marginTop: 3, textTransform: 'uppercase',
-              }}>
-                Intranet
-              </span>
-            </div>
-          </button>
-        ) : (
-          <button
-            onClick={() => setCurrentView('dashboard')}
-            style={{
-              display: 'flex', justifyContent: 'center',
-              background: 'transparent', border: 'none', cursor: 'pointer',
-            }}
-          >
-            <img src={logoP} alt="Prestek" style={{ width: 30, height: 30, objectFit: 'contain' }} />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setCurrentView('dashboard')}
+          aria-label="Prestek Intranet, ir para o Início"
+          style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 8, fontFamily: FONT }}
+        >
+          <img src={logoP} alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+          {!isSidebarCollapsed && (
+            <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1, textAlign: 'left' }}>
+              <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', color: C.ink }}>Prestek</span>
+              <span style={{ fontWeight: 700, fontSize: 11, letterSpacing: '0.18em', color: C.ink2, marginTop: 3, textTransform: 'uppercase' }}>Intranet</span>
+            </span>
+          )}
+        </button>
 
         <button
-          onClick={toggleSidebar}
-          title={isSidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
-          style={{
-            background: 'transparent', border: 'none', cursor: 'pointer',
-            color: C.ink2, display: 'flex', padding: 6, borderRadius: 8,
-            transition: 'background 0.2s',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = C.surface}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          type="button"
+          onClick={() => setCollapsed(!isSidebarCollapsed)}
+          aria-label={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
+          aria-expanded={!isSidebarCollapsed}
+          title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: C.ink2, display: 'flex', padding: 6, borderRadius: 8, transition: 'background 0.2s' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = C.surface; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
         >
           <CollapseIcon collapsed={isSidebarCollapsed} />
         </button>
       </div>
 
-      {/* Search box */}
-      {isSidebarCollapsed ? (
+      {/* Busca de planos (só em Serviços) */}
+      {showSearch && (isSidebarCollapsed ? (
         <button
-          onClick={() => {
-            setIsSidebarCollapsed(false);
-            localStorage.setItem('@PrestekIntranet:sidebarCollapsed', 'false');
-            setTimeout(() => {
-              if (searchInputRef.current) {
-                searchInputRef.current.focus();
-              }
-            }, 100);
-          }}
-          title="Buscar..."
+          type="button"
+          onClick={() => { setCollapsed(false); setTimeout(() => searchInputRef.current?.focus(), 50); }}
+          aria-label="Buscar planos"
+          title="Buscar planos"
           style={{
-            margin: '0 auto 16px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: 40, height: 40, borderRadius: 10,
-            background: C.surface, border: `1px solid ${C.line}`,
-            boxShadow: `0 1px 2px ${C.accentDeep}05`,
-            cursor: 'pointer', color: C.muted,
+            margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 40, height: 40, borderRadius: 8, background: C.surface, border: `1px solid ${C.line}`,
+            boxShadow: 'var(--shadow-sm)', cursor: 'pointer', color: C.ink2,
           }}
         >
           <Icons.Search />
         </button>
       ) : (
         <div style={{
-          margin: '0 4px 16px',
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '8px 12px', borderRadius: 10,
-          background: C.surface, border: `1px solid ${C.line}`,
-          boxShadow: `0 1px 2px ${C.accentDeep}05`,
+          margin: '0 4px 16px', display: 'flex', alignItems: 'center', gap: 8,
+          padding: '8px 12px', borderRadius: 12, background: C.surface, border: `1px solid ${C.line}`, boxShadow: 'var(--shadow-sm)',
         }}>
-          <span style={{ color: C.muted, display: 'flex' }}>
-            <Icons.Search />
-          </span>
+          <span style={{ color: C.ink2, display: 'flex' }} aria-hidden="true"><Icons.Search /></span>
           <input
             ref={searchInputRef}
+            type="search"
             value={searchQuery || ''}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar..."
-            style={{
-              flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
-              fontSize: 13, color: C.ink, fontFamily: 'inherit',
-            }}
+            onKeyDown={(e) => { if (e.key === 'Escape') { setSearchQuery(''); e.currentTarget.blur(); } }}
+            placeholder="Buscar planos por nome, valor ou ID"
+            aria-label="Buscar planos por nome, valor ou ID"
+            style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', fontSize: 13, color: C.ink, fontFamily: 'inherit' }}
           />
-          <span style={{
-            fontSize: 9, padding: '2px 4px', borderRadius: 4,
-            border: `1px solid ${C.line}`, color: C.muted, background: C.surfaceSoft,
-            fontFamily: 'monospace',
-          }}>⌘K</span>
+          <kbd style={{
+            fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 600, padding: '2px 5px', borderRadius: 4,
+            border: `1px solid ${C.line}`, color: C.ink2, background: C.surfaceSoft,
+          }}>Ctrl+K</kbd>
         </div>
-      )}
-
-      {/* Dashboard link */}
-      <NavRow
-        id="dashboard"
-        icon="Dashboard"
-        label="Dashboard"
-        active={currentView === 'dashboard'}
-        onClick={setCurrentView}
-      />
-
-      <GroupLabel showSeparator={false}>Menu</GroupLabel>
-      {/* O filtro vive aqui, e não no array: menuItems é const de módulo e não
-          enxerga `user`. */}
-      {menuItems.filter(item => !item.somenteAdmin || user?.is_admin).map(item => (
-        <NavRow
-          key={item.id}
-          {...item}
-          active={currentView === item.id}
-          onClick={setCurrentView}
-        />
       ))}
 
-      <GroupLabel showSeparator={true}>Sistema</GroupLabel>
-      {systemItems.map(item => (
-        <NavRow
-          key={item.id}
-          {...item}
-          active={currentView === item.id}
-          onClick={setCurrentView}
-        />
-      ))}
+      {/* Navegação (rola sozinha em telas baixas) */}
+      <nav aria-label="Navegação principal" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', gap: 2, margin: '0 -2px', padding: '0 2px' }}>
+        {inicio.map(renderRow)}
+        <GroupLabel C={C} collapsed={isSidebarCollapsed} showSeparator={false}>Menu</GroupLabel>
+        {menu.map(renderRow)}
+        <GroupLabel C={C} collapsed={isSidebarCollapsed}>Sistema</GroupLabel>
+        {sistema.map(renderRow)}
+      </nav>
 
-      <div style={{ flex: 1 }} />
-
-      {/* User profile card with Popup Dropdown */}
+      {/* Perfil */}
       {user && (
-        <div style={{ position: 'relative' }} ref={profileMenuRef}>
-          {/* Popup Dropdown Menu */}
+        <div style={{ position: 'relative' }} ref={profileRef}>
           {isProfileMenuOpen && (
             <div
+              role="menu"
+              aria-label="Sua conta"
               style={{
                 position: 'absolute',
                 bottom: isSidebarCollapsed ? 0 : 64,
                 left: isSidebarCollapsed ? 64 : 4,
-                width: 220,
-                background: C.surface,
-                border: `1px solid ${C.line}`,
-                borderRadius: 12,
-                boxShadow: '0 10px 25px rgba(11,27,46,0.12)',
-                padding: '6px',
-                zIndex: 1000,
-                fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
+                width: 232, background: C.popover, border: `1px solid ${C.line}`,
+                borderRadius: 12, boxShadow: 'var(--shadow-lg)', padding: 6, zIndex: 50,
                 animation: 'popup-in 150ms cubic-bezier(0.4, 0, 0.2, 1) both',
               }}
             >
-              {/* Preferences */}
-              <button
-                onClick={() => {
-                  setCurrentView('settings');
-                  setIsProfileMenuOpen(false);
-                }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '8px 10px', borderRadius: 8, border: 'none',
-                  background: 'transparent', color: C.ink, fontSize: 13,
-                  cursor: 'pointer', width: '100%', textAlign: 'left',
-                  transition: 'background 0.12s',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = C.surfaceSoft}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-              >
-                <span style={{ color: C.ink2, display: 'flex' }}><Icons.Settings /></span>
-                <span style={{ flex: 1 }}>Configurações</span>
-              </button>
-
-              {/* Dark Mode Toggle Row */}
-              <div
-                onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '8px 10px', borderRadius: 8,
-                  background: 'transparent', color: C.ink, fontSize: 13,
-                  cursor: 'pointer', transition: 'background 0.12s',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = C.surfaceSoft}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-              >
-                <span style={{ color: C.ink2, display: 'flex' }}><MoonIcon /></span>
-                <span style={{ flex: 1 }}>Modo Escuro</span>
-                <ToggleSwitch checked={isDark} C={C} />
-              </div>
-
-              {/* Dark variant colors (only shown if isDark) */}
-              {isDark && (
-                <div style={{
-                  padding: '4px 10px 8px 38px',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
-                  {/* Cyber (blue/neon) */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setDarkVariant('cyber'); }}
-                    title="Cyber-Obsidian"
-                    style={{
-                      width: 16, height: 16, borderRadius: '50%',
-                      background: '#00F5D4', border: darkVariant === 'cyber' ? `2px solid ${C.ink}` : '2px solid transparent',
-                      cursor: 'pointer', padding: 0,
-                    }}
-                  />
-                  {/* Aurora (purple) */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setDarkVariant('aurora'); }}
-                    title="Space Aurora"
-                    style={{
-                      width: 16, height: 16, borderRadius: '50%',
-                      background: '#8A2BE2', border: darkVariant === 'aurora' ? `2px solid ${C.ink}` : '2px solid transparent',
-                      cursor: 'pointer', padding: 0,
-                    }}
-                  />
-                  {/* Amoled (black) */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setDarkVariant('amoled'); }}
-                    title="AMOLED Pure"
-                    style={{
-                      width: 16, height: 16, borderRadius: '50%',
-                      background: '#222', border: darkVariant === 'amoled' ? `2px solid ${C.ink}` : '2px solid transparent',
-                      cursor: 'pointer', padding: 0,
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* Divider */}
-              <hr style={{ border: 'none', borderTop: `1px solid ${C.line}`, margin: '4px 4px', opacity: 0.5 }} />
-
-              {/* Logout Button */}
-              <button
-                onClick={async () => {
-                  setIsProfileMenuOpen(false);
-                  if (user?.id) {
-                    try { await fetch(`/api/presenca/${user.id}/logout`, { method: 'POST' }); } catch (_) {}
-                  }
-                  localStorage.removeItem('@Stitch:user');
-                  localStorage.removeItem('@Stitch:currentView');
-                  sessionStorage.removeItem('@Stitch:user');
-                  sessionStorage.removeItem('@Stitch:currentView');
-                  setCurrentView('login');
-                }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '8px 10px', borderRadius: 8, border: 'none',
-                  background: 'transparent', color: C.danger || '#ef4444', fontSize: 13,
-                  cursor: 'pointer', width: '100%', textAlign: 'left',
-                  transition: 'all 0.12s',
-                  fontWeight: 600,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = C.dangerSoft || 'rgba(239, 68, 68, 0.1)';
-                  e.currentTarget.style.color = C.danger || '#ef4444';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = C.danger || '#ef4444';
-                }}
-              >
-                <span style={{ color: 'inherit', display: 'flex' }}><Icons.Logout /></span>
-                <span style={{ flex: 1 }}>Sair da Conta</span>
-              </button>
+              <ProfileMenu user={user} setCurrentView={setCurrentView} onClose={closeProfile} dense />
             </div>
           )}
 
-          {/* Separator above profile */}
           <hr style={{ border: 'none', borderTop: `1px solid ${C.line}`, margin: '12px 4px 12px', opacity: 0.7 }} />
 
-          {/* Profile pill button */}
-          <div
-            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+          <button
+            type="button"
+            onClick={() => setIsProfileMenuOpen((v) => !v)}
             onMouseEnter={() => setProfileHover(true)}
             onMouseLeave={() => setProfileHover(false)}
+            aria-haspopup="menu"
+            aria-expanded={isProfileMenuOpen}
+            aria-label={isSidebarCollapsed ? `Conta de ${displayName}` : undefined}
             title={isSidebarCollapsed ? displayName : undefined}
             style={{
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-              padding: isSidebarCollapsed ? '8px 0' : '8px 10px', 
-              borderRadius: 12, 
-              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+              padding: isSidebarCollapsed ? '8px 0' : '8px 10px', borderRadius: 12, cursor: 'pointer',
               background: profileHover || isProfileMenuOpen ? C.surface : 'transparent',
-              boxShadow: profileHover || isProfileMenuOpen ? '0 1px 3px rgba(11, 27, 46, 0.05)' : 'none',
-              transition: 'all .12s',
-              fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-              border: 'none', width: '100%',
+              boxShadow: profileHover || isProfileMenuOpen ? 'var(--shadow-sm)' : 'none',
+              transition: 'background .12s', fontFamily: FONT, border: 'none', width: '100%', textAlign: 'left',
             }}
           >
             <img
               src={avatarUrl || defaultAvatar}
-              alt={safeName}
-              style={{
-                width: 34, height: 34, borderRadius: '50%', objectFit: 'cover',
-                background: C.surface, flexShrink: 0,
-              }}
+              alt=""
+              style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', background: C.surface, flexShrink: 0 }}
             />
             {!isSidebarCollapsed && (
               <>
-                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, lineHeight: 1.2, marginLeft: 10 }}>
-                  <span style={{
-                    fontWeight: 700, fontSize: 13, color: C.ink,
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  }}>
+                <span style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, lineHeight: 1.2, marginLeft: 10 }}>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {displayName}
                   </span>
-                  <span style={{
-                    fontFamily: '"JetBrains Mono", monospace', fontWeight: 500,
-                    fontSize: 9.5, color: C.muted, textTransform: 'uppercase',
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                    marginTop: 2,
-                  }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', color: C.ink2, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>
                     {cargoName}
                   </span>
-                </div>
-                <span style={{ color: C.muted, display: 'flex', flexShrink: 0 }}>
-                  <ChevronUpDownIcon />
                 </span>
+                <span style={{ color: C.ink2, display: 'flex', flexShrink: 0 }}><ChevronUpDownIcon /></span>
               </>
             )}
-          </div>
+          </button>
         </div>
       )}
 
-      {/* Popup animation styles */}
       <style>{`
         @keyframes popup-in {
-          from {
-            opacity: 0;
-            transform: scale(0.95) translateY(4px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
+          from { opacity: 0; transform: scale(0.95) translateY(4px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
         }
       `}</style>
     </aside>

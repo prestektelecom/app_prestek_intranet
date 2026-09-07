@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Badge visual no sino
 O sistema SHALL exibir um badge numérico sobre o ícone do sino (em vez de um ponto simples) quando há notificações não lidas. O badge SHALL mostrar o número de itens não lidos, com cap em "9+". A cor SHALL seguir a prioridade: vermelho (`C.danger`) quando há urgentes não lidas, âmbar (`C.warning`) quando há apenas importantes não lidas.
