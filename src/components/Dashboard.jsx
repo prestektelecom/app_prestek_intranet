@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import { resolveNomeSetor } from '../utils/resolveSetor'
 import Sparkline from './common/Sparkline'
@@ -15,35 +16,6 @@ const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.
 const CARD_TITLE = 'font-display text-xl font-bold tracking-tight text-foreground'
 const CARD = 'bento-hover-border flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm'
 const ACTION_BTN = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
-
-const HERO_SLIDE_INTERVAL = 8000;
-const HERO_MAX_PX = 1280;
-const HERO_JPEG_QUALITY = 0.82;
-
-// Redimensiona a imagem no browser (máx. HERO_MAX_PX na maior dimensão) e
-// retorna um data URL JPEG base64 — protege o limite de ~5 MB do localStorage.
-function resizeImageToDataUrl(file, maxPx = HERO_MAX_PX, quality = HERO_JPEG_QUALITY) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('Imagem inválida'));
-      img.onload = () => {
-        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-        const w = Math.max(1, Math.round(img.width * scale));
-        const h = Math.max(1, Math.round(img.height * scale));
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
 
 function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
   const isTouchOnly = useTouchOnly();
@@ -71,7 +43,7 @@ function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor
           {sub && (
             <div title={subTooltip} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${subClass} ${subTooltip ? 'cursor-help' : ''}`}>
               {subTone === 'danger' && <Icons.TrendDown />}
-              {subTone === 'success' && <Icons.Check />}
+              {subTone === 'success' && <Icons.TrendUp />}
               {sub}
             </div>
           )}
@@ -87,7 +59,16 @@ function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor
   );
 }
 
-function DashboardHeader({ firstName, cargoName }) {
+// "Hoje é aniversário de Ana Souza (Financeiro)" / "de Ana e Bruno" / "de Ana e mais 2 colegas".
+// Setor entre parênteses só quando resolvido — sem placeholder.
+function fraseAniversariantes(lista) {
+  const nomes = lista.map(p => (p.setor ? `${p.nome} (${p.setor})` : p.nome));
+  if (nomes.length === 1) return `Hoje é aniversário de ${nomes[0]}`;
+  if (nomes.length === 2) return `Hoje é aniversário de ${nomes[0]} e ${nomes[1]}`;
+  return `Hoje é aniversário de ${nomes[0]} e mais ${nomes.length - 1} colegas`;
+}
+
+function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
   // O relógio vive aqui, e não no pai: um tick por minuto no Dashboard
   // re-renderizava os 7 widgets do grid (e os 9 GlowingEffect) só pra
   // atualizar dois textos deste header.
@@ -122,6 +103,25 @@ function DashboardHeader({ firstName, cargoName }) {
             ? <>Aqui está o resumo do seu dia · setor <strong className="font-semibold text-foreground">{cargoName}</strong></>
             : 'Aqui está o resumo do seu dia.'}
         </p>
+        {/* Delight: aniversário de HOJE reconhecido antes dos números. Mesmo
+            par de cor do pill "Hoje" no card, pra o olho ligar os dois; o
+            clique rola até a pessoa em vez de ser só enfeite. */}
+        {aniversariantesHoje.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.getElementById('widget-aniversariantes');
+              if (!el) return;
+              const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+              el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+            }}
+            className="mt-2.5 inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--success-soft)] px-3 py-1.5 text-[13px] text-foreground transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          >
+            <span className="shrink-0 text-[var(--success-bento)]" aria-hidden="true"><Icons.Cake /></span>
+            <span className="truncate">{fraseAniversariantes(aniversariantesHoje)}</span>
+            <span className="shrink-0 text-muted" aria-hidden="true"><Icons.ArrowR /></span>
+          </button>
+        )}
       </div>
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
@@ -136,227 +136,6 @@ function DashboardHeader({ firstName, cargoName }) {
   );
 }
 
-function HeroBgModal({ isOpen, images, onSave, onClose }) {
-  const [draft, setDraft] = useState(images);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const fileInputRef = useRef(null);
-  const cardRef = useRef(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      setDraft(images);
-      cardRef.current?.focus();
-    }
-  }, [isOpen, images]);
-
-  if (!isOpen) return null;
-
-  const handleFiles = async (e) => {
-    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
-    e.target.value = '';
-    if (!files.length) return;
-    setIsProcessing(true);
-    const results = await Promise.allSettled(files.map(f => resizeImageToDataUrl(f)));
-    const urls = results.filter(r => r.status === 'fulfilled').map(r => r.value);
-    setDraft(prev => [...prev, ...urls]);
-    setIsProcessing(false);
-  };
-
-  const removeImage = (idx) => setDraft(prev => prev.filter((_, i) => i !== idx));
-
-  return (
-    <div
-      className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        ref={cardRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Gerenciar imagens de fundo do banner"
-        className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl outline-none"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <div>
-            <div className="text-[15px] font-bold tracking-tight text-foreground">Imagens do banner</div>
-            <div className="mt-0.5 text-xs text-muted">Elas passam automaticamente a cada 8 segundos</div>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Fechar"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface text-muted transition hover:bg-surface-raised hover:text-foreground"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
-
-        <div className="px-6 py-5">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            hidden
-            onChange={handleFiles}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isProcessing}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-surface-raised px-4 py-5 text-sm font-semibold text-muted transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-60"
-          >
-            <Icons.Plus />
-            {isProcessing ? 'Processando imagens...' : 'Adicionar imagens do dispositivo'}
-          </button>
-
-          {draft.length === 0 ? (
-            <p className="mt-4 rounded-xl bg-surface-raised px-4 py-3 text-center text-[12.5px] text-muted">
-              Nenhuma imagem adicionada. O banner exibirá o gradiente padrão.
-            </p>
-          ) : (
-            <div className="mt-4 grid max-h-64 grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3">
-              {draft.map((src, idx) => (
-                <div key={idx} className="group relative aspect-video overflow-hidden rounded-lg border border-border">
-                  <img src={src} alt={`Imagem ${idx + 1}`} className="h-full w-full object-cover" />
-                  <button
-                    onClick={() => removeImage(idx)}
-                    aria-label={`Remover imagem ${idx + 1}`}
-                    className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-white transition hover:bg-black/80"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2.5 border-t border-border px-6 py-4">
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-border bg-surface px-4 py-2.5 text-[13px] font-semibold text-faint transition hover:bg-surface-raised hover:text-foreground"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => onSave(draft)}
-            disabled={isProcessing}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border-none bg-primary px-4 py-2.5 text-[13px] font-bold text-white transition hover:bg-[var(--primary-hover)] disabled:opacity-60"
-          >
-            <Icons.Check /> Salvar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HeroCard({ firstName, cargoName, currentDateTime, bgImages, onChangeBg, onAbrirChamadoTI }) {
-  const count = bgImages.length;
-  // Dois layers empilhados: o inativo recebe o próximo src e vai de opacity 0→1
-  const [current, setCurrent] = useState({ index: 0, layer: 0 });
-  const [layerSrc, setLayerSrc] = useState([bgImages[0], bgImages[0]]);
-
-  const getGreeting = () => {
-    const h = new Date().getHours();
-    if (h >= 5 && h < 12) return 'Bom dia';
-    if (h >= 12 && h < 18) return 'Boa tarde';
-    return 'Boa noite';
-  };
-
-  useEffect(() => {
-    setCurrent({ index: 0, layer: 0 });
-    setLayerSrc([bgImages[0], bgImages[0]]);
-  }, [bgImages]);
-
-  useEffect(() => {
-    if (count < 2) return;
-    const id = setInterval(() => {
-      const nextIndex = (current.index + 1) % count;
-      const nextLayer = 1 - current.layer;
-      setLayerSrc(srcs => {
-        const s = [...srcs];
-        s[nextLayer] = bgImages[nextIndex];
-        return s;
-      });
-      setCurrent({ index: nextIndex, layer: nextLayer });
-    }, HERO_SLIDE_INTERVAL);
-    return () => clearInterval(id);
-  }, [count, current, bgImages]);
-
-  return (
-    <div className="relative h-full overflow-hidden rounded-2xl p-6 text-white shadow-lg md:p-8">
-      {count === 0 ? (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-deep)] via-[var(--accent-dark)] to-[var(--accent)]" />
-          <svg className="absolute inset-0 opacity-15" width="100%" height="100%">
-            <defs>
-              <pattern id="hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hero-grid)" />
-          </svg>
-          <div className="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
-        </>
-      ) : count === 1 ? (
-        <img src={bgImages[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      ) : (
-        [0, 1].map(layer => (
-          <img
-            key={layer}
-            src={layerSrc[layer]}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
-            style={{ opacity: current.layer === layer ? 1 : 0 }}
-          />
-        ))
-      )}
-      {count > 0 && (
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/35 backdrop-blur-[1px]" />
-      )}
-      <button
-        onClick={onChangeBg}
-        title="Gerenciar imagens de fundo"
-        aria-label="Gerenciar imagens de fundo do hero"
-        className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/25 text-white backdrop-blur-sm transition hover:bg-black/45"
-      >
-        <Icons.Image />
-      </button>
-
-      <div className="relative z-10 flex h-full flex-col justify-between gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
-            {currentDateTime || '...'}
-          </div>
-          <div className="hidden sm:inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-[11.5px] font-bold text-amber-200 backdrop-blur-sm border border-amber-400/30">
-            <span>⚠️ Central de Suporte Online</span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-xl">
-            <h2 className="text-2xl font-extrabold leading-tight tracking-tight md:text-3xl">
-              {getGreeting()}, {firstName} 👋
-            </h2>
-            <p className="mt-1 text-sm text-white/85">
-              Setor <strong className="font-semibold text-white">{cargoName || 'Colaborador'}</strong> · Prestek Telecom
-            </p>
-          </div>
-          <button
-            onClick={onAbrirChamadoTI}
-            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[var(--accent-deep)] shadow-lg transition hover:bg-amber-50 hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Icons.Plus /> Abrir Chamado TI
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry }) {
   const efVal = eficienciaLoading ? '...' : eficiencia?.sem_dados ? 'N/A' : `${eficiencia?.eficiencia_atual ?? '–'}%`;
   const efSub = !eficienciaLoading && eficiencia && !eficiencia.sem_dados && eficiencia.variacao !== null
@@ -365,7 +144,7 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
   const efSubTooltip = efSub ? 'Variação calculada pela taxa diária de OS no prazo (mês atual vs mês anterior).' : null;
   const efSparkData = eficiencia?.historico_semanal?.length
     ? eficiencia.historico_semanal.map(s => s.eficiencia ?? 0)
-    : (eficiencia?.eficiencia_atual != null ? Array(8).fill(eficiencia.eficiencia_atual) : []);
+    : [];
   // "OS Fechadas" usa o total real por semana que o backend já calcula.
   // "Sem SLA" não tem granularidade semanal na API (só o agregado do mês
   // atual) — mostrar sparkline pra ela seria inventar uma curva, então fica
@@ -385,7 +164,7 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
           onClick={onRetry}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
         >
-          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+          <Icons.Refresh />
           Tentar novamente
         </button>
       </div>
@@ -416,8 +195,7 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
         value={eficienciaLoading ? '...' : (eficiencia?.os_sem_prazo ?? 0)}
         sub={eficiencia?.os_sem_prazo > 0 ? 'Atenção' : 'Ok'}
         subTone={eficiencia?.os_sem_prazo > 0 ? 'warning' : 'success'}
-        sparkData={[]}
-        sparkColor="var(--warning-bento)"
+        sparkData={null}
       />
     </div>
   );
@@ -428,8 +206,13 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
   const dateStr = plantaoLoading ? '...' : (proximoPlantao
     ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Nenhum agendado');
+  // Sem fallback inventado: o backend agora envia horario_inicio/horario_fim
+  // (TIME, chega como "HH:MM:SS"). Se vier nulo, dizemos que não sabemos em
+  // vez de fingir "09:00 – 17:00" com a mesma cara de dado real.
   const timeStr = proximoPlantao
-    ? `${(proximoPlantao.horario_inicio || '09:00').slice(0, 5)} – ${(proximoPlantao.horario_fim || '17:00').slice(0, 5)}`
+    ? (proximoPlantao.horario_inicio && proximoPlantao.horario_fim
+        ? `${String(proximoPlantao.horario_inicio).slice(0, 5)} – ${String(proximoPlantao.horario_fim).slice(0, 5)}`
+        : 'Horário a confirmar')
     : 'Sem cobertura ativa';
 
   return (
@@ -447,7 +230,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
             onClick={onRetry}
             className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
           >
-            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+            <Icons.Refresh />
             Tentar novamente
           </button>
         </div>
@@ -506,7 +289,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
               onClick={onRetry}
               className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+              <Icons.Refresh />
               Tentar novamente
             </button>
           </div>
@@ -581,12 +364,23 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
   );
 }
 
+// Intervalo do autoplay do carrossel. Vai inline para a barra de progresso
+// (CSS) e para o setTimeout, então os dois contam o mesmo tempo.
+const AUTOPLAY_MS = 6000;
+
 function ComunicadoBanner({ setCurrentView }) {
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const pausado = isHovered || isFocused;
+  // Cronômetro com "tempo restante": pausar no hover/foco congela o relógio em
+  // vez de zerá-lo, e a barra no dot ativo (animation-play-state) congela junto.
+  const restanteRef = useRef(AUTOPLAY_MS);
+  const inicioRef = useRef(0);
 
   const carregarComunicados = useCallback(() => {
     setLoading(true);
@@ -622,14 +416,26 @@ function ComunicadoBanner({ setCurrentView }) {
     return unicos;
   }, [comunicados]);
 
-  // Auto-play a cada 6 segundos quando não estiver em hover
+  // Troca de slide (automática ou por clique no dot) zera o relógio. Precisa
+  // vir ANTES do cronômetro: a limpeza dele desconta o tempo decorrido
+  // primeiro, e só depois este efeito repõe o valor cheio.
+  useEffect(() => { restanteRef.current = AUTOPLAY_MS; }, [currentIndex]);
+
+  // Auto-play. Pausa no hover E no foco: só pausar no mouse deixava o
+  // carrossel girando sob o cursor de quem navega por teclado ou leitor de
+  // tela (WCAG 2.2.2). Antes era setInterval fixo: clicar num dot não
+  // reiniciava a contagem e o próximo avanço podia vir 1s depois.
   useEffect(() => {
-    if (slides.length <= 1 || isHovered) return;
-    const interval = setInterval(() => {
+    if (slides.length <= 1 || pausado) return;
+    inicioRef.current = Date.now();
+    const t = setTimeout(() => {
       setCurrentIndex(prev => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [slides.length, isHovered]);
+    }, restanteRef.current);
+    return () => {
+      clearTimeout(t);
+      restanteRef.current = Math.max(0, restanteRef.current - (Date.now() - inicioRef.current));
+    };
+  }, [slides.length, pausado, currentIndex]);
 
   const TAG_STYLES = {
     Urgente:    { chip: 'bg-red-500/90 text-white', label: 'URGENTE', bgFallback: 'bg-gradient-to-r from-red-950 via-rose-900 to-stone-900' },
@@ -680,7 +486,7 @@ function ComunicadoBanner({ setCurrentView }) {
           onClick={carregarComunicados}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-background"
         >
-          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+          <Icons.Refresh />
           Tentar novamente
         </button>
       </div>
@@ -692,13 +498,32 @@ function ComunicadoBanner({ setCurrentView }) {
   const activeSlide = slides[currentIndex % slides.length] || slides[0];
   const tagInfo = TAG_STYLES[activeSlide.tipo] || TAG_DEFAULT;
   const description = stripMarkdown(activeSlide.descricao);
+  const slideKey = activeSlide.id ?? (currentIndex % slides.length);
+  // Entrada desacelera (chegada confiante); saída é mais curta que a entrada.
+  // Com movimento reduzido sobra só o fade: a opacidade carrega o "trocou",
+  // o deslocamento não.
+  const transicaoTexto = reduceMotion
+    ? { duration: 0.2 }
+    : { duration: 0.42, ease: [0.16, 1, 0.3, 1] };
+  const transicaoSaida = { duration: reduceMotion ? 0.12 : 0.16, ease: [0.4, 0, 1, 1] };
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label={`Comunicado em destaque: ${activeSlide.titulo}. Abrir comunicados`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
       onClick={() => setCurrentView && setCurrentView('announcements')}
-      className="group relative mb-6 h-48 md:h-56 lg:h-64 w-full cursor-pointer overflow-hidden rounded-2xl border border-border/40 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.002]"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setCurrentView && setCurrentView('announcements');
+        }
+      }}
+      className="group relative mb-6 h-48 md:h-56 lg:h-64 w-full cursor-pointer overflow-hidden rounded-2xl border border-border/40 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.002] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
     >
       {/* Background Image / Fallback Gradient com Fade suave */}
       {slides.map((slide, idx) => {
@@ -725,20 +550,32 @@ function ComunicadoBanner({ setCurrentView }) {
       {/* Dark Overlay para legibilidade */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10 transition-opacity duration-300 group-hover:from-black/95 group-hover:via-black/50" />
 
-      {/* Conteúdo do Slide Ativo */}
+      {/* Conteúdo do Slide Ativo. O que muda por slide (chip, hora, título,
+          texto) anima com continuidade; o que persiste (dots) fica parado. */}
       <div className="relative z-10 flex h-full flex-col justify-between p-6 text-white md:p-8">
-        {/* Top bar com Badge e Indicador de Slides/Dots */}
-        <div className="flex items-center justify-between">
-          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 font-mono text-[10px] font-extrabold uppercase tracking-widest shadow-sm ${tagInfo.chip}`}>
-            {tagInfo.label}
-          </span>
-          
-          <div className="flex items-center gap-3">
-            {activeSlide.criado_em && (
-              <span className="font-mono text-[11px] font-semibold text-white/70 backdrop-blur-sm bg-black/30 px-2.5 py-1 rounded-full border border-white/10">
-                {relativeTime(activeSlide.criado_em)}
+        {/* Top bar: meta do slide à esquerda, navegação à direita */}
+        <div className="flex items-center justify-between gap-3">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={slideKey}
+              className="flex min-w-0 items-center gap-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: transicaoSaida }}
+              transition={{ duration: 0.24 }}
+            >
+              <span className={`inline-flex items-center rounded-lg px-2.5 py-1 font-mono text-[10px] font-extrabold uppercase tracking-widest shadow-sm ${tagInfo.chip}`}>
+                {tagInfo.label}
               </span>
-            )}
+              {activeSlide.criado_em && (
+                <span className="font-mono text-[11px] font-semibold text-white/70 backdrop-blur-sm bg-black/30 px-2.5 py-1 rounded-full border border-white/10">
+                  {relativeTime(activeSlide.criado_em)}
+                </span>
+              )}
+            </motion.div>
+          </AnimatePresence>
+          
+          <div className="flex shrink-0 items-center gap-3">
             
             {/* Dots de Navegação */}
             {slides.length > 1 && (
@@ -746,32 +583,61 @@ function ComunicadoBanner({ setCurrentView }) {
                 {slides.map((_, i) => (
                   <button
                     key={i}
+                    type="button"
+                    aria-label={`Comunicado ${i + 1} de ${slides.length}`}
+                    aria-current={i === (currentIndex % slides.length) ? 'true' : undefined}
                     onClick={(e) => {
                       e.stopPropagation();
                       setCurrentIndex(i);
                     }}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      i === (currentIndex % slides.length) ? 'w-5 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+                    onKeyDown={(e) => e.stopPropagation()}
+                    className={`relative h-2 overflow-hidden rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+                      i === (currentIndex % slides.length) ? 'w-5 bg-white/35' : 'w-2 bg-white/40 hover:bg-white/70'
                     }`}
-                    title={`Slide ${i + 1}`}
-                  />
+                    title={`Comunicado ${i + 1}`}
+                  >
+                    {/* Barra de progresso do autoplay: o dot ativo enche em 6s e
+                        congela junto com o relógio no hover/foco. Com movimento
+                        reduzido (regra global do index.css) nasce cheio = o dot
+                        branco sólido de antes. Remonta a cada troca de slide
+                        porque muda de botão. */}
+                    {i === (currentIndex % slides.length) && (
+                      <span
+                        aria-hidden="true"
+                        className="comunicado-progresso absolute inset-0 origin-left rounded-full bg-white"
+                        style={{ animationDuration: `${AUTOPLAY_MS}ms`, animationPlayState: pausado ? 'paused' : 'running' }}
+                      />
+                    )}
+                  </button>
                 ))}
               </div>
             )}
           </div>
         </div>
 
-        {/* Título e Subtítulo */}
-        <div className="max-w-3xl">
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white line-clamp-2 drop-shadow-md group-hover:text-white/95">
-            {activeSlide.titulo}
-          </h2>
-          {description && (
-            <p className="mt-2 text-xs md:text-sm font-medium text-white/80 line-clamp-2 drop-shadow">
-              {description}
-            </p>
-          )}
-        </div>
+        {/* Título e Subtítulo: o momento autoral da troca. Sobe 10px ao entrar
+            e sai por cima, mais rápido — a leitura acompanha o fundo, que já
+            faz crossfade de 700ms. mode="wait" segura a entrada até a saída
+            terminar, então cliques rápidos nos dots não empilham textos. */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={slideKey}
+            className="max-w-3xl"
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduceMotion ? 0 : -6, transition: transicaoSaida }}
+            transition={transicaoTexto}
+          >
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white line-clamp-2 drop-shadow-md group-hover:text-white/95">
+              {activeSlide.titulo}
+            </h2>
+            {description && (
+              <p className="mt-2 text-xs md:text-sm font-medium text-white/80 line-clamp-2 drop-shadow">
+                {description}
+              </p>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -881,7 +747,7 @@ function ComunicadosCard({ setCurrentView }) {
                 onClick={carregarComunicados}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
               >
-                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+                <Icons.Refresh />
                 Tentar novamente
               </button>
             </div>
@@ -895,8 +761,17 @@ function ComunicadosCard({ setCurrentView }) {
             return (
               <div
                 key={it.id || i}
+                role="button"
+                tabIndex={0}
+                aria-label={`${tagLabel(it.tipo)}: ${it.titulo}. Abrir comunicados`}
                 onClick={() => setCurrentView('announcements')}
-                className={`flex min-h-16 max-h-16 shrink-0 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised ${tag.border}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setCurrentView('announcements');
+                  }
+                }}
+                className={`flex min-h-16 max-h-16 shrink-0 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${tag.border}`}
               >
                 <div className="flex flex-1 flex-col justify-center gap-1 min-w-0 px-3 py-2">
                   <div className="flex items-center gap-1.5 overflow-hidden">
@@ -933,9 +808,12 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
     { icon: 'Headset', label: 'Suporte TI', hint: 'Abrir chamado', id: 'tickets' },
     { icon: 'Badge', label: 'Meu Perfil', hint: 'Dados e segurança', id: 'settings' },
     { icon: 'Lightning', label: 'Comunicados', hint: 'Avisos e urgentes', id: 'announcements' },
-    { icon: 'Doc', label: 'Holerite', hint: 'Portal do colaborador', id: 'holerite', url: '#' },
-    { icon: 'Clock', label: 'Ponto Eletrônico', hint: 'Registro de ponto', id: 'ponto', url: '#' },
-    { icon: 'Calendar', label: 'Férias', hint: 'Solicitação e saldo', id: 'ferias', url: '#' },
+    // Sem destino ainda. Antes eram `url: '#'` e window.open('#') abria uma
+    // aba em branco duplicando o dashboard — um atalho que parecia funcionar
+    // e não levava a lugar nenhum. Desabilitado e rotulado até existir a URL.
+    { icon: 'Doc', label: 'Holerite', hint: 'Portal do colaborador', id: 'holerite', emBreve: true },
+    { icon: 'Clock', label: 'Ponto Eletrônico', hint: 'Registro de ponto', id: 'ponto', emBreve: true },
+    { icon: 'Calendar', label: 'Férias', hint: 'Solicitação e saldo', id: 'ferias', emBreve: true },
   ];
 
   return (
@@ -949,19 +827,27 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
           return (
             <button
               key={a.id}
+              type="button"
+              disabled={a.emBreve}
+              aria-disabled={a.emBreve || undefined}
               onClick={() => {
-                if (a.url) window.open(a.url, '_blank');
+                if (a.emBreve) return;
+                if (a.url) window.open(a.url, '_blank', 'noopener');
                 else if (a.id === 'tickets') onSuporteTIClick();
                 else setCurrentView(a.id);
               }}
-              className="flex min-h-[48px] w-full shrink-0 items-center gap-3.5 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md"
+              className={`flex min-h-[48px] w-full shrink-0 items-center gap-3.5 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                a.emBreve
+                  ? 'cursor-not-allowed opacity-60'
+                  : 'hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md'
+              }`}
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.emBreve ? 'bg-surface-raised text-muted' : 'bg-[var(--accent-soft)] text-[var(--accent)]'}`}>
                 {IconC && <IconC />}
               </div>
               <div className="min-w-0 flex-1 flex flex-col gap-0.5">
                 <span className="text-[13px] font-semibold text-foreground leading-tight">{a.label}</span>
-                <span className="text-[11px] text-muted leading-tight">{a.hint}</span>
+                <span className="text-[11px] text-muted leading-tight">{a.emBreve ? 'Em breve' : a.hint}</span>
               </div>
             </button>
           );
@@ -1050,7 +936,7 @@ function AvatarAniversariante({ nome, foto }) {
   );
 }
 
-function AniversariantesCard() {
+function AniversariantesCard({ onAniversariantesHoje }) {
   const isTouchOnly = useTouchOnly();
   const [aniversariantes, setAniversariantes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1098,6 +984,18 @@ function AniversariantesCard() {
   // Departamento é complementar: só aparece quando resolve, senão some sem deixar espaço
   const departamento = (c) => deptoMap[String(c.id_departamento)] || deptoMap[String(c.id_funcao)] || '';
 
+  // Avisa o pai quando alguém faz aniversário HOJE, pra saudação reconhecer
+  // a pessoa antes dos números. Nome já formatado (nomeCurto) e setor
+  // resolvido; re-dispara quando deptoMap chega, pra o setor preencher.
+  useEffect(() => {
+    if (!onAniversariantesHoje) return;
+    onAniversariantesHoje(
+      aniversariantes
+        .filter(c => c.dias === 0)
+        .map(c => ({ nome: nomeCurto(c.funcionario_nome), setor: departamento(c) }))
+    );
+  }, [aniversariantes, deptoMap, onAniversariantesHoje]);
+
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
       <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
@@ -1127,7 +1025,7 @@ function AniversariantesCard() {
               onClick={carregarAniversariantes}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+              <Icons.Refresh />
               Tentar novamente
             </button>
           </div>
@@ -1164,6 +1062,9 @@ function AniversariantesCard() {
 function TeamBento() {
   const isTouchOnly = useTouchOnly();
   const [members, setMembers] = useState([]);
+  // Contagem real: `members` é cortado em 7 pra lista; o cabeçalho dizia
+  // "7 online agora" com 12 pessoas online.
+  const [totalOnline, setTotalOnline] = useState(0);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
   const [deptoMap, setDeptoMap] = useState({});
@@ -1188,8 +1089,10 @@ function TeamBento() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.sucesso) {
+        const lista = data.colaboradores || [];
+        setTotalOnline(lista.length);
         setMembers(
-          (data.colaboradores || []).slice(0, 7).map(m => ({
+          lista.slice(0, 7).map(m => ({
             id: m.id,
             name: m.nome || m.funcionario || 'Colaborador',
             role: deptoMap[String(m.id_departamento)] || m.id_funcao || '',
@@ -1219,7 +1122,7 @@ function TeamBento() {
           {!loading && !erro && (
             <div className="mt-1 flex items-center gap-1.5">
               <span className="inline-block h-2 w-2 rounded-full bg-[var(--success-bento)]" />
-              <span className="text-[12.5px] text-faint"><strong className="font-semibold text-foreground">{members.length}</strong> online agora</span>
+              <span className="text-[12.5px] text-faint"><strong className="font-semibold text-foreground">{totalOnline}</strong> online agora</span>
             </div>
           )}
         </div>
@@ -1235,7 +1138,7 @@ function TeamBento() {
               onClick={fetchOnline}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+              <Icons.Refresh />
               Tentar novamente
             </button>
           </div>
@@ -1316,19 +1219,8 @@ const DEFAULT_LAYOUTS = {
 };
 
 export default function Dashboard({ setCurrentView, user }) {
-  const [heroBgImages, setHeroBgImages] = useState(() => {
-    try {
-      const saved = localStorage.getItem('dashboardHeroBgImages');
-      if (saved) return JSON.parse(saved);
-      // Migração da chave legada (string única) para o formato array
-      const legacy = localStorage.getItem('dashboardHeroBg');
-      return legacy ? [legacy] : [];
-    } catch {
-      return [];
-    }
-  });
-  const [isHeroBgModalOpen, setIsHeroBgModalOpen] = useState(false);
   const [cargoName, setCargoName] = useState('');
+  const [aniversariantesHoje, setAniversariantesHoje] = useState([]);
   const [osCount, setOsCount] = useState(null);
   const [osStatusCount, setOsStatusCount] = useState(null);
   const [osLoading, setOsLoading] = useState(true);
@@ -1367,7 +1259,7 @@ export default function Dashboard({ setCurrentView, user }) {
   useEffect(() => { carregarOs(); }, [carregarOs]);
 
   const carregarPlantao = useCallback(() => {
-    if (!user?.id) return;
+    if (!user?.id) { setPlantaoLoading(false); return; }
     setPlantaoLoading(true);
     setPlantaoError(false);
     fetch(`/api/plantoes/meu-proximo/${user.id}`)
@@ -1402,15 +1294,6 @@ export default function Dashboard({ setCurrentView, user }) {
 
   useEffect(() => { carregarEficiencia(); }, [carregarEficiencia]);
 
-  // Persiste as imagens de fundo do hero no localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('dashboardHeroBgImages', JSON.stringify(heroBgImages));
-    } catch (err) {
-      console.warn('Não foi possível salvar as imagens do hero (limite do localStorage):', err);
-    }
-  }, [heroBgImages]);
-
   const safeName = func.funcionario || user?.nome || 'Usuário';
   const firstName = safeName.split(' ')[0] || 'Usuário';
 
@@ -1418,7 +1301,7 @@ export default function Dashboard({ setCurrentView, user }) {
     <main className="flex-1 overflow-y-auto bg-background text-foreground">
       <div className="mx-auto max-w-[1200px] px-6 pb-10 pt-7 md:px-8">
 
-        <DashboardHeader firstName={firstName} cargoName={cargoName} />
+        <DashboardHeader firstName={firstName} cargoName={cargoName} aniversariantesHoje={aniversariantesHoje} />
 
         <ComunicadoBanner setCurrentView={setCurrentView} />
 
@@ -1449,8 +1332,8 @@ export default function Dashboard({ setCurrentView, user }) {
           <div key="atalhos">
             <AtalhosCard setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
           </div>
-          <div key="aniversariantes">
-            <AniversariantesCard />
+          <div key="aniversariantes" id="widget-aniversariantes">
+            <AniversariantesCard onAniversariantesHoje={setAniversariantesHoje} />
           </div>
           <div key="team">
             <TeamBento />
@@ -1458,7 +1341,7 @@ export default function Dashboard({ setCurrentView, user }) {
         </ResponsiveReactGridLayout>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-[11.5px] tracking-wide text-muted">
-          <span>© 2026 Prestek Inc. · Portal Interno · Confidencial.</span>
+          <span>© 2026 Prestek Telecom · Portal Interno · Confidencial.</span>
           <div className="flex gap-5">
             <a href="#" className="text-inherit no-underline hover:text-foreground">Política de Privacidade</a>
             <a href="#" className="text-inherit no-underline hover:text-foreground">Diretrizes Internas</a>

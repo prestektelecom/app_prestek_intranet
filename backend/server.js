@@ -1703,7 +1703,7 @@ app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
         const funcionarioId = userRes.rows[0]?.funcionario_id;
 
         const result = await pool.query(`
-            SELECT data, n1_id, n2_id, gerente_id FROM plantoes 
+            SELECT data, horario_inicio, horario_fim, n1_id, n2_id, gerente_id FROM plantoes
             WHERE (n1_id::text LIKE '%' || $1 || '%' OR n2_id::text LIKE '%' || $1 || '%' OR gerente_id::text LIKE '%' || $1 || '%')
               AND data >= CURRENT_DATE
             ORDER BY data ASC

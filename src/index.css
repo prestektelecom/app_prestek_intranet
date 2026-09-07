@@ -688,6 +688,19 @@
   }
 }
 
+/* Barra de progresso do autoplay no carrossel de comunicados (Dashboard).
+   A duração vem inline do componente (AUTOPLAY_MS) para o CSS e o setTimeout
+   contarem o mesmo tempo; animation-play-state congela no hover/foco. Só
+   transform: não dispara layout. A regra de movimento reduzido acima já a
+   cobre (nasce cheia). */
+@keyframes comunicado-progresso {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.comunicado-progresso {
+  animation: comunicado-progresso 6s linear forwards;
+}
+
 /* ═══════════════════════════════════════════════════════════
    Print Styles — Prestek Intranet
    O app é um SPA com h-screen + overflow-hidden. Sem estes
