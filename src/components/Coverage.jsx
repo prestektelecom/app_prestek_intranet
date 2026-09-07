@@ -20,6 +20,7 @@ export default function Coverage({ user }) {
 
     const [dados, setDados] = useState([]);
     const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState(false);
     const [busca, setBusca] = useState('');
     const [filtroTec, setFiltroTec] = useState('');
     const [filtroStatus, setFiltroStatus] = useState('');
@@ -31,15 +32,23 @@ export default function Coverage({ user }) {
 
     const carregar = useCallback(async () => {
         setCarregando(true);
+        setErro(false);
         try {
             const resp = await fetch('/api/cobertura-ixc');
             const json = await resp.json();
             if (json.sucesso) {
                 setDados(json.dados || []);
                 if (json.meta) setMetaAuditoria(json.meta);
+            } else {
+                // Sem este ramo, uma resposta sem `sucesso` caía no mesmo
+                // "Nenhuma região retornada pelo IXC" de uma consulta que
+                // genuinamente não achou nada — uma falha do IXC apresentada
+                // como fato de negócio.
+                setErro(true);
             }
         } catch (e) {
             console.error('Erro ao carregar cobertura IXC:', e);
+            setErro(true);
         } finally {
             setCarregando(false);
         }
@@ -209,6 +218,21 @@ export default function Coverage({ user }) {
                             <div className="flex h-full flex-col items-center justify-center gap-3 bg-surface">
                                 <span className="material-symbols-outlined animate-spin text-3xl text-[var(--accent)]">autorenew</span>
                                 <p className="text-[13px] font-semibold text-muted">Buscando regiões no IXC...</p>
+                            </div>
+                        ) : erro ? (
+                            <div role="alert" className="flex h-full flex-col items-center justify-center gap-2 bg-surface px-6 text-center">
+                                <span className="material-symbols-outlined text-4xl text-[var(--danger-bento)]">cloud_off</span>
+                                <p className="text-[13px] font-semibold text-foreground">Não foi possível carregar as regiões</p>
+                                <p className="max-w-xs text-[12px] leading-relaxed text-muted">
+                                    O IXC não respondeu. Isso costuma ser temporário.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={carregar}
+                                    className="mt-1 cursor-pointer rounded-xl border border-border px-4 py-2 text-[12.5px] font-bold text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
+                                >
+                                    Tentar novamente
+                                </button>
                             </div>
                         ) : dados.length === 0 ? (
                             <div className="flex h-full flex-col items-center justify-center gap-2 bg-surface px-6 text-center">

@@ -364,6 +364,7 @@ export default function Offices({ user, setCurrentView }) {
     const [busca, setBusca] = useState('');
     const [offices, setOffices] = useState([]);
     const [carregando, setCarregando] = useState(true);
+    const [erroCarregar, setErroCarregar] = useState(false);
     const [modal, setModal] = useState(null);
     const [confirmandoExclusao, setConfirmandoExclusao] = useState(null);
     const [listWidth, setListWidth] = useState(25); // percentual
@@ -405,13 +406,18 @@ export default function Offices({ user, setCurrentView }) {
 
     // Busca os escritórios da API
     async function carregarEscritorios() {
+        setCarregando(true);
+        setErroCarregar(false);
         try {
             const res = await fetch('/api/escritorios');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
+            if (!Array.isArray(data)) throw new Error('Resposta inesperada da API.');
             // Garante que lat/lng são números (o banco retorna strings em alguns drivers)
             setOffices(data.map(o => ({ ...o, lat: parseFloat(o.lat), lng: parseFloat(o.lng) })));
         } catch (e) {
             console.error('Erro ao carregar escritórios:', e);
+            setErroCarregar(true);
         } finally {
             setCarregando(false);
         }
@@ -629,10 +635,26 @@ export default function Offices({ user, setCurrentView }) {
                         {carregando && (
                             <div className="text-center text-sm text-[#8896A8] py-8">Carregando escritórios…</div>
                         )}
-                        {!carregando && filtrados.length === 0 && (
+                        {!carregando && erroCarregar && (
+                            <div className="flex flex-col items-center gap-2 text-center py-8 px-2">
+                                <span className="material-symbols-outlined text-[#E84545] text-2xl">cloud_off</span>
+                                <p className="text-sm font-bold text-[#0B1B2E] m-0">Não foi possível carregar as unidades</p>
+                                <p className="text-xs text-[#8896A8] m-0 max-w-[220px] leading-relaxed">
+                                    O servidor não respondeu. Isso costuma ser temporário.
+                                </p>
+                                <button
+                                    onClick={carregarEscritorios}
+                                    className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20 hover:brightness-110 transition-all"
+                                >
+                                    <span className="material-symbols-outlined text-[15px]">refresh</span>
+                                    Tentar novamente
+                                </button>
+                            </div>
+                        )}
+                        {!carregando && !erroCarregar && filtrados.length === 0 && (
                             <div className="text-center text-sm text-[#8896A8] py-8">Nenhuma unidade encontrada.</div>
                         )}
-                        {filtrados.map(office => {
+                        {!erroCarregar && filtrados.map(office => {
                             const isSel = selecionado === office.id;
                             return (
                                 <div key={office.id} className="relative group/item">

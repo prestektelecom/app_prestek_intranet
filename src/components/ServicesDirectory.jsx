@@ -194,10 +194,10 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 setEditingPlan(null);
                 fetchPlans();
             } else {
-                showToast('Erro ao salvar o plano', 'error');
+                showToast('Erro ao salvar o plano. Tente novamente.', 'error');
             }
         } catch (error) {
-            showToast('Erro de conexão', 'error');
+            showToast('Não foi possível salvar o plano. Tente novamente.', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -237,9 +237,9 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 { method: isNovo ? 'POST' : 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
             );
             if (response.ok) fetchServicosTecnicos();
-            else showToast('Erro ao salvar o serviço', 'error');
+            else showToast('Erro ao salvar o serviço. Tente novamente.', 'error');
         } catch (error) {
-            showToast('Erro de conexão', 'error');
+            showToast('Não foi possível salvar o serviço. Tente novamente.', 'error');
         }
         setEditingTechService(null);
         setEditTechForm({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
@@ -275,9 +275,9 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 { method: isNovo ? 'POST' : 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
             );
             if (response.ok) fetchPacotesStreaming();
-            else showToast('Erro ao salvar o pacote', 'error');
+            else showToast('Erro ao salvar o pacote. Tente novamente.', 'error');
         } catch (error) {
-            showToast('Erro de conexão', 'error');
+            showToast('Não foi possível salvar o pacote. Tente novamente.', 'error');
         }
         setEditingStreamingService(null);
         setEditStreamingForm({ service: '', value: '', deadline: 'Mensal', icon: 'play_circle' });
@@ -294,10 +294,10 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 showToast('Excluído com sucesso!', 'success');
             } else {
                 const data = await response.json().catch(() => ({}));
-                showToast(data.erro || 'Erro ao excluir', 'error');
+                showToast(data.erro || 'Erro ao excluir. Tente novamente.', 'error');
             }
         } catch (error) {
-            showToast('Erro de conexão', 'error');
+            showToast('Não foi possível excluir. Tente novamente.', 'error');
         } finally {
             setDeleteModal({ isOpen: false, id: null, title: '', type: '' });
         }

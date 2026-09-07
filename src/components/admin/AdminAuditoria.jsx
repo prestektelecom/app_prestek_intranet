@@ -102,7 +102,12 @@ export default function AdminAuditoria({ adminEmail }) {
             </form>
 
             {erro && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-300 text-sm">{erro}</div>
+                <div
+                    title={erro}
+                    className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-300 text-sm"
+                >
+                    Não foi possível carregar o histórico de auditoria.
+                </div>
             )}
 
             <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden card-elevated">

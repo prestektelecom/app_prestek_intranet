@@ -78,7 +78,7 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
                 { label: 'Obrigatórios', valor: `${obrigatoriosPreenchidos}/${OBRIGATORIOS.length}`, sub: 'preenchidos' },
                 { label: 'Filiais', valor: taxonomias.filiais.length, sub: 'cadastro IXC' },
                 { label: 'Contas de folha', valor: taxonomias.contas.filter(c => c.folha).length, sub: `de ${taxonomias.contas.length} em uso` },
-                { label: 'Gravação', valor: 'dry-run', sub: 'nada é enviado' },
+                { label: 'Gravação', valor: 'simulação', sub: 'nada é enviado' },
             ],
         });
     }, [carregando, taxonomias, obrigatoriosPreenchidos, onHero]);
@@ -175,15 +175,15 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
             setResultadoDryRun(resposta);
 
             if (resposta.valido) {
-                mostrarToast('Dry-run concluído: nenhum problema encontrado.', 'success');
-                onLog?.('Dry-run concluído sem erros.', 'sucesso');
+                mostrarToast('Simulação concluída: nenhum problema encontrado.', 'success');
+                onLog?.('Simulação concluída sem erros.', 'sucesso');
             } else {
-                mostrarToast(`Dry-run encontrou ${resposta.erros.length} erro(s).`, 'error');
-                onLog?.(`Dry-run encontrou ${resposta.erros.length} erro(s) e ${resposta.avisos.length} aviso(s).`, 'erro');
+                mostrarToast(`Simulação encontrou ${resposta.erros.length} erro(s).`, 'error');
+                onLog?.(`Simulação encontrou ${resposta.erros.length} erro(s) e ${resposta.avisos.length} aviso(s).`, 'erro');
             }
         } catch (e) {
-            mostrarToast(`Falha ao rodar o dry-run: ${e.message}`, 'error');
-            onLog?.(`Falha ao rodar o dry-run: ${e.message}`, 'erro');
+            mostrarToast(`Falha ao rodar a simulação: ${e.message}`, 'error');
+            onLog?.(`Falha ao rodar a simulação: ${e.message}`, 'erro');
         } finally {
             setSimulando(false);
         }

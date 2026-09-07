@@ -154,7 +154,7 @@ export default function Sectors({ user, setCurrentView }) {
                         data={orgData}
                         onSave={next => { saveOrgData(next); setShowEditor(false); }}
                         onClose={() => setShowEditor(false)}
-                        onReset={() => { if (confirm('Restaurar organograma padrão?')) { resetOrgData(); setShowEditor(false); } }}
+                        onReset={() => { if (confirm('Restaurar organograma padrão? Todas as edições feitas no organograma atual serão perdidas.')) { resetOrgData(); setShowEditor(false); } }}
                     />
                 )}
 

@@ -318,7 +318,7 @@ export default function Schedule({ setCurrentView, user }) {
             }
         } catch (err) {
             console.error('Erro ao salvar plantão:', err);
-            showToast('Erro de conexão ao salvar plantão.', 'error');
+            showToast('Não foi possível salvar o plantão. Tente novamente.', 'error');
         } finally {
             setSalvando(false);
         }
@@ -345,7 +345,7 @@ export default function Schedule({ setCurrentView, user }) {
             }
         } catch (err) {
             console.error('Erro ao excluir plantão:', err);
-            showToast('Erro de conexão ao excluir plantão.', 'error');
+            showToast('Não foi possível excluir o plantão. Tente novamente.', 'error');
         } finally {
             setDeletando(false);
         }

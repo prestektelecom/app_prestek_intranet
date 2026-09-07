@@ -123,7 +123,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                 Suporte de TI
               </div>
               <div style={{ fontSize: 11.5, color: C.muted, marginTop: 1 }}>
-                Abertura de chamado no IXC Soft
+                Abertura de chamado de suporte
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                 Chamado Aberto!
               </div>
               <div style={{ fontSize: 13.5, color: C.ink2, lineHeight: 1.6, marginBottom: 24, maxWidth: 360, margin: '0 auto 24px' }}>
-                Seu chamado foi registrado com sucesso no IXC Soft. O setor de T.I. foi notificado.
+                Seu chamado foi registrado com sucesso. O setor de TI foi notificado.
               </div>
 
               {protocoloData && (

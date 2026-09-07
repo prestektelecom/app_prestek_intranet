@@ -69,7 +69,7 @@ export default function DryRunResultado({ resultado }) {
                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     {valido ? 'check_circle' : 'error'}
                 </span>
-                {valido ? 'Dry-run: nenhum erro encontrado' : `Dry-run: ${erros.length} erro(s) encontrado(s)`}
+                {valido ? 'Simulação: nenhum erro encontrado' : `Simulação: ${erros.length} erro(s) encontrado(s)`}
             </header>
 
             <ListaProblemas titulo="Erros" itens={erros} cor="text-red-600 dark:text-red-400" />
@@ -113,7 +113,7 @@ export default function DryRunResultado({ resultado }) {
             )}
 
             <div className="border-t border-amber-300/40 bg-amber-400/15 px-5 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-800 dark:text-amber-300">
-                Dry-run · nenhuma requisição foi enviada ao IXC
+                Simulação · nenhuma requisição foi enviada ao IXC
             </div>
         </div>
     );

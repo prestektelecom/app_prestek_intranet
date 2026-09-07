@@ -16,7 +16,6 @@ export default function Configuracoes({ user, setCurrentView }) {
     const C = useBentoTheme();
     const fileInputRef = useRef(null);
     const [showAvatarMenu, setShowAvatarMenu] = useState(false);
-    const [showAvatarGrid, setShowAvatarGrid] = useState(false);
 
     // Dados da tabela funcionarios (vem embutido no login)
     const func = user?.funcionario ?? {};
@@ -178,12 +177,11 @@ export default function Configuracoes({ user, setCurrentView }) {
         }
     }, [formData.avatarUrl]);
 
-    // Fechar menus ao clicar fora
+    // Fechar menu ao clicar fora
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (!event.target.closest('.avatar-container')) {
                 setShowAvatarMenu(false);
-                setShowAvatarGrid(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -217,7 +215,6 @@ export default function Configuracoes({ user, setCurrentView }) {
     const handleChangeAvatar = (url) => {
         setAvatarUrl(url);
         setShowAvatarMenu(false);
-        setShowAvatarGrid(false);
         setFormData(prev => ({ ...prev, avatarUrl: url }));
     }
 
@@ -407,37 +404,32 @@ export default function Configuracoes({ user, setCurrentView }) {
                                 </button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/png, image/jpeg, image/webp" style={{ display: 'none' }} />
 
-                                {/* Menu Avatar */}
+                                {/* Popover de avatar — upload, grade de avatares e remover, tudo num painel só */}
                                 {showAvatarMenu && (
-                                    <div style={{ position: 'absolute', top: 108, left: '50%', transform: 'translateX(-50%)', zIndex: 20, minWidth: 180, background: C.surface, borderRadius: 12, border: `1px solid ${C.line}`, boxShadow: `0 8px 24px ${tone(C.accentDeep, 0.12)}`, overflow: 'hidden' }}>
-                                        {[
-                                            { icon: 'upload', label: 'Fazer Upload', action: () => { fileInputRef.current?.click(); setShowAvatarGrid(false); } },
-                                            { icon: 'sentiment_satisfied', label: 'Escolher Avatar', action: () => setShowAvatarGrid(v => !v) },
-                                        ].map(({ icon, label, action }) => (
-                                            <button key={label} onClick={action} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', color: C.ink, fontSize: 13, textAlign: 'left', borderBottom: `1px solid ${C.lineSoft}` }}>
-                                                <span className="material-symbols-outlined" style={{ fontSize: 16, color: C.muted }}>{icon}</span>{label}
-                                            </button>
-                                        ))}
+                                    <div style={{ position: 'absolute', top: 108, left: '50%', transform: 'translateX(-50%)', zIndex: 20, width: 288, background: C.surface, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 12px 32px ${tone(C.accentDeep, 0.14)}`, overflow: 'hidden' }}>
+                                        <button onClick={() => fileInputRef.current?.click()}
+                                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'none', border: 'none', borderBottom: `1px solid ${C.lineSoft}`, cursor: 'pointer', color: C.ink, fontSize: 13, textAlign: 'left' }}>
+                                            <span className="material-symbols-outlined" style={{ fontSize: 16, color: C.muted }}>upload</span>Fazer Upload
+                                        </button>
+
+                                        <div style={{ padding: 12, maxHeight: 320, overflowY: 'auto' }}>
+                                            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, textAlign: 'center', marginBottom: 10, fontFamily: '"JetBrains Mono", monospace' }}>Avatares 3D</p>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                                                {PREDEFINED_PNG_AVATARS.map((url, idx) => (
+                                                    <button key={idx} onClick={() => handleChangeAvatar(url)}
+                                                        style={{ aspectRatio: '1', borderRadius: 8, border: `1.5px solid ${C.line}`, overflow: 'hidden', cursor: 'pointer', padding: 0, background: C.surfaceSoft, transition: 'border-color .15s' }}>
+                                                        <img src={url} alt={`Avatar ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
                                         {avatarUrl && (
-                                            <button onClick={() => { setAvatarUrl(null); setShowAvatarMenu(false); setShowAvatarGrid(false); setFormData(prev => ({ ...prev, avatarUrl: '' })); }}
-                                                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'none', border: 'none', cursor: 'pointer', color: C.danger, fontSize: 13, textAlign: 'left' }}>
+                                            <button onClick={() => { setAvatarUrl(null); setShowAvatarMenu(false); setFormData(prev => ({ ...prev, avatarUrl: '' })); }}
+                                                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'none', border: 'none', borderTop: `1px solid ${C.lineSoft}`, cursor: 'pointer', color: C.danger, fontSize: 13, textAlign: 'left' }}>
                                                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>Remover Foto
                                             </button>
                                         )}
-                                    </div>
-                                )}
-                                {/* Grid Avatares */}
-                                {showAvatarGrid && (
-                                    <div style={{ position: 'absolute', top: 224, left: '50%', transform: 'translateX(-50%)', zIndex: 30, width: 288, background: C.surface, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 12px 32px ${tone(C.accentDeep, 0.14)}`, padding: 12, maxHeight: 380, overflowY: 'auto' }}>
-                                        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, textAlign: 'center', marginBottom: 10, fontFamily: '"JetBrains Mono", monospace' }}>Avatares 3D</p>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                                            {PREDEFINED_PNG_AVATARS.map((url, idx) => (
-                                                <button key={idx} onClick={() => handleChangeAvatar(url)}
-                                                    style={{ aspectRatio: '1', borderRadius: 8, border: `1.5px solid ${C.line}`, overflow: 'hidden', cursor: 'pointer', padding: 0, background: C.surfaceSoft, transition: 'border-color .15s' }}>
-                                                    <img src={url} alt={`Avatar ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                </button>
-                                            ))}
-                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -573,23 +565,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                 </div>
             </div>
 
-            {/* Toast de sucesso */}
-            {saveSuccess && (
-                <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, animation: 'toastUp .35s ease-out' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.successSoft}`, boxShadow: `0 8px 32px ${tone(C.success, 0.2)}` }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.successSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: 20, color: C.success }}>check_circle</span>
-                        </div>
-                        <div>
-                            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>Perfil atualizado</div>
-                            <div style={{ fontSize: 12, color: C.muted }}>Configurações sincronizadas com sucesso.</div>
-                        </div>
-                    </div>
-                    <style>{`@keyframes toastUp { from { opacity:0; transform:translateX(-50%) translateY(16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
-                </div>
-            )}
-
-            {/* Toast de erro */}
+            {/* Toast de erro — é o único canal de aviso de falha; sucesso já é sinalizado pelo próprio botão Salvar */}
             {saveError && (
                 <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, animation: 'toastUp .35s ease-out' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.dangerSoft}`, boxShadow: `0 8px 32px ${tone(C.danger, 0.2)}` }}>
@@ -601,6 +577,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                             <div style={{ fontSize: 12, color: C.muted }}>Verifique sua conexão e tente novamente.</div>
                         </div>
                     </div>
+                    <style>{`@keyframes toastUp { from { opacity:0; transform:translateX(-50%) translateY(16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
                 </div>
             )}
         </main>

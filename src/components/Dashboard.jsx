@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import { resolveNomeSetor } from '../utils/resolveSetor'
 import Sparkline from './common/Sparkline'
@@ -87,7 +87,30 @@ function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor
   );
 }
 
-function DashboardHeader({ firstName, cargoName, currentTime, currentDate, city }) {
+function DashboardHeader({ firstName, cargoName }) {
+  // O relógio vive aqui, e não no pai: um tick por minuto no Dashboard
+  // re-renderizava os 7 widgets do grid (e os 9 GlowingEffect) só pra
+  // atualizar dois textos deste header.
+  const [currentTime, setCurrentTime] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      const hora = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }).format(now);
+      const parts = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short', year: 'numeric' }).formatToParts(now);
+      const d = parts.find(p => p.type === 'day')?.value;
+      let m = parts.find(p => p.type === 'month')?.value.replace('.', '');
+      const y = parts.find(p => p.type === 'year')?.value;
+      if (m) m = m.charAt(0).toUpperCase() + m.slice(1);
+      setCurrentTime(hora);
+      setCurrentDate(`${d} ${m}, ${y}`);
+    };
+    update();
+    const id = setInterval(update, 60000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
@@ -100,17 +123,10 @@ function DashboardHeader({ firstName, cargoName, currentTime, currentDate, city 
             : 'Aqui está o resumo do seu dia.'}
         </p>
       </div>
-      <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
-            <Icons.CloudSun />
-          </div>
-          <div className="leading-tight">
-            <div className="text-sm font-bold text-foreground">24°C</div>
-            <div className="text-xs text-muted">{city}</div>
-          </div>
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+          <Icons.Clock />
         </div>
-        <div className="h-8 w-px bg-border" />
         <div className="leading-tight">
           <div className="text-lg font-bold tabular-nums text-foreground">{currentTime || '--:--'}</div>
           <div className="text-xs text-muted">{currentDate || '...'}</div>
@@ -341,7 +357,7 @@ function HeroCard({ firstName, cargoName, currentDateTime, bgImages, onChangeBg,
   );
 }
 
-function SetorBento({ eficiencia, eficienciaLoading }) {
+function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry }) {
   const efVal = eficienciaLoading ? '...' : eficiencia?.sem_dados ? 'N/A' : `${eficiencia?.eficiencia_atual ?? '–'}%`;
   const efSub = !eficienciaLoading && eficiencia && !eficiencia.sem_dados && eficiencia.variacao !== null
     ? { text: `${eficiencia.variacao >= 0 ? '+' : ''}${eficiencia.variacao}%`, tone: eficiencia.variacao >= 0 ? 'success' : 'danger' }
@@ -350,6 +366,31 @@ function SetorBento({ eficiencia, eficienciaLoading }) {
   const efSparkData = eficiencia?.historico_semanal?.length
     ? eficiencia.historico_semanal.map(s => s.eficiencia ?? 0)
     : (eficiencia?.eficiencia_atual != null ? Array(8).fill(eficiencia.eficiencia_atual) : []);
+  // "OS Fechadas" usa o total real por semana que o backend já calcula.
+  // "Sem SLA" não tem granularidade semanal na API (só o agregado do mês
+  // atual) — mostrar sparkline pra ela seria inventar uma curva, então fica
+  // sem gráfico em vez de fabricar pontos.
+  const osFechadasSparkData = eficiencia?.historico_semanal?.length
+    ? eficiencia.historico_semanal.map(s => s.total ?? 0)
+    : [];
+
+  if (eficienciaError) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface p-6 text-center">
+        <p className="m-0 text-[13px] leading-relaxed text-faint">
+          Não foi possível carregar os dados do setor.
+        </p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+        >
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="grid h-full grid-cols-1 gap-3.5 md:grid-cols-3">
@@ -367,7 +408,7 @@ function SetorBento({ eficiencia, eficienciaLoading }) {
         value={eficienciaLoading ? '...' : (eficiencia?.total_os_mes ?? '–')}
         sub={eficiencia?.no_prazo_mes != null ? `${eficiencia.no_prazo_mes} no prazo` : null}
         subTone="success"
-        sparkData={[8, 12, 9, 14, 11, 15, 13, eficiencia?.total_os_mes || 12]}
+        sparkData={osFechadasSparkData}
         sparkColor="var(--accent)"
       />
       <KpiCard
@@ -375,14 +416,14 @@ function SetorBento({ eficiencia, eficienciaLoading }) {
         value={eficienciaLoading ? '...' : (eficiencia?.os_sem_prazo ?? 0)}
         sub={eficiencia?.os_sem_prazo > 0 ? 'Atenção' : 'Ok'}
         subTone={eficiencia?.os_sem_prazo > 0 ? 'warning' : 'success'}
-        sparkData={[2, 1, 3, 2, 1, 0, 1, eficiencia?.os_sem_prazo || 0]}
+        sparkData={[]}
         sparkColor="var(--warning-bento)"
       />
     </div>
   );
 }
 
-function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
+function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, setCurrentView }) {
   const isTouchOnly = useTouchOnly();
   const dateStr = plantaoLoading ? '...' : (proximoPlantao
     ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -396,15 +437,31 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
       <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div className={LABEL_MONO}>Próximo Plantão</div>
-      <div className="mt-3 flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
-          <Icons.Clock />
+      {plantaoError ? (
+        <div className="mt-3 flex flex-col gap-2">
+          <p className="m-0 text-[13px] leading-relaxed text-faint">
+            Não foi possível carregar seu plantão.
+          </p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+          >
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+            Tentar novamente
+          </button>
         </div>
-        <div>
-          <div className="text-[17px] font-bold tracking-tight text-foreground">{dateStr}</div>
-          <div className="mt-0.5 text-[12.5px] text-faint">{timeStr}</div>
+      ) : (
+        <div className="mt-3 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+            <Icons.Clock />
+          </div>
+          <div>
+            <div className="text-[17px] font-bold tracking-tight text-foreground">{dateStr}</div>
+            <div className="mt-0.5 text-[12.5px] text-faint">{timeStr}</div>
+          </div>
         </div>
-      </div>
+      )}
       <button
         onClick={() => setCurrentView('schedule')}
         className={`${ACTION_BTN} text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]`}
@@ -416,9 +473,9 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, setCurrentView }) {
   );
 }
 
-function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
+function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurrentView }) {
   const isTouchOnly = useTouchOnly();
-  const allGood = !osLoading && osCount === 0;
+  const allGood = !osLoading && !osError && osCount === 0;
 
   const assumidas = osStatusCount ? (osStatusCount.AS || 0) : 0;
   const encaminhadas = osStatusCount ? ((osStatusCount.EN || 0) + (osStatusCount.EX || 0)) : 0;
@@ -431,24 +488,42 @@ function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
       <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div>
         <div className="flex items-start justify-between gap-2">
-          <div className={LABEL_MONO}>OS no meu nome</div>
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-[var(--warning-soft)] text-[var(--warning-bento)] animate-pulse'}`}>
-            {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
-          </span>
+          <div className={LABEL_MONO}>Chamados no meu nome</div>
+          {!osLoading && !osError && (
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-[var(--warning-soft)] text-[var(--warning-bento)] animate-pulse'}`}>
+              {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
+            </span>
+          )}
         </div>
 
+        {osError ? (
+          <div className="mt-3 flex flex-col gap-2">
+            <p className="m-0 text-[13px] leading-relaxed text-faint">
+              Não foi possível carregar seus chamados.
+            </p>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+            >
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+              Tentar novamente
+            </button>
+          </div>
+        ) : (
         <div className="mt-3 flex items-baseline gap-3">
           <div className="text-5xl font-extrabold leading-none tracking-tight text-foreground tabular-nums">
             {osLoading ? '...' : osCount}
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-foreground">Ordens de Serviço</span>
+            <span className="text-xs font-bold text-foreground">Chamados</span>
             <span className="text-[11.5px] text-faint">sob sua responsabilidade direta</span>
           </div>
         </div>
+        )}
 
         {/* Detalhamento por Status (4 Mini KPIs) */}
-        {!osLoading && !allGood && (
+        {!osLoading && !osError && !allGood && (
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
               <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-deep)] truncate" title="Assumidas">
@@ -490,7 +565,7 @@ function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
 
         {allGood && (
           <p className="mt-3 text-[12.5px] text-faint leading-relaxed">
-            Nenhuma ordem de serviço pendente atribuída a você no momento.
+            Nenhum chamado pendente atribuído a você no momento.
           </p>
         )}
       </div>
@@ -499,7 +574,7 @@ function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
         onClick={() => setCurrentView('tickets')}
         className={`${ACTION_BTN} text-white bg-primary hover:bg-[var(--primary-hover)] border-none font-bold shadow-md hover:shadow-lg transition-transform active:scale-[0.98] mt-4`}
       >
-        Gerenciar Minhas OS <Icons.ArrowR />
+        Gerenciar Meus Chamados <Icons.ArrowR />
       </button>
       </div>
     </div>
@@ -509,20 +584,27 @@ function OsBento({ osCount, osStatusCount, osLoading, setCurrentView }) {
 function ComunicadoBanner({ setCurrentView }) {
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  useEffect(() => {
+  const carregarComunicados = useCallback(() => {
+    setLoading(true);
+    setErro(false);
     fetch('/api/comunicados')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(d => {
         if (d.sucesso && d.comunicados) {
           setComunicados(d.comunicados.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)));
+        } else {
+          setErro(true);
         }
       })
-      .catch(() => { })
+      .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { carregarComunicados(); }, [carregarComunicados]);
 
   // Seleciona até 3 comunicados de alta prioridade (Urgente > Importante > recentes)
   const slides = useMemo(() => {
@@ -584,6 +666,24 @@ function ComunicadoBanner({ setCurrentView }) {
   if (loading) {
     return (
       <div className="mb-6 h-48 md:h-56 lg:h-64 w-full animate-pulse rounded-2xl bg-surface-raised border border-border" />
+    );
+  }
+
+  if (erro) {
+    return (
+      <div className="mb-6 flex h-48 md:h-56 lg:h-64 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface-raised text-center">
+        <p className="m-0 text-[13px] leading-relaxed text-faint">
+          Não foi possível carregar os comunicados.
+        </p>
+        <button
+          type="button"
+          onClick={carregarComunicados}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-background"
+        >
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+          Tentar novamente
+        </button>
+      </div>
     );
   }
 
@@ -663,9 +763,9 @@ function ComunicadoBanner({ setCurrentView }) {
 
         {/* Título e Subtítulo */}
         <div className="max-w-3xl">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white line-clamp-2 drop-shadow-md group-hover:text-white/95">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white line-clamp-2 drop-shadow-md group-hover:text-white/95">
             {activeSlide.titulo}
-          </h1>
+          </h2>
           {description && (
             <p className="mt-2 text-xs md:text-sm font-medium text-white/80 line-clamp-2 drop-shadow">
               {description}
@@ -681,16 +781,22 @@ function ComunicadosCard({ setCurrentView }) {
   const isTouchOnly = useTouchOnly();
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
 
-  useEffect(() => {
+  const carregarComunicados = useCallback(() => {
+    setLoading(true);
+    setErro(false);
     fetch('/api/comunicados')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(d => {
         if (d.sucesso) setComunicados(d.comunicados.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)));
+        else setErro(true);
       })
-      .catch(() => { })
+      .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { carregarComunicados(); }, [carregarComunicados]);
 
   const TAG_STYLES = {
     Urgente:    { chip: 'bg-[var(--danger-soft)] text-[var(--danger-bento)]',   border: 'border-l-[var(--danger-bento)]' },
@@ -767,7 +873,19 @@ function ComunicadosCard({ setCurrentView }) {
         <div className="custom-scrollbar flex h-full flex-col gap-2 overflow-y-auto pr-0.5">
           {loading ? [1, 2, 3].map(i => (
             <div key={i} className="h-16 shrink-0 animate-pulse rounded-xl bg-surface-raised" />
-          )) : rest.length === 0 ? (
+          )) : erro ? (
+            <div className="flex flex-col items-center gap-2 py-8 text-center">
+              <p className="m-0 text-[13px] text-muted">Não foi possível carregar os comunicados.</p>
+              <button
+                type="button"
+                onClick={carregarComunicados}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+              >
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+                Tentar novamente
+              </button>
+            </div>
+          ) : rest.length === 0 ? (
             <div className="py-8 text-center text-[13px] text-muted">
               {comunicados.length === 0 ? 'Nenhum comunicado recente.' : 'Nenhum outro comunicado.'}
             </div>
@@ -812,7 +930,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   const isTouchOnly = useTouchOnly();
   const atalhos = [
     { icon: 'Room', label: 'Reservar Sala', hint: 'Sala de treinamento', id: 'services', url: 'https://wa.me/5582999220181?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20a%20sala%20de%20treinamento' },
-    { icon: 'Headset', label: 'Suporte TI', hint: 'Tempo médio: ~12 min', id: 'tickets' },
+    { icon: 'Headset', label: 'Suporte TI', hint: 'Abrir chamado', id: 'tickets' },
     { icon: 'Badge', label: 'Meu Perfil', hint: 'Dados e segurança', id: 'settings' },
     { icon: 'Lightning', label: 'Comunicados', hint: 'Avisos e urgentes', id: 'announcements' },
     { icon: 'Doc', label: 'Holerite', hint: 'Portal do colaborador', id: 'holerite', url: '#' },
@@ -936,6 +1054,7 @@ function AniversariantesCard() {
   const isTouchOnly = useTouchOnly();
   const [aniversariantes, setAniversariantes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
   const [deptoMap, setDeptoMap] = useState({});
 
   useEffect(() => {
@@ -951,20 +1070,24 @@ function AniversariantesCard() {
       .catch(() => { });
   }, []);
 
-  useEffect(() => {
+  const carregarAniversariantes = useCallback(() => {
+    setLoading(true);
+    setErro(false);
     fetch('/api/colaboradores')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(d => {
-        if (!d.sucesso) return;
+        if (!d.sucesso) { setErro(true); return; }
         const proximos = (d.colaboradores || [])
           .map(c => ({ ...c, dias: diasAteAniversario(c.data_nascimento) }))
           .filter(c => c.dias !== null && c.dias <= 7)
           .sort((a, b) => a.dias - b.dias);
         setAniversariantes(proximos);
       })
-      .catch(() => { })
+      .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { carregarAniversariantes(); }, [carregarAniversariantes]);
 
   const rotuloData = (c) => {
     if (c.dias === 0) return 'Hoje';
@@ -996,7 +1119,19 @@ function AniversariantesCard() {
             </div>
             <div className="h-5 w-14 rounded bg-surface-raised" />
           </div>
-        )) : aniversariantes.length === 0 ? (
+        )) : erro ? (
+          <div className="flex flex-col items-center gap-2 py-4 text-center">
+            <p className="m-0 text-[13px] text-muted">Não foi possível carregar os aniversariantes.</p>
+            <button
+              type="button"
+              onClick={carregarAniversariantes}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+            >
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+              Tentar novamente
+            </button>
+          </div>
+        ) : aniversariantes.length === 0 ? (
           <div className="py-4 text-center text-[13px] text-muted">Nenhum aniversariante nos próximos 7 dias</div>
         ) : aniversariantes.map(c => {
           const iminente = c.dias <= 1;
@@ -1030,6 +1165,7 @@ function TeamBento() {
   const isTouchOnly = useTouchOnly();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
   const [deptoMap, setDeptoMap] = useState({});
 
   useEffect(() => {
@@ -1045,28 +1181,33 @@ function TeamBento() {
       .catch(() => { });
   }, []);
 
+  const fetchOnline = useCallback(async () => {
+    setErro(false);
+    try {
+      const res = await fetch('/api/colaboradores/online');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.sucesso) {
+        setMembers(
+          (data.colaboradores || []).slice(0, 7).map(m => ({
+            id: m.id,
+            name: m.nome || m.funcionario || 'Colaborador',
+            role: deptoMap[String(m.id_departamento)] || m.id_funcao || '',
+            foto: resolveAvatarUrl(m.foto_perfil) || AVATAR_PNGS[(m.id || 0) % AVATAR_PNGS.length],
+          }))
+        );
+      } else {
+        setErro(true);
+      }
+    } catch (_) { setErro(true); }
+    finally { setLoading(false); }
+  }, [deptoMap]);
+
   useEffect(() => {
-    const fetchOnline = async () => {
-      try {
-        const res = await fetch('/api/colaboradores/online');
-        const data = await res.json();
-        if (data.sucesso) {
-          setMembers(
-            (data.colaboradores || []).slice(0, 7).map(m => ({
-              id: m.id,
-              name: m.nome || m.funcionario || 'Colaborador',
-              role: deptoMap[String(m.id_departamento)] || m.id_funcao || '',
-              foto: resolveAvatarUrl(m.foto_perfil) || AVATAR_PNGS[(m.id || 0) % AVATAR_PNGS.length],
-            }))
-          );
-        }
-      } catch (_) { }
-      finally { setLoading(false); }
-    };
     fetchOnline();
     const id = setInterval(fetchOnline, 30000);
     return () => clearInterval(id);
-  }, [deptoMap]);
+  }, [fetchOnline]);
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
@@ -1075,16 +1216,30 @@ function TeamBento() {
       <div className="mb-4 flex items-start justify-between">
         <div>
           <h2 className={CARD_TITLE}>Disponibilidade</h2>
-          <div className="mt-1 flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-[var(--success-bento)]" />
-            <span className="text-[12.5px] text-faint"><strong className="font-semibold text-foreground">{members.length}</strong> online agora</span>
-          </div>
+          {!loading && !erro && (
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className="inline-block h-2 w-2 rounded-full bg-[var(--success-bento)]" />
+              <span className="text-[12.5px] text-faint"><strong className="font-semibold text-foreground">{members.length}</strong> online agora</span>
+            </div>
+          )}
         </div>
       </div>
       <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
         {loading ? [1, 2, 3, 4].map(i => (
           <div key={i} className="h-11 animate-pulse rounded-lg bg-surface-raised" />
-        )) : members.length === 0 ? (
+        )) : erro ? (
+          <div className="flex flex-col items-center gap-2 py-4 text-center">
+            <p className="m-0 text-[13px] text-muted">Não foi possível carregar quem está online.</p>
+            <button
+              type="button"
+              onClick={fetchOnline}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+            >
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">refresh</span>
+              Tentar novamente
+            </button>
+          </div>
+        ) : members.length === 0 ? (
           <div className="py-4 text-center text-[13px] text-muted">Nenhum colaborador online.</div>
         ) : members.map(m => (
           <div key={m.id} className="flex items-center gap-2.5 rounded-lg px-1 py-1.5">
@@ -1126,40 +1281,41 @@ const DEFAULT_LAYOUTS = {
     { i: 'aniversariantes', x: 0, y: 5, w: 5, h: 2 },
     { i: 'team', x: 5, y: 5, w: 4, h: 2 }
   ],
+  // Abaixo de md (768px) o SetorBento empilha os 3 KpiCards em coluna
+  // (~172px cada + gaps ≈ 544px), e o grid tem altura fixa em pixels
+  // (rowHeight 100 + margin 18): h:2 = 218px não cabe e, sem overflow,
+  // os cards vazavam por cima do Plantão. h:5 = 572px. O OsBento em xs/xxs
+  // quebra os mini-KPIs em 2 linhas e passa dos 336px de h:3 — sobe pra h:4.
   sm: [
     { i: 'os', x: 0, y: 0, w: 6, h: 3 },
     { i: 'comunicados', x: 0, y: 3, w: 6, h: 3 },
-    { i: 'setor', x: 0, y: 6, w: 6, h: 2 },
-    { i: 'plantao', x: 0, y: 8, w: 3, h: 2 },
-    { i: 'atalhos', x: 3, y: 8, w: 3, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 10, w: 3, h: 2 },
-    { i: 'team', x: 0, y: 12, w: 3, h: 2 }
+    { i: 'setor', x: 0, y: 6, w: 6, h: 5 },
+    { i: 'plantao', x: 0, y: 11, w: 3, h: 2 },
+    { i: 'atalhos', x: 3, y: 11, w: 3, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 13, w: 3, h: 2 },
+    { i: 'team', x: 0, y: 15, w: 3, h: 2 }
   ],
   xs: [
-    { i: 'os', x: 0, y: 0, w: 4, h: 3 },
-    { i: 'comunicados', x: 0, y: 3, w: 4, h: 3 },
-    { i: 'setor', x: 0, y: 6, w: 4, h: 2 },
-    { i: 'plantao', x: 0, y: 8, w: 4, h: 2 },
-    { i: 'atalhos', x: 0, y: 10, w: 4, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 14, w: 4, h: 2 },
-    { i: 'team', x: 0, y: 16, w: 4, h: 2 }
+    { i: 'os', x: 0, y: 0, w: 4, h: 4 },
+    { i: 'comunicados', x: 0, y: 4, w: 4, h: 3 },
+    { i: 'setor', x: 0, y: 7, w: 4, h: 5 },
+    { i: 'plantao', x: 0, y: 12, w: 4, h: 2 },
+    { i: 'atalhos', x: 0, y: 14, w: 4, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 18, w: 4, h: 2 },
+    { i: 'team', x: 0, y: 20, w: 4, h: 2 }
   ],
   xxs: [
-    { i: 'os', x: 0, y: 0, w: 2, h: 3 },
-    { i: 'comunicados', x: 0, y: 3, w: 2, h: 3 },
-    { i: 'setor', x: 0, y: 6, w: 2, h: 2 },
-    { i: 'plantao', x: 0, y: 8, w: 2, h: 2 },
-    { i: 'atalhos', x: 0, y: 10, w: 2, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 14, w: 2, h: 2 },
-    { i: 'team', x: 0, y: 16, w: 2, h: 2 }
+    { i: 'os', x: 0, y: 0, w: 2, h: 4 },
+    { i: 'comunicados', x: 0, y: 4, w: 2, h: 3 },
+    { i: 'setor', x: 0, y: 7, w: 2, h: 5 },
+    { i: 'plantao', x: 0, y: 12, w: 2, h: 2 },
+    { i: 'atalhos', x: 0, y: 14, w: 2, h: 4 },
+    { i: 'aniversariantes', x: 0, y: 18, w: 2, h: 2 },
+    { i: 'team', x: 0, y: 20, w: 2, h: 2 }
   ]
 };
 
 export default function Dashboard({ setCurrentView, user }) {
-  const [currentDateTime, setCurrentDateTime] = useState('');
-  const [currentTime, setCurrentTime] = useState('');
-  const [currentDate, setCurrentDate] = useState('');
-  const [location, setLocation] = useState({ city: 'São Paulo', temp: '24°C' });
   const [heroBgImages, setHeroBgImages] = useState(() => {
     try {
       const saved = localStorage.getItem('dashboardHeroBgImages');
@@ -1173,13 +1329,16 @@ export default function Dashboard({ setCurrentView, user }) {
   });
   const [isHeroBgModalOpen, setIsHeroBgModalOpen] = useState(false);
   const [cargoName, setCargoName] = useState('');
-  const [osCount, setOsCount] = useState(0);
+  const [osCount, setOsCount] = useState(null);
   const [osStatusCount, setOsStatusCount] = useState(null);
   const [osLoading, setOsLoading] = useState(true);
+  const [osError, setOsError] = useState(false);
   const [proximoPlantao, setProximoPlantao] = useState(null);
   const [plantaoLoading, setPlantaoLoading] = useState(true);
+  const [plantaoError, setPlantaoError] = useState(false);
   const [eficiencia, setEficiencia] = useState(null);
   const [eficienciaLoading, setEficienciaLoading] = useState(true);
+  const [eficienciaError, setEficienciaError] = useState(false);
   const [isTiModalOpen, setIsTiModalOpen] = useState(false);
 
   const func = user?.funcionario ?? {};
@@ -1191,67 +1350,57 @@ export default function Dashboard({ setCurrentView, user }) {
     resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo).then(setCargoName).catch(() => { });
   }, [safeDepto, safeRole, user?.nome_grupo]);
 
-  useEffect(() => {
+  const carregarOs = useCallback(() => {
     if (!funcId) { setOsLoading(false); return; }
     setOsLoading(true);
+    setOsError(false);
     fetch(`/api/os-chamados/${funcId}`)
-      .then(r => r.json())
-      .then(d => { if (d.sucesso) { setOsCount(d.quantidade); setOsStatusCount(d.statusCount); } })
-      .catch(() => { })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(d => {
+        if (d.sucesso) { setOsCount(d.quantidade); setOsStatusCount(d.statusCount); }
+        else { setOsError(true); }
+      })
+      .catch(() => setOsError(true))
       .finally(() => setOsLoading(false));
   }, [funcId]);
 
-  useEffect(() => {
+  useEffect(() => { carregarOs(); }, [carregarOs]);
+
+  const carregarPlantao = useCallback(() => {
     if (!user?.id) return;
     setPlantaoLoading(true);
+    setPlantaoError(false);
     fetch(`/api/plantoes/meu-proximo/${user.id}`)
-      .then(r => r.json())
-      .then(d => { if (d.sucesso && d.proximo) setProximoPlantao(d.proximo); })
-      .catch(() => { })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(d => {
+        if (d.sucesso) { if (d.proximo) setProximoPlantao(d.proximo); }
+        else { setPlantaoError(true); }
+      })
+      .catch(() => setPlantaoError(true))
       .finally(() => setPlantaoLoading(false));
   }, [user?.id]);
 
-  useEffect(() => {
+  useEffect(() => { carregarPlantao(); }, [carregarPlantao]);
+
+  const carregarEficiencia = useCallback(() => {
     if (!funcId) { setEficienciaLoading(false); return; }
     setEficienciaLoading(true);
+    setEficienciaError(false);
     fetch(`/api/eficiencia/${funcId}`)
-      .then(r => r.json())
-      .then(d => { if (d.sucesso) setEficiencia(d); })
-      .catch(() => { })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(d => {
+        // sem_dados não é uma falha — é o backend dizendo "este colaborador
+        // não é técnico cadastrado no IXC", o caso normal pra maior parte da
+        // empresa. SetorBento já sabe renderizar isso como 'N/A'; só conta
+        // como erro de verdade quando nem isso o backend conseguiu dizer.
+        if (d.sucesso || d.sem_dados) setEficiencia(d);
+        else setEficienciaError(true);
+      })
+      .catch(() => setEficienciaError(true))
       .finally(() => setEficienciaLoading(false));
   }, [funcId]);
 
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      const dia = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'short' }).format(now);
-      const data = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short', year: 'numeric' }).format(now).replace(/ de /g, ' ').replace(/\./g, '');
-      const hora = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }).format(now);
-      const parts = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short', year: 'numeric' }).formatToParts(now);
-      const d = parts.find(p => p.type === 'day')?.value;
-      let m = parts.find(p => p.type === 'month')?.value.replace('.', '');
-      const y = parts.find(p => p.type === 'year')?.value;
-      if (m) m = m.charAt(0).toUpperCase() + m.slice(1);
-      setCurrentTime(hora);
-      setCurrentDate(`${d} ${m}, ${y}`);
-      setCurrentDateTime(`${dia.charAt(0).toUpperCase() + dia.slice(1).replace('.', '')} · ${data} · ${hora}`);
-    };
-    update();
-    const id = setInterval(update, 60000);
-    return () => clearInterval(id);
-  }, []);
-
-  // Detecta cidade aproximada pelo IP (fallback: São Paulo)
-  useEffect(() => {
-    fetch('https://ipapi.co/json/')
-      .then(r => r.json())
-      .then(data => {
-        if (data.city) {
-          setLocation(prev => ({ ...prev, city: `${data.city}${data.region_code ? `, ${data.region_code}` : ''}` }));
-        }
-      })
-      .catch(() => { });
-  }, []);
+  useEffect(() => { carregarEficiencia(); }, [carregarEficiencia]);
 
   // Persiste as imagens de fundo do hero no localStorage
   useEffect(() => {
@@ -1269,7 +1418,7 @@ export default function Dashboard({ setCurrentView, user }) {
     <main className="flex-1 overflow-y-auto bg-background text-foreground">
       <div className="mx-auto max-w-[1200px] px-6 pb-10 pt-7 md:px-8">
 
-        <DashboardHeader firstName={firstName} cargoName={cargoName} currentTime={currentTime} currentDate={currentDate} city={location.city} />
+        <DashboardHeader firstName={firstName} cargoName={cargoName} />
 
         <ComunicadoBanner setCurrentView={setCurrentView} />
 
@@ -1286,16 +1435,16 @@ export default function Dashboard({ setCurrentView, user }) {
           useCSSTransforms={true}
         >
           <div key="os">
-            <OsBento osCount={osCount} osStatusCount={osStatusCount} osLoading={osLoading} setCurrentView={setCurrentView} />
+            <OsBento osCount={osCount} osStatusCount={osStatusCount} osLoading={osLoading} osError={osError} onRetry={carregarOs} setCurrentView={setCurrentView} />
           </div>
           <div key="comunicados">
             <ComunicadosCard setCurrentView={setCurrentView} />
           </div>
           <div key="setor">
-            <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} />
+            <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} eficienciaError={eficienciaError} onRetry={carregarEficiencia} />
           </div>
           <div key="plantao">
-            <PlantaoBento proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} setCurrentView={setCurrentView} />
+            <PlantaoBento proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} plantaoError={plantaoError} onRetry={carregarPlantao} setCurrentView={setCurrentView} />
           </div>
           <div key="atalhos">
             <AtalhosCard setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />

@@ -74,6 +74,7 @@ export default function Comunicados({ user, setCurrentView }) {
     const C = useBentoTheme();
     const [comunicados, setComunicados] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [erro, setErro] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -93,13 +94,17 @@ export default function Comunicados({ user, setCurrentView }) {
     const fetchComunicados = async () => {
         try {
             setLoading(true);
+            setErro(false);
             const res = await fetch('/api/comunicados');
             const data = await res.json();
             if (data.sucesso) {
                 setComunicados(data.comunicados);
+            } else {
+                setErro(true);
             }
         } catch (error) {
             console.error("Erro ao carregar comunicados:", error);
+            setErro(true);
         } finally {
             setLoading(false);
         }
@@ -326,6 +331,8 @@ export default function Comunicados({ user, setCurrentView }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 24 }}>
                         {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
                     </div>
+                ) : erro ? (
+                    <ErrorState onRetry={fetchComunicados} />
                 ) : comunicadosFiltrados.length === 0 ? (
                     <EmptyState busca={busca} filtro={filtro} onClear={() => { setBusca(''); setFiltro('Todas'); }} />
                 ) : (
@@ -723,6 +730,62 @@ function SkeletonCard() {
                     <div style={{ height: 12, width: 80, borderRadius: 6, background: C.line }} />
                 </div>
             </div>
+        </div>
+    );
+}
+
+function ErrorState({ onRetry }) {
+    const C = useBentoTheme();
+    return (
+        <div role="alert" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '80px 24px',
+            gap: 16,
+            textAlign: 'center',
+            background: C.surface,
+            borderRadius: 18,
+            border: `1px solid ${C.line}`,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            width: '100%',
+            boxSizing: 'border-box'
+        }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: C.dangerSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 36, color: C.danger, lineHeight: 1 }}>cloud_off</span>
+            </div>
+            <div>
+                <p style={{ margin: '0 0 6px 0', fontSize: 17, fontWeight: 700, color: C.ink }}>Não foi possível carregar os comunicados</p>
+                <p style={{ margin: 0, fontSize: 13.5, color: C.ink2, maxWidth: 360, lineHeight: 1.5 }}>
+                    O servidor não respondeu. Isso costuma ser temporário — nada foi perdido.
+                </p>
+            </div>
+            <button
+                onClick={onRetry}
+                style={{
+                    padding: '9px 20px',
+                    borderRadius: 10,
+                    border: 'none',
+                    background: C.accent,
+                    color: 'white',
+                    fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+                    fontWeight: 700,
+                    fontSize: 13.5,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    outline: 'none',
+                    transition: 'all 0.15s',
+                    boxShadow: `0 4px 12px rgba(${hexToRgb(C.accent)}, 0.2)`
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = C.accentDark; }}
+                onMouseLeave={e => { e.currentTarget.style.background = C.accent; }}
+            >
+                <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 18, lineHeight: 1 }}>refresh</span>
+                Tentar novamente
+            </button>
         </div>
     );
 }

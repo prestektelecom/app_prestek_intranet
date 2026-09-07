@@ -143,7 +143,7 @@ export default function ResponsaveisManual() {
         return (
             <div className="flex h-64 flex-col items-center justify-center gap-3">
                 <span className="material-symbols-outlined animate-spin text-4xl" style={{ color: C.accent }}>refresh</span>
-                <p className="text-sm" style={{ color: C.muted }}>Carregando setores e funcionários...</p>
+                <p className="text-sm" style={{ color: C.muted }}>Carregando setores e colaboradores...</p>
             </div>
         );
     }
@@ -369,7 +369,7 @@ export default function ResponsaveisManual() {
                                             <input
                                                 autoFocus
                                                 type="text"
-                                                placeholder="Buscar funcionário ativo..."
+                                                placeholder="Buscar colaborador ativo..."
                                                 value={buscaFunc}
                                                 onChange={e => setBuscaFunc(e.target.value)}
                                                 className="flex-1 bg-transparent text-sm outline-none"
@@ -380,7 +380,7 @@ export default function ResponsaveisManual() {
                                         <div className="max-h-56 overflow-y-auto scrollbar-hide">
                                             {funcionariosFiltrados.length === 0 && (
                                                 <p className="py-6 text-center text-xs" style={{ color: C.muted }}>
-                                                    Nenhum funcionário encontrado.
+                                                    Nenhum colaborador encontrado.
                                                 </p>
                                             )}
                                             {funcionariosFiltrados.map(func => {

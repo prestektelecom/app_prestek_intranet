@@ -1,8 +1,72 @@
 "use client";
 
-import { memo, useCallback, useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { animate } from "motion/react";
+
+// ─── Rastreador de ponteiro compartilhado ─────────────────────────────────────
+// Antes, cada instância registrava o próprio `pointermove` no document.body e o
+// próprio `scroll` na window, e dentro do seu rAF lia getBoundingClientRect() e
+// escrevia no style em sequência. Com 9 cards na mesma tela isso dava 18
+// listeners e, pior, 9 reflows forçados por frame: a escrita da instância N
+// sujava o layout que a instância N+1 ia ler (layout thrashing).
+//
+// Agora há UM listener de cada tipo e UM rAF por frame. Cada assinante faz só
+// as leituras de layout e devolve uma função com as escritas; o flush executa
+// todas as leituras primeiro e todas as escritas depois. O visual é idêntico.
+type Point = { x: number; y: number };
+type Subscriber = (e: Point | undefined) => (() => void) | void;
+
+const subscribers = new Set<Subscriber>();
+let rafId = 0;
+let pendingEvent: Point | undefined;
+let listenersAttached = false;
+
+function flush() {
+  rafId = 0;
+  const ev = pendingEvent;
+  pendingEvent = undefined;
+  const writes: Array<() => void> = [];
+  subscribers.forEach((read) => {
+    const write = read(ev);
+    if (write) writes.push(write);
+  });
+  writes.forEach((write) => write());
+}
+
+function schedule(e?: Point) {
+  if (e) pendingEvent = e;
+  if (!rafId) rafId = requestAnimationFrame(flush);
+}
+
+function onPointerMove(e: PointerEvent) {
+  schedule({ x: e.clientX, y: e.clientY });
+}
+
+function onScroll() {
+  schedule();
+}
+
+function subscribe(fn: Subscriber) {
+  subscribers.add(fn);
+  if (!listenersAttached) {
+    listenersAttached = true;
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.body.addEventListener("pointermove", onPointerMove, { passive: true });
+  }
+  return () => {
+    subscribers.delete(fn);
+    if (subscribers.size === 0 && listenersAttached) {
+      listenersAttached = false;
+      window.removeEventListener("scroll", onScroll);
+      document.body.removeEventListener("pointermove", onPointerMove);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    }
+  };
+}
 
 interface GlowingEffectProps {
   blur?: number;
@@ -31,91 +95,73 @@ const GlowingEffect = memo(
   }: GlowingEffectProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const lastPosition = useRef({ x: 0, y: 0 });
-    const animationFrameRef = useRef<number>(0);
+    // Controles da animação em curso. Antes, cada pointermove disparava um
+    // animate() novo de 2s e descartava o retorno — dezenas de animações
+    // concorrentes por card durante um arrasto de mouse. Agora a anterior é
+    // parada antes de começar a próxima.
+    const animationRef = useRef<{ stop: () => void } | null>(null);
 
-    const handleMove = useCallback(
-      (e?: MouseEvent | { x: number; y: number }) => {
-        if (!containerRef.current) return;
+    useEffect(() => {
+      if (disabled) return;
 
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
+      // Fase de leitura: só getBoundingClientRect e aritmética. Devolve a
+      // escrita para o flush executar depois que TODAS as instâncias leram.
+      const read: Subscriber = (e) => {
+        const element = containerRef.current;
+        if (!element) return;
 
-        animationFrameRef.current = requestAnimationFrame(() => {
-          const element = containerRef.current;
-          if (!element) return;
+        const { left, top, width, height } = element.getBoundingClientRect();
+        const mouseX = e?.x ?? lastPosition.current.x;
+        const mouseY = e?.y ?? lastPosition.current.y;
+        if (e) lastPosition.current = { x: mouseX, y: mouseY };
 
-          const { left, top, width, height } = element.getBoundingClientRect();
-          const mouseX = e?.x ?? lastPosition.current.x;
-          const mouseY = e?.y ?? lastPosition.current.y;
+        const center = [left + width * 0.5, top + height * 0.5];
+        const distanceFromCenter = Math.hypot(
+          mouseX - center[0],
+          mouseY - center[1]
+        );
+        const inactiveRadius = 0.5 * Math.min(width, height) * inactiveZone;
 
-          if (e) {
-            lastPosition.current = { x: mouseX, y: mouseY };
-          }
+        const isActive =
+          distanceFromCenter >= inactiveRadius &&
+          mouseX > left - proximity &&
+          mouseX < left + width + proximity &&
+          mouseY > top - proximity &&
+          mouseY < top + height + proximity;
 
-          const center = [left + width * 0.5, top + height * 0.5];
-          const distanceFromCenter = Math.hypot(
-            mouseX - center[0],
-            mouseY - center[1]
-          );
-          const inactiveRadius = 0.5 * Math.min(width, height) * inactiveZone;
+        const targetAngle = isActive
+          ? (180 * Math.atan2(mouseY - center[1], mouseX - center[0])) /
+              Math.PI +
+            90
+          : 0;
 
-          if (distanceFromCenter < inactiveRadius) {
-            element.style.setProperty("--active", "0");
-            return;
-          }
-
-          const isActive =
-            mouseX > left - proximity &&
-            mouseX < left + width + proximity &&
-            mouseY > top - proximity &&
-            mouseY < top + height + proximity;
-
+        return () => {
           element.style.setProperty("--active", isActive ? "1" : "0");
-
           if (!isActive) return;
 
           const currentAngle =
             parseFloat(element.style.getPropertyValue("--start")) || 0;
-          let targetAngle =
-            (180 * Math.atan2(mouseY - center[1], mouseX - center[0])) /
-              Math.PI +
-            90;
-
           const angleDiff = ((targetAngle - currentAngle + 180) % 360) - 180;
           const newAngle = currentAngle + angleDiff;
 
-          animate(currentAngle, newAngle, {
+          animationRef.current?.stop();
+          animationRef.current = animate(currentAngle, newAngle, {
             duration: movementDuration,
             ease: [0.16, 1, 0.3, 1],
             onUpdate: (value) => {
               element.style.setProperty("--start", String(value));
             },
           });
-        });
-      },
-      [inactiveZone, proximity, movementDuration]
-    );
-
-    useEffect(() => {
-      if (disabled) return;
-
-      const handleScroll = () => handleMove();
-      const handlePointerMove = (e: PointerEvent) => handleMove(e);
-
-      window.addEventListener("scroll", handleScroll, { passive: true });
-      document.body.addEventListener("pointermove", handlePointerMove, {
-        passive: true,
-      });
-
-      return () => {
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
-        window.removeEventListener("scroll", handleScroll);
-        document.body.removeEventListener("pointermove", handlePointerMove);
+        };
       };
-    }, [handleMove, disabled]);
+
+      const unsubscribe = subscribe(read);
+      return () => {
+        unsubscribe();
+        animationRef.current?.stop();
+        animationRef.current = null;
+      };
+    }, [disabled, inactiveZone, proximity, movementDuration]);
 
     return (
       <>

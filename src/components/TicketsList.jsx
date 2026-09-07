@@ -144,7 +144,7 @@ function TicketsHero({ total, abertos, finalizados, pendentes }) {
               Meus Chamados
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">
-              Acompanhe o status de todos os seus tickets de suporte abertos no sistema.
+              Acompanhe o status de todos os seus chamados de suporte abertos no sistema.
             </p>
           </div>
         </div>
@@ -265,9 +265,9 @@ export default function TicketsList({ user }) {
           ) : error ? (
             <div className="flex flex-col items-center justify-center p-20 gap-4 text-center">
               <span className="material-symbols-outlined text-6xl" style={{ color: C.danger }}>error</span>
-              <div className="space-y-1">
-                <p className="font-extrabold text-lg" style={{ color: C.ink }}>Ops! Algo deu errado.</p>
-                <p style={{ color: C.ink2 }}>{error}</p>
+              <div className="space-y-1" title={error}>
+                <p className="font-extrabold text-lg" style={{ color: C.ink }}>Não foi possível carregar seus chamados</p>
+                <p style={{ color: C.ink2 }}>Tente novamente em instantes. Se o problema continuar, avise a TI.</p>
               </div>
               <button
                 onClick={fetchTickets}
@@ -285,7 +285,7 @@ export default function TicketsList({ user }) {
               <span className="material-symbols-outlined text-6xl" style={{ color: C.muted }}>confirmation_number</span>
               <div className="space-y-1">
                 <p className="font-extrabold text-lg" style={{ color: C.ink }}>Nenhum chamado encontrado.</p>
-                <p style={{ color: C.ink2 }}>Você ainda não abriu nenhum ticket de suporte.</p>
+                <p style={{ color: C.ink2 }}>Você ainda não abriu nenhum chamado de suporte.</p>
               </div>
             </div>
           ) : (

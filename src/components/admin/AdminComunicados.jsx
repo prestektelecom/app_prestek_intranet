@@ -91,7 +91,7 @@ export default function AdminComunicados({ adminEmail }) {
     };
 
     const excluir = async (id) => {
-        if (!window.confirm('Excluir este comunicado?')) return;
+        if (!window.confirm('Excluir este comunicado? Esta ação não pode ser desfeita — ele será removido permanentemente do feed da intranet.')) return;
         setExcluindo(id);
         try {
             const res = await fetch(`${API}/api/comunicados/${id}`, { method: 'DELETE', headers: { 'x-admin-email': adminEmail } });
