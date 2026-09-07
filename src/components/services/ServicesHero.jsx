@@ -108,6 +108,10 @@ export default function ServicesHero({
                     i,
                     texto: String(vendasPorDia[i].dia).padStart(2, '0'),
                 })),
+                // Uma descrição por ponto para o hover/teclado do Sparkline.
+                descricoes: vendasPorDia.map(d =>
+                    `Dia ${String(d.dia).padStart(2, '0')} · ${plural(d.vendas, 'venda', 'vendas')}`
+                ),
                 vazio: 'Mês recém-iniciado: ainda não há dias suficientes para a curva.',
                 resumo: !serie.length || !soma
                     ? 'Nenhuma venda registrada nos dias decorridos.'
@@ -128,6 +132,9 @@ export default function ServicesHero({
                 i,
                 texto: rotuloVelocidade(vendasPorVelocidade[i].mbps),
             })),
+            descricoes: vendasPorVelocidade.map(v =>
+                `${rotuloVelocidade(v.mbps)} · ${plural(v.vendas, 'venda', 'vendas')}`
+            ),
             vazio: 'Vendas insuficientes neste mês para traçar a curva.',
             resumo: !serie.length || !soma
                 ? 'Nenhuma venda por faixa de velocidade neste mês.'
@@ -138,6 +145,8 @@ export default function ServicesHero({
     }, [aba, vendasPorVelocidade, vendasPorDia]);
 
     const temGrafico = grafico.serie.length >= 2;
+    // Índice do ponto sob o cursor/foco no Sparkline; null = nenhum.
+    const [indiceAtivo, setIndiceAtivo] = useState(null);
 
     const campeaoVelocidade = planoCampeao ? parseVelocidade(planoCampeao.descricao) : null;
     const campeaoLabel = !planoCampeao || !planoCampeao.vendas_mes
@@ -243,7 +252,7 @@ export default function ServicesHero({
                                         <button
                                             key={opt.key}
                                             type="button"
-                                            onClick={() => setAba(opt.key)}
+                                            onClick={() => { setAba(opt.key); setIndiceAtivo(null); }}
                                             aria-pressed={ativo}
                                             className={`inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
                                                 ativo ? 'bg-white/25 text-white' : 'text-white/70 hover:bg-white/10'
@@ -270,16 +279,28 @@ export default function ServicesHero({
                             <div className="h-20 animate-pulse rounded-lg bg-white/10" />
                         ) : temGrafico ? (
                             <>
+                                {/* key={aba}: remonta ao trocar de aba para o ponto ativo
+                                    de uma série não sobreviver na outra. */}
                                 <Sparkline
+                                    key={aba}
                                     data={grafico.serie}
                                     color="#FFFFFF"
                                     height={80}
                                     highlightIndex={grafico.idxPico}
                                     ariaLabel={grafico.resumo}
+                                    descricaoPontos={grafico.descricoes}
+                                    onIndiceAtivo={setIndiceAtivo}
                                 />
+                                {/* O rótulo do eixo acompanha o ponto explorado; sem
+                                    exploração, volta a marcar o pico. */}
                                 <div className="mt-1.5 flex justify-between font-mono text-[10px] text-white/70">
                                     {grafico.rotulos.map(({ i, texto }) => (
-                                        <span key={i} className={i === grafico.idxPico ? 'font-bold text-white' : undefined}>
+                                        <span
+                                            key={i}
+                                            className={`transition-colors duration-150 ${
+                                                i === (indiceAtivo ?? grafico.idxPico) ? 'font-bold text-white' : ''
+                                            }`}
+                                        >
                                             {texto}
                                         </span>
                                     ))}
