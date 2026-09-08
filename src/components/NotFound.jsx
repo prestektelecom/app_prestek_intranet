@@ -59,7 +59,7 @@ const NotFound = ({ setCurrentView, user, variant = 'nao-encontrado' }) => {
                 style={{ background: C.surface, border: `1px solid ${C.line}`, boxShadow: 'var(--shadow-xl)' }}
             >
                 <div className="flex items-center gap-2.5 mb-8 select-none" aria-hidden="true">
-                    <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', color: C.ink }}>Prestek</span>
+                    <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em', color: C.ink }}>Prestek</span>
                     <span style={{ width: 6, height: 6, borderRadius: 3, background: C.accent, display: 'block' }} />
                     <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.ink2 }}>Intranet</span>
                 </div>
@@ -95,7 +95,7 @@ const NotFound = ({ setCurrentView, user, variant = 'nao-encontrado' }) => {
                     type="button"
                     onClick={handleBack}
                     className="group w-full md:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3 font-bold text-sm rounded-xl transition-colors"
-                    style={{ background: C.accent, color: '#FFFFFF' }}
+                    style={{ background: C.accent, color: C.onDanger }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = C.accentDark }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = C.accent }}
                 >

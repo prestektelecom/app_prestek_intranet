@@ -232,9 +232,9 @@ Nos temas escuros o `accentDark` (#FDBA74) fica mais claro que o `accent`, o inv
 
 ## Layout
 
-Shell fixo: header de 64px no topo e, abaixo, sidebar à esquerda com conteúdo rolável à direita. A sidebar tem dois estados, expandida (248px) e recolhida (72px), e some abaixo de `lg` (1024px), quando a navegação passa para a `MobileBottomNav` com cinco itens (Início, Serviços, Cobertura, Equipe, Mais) e o sheet "Mais" com o restante. Breakpoints são os do Tailwind (640, 768, 1024, 1280).
+Shell fixo: header de 64px no topo e, abaixo, sidebar à esquerda com conteúdo rolável à direita. A sidebar tem dois estados, expandida (248px) e recolhida (72px), e some abaixo de `lg` (1024px), quando a navegação passa para a `MobileBottomNav` com cinco itens por frequência de uso (Início, Plantão, Comunicados, Chamados, Mais) e o sheet "Mais" com o restante. Os itens, rótulos e a restrição de admin vivem em um só lugar, `src/navigation.js`; o header mostra o título da view atual e, no celular, o avatar abre o sheet de perfil (tema e sair). Breakpoints são os do Tailwind (640, 768, 1024, 1280).
 
-Cada página segue o mesmo esqueleto: `PageShell` com hero em gradiente laranja (título display em branco, subtítulo, busca ou KPIs), uma barra de filtros em chips com scroll horizontal no celular, e o conteúdo em grid de cards bento. O grid vai de 1 coluna no celular a 3 ou 4 em `lg`, com gap de 16 a 24px. O Dashboard usa `react-grid-layout` com widgets de altura fixa por linha.
+Cada página monta o mesmo esqueleto (não há componente compartilhado para isso; o `PageShell` de `responsive/` nunca foi usado e foi removido): hero em gradiente laranja (título display em branco, subtítulo, busca ou KPIs), uma barra de filtros em chips com scroll horizontal no celular, e o conteúdo em grid de cards bento. O grid vai de 1 coluna no celular a 3 ou 4 em `lg`, com gap de 16 a 24px. O Dashboard usa `react-grid-layout` com widgets de altura fixa por linha.
 
 Ritmo de espaçamento em múltiplos de 4: 4, 8, 12, 16, 24, 32. Padding interno de card é 24px, gap entre elementos de um card é 14px, gap entre cards é 16 ou 24px. Chips têm 8px vertical e 14px horizontal; botões, 10px vertical e 20px horizontal.
 

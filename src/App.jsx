@@ -20,11 +20,10 @@ import NotFound from './components/NotFound'
 
 import { usePresence } from './hooks/usePresence'
 import { canAccess } from './navigation'
+import { useProfileDisplay } from './hooks/useProfileDisplay'
 import { HeaderActionsProvider } from './contexts/HeaderActionsContext'
 import MobileBottomNav from './components/MobileBottomNav'
 import MobileMoreSheet from './components/MobileMoreSheet'
-
-const VIEWS = ['dashboard', 'services', 'coverage', 'directory', 'sectors', 'schedule', 'plantao-historico', 'processes', 'announcements', 'settings', 'tickets', 'offices', 'ti']
 
 export default function App() {
     const [user, setUser] = useState(() => {
@@ -79,6 +78,7 @@ export default function App() {
     }, [currentView])
 
     usePresence(user) // Rastreia atividade do usuário logado
+    const profile = useProfileDisplay(user) // nome curto, cargo e avatar para Sidebar e Header
 
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -178,12 +178,12 @@ export default function App() {
     return (
         <HeaderActionsProvider>
             <div className="bg-background text-foreground font-jakarta h-screen h-dvh flex transition-colors duration-200">
-                <Sidebar currentView={currentView} setCurrentView={setCurrentView} user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                <Sidebar currentView={currentView} setCurrentView={setCurrentView} user={user} profile={profile} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
                 <div className="flex flex-1 flex-col overflow-hidden">
-                    <Header currentView={currentView} setCurrentView={setCurrentView} user={user} />
+                    <Header currentView={currentView} setCurrentView={setCurrentView} user={user} profile={profile} />
                     {/* Abaixo de lg a barra inferior é fixa; o conteúdo reserva a altura dela. */}
                     <div className="flex-1 flex overflow-hidden pb-[var(--bottom-nav-h)] lg:pb-0">
-                        {VIEWS.includes(currentView) || !permitido ? renderView() : <NotFound setCurrentView={setCurrentView} user={user} />}
+                        {renderView()}
                     </div>
                 </div>
                 <MobileBottomNav

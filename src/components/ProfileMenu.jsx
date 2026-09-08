@@ -107,10 +107,12 @@ export default function ProfileMenu({ user, setCurrentView, onClose, dense = fal
         <div
           role="group"
           aria-label="Estilo do tema escuro"
-          style={{ padding: '2px 10px 8px 38px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}
+          style={{ padding: dense ? '2px 10px 8px 36px' : '0 10px 8px 28px', display: 'flex', alignItems: 'center', gap: dense ? 6 : 2, flexWrap: 'wrap' }}
         >
           {DARK_VARIANTS.map((v) => {
             const ativo = v.id === darkVariant;
+            // No sheet mobile o alvo tem 44px; no popup desktop, 28px (mouse).
+            const alvo = dense ? 28 : 44;
             return (
               <button
                 key={v.id}
@@ -120,14 +122,22 @@ export default function ProfileMenu({ user, setCurrentView, onClose, dense = fal
                 title={v.label}
                 onClick={() => setDarkVariant(v.id)}
                 style={{
-                  width: 24, height: 24, borderRadius: '50%', padding: 0, cursor: 'pointer',
-                  background: v.theme.bg,
-                  border: `2px solid ${ativo ? C.accent : C.line}`,
-                  boxShadow: `inset 0 0 0 3px ${v.theme.surfaceSoft}`,
+                  width: alvo, height: alvo, borderRadius: '50%', padding: 0, cursor: 'pointer',
+                  background: 'transparent', border: 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
-                <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: v.theme.accent, display: 'block' }} />
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: 24, height: 24, borderRadius: '50%', background: v.theme.bg,
+                    border: `2px solid ${ativo ? C.accent : C.line}`,
+                    boxShadow: `inset 0 0 0 3px ${v.theme.surfaceSoft}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: v.theme.accent, display: 'block' }} />
+                </span>
               </button>
             );
           })}

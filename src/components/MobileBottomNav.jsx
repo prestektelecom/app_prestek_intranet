@@ -77,9 +77,9 @@ export default function MobileBottomNav({ currentView, setCurrentView, isMoreShe
               {IconComponent && <IconComponent />}
               {item.badge > 0 && (
                 <span style={{
-                  position: 'absolute', top: -6, right: -10, minWidth: 16, height: 16, padding: '0 4px',
-                  borderRadius: 999, background: C.danger, color: '#FFFFFF',
-                  fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700,
+                  position: 'absolute', top: -7, right: -11, minWidth: 18, height: 18, padding: '0 4px',
+                  borderRadius: 999, background: C.danger, color: C.onDanger,
+                  fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: `2px solid ${C.popover}`, boxSizing: 'border-box',
                 }}>

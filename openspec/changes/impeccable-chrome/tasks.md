@@ -57,7 +57,7 @@ Achados só da passagem manual, além dos relatórios: dropdown aberto vira spin
 
 - [x] 7.1 `npx vite build` limpo (31,8s, só o aviso de chunk > 500 kB que já existia)
 - [x] 7.2 Diff revisado contra o contrato de `/api/comunicados` (`200 {sucesso, comunicados[]}` ou `500 {sucesso:false}`; lista vazia não é erro) e o formato da sessão (`is_admin`, `funcionario.id`)
-- [ ] 7.3 Agente `impeccable-finish-reviewer` sobre o diff
+- [x] 7.3 Agente `impeccable-finish-reviewer` sobre o diff — disposição "fix", 5 bloqueios e 8 melhorias, todos aplicados: `useComunicados` em `useSyncExternalStore` com `version` e `seenIds` em estado (contagem nunca diverge entre sino, Sidebar e barra); popup do perfil vira `role="dialog"` (filhos não são `menuitem`); anel de foco nos cartões do `ThemeSwitcher` via `label:has(> input.sr-only:focus-visible)`; item do sino sem `aria-label` que apagava o conteúdo (usa `sr-only`); swatches de 44px no sheet mobile; tokens `onDanger`/`onWarning`; badges a 11px, raios 8, `kbd` sem mono; `useProfileDisplay` calculado uma vez no `App`; `BottomSheet` compartilhado; `VIEWS` redundante removido; "Meus chamados"; badge da Sidebar com `sr-only`; anel do badge em `C.surface`; DESIGN.md (Layout) corrigido; build limpo de novo
 - [x] 7.4 Passagem manual: regular × claro × 1440 (sino, Escape, foco, gate); admin × Default Dark × 1440 (TI/Painel Admin, badge, popup) e × 390 (barra, sheet de perfil, sheet "Mais", Escape, trava de scroll); AMOLED × colapsado (popup sem recorte, `dangerStrong`). Pendente: Cyber e Aurora por amostragem na re-crítica
 - [ ] 7.5 `/impeccable critique src/App.jsx` de novo (alvo idêntico) — tendência 19 → ≥ 25 sem P0/P1
 - [ ] 7.6 `/impeccable audit` de novo nos mesmos alvos — 9 → ≥ 15

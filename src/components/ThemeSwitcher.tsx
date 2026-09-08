@@ -37,7 +37,7 @@ export default function ThemeSwitcher() {
 
     const cardStyle = (ativo: boolean): React.CSSProperties => ({
         display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: 12, cursor: 'pointer',
-        border: `1.5px solid ${ativo ? C.accent : C.line}`,
+        border: ativo ? `1.5px solid ${C.accent}` : `1px solid ${C.line}`,
         boxShadow: ativo ? `0 0 0 3px ${C.accentSoft}` : 'none',
         background: C.surfaceSoft, transition: 'border-color .15s, box-shadow .15s',
     });

@@ -5,7 +5,7 @@ Card do usuário, linha "Modo Escuro", swatches de variante, itens de notificaç
 
 #### Scenario: Card do usuário
 - **WHEN** o card do usuário no rodapé da Sidebar recebe foco por Tab e Enter
-- **THEN** o menu do perfil abre, o botão expõe `aria-haspopup="menu"` e `aria-expanded="true"`
+- **THEN** o menu do perfil abre como `role="dialog"` (seus filhos são botões e um interruptor, não `menuitem`), e o botão expõe `aria-haspopup="dialog"` e `aria-expanded="true"`
 
 #### Scenario: Modo Escuro
 - **WHEN** a linha "Modo Escuro" é lida por leitor de tela

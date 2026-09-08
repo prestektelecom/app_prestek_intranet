@@ -165,4 +165,11 @@
 
 Padrões que apareceram em 3+ superfícies. Preencher durante o programa; resolver em 16.1.
 
-- (vazio)
+Candidatos vindos da Fase 1 (chrome), com 1 ocorrência de superfície cada; viram transversais na 3ª:
+
+- **`C.muted` (`#8896A8`) como cor de texto pequeno em superfície clara** — 2,9:1 sobre `surfaceSoft`, 3,0:1 sobre branco. No chrome foi trocado por `C.ink2`. Ocorrências: chrome (Sidebar, barra inferior, sino). Se aparecer em mais 2 páginas, `extract`: regra no DESIGN.md "muted só para ícone inativo e placeholder, nunca texto abaixo de 14px".
+- **`div` com `onClick` sem `role`/`tabIndex`** — chrome (perfil, tema, notificação, alça do sheet). Já era P0 no Dashboard (banner e lista de comunicados). 2 superfícies.
+- **Overlay sem ciclo de vida (Escape, foco, trava de scroll)** — chrome tinha três implementações; agora `useDismissable`. Modais de página (`ModalShell`, `TiSupportModal`, `OverrideModal`) ainda não foram verificados; se 2 deles falharem, `extract` o hook para o sistema.
+- **DESIGN.md à frente do código** — Layout descrevia `PageShell` universal e item ativo laranja-suave que o código não tinha; corrigido na Fase 1. Conferir a cada página se o DESIGN.md descreve o que existe; consolidar no `document` da Fase 16.
+- **Listas de navegação/configuração duplicadas por superfície** — chrome tinha 3 listas de nav; agora `navigation.js`. Observar se páginas duplicam listas de status/tipo (ex.: tipos de comunicado, status de chamado) entre componentes.
+- **Hex literal onde já existe token** (`#F5F9FF`, `#fff`, `#ef4444`, swatches) — chrome corrigido; `ThemeSwitcher` era inteiro em hex. O audit da Fase 1 aponta `ServicesFilterBar` e `deptColors.js` com o mesmo idioma de "quatro temas escuros compartilham"; verificar nas Fases 6 e 10.

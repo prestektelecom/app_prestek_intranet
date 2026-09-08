@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
 // Um único fetch de /api/comunicados a cada 30s para todo o chrome.
 // Antes, Sidebar, NotificationBell e MobileMoreSheet faziam três pollings
@@ -6,6 +6,9 @@ import { useCallback, useEffect, useMemo, useReducer } from 'react';
 //
 // Contrato do endpoint: 200 { sucesso: true, comunicados: [...] } (lista pode
 // vir vazia). Qualquer outra coisa é erro; lista vazia não é erro.
+//
+// Assinatura via useSyncExternalStore: quem monta lê o snapshot atual e nunca
+// perde um `notify` que aconteça entre o render e o effect.
 
 const POLL_MS = 30000;
 const TIPOS_NOTIFICADOS = ['Urgente', 'Importante'];
@@ -14,12 +17,14 @@ const store = {
   comunicados: [],
   loaded: false,
   erro: null,
+  version: 0,
   listeners: new Set(),
   timer: null,
   inflight: null,
 };
 
 function notify() {
+  store.version += 1;
   store.listeners.forEach((fn) => fn());
 }
 
@@ -60,9 +65,10 @@ function subscribe(fn) {
   };
 }
 
+const getVersion = () => store.version;
+
 export function useComunicados() {
-  const [, force] = useReducer((x) => x + 1, 0);
-  useEffect(() => subscribe(force), []);
+  useSyncExternalStore(subscribe, getVersion, getVersion);
   return {
     comunicados: store.comunicados,
     loaded: store.loaded,
@@ -118,17 +124,16 @@ const byDateDesc = (a, b) => new Date(b.criado_em).getTime() - new Date(a.criado
 export function useNotificacoes(user) {
   const userId = userIdOf(user);
   const { comunicados, loaded, erro } = useComunicados();
-  const [, force] = useReducer((x) => x + 1, 0);
+  const [seenIds, setSeenIds] = useState(() => readSeen(userId));
 
   useEffect(() => {
+    setSeenIds(readSeen(userId));
     const onSeen = (e) => {
-      if (!e.detail || e.detail.userId === userId) force();
+      if (!e.detail || e.detail.userId === userId) setSeenIds(readSeen(userId));
     };
     window.addEventListener(SEEN_EVENT, onSeen);
     return () => window.removeEventListener(SEEN_EVENT, onSeen);
   }, [userId]);
-
-  const seenIds = readSeen(userId);
 
   const notificaveis = useMemo(
     () => comunicados.filter((c) => TIPOS_NOTIFICADOS.includes(c.tipo)),
@@ -146,8 +151,8 @@ export function useNotificacoes(user) {
   );
 
   const isUnread = useCallback((c) => !seenIds.includes(String(c.id)), [seenIds]);
-  const naoLidosUrgentes = urgentes.filter(isUnread).length;
-  const naoLidosImportantes = importantes.filter(isUnread).length;
+  const naoLidosUrgentes = useMemo(() => urgentes.filter(isUnread).length, [urgentes, isUnread]);
+  const naoLidosImportantes = useMemo(() => importantes.filter(isUnread).length, [importantes, isUnread]);
 
   const marcarLida = useCallback(
     (id) => {

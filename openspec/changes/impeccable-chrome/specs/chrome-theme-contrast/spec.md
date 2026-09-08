@@ -40,4 +40,4 @@ Componentes do chrome SHALL NOT usar hex literal para cor de texto, fundo, borda
 
 #### Scenario: Borda do badge
 - **WHEN** o badge do sino é renderizado em qualquer tema
-- **THEN** sua borda usa a cor de fundo do tema (`C.bg`), não `#F5F9FF`
+- **THEN** sua borda usa a cor da superfície do botão do sino (`C.surface`), não `#F5F9FF`, e o texto do badge usa `onDanger`/`onWarning`

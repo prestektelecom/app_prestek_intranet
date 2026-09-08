@@ -2,15 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Icons } from './common/Icons';
 import logoP from '../image/logos/Logo_P.webp';
 import { useBentoTheme } from '../hooks/useBentoTheme';
-import { resolveNomeSetor } from '../utils/resolveSetor';
-import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs';
 import { useNotificacoes } from '../hooks/useComunicados';
 import { useDismissable } from '../hooks/useDismissable';
 import { visibleNav } from '../navigation';
-import { nomeCurto } from '../utils/nomeExibicao';
 import ProfileMenu from './ProfileMenu';
 
-const defaultAvatar = AVATAR_PNGS[7];
 const FONT = '"Plus Jakarta Sans", system-ui, sans-serif';
 
 const CollapseIcon = ({ collapsed }) => (
@@ -62,7 +58,6 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, onClick }) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       aria-current={active ? 'page' : undefined}
-      aria-label={collapsed ? (badge ? `${label}, ${badge} não lidos` : label) : undefined}
       title={collapsed ? label : undefined}
       style={{
         position: 'relative', display: 'flex', alignItems: 'center',
@@ -80,10 +75,12 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, onClick }) {
       <span style={{ display: 'flex', color: active || hover ? C.accent : C.ink2 }} aria-hidden="true">
         {IconComponent && <IconComponent />}
       </span>
-      {!collapsed && <span style={{ flex: 1 }}>{label}</span>}
+      {/* No colapsado o rótulo e a contagem continuam no nome acessível. */}
+      <span className={collapsed ? 'sr-only' : undefined} style={collapsed ? undefined : { flex: 1 }}>{label}</span>
+      {badge > 0 && <span className="sr-only">, {badge} não lidos</span>}
       {!collapsed && badge > 0 && (
         <span
-          aria-label={`${badge} não lidos`}
+          aria-hidden="true"
           style={{
             background: active ? C.accent : C.dangerSoft,
             color: active ? C.surface : C.dangerStrong,
@@ -105,7 +102,7 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, onClick }) {
   );
 }
 
-export default function Sidebar({ currentView, setCurrentView, user, searchQuery, setSearchQuery }) {
+export default function Sidebar({ currentView, setCurrentView, user, profile, searchQuery, setSearchQuery }) {
   const C = useBentoTheme();
   const { naoLidos } = useNotificacoes(user);
 
@@ -123,44 +120,7 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
     localStorage.setItem('@PrestekIntranet:sidebarCollapsed', String(next));
   }, []);
 
-  const func = user?.funcionario ?? {};
-  const safeName = func.funcionario || user?.nome || 'Usuário';
-  const safeRole = func.id_funcao || 'Colaborador';
-  const safeDepto = func.id_departamento || '';
-  const safeId = func.id ?? user?.id ?? null;
-  const displayName = nomeCurto(safeName) || 'Usuário';
-
-  const [avatarUrl, setAvatarUrl] = useState(resolveAvatarUrl(func.foto_perfil) || defaultAvatar);
-  const [cargoName, setCargoName] = useState(safeRole);
   const searchInputRef = useRef(null);
-
-  useEffect(() => {
-    resolveNomeSetor(safeDepto, safeRole, user?.nome_grupo)
-      .then(setCargoName)
-      .catch((err) => console.error('Erro ao resolver setor no sidebar:', err));
-  }, [safeDepto, safeRole, user?.nome_grupo]);
-
-  // Avatar: foto do IXC, sobrescrita pelo que Configurações salvou localmente.
-  // Sem polling: Configurações dispara `stitch:avatar` ao salvar.
-  useEffect(() => {
-    const sync = () => {
-      let resolved = resolveAvatarUrl(func.foto_perfil) || defaultAvatar;
-      if (safeId) {
-        try {
-          const saved = JSON.parse(localStorage.getItem(`stitch_profile_${safeId}`) || 'null');
-          if (saved?.avatarUrl) resolved = resolveAvatarUrl(saved.avatarUrl) || resolved;
-        } catch (_) { /* ignora perfil local corrompido */ }
-      }
-      setAvatarUrl(resolved);
-    };
-    sync();
-    window.addEventListener('stitch:avatar', sync);
-    window.addEventListener('storage', sync);
-    return () => {
-      window.removeEventListener('stitch:avatar', sync);
-      window.removeEventListener('storage', sync);
-    };
-  }, [safeId, func.foto_perfil]);
 
   // Busca só existe em Serviços (é o único consumidor de `searchQuery`).
   const showSearch = currentView === 'services';
@@ -234,7 +194,7 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
           <img src={logoP} alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />
           {!isSidebarCollapsed && (
             <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1, textAlign: 'left' }}>
-              <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', color: C.ink }}>Prestek</span>
+              <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', color: C.ink }}>Prestek</span>
               <span style={{ fontWeight: 700, fontSize: 11, letterSpacing: '0.18em', color: C.ink2, marginTop: 3, textTransform: 'uppercase' }}>Intranet</span>
             </span>
           )}
@@ -286,7 +246,7 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
             style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', fontSize: 13, color: C.ink, fontFamily: 'inherit' }}
           />
           <kbd style={{
-            fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 600, padding: '2px 5px', borderRadius: 4,
+            fontFamily: 'inherit', fontSize: 11, fontWeight: 600, padding: '2px 5px', borderRadius: 8,
             border: `1px solid ${C.line}`, color: C.ink2, background: C.surfaceSoft,
           }}>Ctrl+K</kbd>
         </div>
@@ -302,11 +262,11 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
       </nav>
 
       {/* Perfil */}
-      {user && (
+      {user && profile && (
         <div style={{ position: 'relative' }} ref={profileRef}>
           {isProfileMenuOpen && (
             <div
-              role="menu"
+              role="dialog"
               aria-label="Sua conta"
               style={{
                 position: 'absolute',
@@ -328,10 +288,10 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
             onClick={() => setIsProfileMenuOpen((v) => !v)}
             onMouseEnter={() => setProfileHover(true)}
             onMouseLeave={() => setProfileHover(false)}
-            aria-haspopup="menu"
+            aria-haspopup="dialog"
             aria-expanded={isProfileMenuOpen}
-            aria-label={isSidebarCollapsed ? `Conta de ${displayName}` : undefined}
-            title={isSidebarCollapsed ? displayName : undefined}
+            aria-label={isSidebarCollapsed ? `Sua conta, ${profile.displayName}` : undefined}
+            title={isSidebarCollapsed ? profile.displayName : undefined}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
               padding: isSidebarCollapsed ? '8px 0' : '8px 10px', borderRadius: 12, cursor: 'pointer',
@@ -341,7 +301,7 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
             }}
           >
             <img
-              src={avatarUrl || defaultAvatar}
+              src={profile.avatarUrl}
               alt=""
               style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', background: C.surface, flexShrink: 0 }}
             />
@@ -349,10 +309,10 @@ export default function Sidebar({ currentView, setCurrentView, user, searchQuery
               <>
                 <span style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, lineHeight: 1.2, marginLeft: 10 }}>
                   <span style={{ fontWeight: 700, fontSize: 13, color: C.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {displayName}
+                    {profile.displayName}
                   </span>
                   <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', color: C.ink2, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>
-                    {cargoName}
+                    {profile.cargoName}
                   </span>
                 </span>
                 <span style={{ color: C.ink2, display: 'flex', flexShrink: 0 }}><ChevronUpDownIcon /></span>

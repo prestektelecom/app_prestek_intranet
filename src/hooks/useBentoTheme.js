@@ -46,6 +46,10 @@ export const BENTO_LIGHT = {
   danger: '#E84545',
   dangerSoft: '#FDEDED',
   dangerStrong: '#B02121',
+  // Texto sobre os preenchimentos semânticos (badges): branco sobre vermelho,
+  // navy sobre amarelo. Iguais nos cinco temas de propósito.
+  onDanger: '#FFFFFF',
+  onWarning: '#0B1B2E',
 };
 
 // Default Dark: o bloco `.dark` do index.css sem sufixo. Sóbrio, superfícies
@@ -78,6 +82,8 @@ export const BENTO_DARK_DEFAULT = {
   danger: '#FF6B6B',
   dangerSoft: 'rgba(255, 107, 107, 0.15)',
   dangerStrong: '#FF6B6B',
+  onDanger: '#FFFFFF',
+  onWarning: '#0B1B2E',
 };
 
 export const BENTO_DARK_CYBER = {
@@ -107,6 +113,8 @@ export const BENTO_DARK_CYBER = {
   danger: '#FF2A54',
   dangerSoft: 'rgba(255, 42, 84, 0.12)',
   dangerStrong: '#FF2A54',
+  onDanger: '#FFFFFF',
+  onWarning: '#0B1B2E',
 };
 
 export const BENTO_DARK_AURORA = {
@@ -136,6 +144,8 @@ export const BENTO_DARK_AURORA = {
   danger: '#FF007A',
   dangerSoft: 'rgba(255, 0, 122, 0.15)',
   dangerStrong: '#FF4DA0',
+  onDanger: '#FFFFFF',
+  onWarning: '#0B1B2E',
 };
 
 export const BENTO_DARK_AMOLED = {
@@ -166,6 +176,8 @@ export const BENTO_DARK_AMOLED = {
   dangerSoft: 'rgba(213, 0, 0, 0.15)',
   // #D50000 sobre #0A0A0A dá 3,9:1; como texto ("Sair da conta") precisa mais.
   dangerStrong: '#FF5252',
+  onDanger: '#FFFFFF',
+  onWarning: '#0B1B2E',
 };
 
 export const BENTO_DARK = BENTO_DARK_DEFAULT; // Fallback export

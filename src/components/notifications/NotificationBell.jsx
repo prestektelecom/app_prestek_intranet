@@ -28,7 +28,7 @@ function LinkButton({ C, onClick, children, size = 12 }) {
       onClick={onClick}
       style={{
         fontSize: size, fontWeight: 700, color: C.accentDark, background: 'transparent', border: 'none',
-        cursor: 'pointer', padding: '6px 4px', borderRadius: 6, fontFamily: 'inherit',
+        cursor: 'pointer', padding: '6px 4px', borderRadius: 8, fontFamily: 'inherit',
       }}
     >
       {children}
@@ -51,8 +51,8 @@ export default function NotificationBell({ user, setCurrentView }) {
   const badgeLabel = naoLidos > 9 ? '9+' : String(naoLidos);
   // Vermelho com texto branco passa em todo tema; amarelo só com texto escuro.
   const badgeStyle = naoLidosUrgentes > 0
-    ? { background: C.danger, color: '#FFFFFF' }
-    : { background: C.warning, color: '#0B1B2E' };
+    ? { background: C.danger, color: C.onDanger }
+    : { background: C.warning, color: C.onWarning };
 
   const vazio = urgentes.length === 0 && importantes.length === 0;
 
@@ -77,7 +77,6 @@ export default function NotificationBell({ user, setCurrentView }) {
               type="button"
               onClick={() => marcarLida(a.id)}
               className="notification-item"
-              aria-label={`${unread ? 'Não lida: ' : ''}${a.titulo}`}
               style={{
                 width: '100%', textAlign: 'left', padding: '12px 16px', display: 'flex', gap: 12,
                 cursor: unread ? 'pointer' : 'default', border: 'none', fontFamily: 'inherit',
@@ -90,6 +89,7 @@ export default function NotificationBell({ user, setCurrentView }) {
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{m.icon}</span>
               </span>
               <span style={{ flex: 1, minWidth: 0, display: 'block' }}>
+                {unread && <span className="sr-only">Não lida: </span>}
                 <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {a.titulo}
                 </span>
@@ -131,9 +131,9 @@ export default function NotificationBell({ user, setCurrentView }) {
           <Icons.Bell />
           {naoLidos > 0 && (
             <span style={{
-              position: 'absolute', top: -6, right: -7, minWidth: 17, height: 17, borderRadius: 999,
-              ...badgeStyle, border: `2px solid ${C.bg}`,
-              fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700,
+              position: 'absolute', top: -7, right: -8, minWidth: 18, height: 18, borderRadius: 999,
+              ...badgeStyle, border: `2px solid ${C.surface}`,
+              fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', boxSizing: 'border-box',
             }}>
               {badgeLabel}

@@ -18,7 +18,7 @@ export const NAV_ITEMS = [
   { id: 'schedule',      icon: 'Clock',     label: 'Plantão',       group: 'menu',    mobileSlot: 1 },
   { id: 'offices',       icon: 'Building',  label: 'Escritórios',   group: 'menu' },
   { id: 'processes',     icon: 'Doc',       label: 'Processos',     group: 'menu' },
-  { id: 'tickets',       icon: 'Ticket',    label: 'Meus Chamados', group: 'menu',    mobileSlot: 3, mobileLabel: 'Chamados' },
+  { id: 'tickets',       icon: 'Ticket',    label: 'Meus chamados', group: 'menu',    mobileSlot: 3, mobileLabel: 'Chamados' },
   { id: 'ti',            icon: 'Chip',      label: 'TI',            group: 'menu',    somenteAdmin: true },
   { id: 'announcements', icon: 'Megaphone', label: 'Comunicados',   group: 'sistema', mobileSlot: 2, badge: 'comunicados' },
   { id: 'settings',      icon: 'Settings',  label: 'Configurações', group: 'sistema' },
