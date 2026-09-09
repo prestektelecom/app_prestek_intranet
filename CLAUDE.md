@@ -1,0 +1,27 @@
+# Prestek Intranet — instruções para o Claude Code
+
+## Memória persistente (Obsidian)
+
+A memória duradoura deste projeto vive no vault do Obsidian, na nota
+`../prestek-intranet.md` (pasta `20 Projetos` do vault). Ela é importada abaixo
+e carregada em toda sessão.
+
+Regras:
+- Decisões de arquitetura, design ou produto que devam sobreviver à sessão:
+  registre na seção **Decisões** da nota do vault, uma linha por decisão, com data.
+- Trabalho pendente ou combinado com o usuário: registre na seção **Pendências**
+  como checkbox (`- [ ]`). Marque `- [x]` quando concluir.
+- Fatos sobre ambiente, servidores, credenciais de onde encontrar (nunca o valor),
+  integrações: seção **Ambiente**.
+- Não duplique ali o que já está em `CONTEXTO_IA.md`, `AGENTS.md`, `DESIGN.md`
+  ou no histórico do git. A nota é para o que não dá para derivar do código.
+- Mantenha a nota curta. Se uma seção crescer demais, mova para uma nota
+  separada no vault e deixe um `[[wikilink]]` na nota principal.
+- O usuário edita a mesma nota pelo Obsidian. Antes de escrever, releia o
+  arquivo para não sobrescrever alterações feitas fora da sessão.
+
+## Contexto do projeto
+
+@../prestek-intranet.md
+@CONTEXTO_IA.md
+@AGENTS.md
