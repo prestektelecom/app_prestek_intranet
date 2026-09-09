@@ -32,10 +32,11 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 
 ## Pendências
 
-- [ ] Programa Impeccable, Fase 1 (chrome): decidir se fecha com 24/40 ou roda `colorize` + `layout` curtos antes (ver `openspec/changes/programa-impeccable/tasks.md`, tarefa 1.6); depois commit (1.7) e seguir para a Fase 2 (Login + NotFound)
-- [ ] Commitar `docs/impeccable/audit-chrome-2026-09-08.md`, os `tasks.md` atualizados e o snapshot da crítica em `.impeccable/critique/`
+- [ ] Impeccable Fase 1 (chrome), rodada `colorize` **aplicada mas não verificada no navegador** (12 arquivos modificados, sem commit): tokens `dangerFill`/`onDanger`/`warningFill`/`onWarning`/`onAccent` nos 5 temas (`useBentoTheme.js` + `index.css`), helper `coresDoBadge` + `severidade` em `useComunicados.js`, badges do sino/Sidebar/barra na mesma cor, `NotFound` com `onAccent`, swatches com borda `ink2` e ponto `success`, `ResponsiveTable` sem `muted`. Build do Vite passou; contraste por script passou nos 5 temas (0 falhas). Falta: (1) medir no navegador (o Playwright MCP ficou travado por um Chrome órfão com o perfil `ms-playwright-mcp\mcp-chrome-9c2af76`; encerrar esses `chrome.exe` antes), (2) re-crítica dual-agent do `src/App.jsx` (alvo ≥ 25/40 sem P1), (3) marcar 1.6/1.7 no programa e commitar, (4) Fase 2 (Login + NotFound)
+- [ ] Decisão tomada em 2026-09-08: Painel Admin fora do shell fica para a Fase 15, não entra na change do chrome
 
 ## Histórico de sessões
 
 - 2026-09-08: configurada integração Obsidian ↔ Claude Code (CLAUDE.md + esta nota).
-- 2026-09-08: Fase 1 do Impeccable re-verificada. Re-audit do chrome 9 → 15/20 (portão passado); re-crítica 19 → 24/40 (alvo 25 não atingido; 2 P1: Painel Admin fora do shell, badge de urgência 3,9:1). Relatório em `docs/impeccable/audit-chrome-2026-09-08.md`.
+- 2026-09-08: Fase 1 do Impeccable re-verificada. Re-audit do chrome 9 → 15/20 (portão passado); re-crítica 19 → 24/40 (alvo 25 não atingido; 2 P1: Painel Admin fora do shell, badge de urgência 3,9:1). Relatório em `docs/impeccable/audit-chrome-2026-09-08.md`. Commitado pelo Felix ("Memoria atualizada", f66902a).
+- 2026-09-08 (noite): rodada `colorize` do chrome aplicada no working tree, interrompida antes da verificação no navegador. Servidores de dev (5000/3001) podem ter ficado no ar.
