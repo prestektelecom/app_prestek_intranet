@@ -32,8 +32,10 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 
 ## Pendências
 
-- [ ] 
+- [ ] Programa Impeccable, Fase 1 (chrome): decidir se fecha com 24/40 ou roda `colorize` + `layout` curtos antes (ver `openspec/changes/programa-impeccable/tasks.md`, tarefa 1.6); depois commit (1.7) e seguir para a Fase 2 (Login + NotFound)
+- [ ] Commitar `docs/impeccable/audit-chrome-2026-09-08.md`, os `tasks.md` atualizados e o snapshot da crítica em `.impeccable/critique/`
 
 ## Histórico de sessões
 
 - 2026-09-08: configurada integração Obsidian ↔ Claude Code (CLAUDE.md + esta nota).
+- 2026-09-08: Fase 1 do Impeccable re-verificada. Re-audit do chrome 9 → 15/20 (portão passado); re-crítica 19 → 24/40 (alvo 25 não atingido; 2 P1: Painel Admin fora do shell, badge de urgência 3,9:1). Relatório em `docs/impeccable/audit-chrome-2026-09-08.md`.
