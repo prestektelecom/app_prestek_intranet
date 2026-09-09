@@ -2,9 +2,10 @@
 
 ## Memória persistente (Obsidian)
 
-A memória duradoura deste projeto vive no vault do Obsidian, na nota
-`../prestek-intranet.md` (pasta `20 Projetos` do vault). Ela é importada abaixo
-e carregada em toda sessão.
+A memória duradoura deste projeto vive na nota `MEMORIA.md`, na raiz do
+projeto. O projeto está dentro do vault do Obsidian (`F:\vault`), então essa
+nota é editável pelo Obsidian e é importada abaixo, carregada em toda sessão.
+A nota `../prestek-intranet.md` no vault é só um atalho para ela.
 
 Regras:
 - Decisões de arquitetura, design ou produto que devam sobreviver à sessão:
@@ -22,6 +23,6 @@ Regras:
 
 ## Contexto do projeto
 
-@../prestek-intranet.md
+@MEMORIA.md
 @CONTEXTO_IA.md
 @AGENTS.md
