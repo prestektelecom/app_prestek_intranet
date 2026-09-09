@@ -36,7 +36,7 @@ export default function ResponsiveTable({
                 <th
                   key={col.key}
                   className="px-4 py-3 text-xs font-bold uppercase tracking-wider whitespace-nowrap"
-                  style={{ color: C.muted }}
+                  style={{ color: C.ink2 }}
                 >
                   {col.header}
                 </th>
@@ -59,7 +59,7 @@ export default function ResponsiveTable({
             {rows.map((row) => (
               <tr
                 key={keyExtractor(row)}
-                className="transition-colors hover:bg-black/5"
+                className="transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                 style={{ borderBottom: `1px solid ${C.line}` }}
               >
                 {visibleColumns.map((col) => (
@@ -117,7 +117,7 @@ export default function ResponsiveTable({
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
               {visibleColumns.slice(1).map((col) => (
                 <div key={col.key} className={col.fullWidth ? 'col-span-2' : ''}>
-                  <dt className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: C.muted }}>
+                  <dt className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: C.ink2 }}>
                     {col.header}
                   </dt>
                   <dd className="text-sm mt-0.5" style={{ color: C.ink }}>

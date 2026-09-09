@@ -87,7 +87,7 @@ export default function ThemeSwitcher() {
                                 >
                                     <span>{v.label}</span>
                                     <span aria-hidden="true" style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-                                        <span title="Fundo" style={{ width: 14, height: 14, borderRadius: '50%', background: v.theme.bg, border: `1px solid ${v.theme.line}` }} />
+                                        <span title="Fundo" style={{ width: 14, height: 14, borderRadius: '50%', background: v.theme.bg, border: `1px solid ${C.ink2}` }} />
                                         <span title="Destaque" style={{ width: 14, height: 14, borderRadius: '50%', background: v.theme.accent }} />
                                         <span title="Sucesso" style={{ width: 14, height: 14, borderRadius: '50%', background: v.theme.success }} />
                                     </span>

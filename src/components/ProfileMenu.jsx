@@ -127,16 +127,19 @@ export default function ProfileMenu({ user, setCurrentView, onClose, dense = fal
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
+                {/* Borda em `ink2` (≥ 5:1 em todo tema): com `line` o círculo
+                    sumia sobre popover escuro. O ponto central é o `success`
+                    do tema, a única cor que separa Default Dark de Cyber. */}
                 <span
                   aria-hidden="true"
                   style={{
                     width: 24, height: 24, borderRadius: '50%', background: v.theme.bg,
-                    border: `2px solid ${ativo ? C.accent : C.line}`,
+                    border: `2px solid ${ativo ? C.accent : C.ink2}`,
                     boxShadow: `inset 0 0 0 3px ${v.theme.surfaceSoft}`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: v.theme.accent, display: 'block' }} />
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: v.theme.success, display: 'block' }} />
                 </span>
               </button>
             );

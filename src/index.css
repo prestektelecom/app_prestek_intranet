@@ -101,6 +101,13 @@
   --success-strong:  #10603E;
   --warning-strong:  #7A5300;
   --danger-strong:   #B02121;
+  /* Pares de badge preenchido (11px bold, 4,5:1 em todo tema) e texto
+     sobre o accent. Espelham `useBentoTheme.js`; mude os dois lados. */
+  --danger-fill:     #B02121;
+  --on-danger:       #FFFFFF;
+  --warning-fill:    #BD8000;
+  --on-warning:      #0B1B2E;
+  --on-accent:       #0B1B2E;
 
   /* Hover border effect tokens */
   --hover-border-from:  #EC7D23;
@@ -173,6 +180,11 @@
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
   --danger-strong:   var(--danger-bento);
+  --danger-fill:     #FF6B6B;
+  --on-danger:       #0B1B2E;
+  --warning-fill:    #FACC15;
+  --on-warning:      #0B1B2E;
+  --on-accent:       #111C2C;
 
   /* Hover border effect tokens */
   --hover-border-from:  #F97316;
@@ -245,6 +257,11 @@
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
   --danger-strong:   var(--danger-bento);
+  --danger-fill:     #FF2A54;
+  --on-danger:       #0B1B2E;
+  --warning-fill:    #FACC15;
+  --on-warning:      #0B1B2E;
+  --on-accent:       #111C2C;
 
   /* Hover border effect tokens */
   --hover-border-from:  #F97316;
@@ -316,6 +333,11 @@
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
   --danger-strong:   var(--danger-bento);
+  --danger-fill:     #FF4DA0;
+  --on-danger:       #0B1B2E;
+  --warning-fill:    #FACC15;
+  --on-warning:      #0B1B2E;
+  --on-accent:       #161233;
 
   /* Hover border effect tokens */
   --hover-border-from:  #FB923C;
@@ -387,6 +409,11 @@
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
   --danger-strong:   var(--danger-bento);
+  --danger-fill:     #D50000;
+  --on-danger:       #FFFFFF;
+  --warning-fill:    #FACC15;
+  --on-warning:      #0B1B2E;
+  --on-accent:       #0A0A0A;
 
   /* Hover border effect tokens */
   --hover-border-from:  #F97316;

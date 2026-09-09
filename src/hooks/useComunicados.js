@@ -117,6 +117,19 @@ export function userIdOf(user) {
 const byDateDesc = (a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime();
 
 /**
+ * Cores do badge de não lidos, derivadas da severidade e não da superfície:
+ * sino, Sidebar e barra inferior mostram a mesma contagem e precisam mostrar
+ * a mesma cor. `fill`/`onFill` é o badge preenchido (11px bold, 4,5:1 nos
+ * cinco temas); `soft`/`strong` é a versão suave para item inativo.
+ */
+export function coresDoBadge(C, severidade) {
+  if (severidade === 'urgente') {
+    return { fill: C.dangerFill, onFill: C.onDanger, soft: C.dangerSoft, strong: C.dangerStrong };
+  }
+  return { fill: C.warningFill, onFill: C.onWarning, soft: C.warningSoft, strong: C.warningStrong };
+}
+
+/**
  * Comunicados que viram notificação (Urgente e Importante), já separados em
  * lidos e não lidos para o usuário. Usado pelo sino e pelos badges de
  * "Comunicados" na Sidebar e na barra inferior, que assim contam a mesma coisa.
@@ -168,6 +181,9 @@ export function useNotificacoes(user) {
     writeSeen(userId, [...readSeen(userId), ...currentIds], currentIds);
   }, [userId, currentIds]);
 
+  // Severidade do que está pendente: manda na cor do badge em todo o chrome.
+  const severidade = naoLidosUrgentes > 0 ? 'urgente' : naoLidosImportantes > 0 ? 'importante' : null;
+
   return {
     urgentes,
     importantes,
@@ -175,6 +191,7 @@ export function useNotificacoes(user) {
     naoLidos: naoLidosUrgentes + naoLidosImportantes,
     naoLidosUrgentes,
     naoLidosImportantes,
+    severidade,
     marcarLida,
     marcarTodas,
     loaded,

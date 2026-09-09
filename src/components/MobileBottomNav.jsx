@@ -1,15 +1,17 @@
 import { Icons } from './common/Icons';
 import { useBentoTheme } from '../hooks/useBentoTheme';
-import { useNotificacoes } from '../hooks/useComunicados';
+import { useNotificacoes, coresDoBadge } from '../hooks/useComunicados';
 import { mobileSlots, viewInSheet } from '../navigation';
 
 // Barra inferior do celular: quatro slots por frequência de uso (fonte única
 // em navigation.js) e "Mais". O rótulo ativo usa `ink`, nunca `accentDeep`:
-// como texto, o laranja profundo dava 1,9:1 nos temas escuros.
+// como texto, o laranja profundo dava 1,9:1 nos temas escuros. O badge segue
+// `coresDoBadge`, a mesma cor do sino e da Sidebar para a mesma contagem.
 
 export default function MobileBottomNav({ currentView, setCurrentView, isMoreSheetOpen, setIsMoreSheetOpen, user }) {
   const C = useBentoTheme();
-  const { naoLidos } = useNotificacoes(user);
+  const { naoLidos, severidade } = useNotificacoes(user);
+  const badgeCores = coresDoBadge(C, severidade);
 
   const slots = mobileSlots(user).map((item) => ({
     id: item.id,
@@ -78,7 +80,7 @@ export default function MobileBottomNav({ currentView, setCurrentView, isMoreShe
               {item.badge > 0 && (
                 <span style={{
                   position: 'absolute', top: -7, right: -11, minWidth: 18, height: 18, padding: '0 4px',
-                  borderRadius: 999, background: C.danger, color: C.onDanger,
+                  borderRadius: 999, background: badgeCores.fill, color: badgeCores.onFill,
                   fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: `2px solid ${C.popover}`, boxSizing: 'border-box',

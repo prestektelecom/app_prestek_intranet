@@ -135,7 +135,7 @@ components:
     textColor: "{colors.laranja-prestek}"
   badge-count:
     backgroundColor: "{colors.laranja-prestek}"
-    textColor: "{colors.branco-superficie}"
+    textColor: "{colors.azul-profundo}"
     typography: "{typography.overline}"
     rounded: "{rounded.pill}"
     padding: "0 6px"
@@ -204,7 +204,9 @@ Nos temas escuros o `accentDark` (#FDBA74) fica mais claro que o `accent`, o inv
 ### Named Rules
 **The Rare Signal Rule.** O laranja ocupa no máximo um elemento por grupo visual: um botão primário por card, um item ativo por lista, um badge por ícone. Se dois laranjas competem no mesmo bloco, um deles vira azul mesclado.
 
-**The Orange Is Fill Rule.** #EC7D23 nunca é cor de texto sobre branco. Texto laranja usa #C2410C; texto sobre laranja é branco.
+**The Orange Is Fill Rule.** #EC7D23 nunca é cor de texto sobre branco. Texto laranja usa #C2410C. Texto sobre laranja: branco só quando é grande (18,66px bold ou 24px); em badges e texto pequeno é Azul Profundo (`onAccent`, 6,2:1), porque o branco rende 2,8:1. Nos temas escuros `onAccent` é a superfície do tema.
+
+**The Badge Pair Rule.** Um badge preenchido de contagem usa sempre o par `dangerFill`/`onDanger` ou `warningFill`/`onWarning` do tema, nunca `danger` com branco à mão: a 11px bold nenhum vermelho passa nos 4,5:1 com branco e com navy ao mesmo tempo, então o par muda por tema (branco no claro e no AMOLED, navy nos outros três). A cor do badge vem da severidade do dado, e a mesma contagem tem a mesma cor no sino, na Sidebar e na barra inferior.
 
 **The Manual Divergence Rule.** O manual de identidade visual registra #D97738 como laranja institucional e #384C9C como azul. O sistema adota o laranja extraído do asset do logo (#EC7D23) para que accent e logo renderizado coincidam na tela, e não adota o azul institucional. Decisão registrada em `.impeccable/critique/ignore.md`, revisão prevista para o encerramento do programa Impeccable ou quando houver logo em SVG.
 
@@ -303,7 +305,7 @@ Cantos arredondados em uma escala curta e fixa: 8px para botões pequenos e iten
 - **Error / Disabled:** erro em Vermelho Alerta com texto em `-texto`; disabled a 70% de opacidade.
 
 ### Navigation
-- **Sidebar:** itens de 13,5px em 500, ícone e texto em Azul Neblina, cantos de 8px; hover leva ícone e texto para laranja; ativo tem fundo Laranja Prestek Suave, texto laranja em 600 e badge de contagem laranja. Badges de urgência em itens inativos usam Vermelho Alerta suave. Seções "MENU" e "SISTEMA" em overline.
+- **Sidebar:** itens de 13,5px em 500, ícone e texto em Azul Neblina, cantos de 8px; hover leva ícone e texto para laranja; ativo tem fundo Laranja Prestek Suave, texto laranja em 600 e badge de contagem laranja com texto Azul Profundo. Badges em itens inativos usam a versão suave da cor da severidade (Vermelho Alerta suave se há urgente, Amarelo Aviso suave se só há importante), a mesma que o sino e a barra inferior mostram para a mesma contagem. Seções "MENU" e "SISTEMA" em overline.
 - **Mobile:** `MobileBottomNav` com cinco itens e o sheet "Mais"; item ativo em laranja, inativo em Azul Neblina.
 - **Modais:** `ModalShell` com cabeçalho, corpo e rodapé separados por Borda Gelo, cantos de 16px, backdrop preto a 60% com blur, entrada com fade e zoom de 200ms.
 

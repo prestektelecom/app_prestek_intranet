@@ -91,13 +91,16 @@ const NotFound = ({ setCurrentView, user, variant = 'nao-encontrado' }) => {
                     </p>
                 </div>
 
+                {/* Texto de 14px sobre laranja: `onAccent` (navy no claro), não
+                    branco (2,8:1). O hover eleva em vez de escurecer o fundo,
+                    porque navy sobre o laranja-hover cairia para 3:1. */}
                 <button
                     type="button"
                     onClick={handleBack}
-                    className="group w-full md:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3 font-bold text-sm rounded-xl transition-colors"
-                    style={{ background: C.accent, color: C.onDanger }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = C.accentDark }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = C.accent }}
+                    className="group w-full md:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3 font-bold text-sm rounded-xl transition-shadow"
+                    style={{ background: C.accent, color: C.onAccent, boxShadow: 'none' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-md)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none' }}
                 >
                     <ArrowLeftIcon />
                     <span>{user ? 'Voltar para o Início' : 'Voltar para o login'}</span>

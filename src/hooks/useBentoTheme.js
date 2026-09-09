@@ -11,6 +11,15 @@ import { useTheme } from './useTheme';
 //   `danger` passam nos 3:1 de componente mas reprovam nos 4,5:1 de texto sobre
 //   os fundos `-Soft`; nos escuros o próprio tom base já passa, exceto o
 //   vermelho do AMOLED, que fica escuro demais sobre preto.
+// - `dangerFill`/`onDanger` e `warningFill`/`onWarning`: o PAR de um badge
+//   preenchido (contagem de não lidos). Sempre use os dois juntos: o texto é
+//   11px bold e precisa de 4,5:1, e nenhum vermelho serve com branco e com
+//   navy ao mesmo tempo. Claro: vermelho-texto com branco (6,8:1). Default,
+//   Cyber e Aurora: vermelho do tema com navy (4,7 a 6,3:1). AMOLED: vermelho
+//   com branco (5,5:1). Amarelo é sempre com navy (5,9 a 11,3:1).
+// - `onAccent`: texto sobre o laranja (badge ativo, botão sólido). Branco
+//   sobre o accent rende 2,8:1 no claro, então é navy; nos escuros, a
+//   superfície do tema (5 a 8:1). Branco continua valendo em texto grande.
 
 export const BENTO_LIGHT = {
   bg: '#F5F9FF',
@@ -46,10 +55,15 @@ export const BENTO_LIGHT = {
   danger: '#E84545',
   dangerSoft: '#FDEDED',
   dangerStrong: '#B02121',
-  // Texto sobre os preenchimentos semânticos (badges): branco sobre vermelho,
-  // navy sobre amarelo. Iguais nos cinco temas de propósito.
+  // Pares de badge (ver comentário no topo). `#E84545` com branco dá 3,9:1;
+  // o preenchimento do badge é o vermelho-texto.
+  dangerFill: '#B02121',
   onDanger: '#FFFFFF',
+  // Um degrau abaixo do `warning`: o badge precisa de 3:1 contra o branco do
+  // header como componente (#CA8A04 dava 2,9:1) e o navy continua em 4,8:1.
+  warningFill: '#BD8000',
   onWarning: '#0B1B2E',
+  onAccent: '#0B1B2E',
 };
 
 // Default Dark: o bloco `.dark` do index.css sem sufixo. Sóbrio, superfícies
@@ -82,8 +96,11 @@ export const BENTO_DARK_DEFAULT = {
   danger: '#FF6B6B',
   dangerSoft: 'rgba(255, 107, 107, 0.15)',
   dangerStrong: '#FF6B6B',
-  onDanger: '#FFFFFF',
+  dangerFill: '#FF6B6B',
+  onDanger: '#0B1B2E',
+  warningFill: '#FACC15',
   onWarning: '#0B1B2E',
+  onAccent: '#111C2C',
 };
 
 export const BENTO_DARK_CYBER = {
@@ -113,8 +130,11 @@ export const BENTO_DARK_CYBER = {
   danger: '#FF2A54',
   dangerSoft: 'rgba(255, 42, 84, 0.12)',
   dangerStrong: '#FF2A54',
-  onDanger: '#FFFFFF',
+  dangerFill: '#FF2A54',
+  onDanger: '#0B1B2E',
+  warningFill: '#FACC15',
   onWarning: '#0B1B2E',
+  onAccent: '#111C2C',
 };
 
 export const BENTO_DARK_AURORA = {
@@ -144,8 +164,12 @@ export const BENTO_DARK_AURORA = {
   danger: '#FF007A',
   dangerSoft: 'rgba(255, 0, 122, 0.15)',
   dangerStrong: '#FF4DA0',
-  onDanger: '#FFFFFF',
+  // `#FF007A` com navy fica em 4,6:1; o rosa mais claro dá folga (5,3:1).
+  dangerFill: '#FF4DA0',
+  onDanger: '#0B1B2E',
+  warningFill: '#FACC15',
   onWarning: '#0B1B2E',
+  onAccent: '#161233',
 };
 
 export const BENTO_DARK_AMOLED = {
@@ -176,8 +200,12 @@ export const BENTO_DARK_AMOLED = {
   dangerSoft: 'rgba(213, 0, 0, 0.15)',
   // #D50000 sobre #0A0A0A dá 3,9:1; como texto ("Sair da conta") precisa mais.
   dangerStrong: '#FF5252',
+  // Único escuro em que o vermelho é fundo o bastante para o branco (5,5:1).
+  dangerFill: '#D50000',
   onDanger: '#FFFFFF',
+  warningFill: '#FACC15',
   onWarning: '#0B1B2E',
+  onAccent: '#0A0A0A',
 };
 
 export const BENTO_DARK = BENTO_DARK_DEFAULT; // Fallback export

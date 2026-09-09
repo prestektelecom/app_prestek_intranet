@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Icons } from './common/Icons';
 import logoP from '../image/logos/Logo_P.webp';
 import { useBentoTheme } from '../hooks/useBentoTheme';
-import { useNotificacoes } from '../hooks/useComunicados';
+import { useNotificacoes, coresDoBadge } from '../hooks/useComunicados';
 import { useDismissable } from '../hooks/useDismissable';
 import { visibleNav } from '../navigation';
 import ProfileMenu from './ProfileMenu';
@@ -46,10 +46,15 @@ function GroupLabel({ C, collapsed, children, showSeparator = true }) {
   );
 }
 
-function NavRow({ C, collapsed, id, icon, label, active, badge, onClick }) {
+function NavRow({ C, collapsed, id, icon, label, active, badge, badgeCores, onClick }) {
   const [hover, setHover] = useState(false);
   const IconComponent = Icons[icon];
   const badgeLabel = badge > 9 ? '9+' : badge;
+  // Item ativo: badge no accent com `onAccent` (branco sobre laranja dá 2,8:1
+  // no claro). Inativo: versão suave da cor da severidade, igual ao sino.
+  const badgeStyle = active
+    ? { background: C.accent, color: C.onAccent }
+    : { background: badgeCores.soft, color: badgeCores.strong };
 
   return (
     <button
@@ -82,8 +87,7 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, onClick }) {
         <span
           aria-hidden="true"
           style={{
-            background: active ? C.accent : C.dangerSoft,
-            color: active ? C.surface : C.dangerStrong,
+            ...badgeStyle,
             fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 700,
             minWidth: 18, height: 18, padding: '0 6px', borderRadius: 999,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -95,7 +99,7 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, onClick }) {
       {collapsed && badge > 0 && (
         <span aria-hidden="true" style={{
           position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4,
-          background: active ? C.accent : C.danger,
+          background: active ? C.accent : badgeCores.fill,
         }} />
       )}
     </button>
@@ -104,7 +108,8 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, onClick }) {
 
 export default function Sidebar({ currentView, setCurrentView, user, profile, searchQuery, setSearchQuery }) {
   const C = useBentoTheme();
-  const { naoLidos } = useNotificacoes(user);
+  const { naoLidos, severidade } = useNotificacoes(user);
+  const badgeCores = coresDoBadge(C, severidade);
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [profileHover, setProfileHover] = useState(false);
@@ -159,6 +164,7 @@ export default function Sidebar({ currentView, setCurrentView, user, profile, se
       label={item.label}
       active={currentView === item.id}
       badge={badgeFor(item)}
+      badgeCores={badgeCores}
       onClick={setCurrentView}
     />
   );

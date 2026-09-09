@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Icons } from '../common/Icons';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
-import { useNotificacoes } from '../../hooks/useComunicados';
+import { useNotificacoes, coresDoBadge } from '../../hooks/useComunicados';
 import { useDismissable } from '../../hooks/useDismissable';
 import { formatRelativeTime } from '../../utils/relativeTime';
 
@@ -39,7 +39,7 @@ function LinkButton({ C, onClick, children, size = 12 }) {
 export default function NotificationBell({ user, setCurrentView }) {
   const C = useBentoTheme();
   const {
-    urgentes, importantes, isUnread, naoLidos, naoLidosUrgentes, naoLidosImportantes,
+    urgentes, importantes, isUnread, naoLidos, severidade,
     marcarLida, marcarTodas, loaded, erro,
   } = useNotificacoes(user);
 
@@ -49,10 +49,9 @@ export default function NotificationBell({ user, setCurrentView }) {
   useDismissable(rootRef, { open: isOpen, onClose: close });
 
   const badgeLabel = naoLidos > 9 ? '9+' : String(naoLidos);
-  // Vermelho com texto branco passa em todo tema; amarelo só com texto escuro.
-  const badgeStyle = naoLidosUrgentes > 0
-    ? { background: C.danger, color: C.onDanger }
-    : { background: C.warning, color: C.onWarning };
+  // Mesma cor que a Sidebar e a barra inferior: vem da severidade, não daqui.
+  const badge = coresDoBadge(C, severidade);
+  const badgeStyle = { background: badge.fill, color: badge.onFill };
 
   const vazio = urgentes.length === 0 && importantes.length === 0;
 
