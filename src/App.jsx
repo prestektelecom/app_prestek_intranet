@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
@@ -66,6 +66,22 @@ export default function App() {
     })
 
     const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false)
+
+    // "Pular para o conteúdo" (WCAG 2.4.1): a Sidebar tem 16 paradas de Tab
+    // antes da página. Ao trocar de view o foco vai para o wrapper do
+    // conteúdo, assim o leitor de tela anuncia a página nova e o teclado
+    // começa nela, não no topo da Sidebar. Não move no primeiro render.
+    const conteudoRef = useRef(null)
+    const viewAnterior = useRef(currentView)
+    useEffect(() => {
+        // Compara com a view anterior (e não com um "primeiro render"): o
+        // StrictMode roda o efeito duas vezes no dev e um flag booleano
+        // roubava o foco na carga inicial.
+        if (viewAnterior.current !== currentView && currentView !== 'login') {
+            conteudoRef.current?.focus({ preventScroll: true })
+        }
+        viewAnterior.current = currentView
+    }, [currentView])
 
     useEffect(() => {
         if (currentView !== 'login') {
@@ -178,11 +194,17 @@ export default function App() {
     return (
         <HeaderActionsProvider>
             <div className="bg-background text-foreground font-jakarta h-screen h-dvh flex transition-colors duration-200">
+                <a href="#conteudo" className="skip-link">Pular para o conteúdo</a>
                 <Sidebar currentView={currentView} setCurrentView={setCurrentView} user={user} profile={profile} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
                 <div className="flex flex-1 flex-col overflow-hidden">
                     <Header currentView={currentView} setCurrentView={setCurrentView} user={user} profile={profile} />
                     {/* Abaixo de lg a barra inferior é fixa; o conteúdo reserva a altura dela. */}
-                    <div className="flex-1 flex overflow-hidden pb-[var(--bottom-nav-h)] lg:pb-0">
+                    <div
+                        id="conteudo"
+                        ref={conteudoRef}
+                        tabIndex={-1}
+                        className="flex-1 flex overflow-hidden pb-[var(--bottom-nav-h)] lg:pb-0 outline-none"
+                    >
                         {renderView()}
                     </div>
                 </div>

@@ -32,11 +32,18 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 
 ## Pendências
 
-- [ ] Impeccable Fase 1 (chrome), rodada `colorize` **aplicada mas não verificada no navegador** (12 arquivos modificados, sem commit): tokens `dangerFill`/`onDanger`/`warningFill`/`onWarning`/`onAccent` nos 5 temas (`useBentoTheme.js` + `index.css`), helper `coresDoBadge` + `severidade` em `useComunicados.js`, badges do sino/Sidebar/barra na mesma cor, `NotFound` com `onAccent`, swatches com borda `ink2` e ponto `success`, `ResponsiveTable` sem `muted`. Build do Vite passou; contraste por script passou nos 5 temas (0 falhas). Falta: (1) medir no navegador (o Playwright MCP ficou travado por um Chrome órfão com o perfil `ms-playwright-mcp\mcp-chrome-9c2af76`; encerrar esses `chrome.exe` antes), (2) re-crítica dual-agent do `src/App.jsx` (alvo ≥ 25/40 sem P1), (3) marcar 1.6/1.7 no programa e commitar, (4) Fase 2 (Login + NotFound)
-- [ ] Decisão tomada em 2026-09-08: Painel Admin fora do shell fica para a Fase 15, não entra na change do chrome
+- [ ] Impeccable: **Fase 1 (chrome) fechada**. Próximo: Fase 2 (Login + NotFound), tarefas 2.1 a 2.6 em `openspec/changes/programa-impeccable/tasks.md`. Levar para a Fase 2 os P2 do chrome que tocam o NotFound: header diz "Painel Admin" na tela de sem-permissão, "Mais" acende embaixo, Lottie do 404 preto no escuro
+- [ ] Antes da Fase 16: decidir a arquitetura da Sidebar (grupos por frequência: "Dia a dia" / "Empresa" / "Administração"), apontada como P2 nas duas últimas críticas
+- [ ] Arquivar a change `impeccable-chrome` (o `openspec archive` falha com EPERM nesta máquina; mover à mão para `changes/archive/`)
+
+## Decisões (Impeccable)
+
+- 2026-09-08: Painel Admin renderizado fora do shell fica para a Fase 15, não entra na change do chrome.
+- 2026-09-08: badges preenchidos usam o par `dangerFill`/`onDanger` ou `warningFill`/`onWarning` do tema (Badge Pair Rule no DESIGN.md); texto pequeno sobre laranja é `onAccent`, nunca branco.
 
 ## Histórico de sessões
 
 - 2026-09-08: configurada integração Obsidian ↔ Claude Code (CLAUDE.md + esta nota).
 - 2026-09-08: Fase 1 do Impeccable re-verificada. Re-audit do chrome 9 → 15/20 (portão passado); re-crítica 19 → 24/40 (alvo 25 não atingido; 2 P1: Painel Admin fora do shell, badge de urgência 3,9:1). Relatório em `docs/impeccable/audit-chrome-2026-09-08.md`. Commitado pelo Felix ("Memoria atualizada", f66902a).
-- 2026-09-08 (noite): rodada `colorize` do chrome aplicada no working tree, interrompida antes da verificação no navegador. Servidores de dev (5000/3001) podem ter ficado no ar.
+- 2026-09-08 (noite): rodada `colorize` do chrome aplicada; commitada pelo Felix (`de5733d`).
+- 2026-09-09: `colorize` verificado no navegador nos 5 temas; 3ª crítica 27/40 com 3 P1 de teclado, corrigidos (`harden`: foco preso no sheet, Escape em captura, skip link, trilho do toggle) e verificados. Fase 1 fechada. Dica operacional: se o Playwright MCP acusar "Browser is already in use", matar os `chrome.exe` com `--user-data-dir=...ms-playwright-mcp\mcp-chrome-*`.

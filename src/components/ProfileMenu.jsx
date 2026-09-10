@@ -61,7 +61,9 @@ function ToggleSwitch({ checked, C }) {
       aria-hidden="true"
       style={{
         width: 32, height: 18, borderRadius: 9,
-        background: checked ? C.accent : C.line,
+        // Desligado em `muted` (3,0:1 no claro, 5,7:1 no escuro): com `line`
+        // o trilho media 1,2:1 e o controle sumia sobre o popover.
+        background: checked ? C.accent : C.muted,
         position: 'relative', transition: 'background 0.2s', flexShrink: 0, display: 'block',
       }}
     >

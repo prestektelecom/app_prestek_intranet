@@ -3,13 +3,27 @@ import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { useDismissable } from '../../hooks/useDismissable';
 
 // Sheet inferior do chrome mobile (usado por "Mais opções" e "Sua conta").
-// Diálogo de verdade: Escape fecha, foco entra, fundo não rola, scrim fecha.
+// Diálogo de verdade: Escape fecha, foco entra e NÃO SAI (Tab dá a volta
+// dentro do painel; `aria-modal` sem isso deixava o foco cair atrás do
+// scrim, no carrossel do Dashboard), fundo não rola, scrim fecha.
 // Só existe abaixo de `lg`.
+
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export default function BottomSheet({ open, onClose, label, children }) {
   const C = useBentoTheme();
   const panelRef = useRef(null);
   useDismissable(panelRef, { open, onClose, lockScroll: true, closeOnOutside: false });
+
+  const trapTab = (e) => {
+    if (e.key !== 'Tab' || !panelRef.current) return;
+    const items = Array.from(panelRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+    if (items.length === 0) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
 
   if (!open) return null;
 
@@ -25,6 +39,7 @@ export default function BottomSheet({ open, onClose, label, children }) {
         role="dialog"
         aria-modal="true"
         aria-label={label}
+        onKeyDown={trapTab}
         style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
           background: C.popover, borderTopLeftRadius: 24, borderTopRightRadius: 24,

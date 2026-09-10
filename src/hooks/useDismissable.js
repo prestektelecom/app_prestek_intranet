@@ -34,7 +34,9 @@ export function useDismissable(ref, { open, onClose, lockScroll = false, closeOn
       if (container && !container.contains(e.target)) onCloseRef.current?.();
     };
 
-    document.addEventListener('keydown', onKey);
+    // Escape em fase de CAPTURA: um `stopPropagation` de página (os pontos do
+    // carrossel do Dashboard têm um) não pode deixar um overlay aberto.
+    document.addEventListener('keydown', onKey, true);
     if (closeOnOutside) document.addEventListener('mousedown', onDown);
 
     const prevOverflow = document.body.style.overflow;
@@ -50,7 +52,7 @@ export function useDismissable(ref, { open, onClose, lockScroll = false, closeOn
 
     return () => {
       cancelAnimationFrame(raf);
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey, true);
       if (closeOnOutside) document.removeEventListener('mousedown', onDown);
       if (lockScroll) document.body.style.overflow = prevOverflow;
 

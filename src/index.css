@@ -759,6 +759,33 @@ label:has(> input.sr-only:focus-visible) {
   animation: comunicado-progresso 6s linear forwards;
 }
 
+/* ── Pular para o conteúdo ───────────────────────────────────
+   Primeiro Tab da página. Invisível até receber foco; aí aparece
+   sobre o chrome (camada Drawers e modais), no accent com `on-accent`. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1100;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-200%);
+  opacity: 0;
+  pointer-events: none;
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+  outline: 2px solid var(--ink, #0B1B2E);
+  outline-offset: 2px;
+}
+
 /* ═══════════════════════════════════════════════════════════
    Print Styles — Prestek Intranet
    O app é um SPA com h-screen + overflow-hidden. Sem estes
