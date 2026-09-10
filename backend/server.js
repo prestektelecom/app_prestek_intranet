@@ -93,11 +93,11 @@ app.post('/api/login', async (req, res) => {
     const { email, senha } = req.body
 
     if (!email) {
-        return res.status(400).json({ sucesso: false, erro: 'Email é obrigatório.' })
+        return res.status(400).json({ sucesso: false, erro: 'E-mail é obrigatório.', campo: 'email' })
     }
 
     if (!senha) {
-        return res.status(400).json({ sucesso: false, erro: 'Senha é obrigatória.' })
+        return res.status(400).json({ sucesso: false, erro: 'Senha é obrigatória.', campo: 'senha' })
     }
 
     // Monta o token Basic Auth a partir do .env
@@ -135,11 +135,16 @@ app.post('/api/login', async (req, res) => {
 
         const dados = await resposta.json()
 
-        // Nenhum usuário encontrado com esse email
-        if (dados.total === 0) {
+        // Nenhum usuário encontrado com esse email. O IXC devolve `total` como
+        // texto ("0"), então a comparação estrita com 0 deixava passar e o
+        // `registros[0]` explodia num 500 com a exceção exposta ao usuário.
+        const total = Number(dados?.total)
+        if (!(total > 0) || !Array.isArray(dados.registros) || dados.registros.length === 0) {
+            // `campo` diz à tela qual campo marcar e focar.
             return res.status(401).json({
                 sucesso: false,
-                erro: 'Usuário não encontrado.'
+                erro: 'Usuário não encontrado.',
+                campo: 'email'
             })
         }
 
@@ -150,7 +155,8 @@ app.post('/api/login', async (req, res) => {
         if (usuario.senha !== senhaHash) {
             return res.status(401).json({
                 sucesso: false,
-                erro: 'Senha incorreta.'
+                erro: 'Senha incorreta.',
+                campo: 'senha'
             })
         }
 
@@ -158,7 +164,7 @@ app.post('/api/login', async (req, res) => {
         if (usuario.status !== 'A') {
             return res.status(403).json({
                 sucesso: false,
-                erro: 'Usuário inativo. Entre em contato com o administrador.'
+                erro: 'Usuário inativo. Fale com a TI.'
             })
         }
 
@@ -219,10 +225,12 @@ app.post('/api/login', async (req, res) => {
         })
 
     } catch (erro) {
-        console.error('Erro interno no servidor:', erro.message);
+        // O detalhe fica no log; o cliente recebe um texto fixo. Mensagem de
+        // exceção nunca vai para a tela.
+        console.error('Erro interno no /api/login:', erro);
         return res.status(500).json({
             sucesso: false,
-            erro: `Erro interno no servidor: ${erro.message}`
+            erro: 'Não foi possível entrar agora. Tente de novo em instantes.'
         });
     }
 })

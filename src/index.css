@@ -256,7 +256,7 @@
   --danger-soft:     rgba(255, 42, 84, 0.12);
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
-  --danger-strong:   var(--danger-bento);
+  --danger-strong:   #FF5C7A; /* texto: 5,4:1 sobre danger-soft no vidro */
   --danger-fill:     #FF2A54;
   --on-danger:       #0B1B2E;
   --warning-fill:    #FACC15;
@@ -472,35 +472,6 @@
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   border-bottom: 1px solid var(--border);
-}
-
-/* ── Login Screen ───────────────────────────────────────────── */
-.login-card {
-  max-height: 640px;
-  min-height: 500px;
-}
-
-.login-image {
-  opacity: 0.85;
-  transition: transform 0.6s ease, opacity 0.4s ease;
-}
-
-.login-card:hover .login-image {
-  transform: scale(1.03);
-  opacity: 0.95;
-}
-
-.login-btn {
-  animation: login-pulse 2.5s ease-in-out infinite;
-}
-
-.login-btn:hover {
-  animation: none;
-}
-
-@keyframes login-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(236, 125, 35, 0.30); }
-  50%       { box-shadow: 0 0 0 8px rgba(236, 125, 35, 0); }
 }
 
 /* ── Notification Bell ──────────────────────────────────────── */
@@ -859,3 +830,22 @@ label:has(> input.sr-only:focus-visible) {
      9999   alertas críticos / toasts (acima de tudo)
    ═══════════════════════════════════════════════════════════ */
 
+
+/* ── Login ───────────────────────────────────────────────────
+   Placeholder no token (o padrão do Tailwind, #9CA3AF, dava 2,5:1). */
+.login-input::placeholder {
+  color: var(--ink2);
+  opacity: 1;
+}
+/* Anel de foco no wrapper do campo (o input tem outline: none para não
+   desenhar dois anéis). Mesmo anel do sistema: 2px em accent. */
+.login-field:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.login-submit:not(:disabled):hover {
+  box-shadow: var(--shadow-md);
+}
+.login-submit:not(:disabled):active {
+  transform: translateY(1px);
+}

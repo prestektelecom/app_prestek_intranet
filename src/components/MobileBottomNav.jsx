@@ -1,7 +1,7 @@
 import { Icons } from './common/Icons';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 import { useNotificacoes, coresDoBadge } from '../hooks/useComunicados';
-import { mobileSlots, viewInSheet } from '../navigation';
+import { mobileSlots, viewInSheet, viewEmErro } from '../navigation';
 
 // Barra inferior do celular: quatro slots por frequência de uso (fonte única
 // em navigation.js) e "Mais". O rótulo ativo usa `ink`, nunca `accentDeep`:
@@ -13,6 +13,10 @@ export default function MobileBottomNav({ currentView, setCurrentView, isMoreShe
   const { naoLidos, severidade } = useNotificacoes(user);
   const badgeCores = coresDoBadge(C, severidade);
 
+  // Numa tela de erro (view inexistente ou sem permissão) nenhum slot acende:
+  // "Mais" ficava ativo em cima de "Você não tem acesso a esta área".
+  const emErro = viewEmErro(currentView, user);
+
   const slots = mobileSlots(user).map((item) => ({
     id: item.id,
     label: item.mobileLabel ?? item.label,
@@ -23,7 +27,7 @@ export default function MobileBottomNav({ currentView, setCurrentView, isMoreShe
 
   const navItems = [
     ...slots,
-    { id: 'more', label: 'Mais', icon: 'More', badge: 0, active: isMoreSheetOpen || viewInSheet(currentView) },
+    { id: 'more', label: 'Mais', icon: 'More', badge: 0, active: isMoreSheetOpen || (viewInSheet(currentView) && !emErro) },
   ];
 
   const handleItemClick = (id) => {

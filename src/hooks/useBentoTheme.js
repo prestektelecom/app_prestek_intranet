@@ -129,7 +129,9 @@ export const BENTO_DARK_CYBER = {
   warningStrong: '#FACC15',
   danger: '#FF2A54',
   dangerSoft: 'rgba(255, 42, 84, 0.12)',
-  dangerStrong: '#FF2A54',
+  // `#FF2A54` como texto sobre `dangerSoft` composto na superfície de vidro
+  // dava 4,4:1; o rosa mais claro rende 5,4:1 (mesmo motivo do Aurora).
+  dangerStrong: '#FF5C7A',
   dangerFill: '#FF2A54',
   onDanger: '#0B1B2E',
   warningFill: '#FACC15',

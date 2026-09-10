@@ -1,33 +1,54 @@
-import { useState } from 'react'
-import { UserIcon, LockIcon, EyeIcon, EyeOffIcon, ArrowIcon, ShieldIcon } from './Icons'
+import { useEffect, useRef } from 'react'
+import { useBentoTheme, isDarkActive } from '../../hooks/useBentoTheme'
+import { useTheme } from '../../hooks/useTheme'
+import { UserIcon, LockIcon, EyeIcon, EyeOffIcon, ArrowIcon } from './Icons'
+import logo from '../../image/logos/Logo.webp'
 
-function Field({ label, icon, type = 'text', placeholder, value, onChange, trailing, disabled }) {
-    const [focused, setFocused] = useState(false)
+// Formulário de entrada. Toda cor vem de `C` (useBentoTheme), como no resto
+// do portal; o anel de foco é o global do index.css. Campos nomeados para o
+// leitor de tela e para o gerenciador de senha do navegador.
+
+const FONT = '"Plus Jakarta Sans", system-ui, sans-serif'
+
+function Field({ C, id, name, label, icon, type = 'text', placeholder, value, onChange, trailing, disabled, invalid, describedBy, inputRef, autoComplete, inputMode, autoFocus }) {
     return (
         <div>
-            <label className="block text-[13px] font-semibold text-[#1C2B3A] mb-2">{label}</label>
+            <label htmlFor={id} style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.ink, marginBottom: 8 }}>
+                {label}
+            </label>
+            {/* O anel de foco vai para o wrapper (`.login-field:focus-within` no
+                index.css); o input tem `outline: none` para não desenhar dois anéis. */}
             <div
-                className="flex items-center gap-3 h-[50px] px-3.5 rounded-xl transition-all duration-150"
+                className="login-field"
                 style={{
-                    background: focused ? 'white' : '#F7FAFD',
-                    border: `1.5px solid ${focused ? '#EC7D23' : '#E4ECF5'}`,
-                    boxShadow: focused ? '0 0 0 4px rgba(236,125,35,0.12)' : 'none',
+                    display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, padding: '0 6px 0 12px', borderRadius: 12,
+                    // Borda em `muted` (3,0:1 no claro, 5,7:1 no escuro): com `line`
+                    // o campo media 1,2:1 e quase não tinha contorno.
+                    background: C.surface, border: `1px solid ${invalid ? C.dangerStrong : C.muted}`,
                 }}
             >
-                <span className="flex shrink-0 transition-colors" style={{ color: focused ? '#EC7D23' : '#9AA5B4' }}>
-                    {icon}
-                </span>
+                <span aria-hidden="true" style={{ display: 'flex', flexShrink: 0, color: invalid ? C.dangerStrong : C.ink2 }}>{icon}</span>
                 <input
+                    ref={inputRef}
+                    id={id}
+                    name={name}
                     type={type}
+                    autoComplete={autoComplete}
+                    inputMode={inputMode}
+                    autoFocus={autoFocus}
                     placeholder={placeholder}
                     value={value}
                     onChange={onChange}
-                    onFocus={() => setFocused(true)}
-                    onBlur={() => setFocused(false)}
                     disabled={disabled}
-                    className="flex-1 border-none outline-none bg-transparent text-[15px] text-[#1C2B3A] placeholder:text-[#9AA5B4] disabled:opacity-60"
+                    aria-invalid={invalid || undefined}
+                    aria-describedby={invalid ? describedBy : undefined}
+                    style={{
+                        flex: 1, minWidth: 0, height: 42, border: 'none', outline: 'none', background: 'transparent',
+                        fontSize: 14, color: C.ink, fontFamily: FONT,
+                    }}
+                    className="login-input"
                 />
-                {trailing && <span className="cursor-pointer flex shrink-0">{trailing}</span>}
+                {trailing}
             </div>
         </div>
     )
@@ -36,109 +57,195 @@ function Field({ label, icon, type = 'text', placeholder, value, onChange, trail
 export default function LoginForm({
     email, setEmail,
     senha, setSenha,
-    erro, carregando,
+    erro, erroCampo, erroSeq,
+    carregando,
     mostrarSenha, setMostrarSenha,
     lembrar, setLembrar,
-    credValida,
     backendPronto,
     verificandoBackend,
-    handleSubmit
+    servidorFora,
+    tentarAgora,
+    handleSubmit,
+    mostrarLogo = false,
 }) {
+    const C = useBentoTheme()
+    const { theme } = useTheme()
+    const escuro = isDarkActive(theme)
+    const emailRef = useRef(null)
+    const senhaRef = useRef(null)
+
+    // Depois de um erro, o foco vai para o campo que ele aponta. O banner é
+    // `role="alert"`, então o leitor de tela anuncia a mensagem antes.
+    // Depende de `erroSeq` para disparar mesmo quando o erro se repete.
+    useEffect(() => {
+        if (!erroSeq) return
+        if (erroCampo === 'email') emailRef.current?.focus()
+        else if (erroCampo === 'senha') senhaRef.current?.focus()
+    }, [erroSeq, erroCampo])
+
+    // O botão só trava quando o servidor está fora de verdade (duas falhas
+    // seguidas do health check); uma falha isolada em rede lenta não pode
+    // declarar a intranet fora do ar. `loginUsuario` já cobre 5xx com retry.
+    const podeEnviar = !carregando && !servidorFora
+
     return (
-        <div className="flex flex-col justify-center p-14 bg-white min-h-[600px]">
-            <h1 className="font-display text-3xl font-extrabold text-[#1C2B3A] m-0 tracking-tight leading-tight">
-                Bem-vindo à Prestek Inc.
+        <div className="flex flex-col justify-center p-6 md:p-10 lg:p-14 lg:min-h-[600px]" style={{ background: C.surface, fontFamily: FONT }}>
+            {/* Abaixo de `lg` o painel da marca não monta; o logo vem para cá,
+                senão a porta do celular não tem nenhum sinal da Prestek. */}
+            {mostrarLogo && (
+                <img
+                    src={logo}
+                    alt="Prestek Telecom"
+                    style={{ height: 32, width: 'auto', alignSelf: 'flex-start', marginBottom: 20, filter: escuro ? 'brightness(0) invert(1)' : 'none' }}
+                />
+            )}
+            <h1 className="font-display text-2xl md:text-3xl font-extrabold tracking-tight leading-tight" style={{ color: C.ink, margin: 0 }}>
+                Entrar na Intranet
             </h1>
-            <div className="w-12 h-[3px] bg-[#EC7D23] rounded mt-3.5" />
-            <p className="text-[14.5px] text-[#475467] mt-4 mb-8 leading-relaxed">
-                Insira suas credenciais para acessar o sistema.
+            <p style={{ fontSize: 14, color: C.ink2, marginTop: 8, marginBottom: 24, lineHeight: 1.5 }}>
+                Use o mesmo usuário e senha do IXC.
             </p>
 
-            {erro && (
-                <div className="mb-6 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl flex items-center gap-3">
-                    <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-medium">{erro}</span>
+            <div role="alert" id="login-erro" aria-live="assertive">
+                {erro && (
+                    <div style={{
+                        marginBottom: 16, padding: '10px 12px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10,
+                        background: C.dangerSoft, border: `1px solid ${C.dangerStrong}`, color: C.dangerStrong, fontSize: 14, fontWeight: 600,
+                    }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ flexShrink: 0 }}>
+                            <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" strokeLinecap="round" />
+                        </svg>
+                        <span>{erro}</span>
+                    </div>
+                )}
+            </div>
+
+            {servidorFora && (
+                <div role="status" style={{
+                    marginBottom: 16, padding: '10px 12px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+                    background: C.warningSoft, border: `1px solid ${C.warningStrong}`, color: C.warningStrong, fontSize: 14,
+                }}>
+                    <span style={{ flex: 1, minWidth: 180, fontWeight: 600 }}>A intranet está fora do ar. Tente de novo em instantes ou avise a TI.</span>
+                    <button
+                        type="button"
+                        onClick={tentarAgora}
+                        disabled={verificandoBackend}
+                        aria-busy={verificandoBackend || undefined}
+                        style={{
+                            minHeight: 36, padding: '0 12px', borderRadius: 8, border: `1px solid ${C.warningStrong}`, background: 'transparent',
+                            color: C.warningStrong, fontWeight: 700, fontSize: 13, fontFamily: 'inherit',
+                            cursor: verificandoBackend ? 'wait' : 'pointer', opacity: verificandoBackend ? 0.7 : 1,
+                        }}
+                    >
+                        {verificandoBackend ? 'Verificando...' : 'Tentar agora'}
+                    </button>
                 </div>
             )}
 
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
                 <Field
-                    label="E-mail"
+                    C={C}
+                    id="email"
+                    name="username"
+                    label="E-mail do IXC"
                     icon={<UserIcon />}
-                    placeholder="Seu usuário IXC"
+                    type="email"
+                    autoComplete="username"
+                    inputMode="email"
+                    autoFocus
+                    placeholder="nome@prestek.com.br"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={carregando}
+                    invalid={erroCampo === 'email'}
+                    describedBy="login-erro"
+                    inputRef={emailRef}
                 />
                 <Field
+                    C={C}
+                    id="senha"
+                    name="password"
                     label="Senha"
                     icon={<LockIcon />}
                     type={mostrarSenha ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    placeholder="Sua senha do IXC"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                     disabled={carregando}
+                    invalid={erroCampo === 'senha'}
+                    describedBy="login-erro"
+                    inputRef={senhaRef}
                     trailing={
                         <button
                             type="button"
                             onClick={() => setMostrarSenha(!mostrarSenha)}
-                            className="p-0.5 hover:opacity-70 transition-opacity"
+                            aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                            aria-pressed={mostrarSenha}
+                            style={{
+                                width: 44, height: 44, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.ink2, flexShrink: 0,
+                            }}
                         >
                             {mostrarSenha ? <EyeOffIcon /> : <EyeIcon />}
                         </button>
                     }
                 />
 
-                <div className="flex items-center justify-between mt-1">
-                    <label
-                        className="flex items-center gap-2.5 cursor-pointer select-none"
-                        onClick={(e) => { e.preventDefault(); setLembrar((v) => !v) }}
-                    >
+                <div className="flex items-center justify-between gap-3 flex-wrap" style={{ marginTop: 4 }}>
+                    {/* Checkbox real (sr-only) com o quadrado desenhado como irmão: Tab
+                        chega nele, Espaço alterna, e o anel de foco vai para o quadrado
+                        via `label:has(> input.sr-only:focus-visible)` do index.css. */}
+                    <label htmlFor="lembrar" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, minHeight: 44, cursor: 'pointer', userSelect: 'none', borderRadius: 8, padding: '0 2px' }}>
+                        <input
+                            id="lembrar"
+                            className="sr-only"
+                            type="checkbox"
+                            checked={lembrar}
+                            onChange={(e) => setLembrar(e.target.checked)}
+                        />
                         <span
-                            className="w-[18px] h-[18px] rounded-[5px] flex items-center justify-center transition-all shrink-0"
+                            aria-hidden="true"
                             style={{
-                                background: (lembrar || credValida) ? '#EC7D23' : 'transparent',
-                                border: `1.5px solid ${(lembrar || credValida) ? '#EC7D23' : '#9AA5B4'}`,
+                                // Raio 6 num quadrado de 20px: com 8 lia como botão de rádio.
+                                width: 20, height: 20, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                background: lembrar ? C.accent : C.surface, border: `1.5px solid ${lembrar ? C.accent : C.ink2}`,
                             }}
                         >
-                            {(lembrar || credValida) && (
-                                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                                    <path d="M2 6.5 5 9.5 10 3" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                            {lembrar && (
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                    <path d="M2 6.5 5 9.5 10 3" stroke={C.onAccent} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             )}
                         </span>
-                        <span className="text-[13.5px] text-[#475467]">Lembrar senha</span>
+                        <span style={{ fontSize: 14, color: C.ink }}>Manter conectado por 7 dias</span>
                     </label>
-                    <a href="#" className="text-[13.5px] text-[#C2410C] font-semibold no-underline hover:opacity-80 transition-opacity">
-                        Problemas ao acessar?
-                    </a>
+                    <span style={{ fontSize: 13, color: C.ink2 }}>Fale com a TI para recuperar o acesso.</span>
                 </div>
 
+                {/* Botão sólido no accent com `onAccent`: branco sobre o laranja dava
+                    2,8:1. Plano em repouso; o hover eleva com a sombra Resposta. */}
                 <button
                     type="submit"
-                    disabled={carregando || verificandoBackend || !backendPronto}
-                    className="mt-4 w-full h-[52px] border-none rounded-xl cursor-pointer text-white font-semibold text-[15px] tracking-wide flex items-center justify-center gap-2.5 transition-all duration-150 active:translate-y-px disabled:opacity-70 disabled:cursor-wait"
+                    disabled={!podeEnviar}
+                    aria-busy={carregando || undefined}
+                    className="login-submit"
                     style={{
-                        background: 'linear-gradient(180deg, #EC7D23, #C2410C)',
-                        boxShadow: '0 10px 24px rgba(236,125,35,0.32)',
+                        marginTop: 8, width: '100%', height: 48, border: 'none', borderRadius: 12,
+                        background: C.accent, color: C.onAccent, fontWeight: 700, fontSize: 14, fontFamily: 'inherit',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                        cursor: podeEnviar ? 'pointer' : 'not-allowed', opacity: podeEnviar ? 1 : 0.7,
+                        transition: 'box-shadow .15s ease, transform .1s ease',
                     }}
                 >
-                    {verificandoBackend || !backendPronto ? (
+                    {servidorFora ? (
                         <>
-                            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
+                            <span className="animate-spin" aria-hidden="true" style={{ width: 16, height: 16, borderRadius: 8, border: `2px solid ${C.onAccent}`, borderTopColor: 'transparent', opacity: 0.8 }} />
                             Aguardando servidor...
                         </>
                     ) : carregando ? (
                         <>
-                            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
+                            <span className="animate-spin" aria-hidden="true" style={{ width: 16, height: 16, borderRadius: 8, border: `2px solid ${C.onAccent}`, borderTopColor: 'transparent', opacity: 0.8 }} />
                             Entrando...
                         </>
                     ) : (
@@ -149,11 +256,6 @@ export default function LoginForm({
                     )}
                 </button>
             </form>
-
-            <div className="mt-7 pt-5 border-t border-[#E4ECF5] flex items-center justify-center gap-2 text-[12.5px] text-[#475467]">
-                <ShieldIcon />
-                <span>Segurança garantida com SSO · SAML 2.0</span>
-            </div>
         </div>
     )
 }

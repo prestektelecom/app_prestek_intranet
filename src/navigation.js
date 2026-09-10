@@ -51,6 +51,24 @@ export function viewTitle(view) {
   return item?.label ?? EXTRA_TITLES[view] ?? '';
 }
 
+export function viewExists(view) {
+  return NAV_ITEMS.some((i) => i.id === view) || Object.prototype.hasOwnProperty.call(EXTRA_TITLES, view);
+}
+
+// Título do que foi RENDERIZADO, não da view pedida: sem permissão o header
+// dizia "Painel Admin" em cima de "Você não tem acesso"; view inexistente
+// deixava o header vazio.
+export function viewTitleFor(view, user) {
+  if (!viewExists(view)) return 'Página não encontrada';
+  if (!canAccess(view, user)) return 'Acesso restrito';
+  return viewTitle(view);
+}
+
+// A view atual está numa tela de erro (não existe ou o papel não permite)?
+export function viewEmErro(view, user) {
+  return !viewExists(view) || !canAccess(view, user);
+}
+
 // Slots da barra inferior, em ordem. Sempre 4 (mais "Mais").
 export function mobileSlots(user) {
   return visibleNav(user)

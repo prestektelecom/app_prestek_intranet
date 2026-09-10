@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 import { useHeaderActionsSlot } from '../contexts/HeaderActionsContext';
-import { viewTitle } from '../navigation';
+import { viewTitleFor } from '../navigation';
 import NotificationBell from './notifications/NotificationBell';
 import MobileProfileSheet from './MobileProfileSheet';
 
@@ -12,7 +12,7 @@ import MobileProfileSheet from './MobileProfileSheet';
 export default function Header({ currentView, setCurrentView, user, profile }) {
   const C = useBentoTheme();
   const actions = useHeaderActionsSlot();
-  const title = viewTitle(currentView);
+  const title = viewTitleFor(currentView, user);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (

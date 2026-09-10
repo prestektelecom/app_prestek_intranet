@@ -1,10 +1,10 @@
 // Serviço de autenticação — chama o backend proxy local
 // Nenhuma credencial sensível fica no frontend
 
-const HOST = 'sistema.prestek.com.br'
 const MAX_RETRIES = 2
 const RETRY_DELAY_MS = 600
 const RETRYABLE_STATUS = [500, 502, 503, 504]
+const ERRO_GENERICO = 'Não foi possível entrar agora. Tente de novo em instantes.'
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -28,14 +28,11 @@ async function tentarLogin(email, senha) {
             return {
                 ok: false,
                 status: resposta.status,
-                erro: errorData.erro || `Erro no servidor (${resposta.status})`
+                erro: errorData.erro || ERRO_GENERICO,
+                campo: errorData.campo ?? null,
             };
         } catch {
-            return {
-                ok: false,
-                status: resposta.status,
-                erro: `O servidor respondeu com erro (${resposta.status}). Verifique se o backend está ativo.`
-            };
+            return { ok: false, status: resposta.status, erro: ERRO_GENERICO, campo: null };
         }
     }
 
@@ -44,10 +41,12 @@ async function tentarLogin(email, senha) {
 }
 
 /**
- * Faz login do usuário chamando o backend proxy.
- * @param {string} email - Email do usuário
- * @param {string} senha - Senha do usuário (não usada na busca, mas reservada)
- * @returns {Object|null} Dados do usuário ou null se falhou
+ * Faz login do usuário chamando o backend proxy, que valida e-mail e senha
+ * contra o IXC. Só repete a chamada em 5xx; 400/401/403 voltam na primeira
+ * com `status` e `campo` (qual campo a tela deve marcar e focar).
+ * @param {string} email
+ * @param {string} senha
+ * @returns {Promise<Object>} dados do usuário, ou `{ erro, status?, campo? }`
  */
 export async function loginUsuario(email, senha) {
     let ultimoErro = null
@@ -76,9 +75,9 @@ export async function loginUsuario(email, senha) {
 
             ultimoErro = resultado.erro
 
-            // Erros 401/403 são de autenticação — não faz sentido retry
+            // 400/401/403 são resposta definitiva — sai na primeira.
             if (!statusPrecisaRetry(resultado.status)) {
-                return { erro: resultado.erro }
+                return { erro: resultado.erro, status: resultado.status, campo: resultado.campo }
             }
 
             if (tentativa < MAX_RETRIES) {
@@ -87,7 +86,7 @@ export async function loginUsuario(email, senha) {
             }
         } catch (erro) {
             console.error('Erro ao conectar com o servidor:', erro)
-            ultimoErro = 'Erro ao conectar com o servidor. Tente novamente.'
+            ultimoErro = ERRO_GENERICO
 
             if (tentativa < MAX_RETRIES) {
                 await sleep(RETRY_DELAY_MS)
@@ -95,5 +94,5 @@ export async function loginUsuario(email, senha) {
         }
     }
 
-    return { erro: ultimoErro }
+    return { erro: ultimoErro, status: 500, campo: null }
 }

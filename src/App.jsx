@@ -19,7 +19,7 @@ import Ti from './components/Ti'
 import NotFound from './components/NotFound'
 
 import { usePresence } from './hooks/usePresence'
-import { canAccess } from './navigation'
+import { canAccess, viewTitleFor } from './navigation'
 import { useProfileDisplay } from './hooks/useProfileDisplay'
 import { HeaderActionsProvider } from './contexts/HeaderActionsContext'
 import MobileBottomNav from './components/MobileBottomNav'
@@ -93,6 +93,12 @@ export default function App() {
         }
     }, [currentView])
 
+    // Título da aba por view (dez abas abertas eram todas "Prestek Intranet Dashboard").
+    useEffect(() => {
+        const titulo = currentView === 'login' ? 'Entrar' : viewTitleFor(currentView, user)
+        document.title = titulo ? `${titulo} · Prestek Intranet` : 'Prestek Intranet'
+    }, [currentView, user])
+
     usePresence(user) // Rastreia atividade do usuário logado
     const profile = useProfileDisplay(user) // nome curto, cargo e avatar para Sidebar e Header
 
@@ -160,7 +166,7 @@ export default function App() {
                 sessionStorage.setItem('@Stitch:currentView', 'dashboard')
             }
             setCurrentView('dashboard')
-        }} setCurrentView={setCurrentView} />
+        }} />
     }
 
     // Gate de papel (PRODUCT.md, princípio 4): esconder o item no menu não
