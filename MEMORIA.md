@@ -31,6 +31,8 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
   por isso a nota mora aqui e não em `20 Projetos/prestek-intranet.md`.
 
 ## Pendências
+- [ ] **Urgente — rotacionar segredos expostos no histórico do git** (achados em 2026-09-11 ao corrigir G2): chave de um projeto Supabase (`lovable_keys.txt`, sem relação com este stack), um token IXC hardcoded (`tmp_check_ti.js`), e as credenciais SSH já sinalizadas em `backend/.env copy.example`. Remover do rastreamento do git não anula a exposição já feita — os valores continuam no histórico até uma reescrita (`git filter-repo`, fora de escopo por enquanto).
+- [ ] Decidir sobre push/PR da branch `main` com o commit `1e530a0` (correção de segurança G1-G6) — commitado localmente em 2026-09-11, ainda não enviado ao remoto por decisão do Felix.
 - [ ] Otimizar `Logo.webp` (316 KB, 1616×1087) para um recorte menor no Login: painel usa 168×113, formulário mobile usa 48×32. Gerar `Logo_480.webp` (~16 KB) e apontar `LoginForm.jsx`/`LoginBrandPanel.jsx` para ele. Não é bloqueio, é otimização de peso (P3 registrado na crítica de 2026-09-10).
 
 - [x] Impeccable: **Fases 1 (chrome), 2 (Login + NotFound) e 3 (Dashboard) fechadas**. Próximo: Fase 4 (Plantão), tarefas 4.1 a 4.7 em `openspec/changes/programa-impeccable/tasks.md` — inclui resolver `escala-botao-criar-plantao` (0/11) e `modernizar-visao-geral-escala`
@@ -48,6 +50,11 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 - 2026-09-10: `lottie-react` removido do projeto (só sobrava como dependência transitiva de `LottieAvatar`); `lottie-web` declarado direto no `package.json`.
 - 2026-09-11 (Fase 3, Dashboard): grid do Dashboard fica fixo por decisão, não reativado. `isDraggable`/`isResizable` continuam `false`; o PRODUCT.md e a spec `dashboard-customization` foram atualizados para não descrever mais isso como capacidade ativa. Os endpoints de backend `/api/user/dashboard-layout` permanecem no código, sem uso, caso a capacidade volte a ser considerada no futuro.
 - 2026-09-11: escopo da change `impeccable-dashboard` limitado a P0 + P1 por decisão do Felix; os P2/P3 (nome de aniversariante com anotação do IXC, fetches redundantes de comunicados/departamentos, links mortos do rodapé, teto do badge de variação, tamanhos de fonte) ficam registrados no audit para uma rodada de polish futura, não entram nesta change.
+
+## Decisões (Segurança)
+
+- 2026-09-11: campanha Mantis (`GUIA-CORRECAO.md`, anexado pelo Felix) apontou 6 achados (G1-G6) no backend/frontend. Corrigidos G1 (nenhuma rota `/api/*` exigia login → JWT via `requireAuth`, montado globalmente em `/api` exceto `/login` e `/health`), G5 (admin confiava no header `x-admin-email` vindo do cliente → identidade agora vem de `req.usuario.email`, do JWT verificado), G3 (login sem rate limit → `express-rate-limit`, 5/min), G4 (CORS refletia qualquer origem → whitelist via `CORS_ORIGENS`, default `http://localhost:5000`, a porta real do Vite — o guia supunha 5173, errado). G6 já estava corrigido de sessão anterior. G2 (PII versionada) resolvido destravando os dumps do git e atualizando `.gitignore`; achados 4 arquivos extras com segredos reais não listados no guia (ver Pendências). Commit `1e530a0`, não enviado ao remoto.
+- 2026-09-11: frontend injeta `Authorization: Bearer` via patch global de `window.fetch` em `main.jsx` (atalho para não reescrever ~22 pontos de `fetch('/api/...')`), comparando por `pathname` para cobrir tanto chamadas relativas quanto as que montam URL absoluta via `VITE_API_URL`/`localhost:3001` (vários componentes admin faziam isso). O mesmo patch desloga automaticamente em qualquer 401 fora de `/api/login` — sem isso, sessões salvas antes desta mudança ficavam com a tela travada e widgets vazios, sem caminho de volta ao login.
 
 ## Histórico de sessões
 
