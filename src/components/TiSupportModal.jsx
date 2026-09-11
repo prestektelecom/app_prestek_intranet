@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useDismissable } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
 
 // ─── Design system idêntico ao Dashboard ──────────────────────────────────────
@@ -9,8 +10,17 @@ const TECNICOS = [
   { id: '59841', nome: 'EVERTON DOS SANTOS VIEIRA' },
 ];
 
+// Diálogo sem role/aria-modal/foco/Escape antes: Tab visitava o header e o
+// rodapé da página por trás enquanto o overlay cobria a tela visualmente, e
+// Escape não fazia nada. `useDismissable` cobre Escape (fase de captura),
+// clique fora e foco de entrada/retorno; o trap de Tab abaixo é o mesmo
+// padrão do BottomSheet.jsx do chrome mobile.
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+const TITULO_ID = 'ti-support-modal-titulo';
+
 export default function TiSupportModal({ isOpen, onClose, user }) {
     const C = useBentoTheme();
+  const modalRef = useRef(null);
   const [mensagem, setMensagem] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
@@ -71,6 +81,18 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
     }
   };
 
+  useDismissable(modalRef, { open: isOpen, onClose: handleClose, lockScroll: true, closeOnOutside: true });
+
+  const trapTab = (e) => {
+    if (e.key !== 'Tab' || !modalRef.current) return;
+    const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+    if (items.length === 0) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+
   if (!isOpen) return null;
 
   const nomeSolicitante = user?.funcionario?.funcionario || user?.nome || 'Usuário';
@@ -85,7 +107,13 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
       backdropFilter: 'blur(6px)',
     }}>
       {/* Modal card */}
-      <div style={{
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={TITULO_ID}
+        onKeyDown={trapTab}
+        style={{
         background: C.surface,
         borderRadius: 24,
         border: `1px solid ${C.line}`,
@@ -119,7 +147,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
               </svg>
             </div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>
+              <div id={TITULO_ID} style={{ fontSize: 16, fontWeight: 700, color: C.ink, letterSpacing: '-0.015em' }}>
                 Suporte de TI
               </div>
               <div style={{ fontSize: 11.5, color: C.muted, marginTop: 1 }}>

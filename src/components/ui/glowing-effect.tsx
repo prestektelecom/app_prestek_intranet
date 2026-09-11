@@ -73,7 +73,7 @@ interface GlowingEffectProps {
   inactiveZone?: number;
   proximity?: number;
   spread?: number;
-  variant?: "default" | "white";
+  variant?: "default" | "white" | "brand";
   glow?: boolean;
   className?: string;
   disabled?: boolean;
@@ -190,15 +190,33 @@ const GlowingEffect = memo(
                   var(--black, #000),
                   var(--black, #000) calc(25% / var(--repeating-conic-gradient-times))
                 )`
+                  : variant === "brand"
+                  // "Brilho de sinal" do DESIGN.md: só o accent do tema ativo,
+                  // em três concentrações (var(), não hex fixo, para seguir
+                  // claro/escuro automaticamente). Substitui a paleta de
+                  // demonstração do componente (rosa/dourado/verde/azul), que
+                  // não tinha relação com a marca.
+                  ? `radial-gradient(circle, var(--accent) 10%, transparent 20%),
+                radial-gradient(circle at 40% 40%, var(--accent-dark) 5%, transparent 15%),
+                radial-gradient(circle at 60% 60%, var(--accent-deep) 10%, transparent 20%),
+                radial-gradient(circle at 40% 60%, var(--accent) 10%, transparent 20%),
+                repeating-conic-gradient(
+                  from 236.84deg at 50% 50%,
+                  var(--accent) 0%,
+                  var(--accent-dark) calc(25% / var(--repeating-conic-gradient-times)),
+                  var(--accent-deep) calc(50% / var(--repeating-conic-gradient-times)),
+                  var(--accent-dark) calc(75% / var(--repeating-conic-gradient-times)),
+                  var(--accent) calc(100% / var(--repeating-conic-gradient-times))
+                )`
                   : `radial-gradient(circle, #dd7bbb 10%, #dd7bbb00 20%),
                 radial-gradient(circle at 40% 40%, #d79f1e 5%, #d79f1e00 15%),
-                radial-gradient(circle at 60% 60%, #5a922c 10%, #5a922c00 20%), 
+                radial-gradient(circle at 60% 60%, #5a922c 10%, #5a922c00 20%),
                 radial-gradient(circle at 40% 60%, #4c7894 10%, #4c789400 20%),
                 repeating-conic-gradient(
                   from 236.84deg at 50% 50%,
                   #dd7bbb 0%,
                   #d79f1e calc(25% / var(--repeating-conic-gradient-times)),
-                  #5a922c calc(50% / var(--repeating-conic-gradient-times)), 
+                  #5a922c calc(50% / var(--repeating-conic-gradient-times)),
                   #4c7894 calc(75% / var(--repeating-conic-gradient-times)),
                   #dd7bbb calc(100% / var(--repeating-conic-gradient-times))
                 )`,

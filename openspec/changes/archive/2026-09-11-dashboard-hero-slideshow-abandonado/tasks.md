@@ -45,3 +45,17 @@
 - [ ] 6.5 Testar remoção de imagem no modal: verificar que o slideshow reflete a mudança imediatamente
 - [ ] 6.6 Testar migração legada: setar `localStorage['dashboardHeroBg'] = 'https://...'` e recarregar — verificar que a imagem aparece no slideshow
 - [ ] 6.7 Verificar que, com imagens salvas, o Hero exibe somente a imagem (sem textos nem overlay) e que os textos de saudação aparecem apenas no fallback de gradiente
+
+## Abandonada (2026-09-11, Fase 3 do programa Impeccable)
+
+Tarefas 1-5 estavam concluídas (23/30); a 6 (verificação manual) nunca rodou.
+Entre então e agora, o `Dashboard.jsx` foi reescrito por completo (commits
+`1b17990`, `6054504`): o `HeroCard`, o `HeroBgModal` e todo o estado
+`heroBgImage(s)` foram removidos do código. Não sobrou vestígio no `grep` do
+repositório. O header do dashboard hoje é `DashboardHeader`, sem imagem de
+fundo, sem slideshow, sem upload.
+
+Decisão: abandonar. A funcionalidade não existe mais para "terminar" — seria
+reimplementar algo que o próprio produto já decidiu não ter. Se o slideshow de
+fundo voltar a ser desejado, abrir uma proposta nova a partir do `Dashboard.jsx`
+atual, não retomar esta.

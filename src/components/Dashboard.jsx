@@ -16,13 +16,22 @@ const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.
 const CARD_TITLE = 'font-display text-xl font-bold tracking-tight text-foreground'
 const CARD = 'bento-hover-border flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm'
 const ACTION_BTN = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
+// Ação primária de um card (fundo sólido no accent): NÃO herda `bg-surface`/
+// `border-border` de ACTION_BTN. As duas classes de fundo tinham a mesma
+// especificidade CSS e `bg-surface` sempre vencia na folha gerada — o botão
+// "Gerenciar Meus Chamados" ficava branco sobre branco no tema claro, embora
+// continuasse clicável. Ver DESIGN.md, Buttons: primary sólido vs. secondary.
+const ACTION_BTN_PRIMARY = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[12.5px] font-semibold text-white shadow-md transition hover:bg-[var(--primary-hover)]'
 
 function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
   const isTouchOnly = useTouchOnly();
+  // Texto sobre fundo "-soft": os tokens `-strong` (não os `-bento`, pensados
+  // para preenchimento gráfico) são os únicos que passam 4,5:1 nos cinco
+  // temas — o DESIGN.md já documenta essa distinção.
   const toneClasses = {
-    success: 'bg-[var(--success-soft)] text-[var(--success-bento)]',
-    danger: 'bg-[var(--danger-soft)] text-[var(--danger-bento)]',
-    warning: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]',
+    success: 'bg-[var(--success-soft)] text-[var(--success-strong)]',
+    danger: 'bg-[var(--danger-soft)] text-[var(--danger-strong)]',
+    warning: 'bg-[var(--warning-soft)] text-[var(--warning-strong)]',
     muted: 'bg-surface-raised text-faint',
   };
   const subClass = toneClasses[subTone] || toneClasses.muted;
@@ -30,6 +39,7 @@ function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 bg-surface shadow-sm">
       <GlowingEffect
+        variant="brand"
         spread={40}
         glow={true}
         disabled={isTouchOnly}
@@ -217,7 +227,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
-      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div className={LABEL_MONO}>Próximo Plantão</div>
       {plantaoError ? (
@@ -267,13 +277,13 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
-      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div>
         <div className="flex items-start justify-between gap-2">
           <div className={LABEL_MONO}>Chamados no meu nome</div>
           {!osLoading && !osError && (
-            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-[var(--warning-soft)] text-[var(--warning-bento)] animate-pulse'}`}>
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)] animate-pulse'}`}>
               {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
             </span>
           )}
@@ -355,7 +365,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
 
       <button
         onClick={() => setCurrentView('tickets')}
-        className={`${ACTION_BTN} text-white bg-primary hover:bg-[var(--primary-hover)] border-none font-bold shadow-md hover:shadow-lg transition-transform active:scale-[0.98] mt-4`}
+        className={`${ACTION_BTN_PRIMARY} hover:shadow-lg transition-transform active:scale-[0.98] mt-4`}
       >
         Gerenciar Meus Chamados <Icons.ArrowR />
       </button>
@@ -721,7 +731,7 @@ function ComunicadosCard({ setCurrentView }) {
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
-      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
       {/* Header da lista */}
       <div className="flex items-center justify-between px-6 pt-5">
@@ -818,7 +828,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
-      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <h2 className={`${CARD_TITLE} mb-3.5`}>Atalhos Rápidos</h2>
       <div className="custom-scrollbar flex flex-col gap-2 overflow-y-auto pr-1.5 py-0.5">
@@ -998,7 +1008,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
-      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <div>
@@ -1114,7 +1124,7 @@ function TeamBento() {
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
-      <GlowingEffect spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
+      <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div className="mb-4 flex items-start justify-between">
         <div>

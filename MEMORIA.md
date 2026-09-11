@@ -33,10 +33,11 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 ## Pendências
 - [ ] Otimizar `Logo.webp` (316 KB, 1616×1087) para um recorte menor no Login: painel usa 168×113, formulário mobile usa 48×32. Gerar `Logo_480.webp` (~16 KB) e apontar `LoginForm.jsx`/`LoginBrandPanel.jsx` para ele. Não é bloqueio, é otimização de peso (P3 registrado na crítica de 2026-09-10).
 
-- [ ] Impeccable: **Fases 1 (chrome) e 2 (Login + NotFound) fechadas**. Próximo: Fase 3 (Dashboard), tarefas 3.1 a 3.8 em `openspec/changes/programa-impeccable/tasks.md` — inclui resolver `dashboard-hero-slideshow` (23/30) e reabrir os 3 P0 do snapshot de crítica fechado em 2026-09-07T13-39-40Z (horário de plantão inventado, `sem_dados` tratado como erro, comunicados sem teclado)
+- [ ] Impeccable: **Fases 1 (chrome), 2 (Login + NotFound) e 3 (Dashboard) fechadas**. Próximo: Fase 4 (Plantão), tarefas 4.1 a 4.7 em `openspec/changes/programa-impeccable/tasks.md` — inclui resolver `escala-botao-criar-plantao` (0/11) e `modernizar-visao-geral-escala`
 - [ ] Antes da Fase 16: decidir a arquitetura da Sidebar (grupos por frequência: "Dia a dia" / "Empresa" / "Administração"), apontada como P2 nas duas últimas críticas do chrome
 - [x] Arquivar a change `impeccable-chrome` — 2026-09-10: 10 deltas sincronizados em `openspec/specs/` (4 novas, 3 modificadas, 3 apagadas) e pasta movida para `changes/archive/2026-09-10-impeccable-chrome`
 - [x] Arquivar a change `impeccable-login` — 2026-09-10: 5 deltas sincronizados em `openspec/specs/` (3 novas: login-screen, login-api, not-found-screen; 2 modificadas: chrome-header-context, mobile-bottom-navigation); pasta movida para `changes/archive/2026-09-10-impeccable-login` (via copy+rm, o `mv` deu EPERM de novo)
+- [ ] Arquivar a change `impeccable-dashboard` depois da verificação final (Fase 3)
 
 ## Decisões (Impeccable)
 
@@ -45,6 +46,8 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 - 2026-09-10 (Fase 2, Login): escopo completo (P0 + 4 P1 + Lottie + mobile); painel esquerdo vira painel da marca com o `Logo.webp` e os anéis de sinal (Lottie de 14 MB sai); "Lembrar senha" vira "Manter conectado" só com sessão (nunca gravar senha); "Problemas ao acessar?" vira a frase "Fale com a TI para recuperar o acesso." sem link, até existir um contato oficial.
 - 2026-09-10: `/api/login` distingue "Usuário não encontrado." de "Senha incorreta." (enumeração de e-mail aceita numa intranet interna); backend nunca mais expõe `erro.message` cru ao cliente (regra a seguir nas próximas rotas tocadas).
 - 2026-09-10: `lottie-react` removido do projeto (só sobrava como dependência transitiva de `LottieAvatar`); `lottie-web` declarado direto no `package.json`.
+- 2026-09-11 (Fase 3, Dashboard): grid do Dashboard fica fixo por decisão, não reativado. `isDraggable`/`isResizable` continuam `false`; o PRODUCT.md e a spec `dashboard-customization` foram atualizados para não descrever mais isso como capacidade ativa. Os endpoints de backend `/api/user/dashboard-layout` permanecem no código, sem uso, caso a capacidade volte a ser considerada no futuro.
+- 2026-09-11: escopo da change `impeccable-dashboard` limitado a P0 + P1 por decisão do Felix; os P2/P3 (nome de aniversariante com anotação do IXC, fetches redundantes de comunicados/departamentos, links mortos do rodapé, teto do badge de variação, tamanhos de fonte) ficam registrados no audit para uma rodada de polish futura, não entram nesta change.
 
 ## Histórico de sessões
 
