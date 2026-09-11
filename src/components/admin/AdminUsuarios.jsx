@@ -37,7 +37,7 @@ export default function AdminUsuarios({ adminEmail }) {
         setErro(null);
         try {
             const url = `${API}/api/admin/usuarios${q ? `?busca=${encodeURIComponent(q)}` : ''}`;
-            const res = await fetch(url, { headers: { 'x-admin-email': adminEmail } });
+            const res = await fetch(url);
             const data = await res.json();
             if (!data.sucesso) throw new Error(data.erro);
             setUsuarios(data.usuarios);
@@ -55,7 +55,7 @@ export default function AdminUsuarios({ adminEmail }) {
         try {
             const res = await fetch(`${API}/api/admin/usuarios/${usuario.usuario_id}/privilegios`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_admin: !usuario.is_admin }),
             });
             const data = await res.json();

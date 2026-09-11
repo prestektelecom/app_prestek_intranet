@@ -65,3 +65,17 @@ lpt9
 # Saída do Playwright MCP (snapshots, screenshots, console)
 .playwright-mcp/
 
+# Dumps de dados do IXC/scripts de diagnóstico — contêm PII (CPF, salário,
+# conta bancária, endereço); nunca devem ser commitados (ver GUIA-CORRECAO.md, G2)
+backend/*.json
+!backend/package.json
+!backend/package-lock.json
+wfl_data.json
+backend/nomes.txt
+tmp_output.txt
+
+# Credenciais reais encontradas soltas no repo durante a correção de G2 —
+# ver aviso separado ao usuário; precisam ser rotacionadas, não só removidas do git
+lovable_keys.txt
+tmp_check_ti.js
+

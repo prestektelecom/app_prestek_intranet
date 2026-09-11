@@ -12,6 +12,13 @@ DB_PASSWORD=SUA_SENHA_SEGURA_AQUI
 
 PORT=3001
 
+# Segredo para assinar tokens de sessão (JWT). Gere com:
+# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET=
+
+# Origens permitidas por CORS, separadas por vírgula (sem espaço)
+CORS_ORIGENS=http://localhost:5000
+
 # Cadastro de colaborador (aba TI) — senha padrão do usuário do sistema criado
 # junto com o funcionário. A tela permite sobrescrever por cadastro; sem esta
 # variável e sem override, o dry-run acusa erro em vez de usar um valor fraco.

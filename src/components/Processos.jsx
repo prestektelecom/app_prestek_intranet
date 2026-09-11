@@ -534,7 +534,6 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
         try {
             const res = await fetch(`/api/categorias-processos/${cat.id}`, {
                 method: 'DELETE',
-                headers: { 'x-admin-email': adminEmail },
             });
             const dados = await res.json();
             if (!res.ok) throw new Error(dados.erro || 'Erro ao excluir categoria.');
@@ -565,7 +564,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
             const url = editandoId ? `/api/categorias-processos/${editandoId}` : '/api/categorias-processos';
             const res = await fetch(url, {
                 method: editandoId ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
             const dados = await res.json();

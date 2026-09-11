@@ -24,8 +24,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                 pagina: pageNum,
                 limite: SERVER_PAGE_SIZE,
             });
-            const headers = adminEmail ? { 'x-admin-email': adminEmail } : {};
-            const res = await fetch(`/api/plantoes/historico?${params}`, { headers });
+            const res = await fetch(`/api/plantoes/historico?${params}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             if (!data.sucesso) throw new Error(data.erro || 'Erro ao buscar histórico');

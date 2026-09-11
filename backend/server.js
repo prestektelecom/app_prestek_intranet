@@ -5,6 +5,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import crypto from 'crypto'
+import rateLimit from 'express-rate-limit'
 import pool from './db.js'
 import fs from 'fs'
 import { cacheGet, cacheSet, cacheInvalidate, TTL } from './cache.js'
@@ -15,13 +16,29 @@ import { carregarTaxonomias } from './services/ixcTaxonomias.js'
 import { extrairTextoPdf } from './services/extrairTextoPdf.js'
 import { extrairCampos } from './services/fichaParser.js'
 import { validar as validarColaborador, montarPlano, buscarDuplicados } from './services/ixcColaborador.js'
+import { requireAuth, assinarToken } from './middleware/auth.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
 
+// Origens permitidas por CORS — configurável via .env (CORS_ORIGENS separadas por vírgula)
+const ORIGENS_PERMITIDAS = String(process.env.CORS_ORIGENS || 'http://localhost:5000')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
+
+const loginLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { sucesso: false, erro: 'Muitas tentativas de login. Aguarde um minuto e tente novamente.' }
+})
+
 // Middleware
-app.use(cors({ origin: true }))
+app.use(cors({ origin: ORIGENS_PERMITIDAS }))
 app.use(express.json())
+app.use('/api', requireAuth)
 
 // ─── Função auxiliar: sincroniza perfil do usuário no banco após login ────────
 /**
@@ -89,7 +106,7 @@ async function sincronizarPerfilNoBanco(usuario, funcionario) {
 }
 
 // ─── Rota de Login ───────────────────────────────────────────────
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
     const { email, senha } = req.body
 
     if (!email) {
@@ -212,6 +229,7 @@ app.post('/api/login', async (req, res) => {
         console.log(`Login bem-sucedido: ${usuario.nome} (${usuario.email}) | id_grupo=${usuario.id_grupo} | nome_grupo=${nomeGrupo}`)
         return res.json({
             sucesso: true,
+            token_sessao: assinarToken({ id: usuario.id, email: usuario.email, nome: usuario.nome }),
             usuario: {
                 id: usuario.id,
                 nome: usuario.nome,
@@ -3949,7 +3967,9 @@ app.delete('/api/categorias-processos/:id', adminAuth, async (req, res) => {
 // devem passar por este middleware.
 // ═══════════════════════════════════════════════════════════════════
 async function adminAuth(req, res, next) {
-    const adminEmail = String(req.headers['x-admin-email'] || '').trim();
+    // A identidade vem do token verificado por requireAuth (req.usuario), nunca
+    // de um header enviado pelo cliente — ver G5 em GUIA-CORRECAO.md.
+    const adminEmail = String(req.usuario?.email || '').trim();
     if (!adminEmail) {
         return res.status(401).json({ sucesso: false, erro: 'Acesso não autorizado.' });
     }
@@ -4032,7 +4052,7 @@ app.get('/api/admin/usuarios', adminAuth, async (req, res) => {
 app.put('/api/admin/usuarios/:id/privilegios', adminAuth, async (req, res) => {
     const { id } = req.params;
     const { is_admin } = req.body;
-    const adminEmail = req.headers['x-admin-email'];
+    const adminEmail = req.usuario.email;
 
     if (typeof is_admin !== 'boolean') {
         return res.status(400).json({ sucesso: false, erro: 'Campo is_admin deve ser boolean.' });
@@ -4091,7 +4111,7 @@ app.get('/api/admin/configuracoes', adminAuth, async (_req, res) => {
 app.put('/api/admin/configuracoes/:chave', adminAuth, async (req, res) => {
     const { chave } = req.params;
     const { valor } = req.body;
-    const adminEmail = req.headers['x-admin-email'];
+    const adminEmail = req.usuario.email;
     if (valor === undefined) return res.status(400).json({ sucesso: false, erro: 'Campo valor obrigatório.' });
     try {
         const { rows } = await pool.query(
@@ -4301,7 +4321,7 @@ app.post(
     },
     adminAuth,
     async (req, res) => {
-        const adminEmail = req.headers['x-admin-email'];
+        const adminEmail = req.usuario.email;
         console.log('[DEBUG extrair-pdf] 3. adminAuth passou para:', adminEmail);
         try {
             if (!req.body || !Buffer.isBuffer(req.body) || req.body.length === 0) {
@@ -4368,7 +4388,7 @@ app.get('/api/ti/colaborador/duplicado', adminAuth, async (req, res) => {
 // em design.md. A senha em texto puro nunca sai desta função: só o hash
 // SHA-256 (idêntico ao formato que /api/login valida) entra no plano.
 app.post('/api/ti/colaborador/dry-run', adminAuth, async (req, res) => {
-    const adminEmail = req.headers['x-admin-email'];
+    const adminEmail = req.usuario.email;
     try {
         const dados = req.body?.dados || {};
         const criarUsuario = dados.criar_usuario === 'S';

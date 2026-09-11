@@ -149,8 +149,7 @@ export default function Schedule({ setCurrentView, user }) {
             setLoadingChangeCount(true);
             try {
                 const params = new URLSearchParams({ mes: filterMonth, ano: filterYear, pagina: 1, limite: 1 });
-                const headers = user?.email ? { 'x-admin-email': user.email } : {};
-                const res = await fetch(`/api/plantoes/historico?${params}`, { headers });
+                const res = await fetch(`/api/plantoes/historico?${params}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 if (!cancelled) setMonthlyChangeCount(data.sucesso ? (data.total ?? 0) : null);

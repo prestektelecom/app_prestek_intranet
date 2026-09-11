@@ -6,7 +6,7 @@ export function usePresence(user) {
 
         const updatePresence = async () => {
             try {
-                await fetch(`http://localhost:3001/api/presenca/${user.id}`, {
+                await fetch(`/api/presenca/${user.id}`, {
                     method: 'POST'
                 });
             } catch (err) {

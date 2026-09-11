@@ -88,8 +88,8 @@ export default function AdminDashboard({ setCurrentView, user }) {
         setCarregandoStats(true);
         try {
             const [resStats, resLogs] = await Promise.all([
-                fetch(`${API}/api/admin/dashboard-stats`, { headers: { 'x-admin-email': adminEmail } }),
-                fetch(`${API}/api/admin/auditoria?limite=5`, { headers: { 'x-admin-email': adminEmail } }),
+                fetch(`${API}/api/admin/dashboard-stats`),
+                fetch(`${API}/api/admin/auditoria?limite=5`),
             ]);
             const dataStats = await resStats.json();
             const dataLogs = await resLogs.json();

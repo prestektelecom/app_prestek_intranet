@@ -81,7 +81,7 @@ export default function AdminComunicados({ adminEmail }) {
             const method = editando ? 'PUT' : 'POST';
             const url = editando ? `${API}/api/comunicados/${editando.id}` : `${API}/api/comunicados`;
             const res = await fetch(url, {
-                method, headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                method, headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...form, criado_por: adminEmail || 'Admin' }),
             });
             const data = await res.json();
@@ -94,7 +94,7 @@ export default function AdminComunicados({ adminEmail }) {
         if (!window.confirm('Excluir este comunicado? Esta ação não pode ser desfeita — ele será removido permanentemente do feed da intranet.')) return;
         setExcluindo(id);
         try {
-            const res = await fetch(`${API}/api/comunicados/${id}`, { method: 'DELETE', headers: { 'x-admin-email': adminEmail } });
+            const res = await fetch(`${API}/api/comunicados/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (!data.sucesso && !data.ok) throw new Error(data.erro || 'Erro ao excluir');
             setComunicados(prev => prev.filter(c => c.id !== id));

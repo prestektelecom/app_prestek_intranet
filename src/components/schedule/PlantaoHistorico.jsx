@@ -26,9 +26,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
             if (dataInicio) params.set('data_inicio', dataInicio);
             if (dataFim) params.set('data_fim', dataFim);
             if (admin) params.set('admin_nome', admin);
-            const res = await fetch(`/api/plantoes/historico?${params}`, {
-                headers: adminEmail ? { 'x-admin-email': adminEmail } : {},
-            });
+            const res = await fetch(`/api/plantoes/historico?${params}`);
             const data = await res.json();
             if (!data.sucesso) throw new Error(data.erro || 'Erro ao carregar histórico.');
             setHistorico(data.historico || []);
@@ -75,9 +73,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
             if (filtroDataInicio) params.set('data_inicio', filtroDataInicio);
             if (filtroDataFim) params.set('data_fim', filtroDataFim);
             if (filtroAdminAplicado) params.set('admin_nome', filtroAdminAplicado);
-            const res = await fetch(`/api/plantoes/historico/export?${params}`, {
-                headers: adminEmail ? { 'x-admin-email': adminEmail } : {},
-            });
+            const res = await fetch(`/api/plantoes/historico/export?${params}`);
             if (!res.ok) throw new Error('Erro ao exportar');
             const blob = await res.blob();
             const url = URL.createObjectURL(blob);

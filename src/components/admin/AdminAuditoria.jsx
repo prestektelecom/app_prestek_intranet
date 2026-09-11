@@ -32,9 +32,7 @@ export default function AdminAuditoria({ adminEmail }) {
             const params = new URLSearchParams({ pagina: p, limite: LIMITE });
             if (email) params.set('admin_email', email);
             if (acao)  params.set('acao', acao);
-            const res = await fetch(`${API}/api/admin/auditoria?${params}`, {
-                headers: { 'x-admin-email': adminEmail },
-            });
+            const res = await fetch(`${API}/api/admin/auditoria?${params}`);
             const data = await res.json();
             if (!data.sucesso) throw new Error(data.erro);
             setLogs(data.logs);

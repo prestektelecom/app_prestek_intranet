@@ -38,7 +38,6 @@ export default function UploadFicha({ user, onCamposExtraidos, onLog }) {
             const res = await fetch('/api/ti/colaborador/extrair-pdf', {
                 method: 'POST',
                 headers: {
-                    'x-admin-email': user?.email || '',
                     'Content-Type': 'application/pdf',
                 },
                 body: arquivo,

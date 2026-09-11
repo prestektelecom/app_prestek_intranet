@@ -1,7 +1,8 @@
-// Acesso às rotas de TI. Todas exigem o cabeçalho de admin — mesmo mecanismo
-// que AdminDashboard.jsx já usa (`user?.email` contra usuarios_perfil.is_admin).
-
-export const cabecalhoAdmin = (user) => ({ 'x-admin-email': user?.email || '' });
+// Acesso às rotas de TI. A identidade do admin agora vem do token de sessão
+// (Authorization: Bearer, injetado globalmente em main.jsx), nunca de um
+// cabeçalho vindo do cliente — ver G5 em GUIA-CORRECAO.md. Este helper fica
+// mantido só para não quebrar as assinaturas de `obter`/`enviar` abaixo.
+export const cabecalhoAdmin = () => ({});
 
 /** GET com cabeçalho de admin e erro já desembrulhado no padrão do backend. */
 export async function obter(url, user) {

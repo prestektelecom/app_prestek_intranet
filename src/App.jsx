@@ -161,9 +161,11 @@ export default function App() {
                 const expiryTime = Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 dias
                 localStorage.setItem('@Stitch:user', JSON.stringify({ data: userData, expiry: expiryTime }))
                 localStorage.setItem('@Stitch:currentView', 'dashboard')
+                if (resultado.token_sessao) localStorage.setItem('@Stitch:token', resultado.token_sessao)
             } else {
                 sessionStorage.setItem('@Stitch:user', JSON.stringify(userData))
                 sessionStorage.setItem('@Stitch:currentView', 'dashboard')
+                if (resultado.token_sessao) sessionStorage.setItem('@Stitch:token', resultado.token_sessao)
             }
             setCurrentView('dashboard')
         }} />

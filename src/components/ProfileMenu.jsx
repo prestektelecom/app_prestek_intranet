@@ -17,8 +17,10 @@ export async function encerrarSessao(user, setCurrentView) {
   }
   localStorage.removeItem('@Stitch:user');
   localStorage.removeItem('@Stitch:currentView');
+  localStorage.removeItem('@Stitch:token');
   sessionStorage.removeItem('@Stitch:user');
   sessionStorage.removeItem('@Stitch:currentView');
+  sessionStorage.removeItem('@Stitch:token');
   setCurrentView('login');
 }
 
