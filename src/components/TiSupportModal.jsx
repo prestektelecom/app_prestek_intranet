@@ -157,6 +157,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
           </div>
           <button
             onClick={handleClose}
+            aria-label="Fechar"
             style={{
               width: 32, height: 32, borderRadius: 8,
               border: `1px solid ${C.line}`, background: C.surface,

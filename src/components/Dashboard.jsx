@@ -15,13 +15,22 @@ const ResponsiveReactGridLayout = WidthProvider(Responsive);
 const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-muted'
 const CARD_TITLE = 'font-display text-xl font-bold tracking-tight text-foreground'
 const CARD = 'bento-hover-border flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm'
-const ACTION_BTN = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
+// `min-h-[44px]`: sem isso os dois botões mediam ~35px, abaixo do piso de
+// toque (AGENTS.md, regra 5).
+const ACTION_BTN = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
 // Ação primária de um card (fundo sólido no accent): NÃO herda `bg-surface`/
 // `border-border` de ACTION_BTN. As duas classes de fundo tinham a mesma
 // especificidade CSS e `bg-surface` sempre vencia na folha gerada — o botão
 // "Gerenciar Meus Chamados" ficava branco sobre branco no tema claro, embora
 // continuasse clicável. Ver DESIGN.md, Buttons: primary sólido vs. secondary.
-const ACTION_BTN_PRIMARY = 'mt-5 inline-flex items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[12.5px] font-semibold text-white shadow-md transition hover:bg-[var(--primary-hover)]'
+// Texto em `on-accent`, não branco: branco sobre o laranja da marca rende
+// 2,79:1 em texto de 12,5px (abaixo de 4,5:1); `on-accent` é navy no claro e
+// a superfície do tema nos escuros, sempre ≥ 6:1 (mesma regra já aplicada em
+// Login/NotFound/Sidebar — "Orange Is Fill Rule" do DESIGN.md). Sem
+// `hover:bg-primary-hover`: no claro, navy sobre `--primary-hover` cai para
+// 3,35:1 — o hover eleva com sombra (na chamada do componente), não escurece
+// o fundo, mesmo padrão do botão do NotFound.
+const ACTION_BTN_PRIMARY = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[12.5px] font-semibold text-[var(--on-accent)] shadow-md transition'
 
 function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
   const isTouchOnly = useTouchOnly();
@@ -1057,7 +1066,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
                   {dataAniversarioExtenso(c.data_nascimento)}{depto ? ` · ${depto}` : ''}
                 </div>
               </div>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${iminente ? 'bg-[var(--success-soft)] text-[var(--success-bento)]' : 'bg-surface-raised text-faint'}`}>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${iminente ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-surface-raised text-faint'}`}>
                 {rotuloData(c)}
               </span>
             </div>

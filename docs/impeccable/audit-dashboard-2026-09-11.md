@@ -112,3 +112,13 @@ Evidência: `impeccable detect --json` (13 advisory, exit 0), overlay do detecto
 7. **`/impeccable polish`**: passagem final nos cinco temas e nos dois viewports.
 
 Re-rodar `/impeccable audit` e `/impeccable critique` depois da change para registrar a tendência (12/20 → alvo 16+; 26/40 → alvo 30+).
+
+## Nota adicional (durante a correção, 2026-09-11)
+
+Achado fora do escopo desta change, não reportado por nenhuma das duas avaliações (não foi exercitado nos testes ao vivo): `TAG_DEFAULT.chip` (`Dashboard.jsx:465`, fallback do carrossel de comunicados para qualquer `tipo` fora de `Urgente`/`Importante`/`Aviso`/`Geral`/`Info`) usa `bg-primary text-white` — o mesmo padrão branco-sobre-laranja em texto pequeno (10px) que o botão do OS tinha. É um caminho de fallback raro (o backend normalmente envia um dos cinco tipos conhecidos) e está amarrado a uma decisão pré-existente e maior (as cores categóricas do carrossel usam uma paleta própria, fora do accent único da marca, para as cinco categorias). Registrado para a rodada de polish; não corrigido nesta change para não abrir uma frente de redesenho das cores de categoria sem decisão explícita.
+
+## Nota adicional 2 (durante a verificação final, 2026-09-11)
+
+O mesmo `GlowingEffect` fora da marca também aparece em `src/components/common/BentoCard.jsx:25-32` (sem `variant`, portanto a paleta rosa/dourado/verde/azul), componente compartilhado consumido por 6 arquivos da área de Serviços (`ServicesDirectory.jsx`, `PlansGrid.jsx`, `PlanoBentoCard.jsx`, `StreamingBentoCard.jsx`, `TechBentoCard.jsx`, `ServiceDetailModal.jsx`) — fora do escopo desta change (Dashboard), mas a mesma causa raiz. A variante `brand` criada nesta change já cobre esse caso: trocar `BentoCard.jsx` para `variant="brand"` é a correção natural quando a Fase 10 (Serviços) chegar. Registrado na seção Transversal do programa.
+
+Também notado: `src/components/common/GlowingEffectDemo.jsx` não tem nenhum consumidor no repositório (`grep` vazio) — candidato a remoção na Fase 16 (código morto).
