@@ -1,3 +1,7 @@
+## Purpose
+
+Barra de filtros por tipo e controle de ordenação da página de Comunicados (`Comunicados.jsx`).
+
 ## Requirements
 
 ### Requirement: Chips de filtro por tipo com contagem
@@ -29,3 +33,15 @@ O select de ordenação SHALL usar `color: C.ink`, `border: 1px solid C.line`, `
 #### Scenario: Ordenação por autor
 - **WHEN** o usuário seleciona "Ordenar por Autor"
 - **THEN** os comunicados são ordenados alfabeticamente por `departamento_autor`
+
+### Requirement: Contraste do contador do chip de filtro
+
+O contador de contagem dentro de cada chip SHALL manter contraste WCAG AA (≥ 4,5:1) tanto no estado ativo quanto inativo, usando os tokens `ink2`/`onAccent` em vez de `muted`/branco fixo.
+
+#### Scenario: Chip inativo
+- **WHEN** um chip de filtro não está selecionado
+- **THEN** o contador usa `C.ink2` sobre `C.surfaceSoft`
+
+#### Scenario: Chip ativo
+- **WHEN** um chip de filtro está selecionado
+- **THEN** o contador usa `C.onAccent` sobre a cor sólida do chip

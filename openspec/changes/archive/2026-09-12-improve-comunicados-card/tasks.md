@@ -35,3 +35,19 @@
 
 - [x] 6.1 Revisar o card visualmente no Dashboard com dados reais (ao menos 2 comunicados de tipos diferentes)
 - [x] 6.2 Confirmar que nenhum outro componente foi afetado (só `ComunicadosCard` em `Dashboard.jsx` e `ComunicadoCard` em `Comunicados.jsx`)
+
+## 7. Reconciliação na Fase 5 do Impeccable (2026-09-12)
+
+Esta change ficou marcada como 100% concluída mas nunca foi arquivada. O
+`Dashboard.jsx` foi reescrito por completo numa fase posterior (a mesma
+reescrita já registrada na Fase 3 do programa Impeccable), e nem tudo
+sobreviveu:
+
+- **Sobreviveu**: stripe lateral colorida por tipo (seção 2), navegação ao
+  clicar (seção 4), tooltip com data completa (seção 5).
+- **Regrediu**: a seção 3 (preview de 2 linhas) não existe mais no código
+  atual — o `ComunicadosCard` de `Dashboard.jsx` usa `truncate` (1 linha)
+  para a descrição, não `WebkitLineClamp: 2`. A spec arquivada
+  (`comunicados-card-ux`) foi escrita para descrever a realidade atual (1
+  linha), não a intenção original desta change. Registrado em
+  `MEMORIA.md` como um P3 de polish futuro, não bloqueia esta fase.

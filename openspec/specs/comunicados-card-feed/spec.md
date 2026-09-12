@@ -1,3 +1,7 @@
+## Purpose
+
+Feed de comunicados renderizado como cards Bento, com filtros, busca e ordenação, na página principal de Comunicados (`Comunicados.jsx`).
+
 ## Requirements
 
 ### Requirement: Card Bento por comunicado
@@ -22,12 +26,16 @@ Ao passar o mouse sobre um card, o card SHALL executar `transform: translateY(-4
 - **WHEN** o usuário passa o mouse sobre um card de comunicado
 - **THEN** o card sobe 4px e exibe sombra colorida com opacidade 15%
 
-### Requirement: Badge de tipo com JetBrains Mono
-O tipo do comunicado SHALL ser exibido como badge com `fontFamily: '"JetBrains Mono", monospace'`, texto em uppercase, com background `<tipo>Soft` e cor `<tipo>`.
+### Requirement: Badge de tipo com JetBrains Mono e contraste WCAG AA
+O tipo do comunicado SHALL ser exibido como badge com `fontFamily: '"JetBrains Mono", monospace'`, texto em uppercase, com background `<tipo>Soft` e cor de texto na variante `<tipo>Strong` do token semântico (não o tom base), garantindo contraste ≥ 4,5:1.
 
 #### Scenario: Badge Urgente
 - **WHEN** o comunicado é do tipo "Urgente"
-- **THEN** o badge exibe "URGENTE" com `background: C.dangerSoft` e `color: C.danger`
+- **THEN** o badge exibe "URGENTE" com `background: C.dangerSoft` e `color: C.dangerStrong`
+
+#### Scenario: Badge Importante ou Geral
+- **WHEN** o comunicado é do tipo "Importante" ou "Geral"
+- **THEN** o badge usa `C.warningStrong` ou `C.successStrong`, respectivamente, sobre o `-Soft` correspondente
 
 ### Requirement: Metadados com tipografia JetBrains Mono
 A data de criação e o departamento autor SHALL ser exibidos com `fontFamily: '"JetBrains Mono", monospace'` em `C.muted`, usando formato de tempo relativo (ex: "há 2h", "3d", "14 jun").
@@ -75,3 +83,20 @@ Quando não há comunicados após aplicar filtros, SHALL ser exibido um estado v
 #### Scenario: Ações de edição admin no card
 - **WHEN** o usuário tem `is_admin === true`
 - **THEN** os botões de editar e excluir aparecem no canto do card com `C.muted` e hover colorido
+
+### Requirement: Truncamento do corpo do comunicado
+
+O corpo (`descricao`) de cada card SHALL ser truncado a um número máximo de linhas por padrão, com uma forma de expandir para ler o conteúdo completo. Asteriscos literais de markdown (`*texto*`, comuns em texto colado do WhatsApp) SHALL ser removidos antes da exibição.
+
+#### Scenario: Descrição longa
+- **WHEN** um comunicado tem descrição que excede o limite de exibição padrão (~220 caracteres)
+- **THEN** o card exibe até 4 linhas com um botão "Ler mais"
+- **AND** clicar em "Ler mais" expande para o texto completo e o botão passa a exibir "Ler menos"
+
+#### Scenario: Descrição curta
+- **WHEN** um comunicado tem descrição dentro do limite de exibição padrão
+- **THEN** o card exibe a descrição completa, sem botão de expandir
+
+#### Scenario: Descrição com markdown de WhatsApp
+- **WHEN** a descrição contém texto entre asteriscos (ex: `*ATENÇÃO*`)
+- **THEN** o card exibe o texto sem os caracteres de asterisco

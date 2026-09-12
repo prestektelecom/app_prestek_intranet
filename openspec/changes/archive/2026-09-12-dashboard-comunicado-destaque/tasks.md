@@ -28,3 +28,16 @@
 - [x] 4.1 Verificar altura do banner em mobile (sm/xs): ajustar para `h-40` ou `h-48` em telas pequenas via classes Tailwind responsivas
 - [x] 4.2 Garantir que o texto do título não ultrapasse 2 linhas no banner (usar `line-clamp-2`)
 - [x] 4.3 Testar visual sem imagem (fallback de gradiente) nos três tipos principais: Urgente, Importante, Geral
+
+## 5. Reconciliação na Fase 5 do Impeccable (2026-09-12)
+
+Change 100% concluída mas nunca arquivada; verificada contra o `Dashboard.jsx`
+atual (reescrito numa fase posterior) antes de arquivar. A funcionalidade
+central sobreviveu (rotação, imagem de capa com fallback de gradiente, badge,
+clique, skeleton). Achado: a dedup entre `ComunicadoBanner` e `ComunicadosCard`
+(seção 3) não é uma exclusão mútua completa — os dois componentes calculam o
+"destaque" de forma independente (mesma prioridade Urgente > Importante > mais
+recente), então quando o banner está rotacionando 2-3 itens simultaneamente, o
+card pode repetir os que não são o seu próprio destaque local. Documentado como
+limitação conhecida na spec arquivada (`comunicado-banner-destaque`), não
+bloqueia esta fase — registrado em `MEMORIA.md` como P3 de polish futuro.

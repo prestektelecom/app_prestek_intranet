@@ -1,7 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useDismissable } from '../hooks/useDismissable';
 import { fundoHero } from './ui/heroGradiente';
 import HeroSearchInput from './ui/HeroSearchInput';
+
+// Nenhum dos dois modais abaixo tinha role/aria-modal/gerenciamento de foco —
+// Escape e clique fora não fechavam, e o foco nunca entrava no diálogo.
+// Mesmo padrão do TiSupportModal (Fase 3) e ManagePlantaoModal (Fase 4):
+// useDismissable cobre Escape/clique fora/foco de entrada e retorno; o trap
+// de Tab abaixo é local a cada modal.
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 // ── Paleta Bento Blue ────────────────────────────────────────────────────────
 
@@ -48,22 +56,32 @@ function formatFullDate(dateStr) {
   }
 }
 
+// Comunicados chegam como texto colado de WhatsApp: `*negrito*` nunca é
+// renderizado como negrito aqui, só aparece com os asteriscos crus na tela.
+// Remove o caractere sem tentar recriar a formatação.
+function limparAsteriscos(texto) {
+  return (texto || '').replace(/\*(.*?)\*/g, '$1');
+}
+
 // Retorna as definições visuais por tipo de comunicado com base no tema atual
 const getTypeMeta = (C) => ({
   Urgente: {
     color: C.danger,
+    textColor: C.dangerStrong,
     soft: C.dangerSoft,
     icon: 'priority_high',
     label: 'URGENTE'
   },
   Importante: {
     color: C.warning,
+    textColor: C.warningStrong,
     soft: C.warningSoft,
     icon: 'notification_important',
     label: 'IMPORTANTE'
   },
   Geral: {
     color: C.success,
+    textColor: C.successStrong,
     soft: C.successSoft,
     icon: 'article',
     label: 'GERAL'
@@ -502,7 +520,7 @@ function ChipButton({ label, count, active, onClick, color }) {
             <span>{label}</span>
             <span style={{
                 background: active ? color : C.surfaceSoft,
-                color: active ? 'white' : C.muted,
+                color: active ? C.onAccent : C.ink2,
                 fontSize: 11, fontWeight: 700,
                 padding: '1px 7px', borderRadius: 999,
                 fontFamily: '"JetBrains Mono", monospace',
@@ -515,9 +533,11 @@ function ChipButton({ label, count, active, onClick, color }) {
 function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
     const C = useBentoTheme();
     const [hover, setHover] = useState(false);
+    const [expandido, setExpandido] = useState(false);
     const typeMeta = getTypeMeta(C);
     const meta = typeMeta[item.tipo] || typeMeta.Geral;
     const rgb = hexToRgb(meta.color);
+    const descricaoLimpa = limparAsteriscos(item.descricao);
 
     return (
         <div
@@ -553,7 +573,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                             padding: '3px 9px',
                             borderRadius: 999,
                             background: meta.soft,
-                            color: meta.color,
+                            color: meta.textColor,
                             fontSize: 10.5,
                             fontWeight: 700,
                             fontFamily: '"JetBrains Mono", monospace',
@@ -639,17 +659,44 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                     {item.titulo}
                 </h3>
 
-                {/* Descrição / Conteúdo */}
+                {/* Descrição / Conteúdo — comunicados chegam como texto colado de
+                    WhatsApp, às vezes com centenas de palavras; trunca por padrão
+                    para não quebrar a escaneabilidade do feed. */}
                 <p style={{
-                    margin: '0 0 20px 0',
+                    margin: '0 0 8px 0',
                     fontSize: 14,
                     color: C.ink2,
                     lineHeight: 1.6,
                     whiteSpace: 'pre-wrap',
-                    flex: 1
+                    flex: 1,
+                    ...(expandido ? {} : {
+                        display: '-webkit-box',
+                        WebkitLineClamp: 4,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                    })
                 }}>
-                    {item.descricao}
+                    {descricaoLimpa}
                 </p>
+                {descricaoLimpa.length > 220 && (
+                    <button
+                        type="button"
+                        onClick={() => setExpandido(v => !v)}
+                        style={{
+                            alignSelf: 'flex-start',
+                            margin: '0 0 12px 0',
+                            padding: 0,
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: C.accentDark,
+                        }}
+                    >
+                        {expandido ? 'Ler menos' : 'Ler mais'}
+                    </button>
+                )}
 
                 {/* Footer (Departamento + Link Adicional) */}
                 <div style={{
@@ -847,9 +894,24 @@ function EmptyState({ busca, filtro, onClear }) {
     );
 }
 
+const CRUD_MODAL_TITLE_ID = 'crud-comunicado-titulo';
+
 function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, onSubmit }) {
     const C = useBentoTheme();
     const [focusedInput, setFocusedInput] = useState(null);
+    const modalRef = useRef(null);
+
+    useDismissable(modalRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
+
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !modalRef.current) return;
+        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
 
     const getInputStyle = (name) => ({
         width: '100%',
@@ -879,7 +941,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)'
         }}>
-            <div style={{
+            <div
+                ref={modalRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={CRUD_MODAL_TITLE_ID}
+                onKeyDown={trapTab}
+                style={{
                 background: C.surface,
                 borderRadius: 20,
                 boxShadow: '0 24px 64px rgba(11, 27, 46, 0.25)',
@@ -897,7 +965,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                     justifyContent: 'space-between',
                     alignItems: 'center'
                 }}>
-                    <h2 style={{
+                    <h2 id={CRUD_MODAL_TITLE_ID} style={{
                         margin: 0,
                         fontSize: 18,
                         fontWeight: 800,
@@ -1132,8 +1200,24 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
     );
 }
 
+const DELETE_MODAL_TITLE_ID = 'delete-comunicado-titulo';
+
 function DeleteModal({ onClose, onConfirm }) {
     const C = useBentoTheme();
+    const modalRef = useRef(null);
+
+    useDismissable(modalRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
+
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !modalRef.current) return;
+        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+
     return (
         <div style={{
             position: 'fixed',
@@ -1147,7 +1231,13 @@ function DeleteModal({ onClose, onConfirm }) {
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)'
         }}>
-            <div style={{
+            <div
+                ref={modalRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={DELETE_MODAL_TITLE_ID}
+                onKeyDown={trapTab}
+                style={{
                 background: C.surface,
                 borderRadius: 20,
                 boxShadow: '0 24px 64px rgba(11, 27, 46, 0.25)',
@@ -1172,7 +1262,7 @@ function DeleteModal({ onClose, onConfirm }) {
                     <span className="material-symbols-outlined" style={{ fontSize: 32, color: C.danger }}>warning</span>
                 </div>
 
-                <h3 style={{
+                <h3 id={DELETE_MODAL_TITLE_ID} style={{
                     margin: '0 0 8px 0',
                     fontSize: 20,
                     fontWeight: 800,

@@ -1,3 +1,7 @@
+## Purpose
+
+Modal de confirmação de exclusão de comunicados, usado pelo admin a partir da página de Comunicados (`Comunicados.jsx`).
+
 ## Requirements
 
 ### Requirement: Modal de exclusão com tema danger Bento
@@ -28,3 +32,20 @@ O botão "Cancelar" SHALL usar `background: C.surface`, `border: 1px solid C.lin
 #### Scenario: Hover no botão cancelar
 - **WHEN** o usuário passa o mouse sobre o botão cancelar
 - **THEN** o fundo muda para `C.surfaceSoft` com transição suave
+
+### Requirement: Trap de foco e fechamento por teclado no modal de exclusão
+
+O `DeleteModal` SHALL conter a navegação por teclado dentro de si enquanto estiver aberto, e SHALL ser fechável via Escape, consistente com o `role="dialog"`/`aria-modal="true"` que declara. Como é uma confirmação de ação destrutiva, esse comportamento é ainda mais crítico aqui do que em modais não-destrutivos.
+
+#### Scenario: Usuário navega pelo modal de exclusão só com teclado
+- **WHEN** o `DeleteModal` está aberto e o usuário pressiona Tab repetidamente
+- **THEN** o foco circula apenas entre "Cancelar" e "Sim, excluir!", nunca alcançando elementos da página por trás do backdrop
+
+#### Scenario: Usuário fecha o modal de exclusão com Escape
+- **WHEN** o usuário pressiona Escape com o modal de exclusão aberto
+- **THEN** o modal fecha sem excluir nada
+- **AND** o foco retorna ao elemento que abriu o modal
+
+#### Scenario: Usuário clica fora do modal de exclusão
+- **WHEN** o usuário clica na área do backdrop, fora do card do modal
+- **THEN** o modal fecha sem excluir nada

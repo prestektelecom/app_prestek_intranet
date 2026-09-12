@@ -254,8 +254,8 @@ export default function AdminComunicados({ adminEmail }) {
                         return (
                             <div
                                 key={c.id}
-                                className="flex flex-col overflow-hidden rounded-2xl border bg-white transition-shadow hover:shadow-md"
-                                style={{ borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
+                                className="flex flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+                                style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
                             >
                                 <div style={{ height: 4, background: meta.color }} />
                                 <div className="flex flex-1 flex-col gap-3 p-5">
