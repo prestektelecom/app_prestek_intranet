@@ -17,7 +17,7 @@ export function DiffBadge({ anterior, novo, label }) {
     if (!mudou && !anterior && !novo) return null;
     return (
         <div className="flex flex-col gap-0.5">
-            <span className="text-[9px] font-extrabold uppercase tracking-widest text-[var(--ink2)]">{label}</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[var(--ink2)]">{label}</span>
             {mudou ? (
                 <div className="flex flex-wrap items-center gap-1 text-xs">
                     <span className="bg-[var(--danger-soft)] text-[var(--danger-bento)] px-2 py-0.5 rounded-md line-through font-medium">
@@ -37,7 +37,7 @@ export function DiffBadge({ anterior, novo, label }) {
 
 export function HistoricoColumnHeader() {
     return (
-        <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_auto] gap-4 px-6 py-3 bg-[var(--surface-soft)] border-b border-[var(--line)] text-[10px] font-extrabold text-[var(--ink2)] uppercase tracking-widest">
+        <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_auto] gap-4 px-6 py-3 bg-[var(--surface-soft)] border-b border-[var(--line)] text-[11px] font-extrabold text-[var(--ink2)] uppercase tracking-widest">
             <div>Data do Plantão</div>
             <div>Alterado por</div>
             <div>Quando</div>
@@ -112,7 +112,7 @@ export function HistoricoRows({ historico, expandido, onToggle }) {
                             </div>
                             <div className="flex items-center justify-end gap-1 pl-4 md:pl-0">
                                 <span className={cn(
-                                    'text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full',
+                                    'text-[11px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full',
                                     temAlteracao ? 'bg-[var(--warning-soft)] text-[var(--warning-strong)]' : 'bg-[var(--surface-soft)] text-[var(--ink2)]'
                                 )}>
                                     {temAlteracao ? 'Alterado' : 'Sem mudança'}

@@ -126,15 +126,15 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                         <table className="w-full text-sm border-collapse">
                             <thead className="sticky top-0 z-10 bg-[#F7FAFD] border-b border-[#E4ECF5]">
                                 <tr>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Data</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Alterado Por</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Momento</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N1 Anterior</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N1 Novo</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N2 Anterior</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N2 Novo</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Sup. Anterior</th>
-                                    <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Sup. Novo</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Data</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Alterado Por</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Momento</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N1 Anterior</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N1 Novo</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N2 Anterior</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">N2 Novo</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Sup. Anterior</th>
+                                    <th className="px-3 py-2.5 text-left text-[11px] font-extrabold uppercase tracking-widest text-[#475467] whitespace-nowrap">Sup. Novo</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -161,19 +161,19 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                                     <span className="font-medium">{h.admin_nome || '—'}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-3 py-2.5 text-[#475467] whitespace-nowrap text-[12px]">{alteradoEm}</td>
-                                            <td className="px-3 py-2.5 text-[#475467]/80 text-[12px]">
+                                            <td className="px-3 py-2.5 text-[#475467] whitespace-nowrap text-xs">{alteradoEm}</td>
+                                            <td className="px-3 py-2.5 text-[#475467]/80 text-xs">
                                                 <span className={h.n1_anterior ? 'line-through opacity-60' : 'opacity-40 italic'}>{h.n1_anterior || '—'}</span>
                                             </td>
-                                            <td className="px-3 py-2.5 text-[#0B1B2E] font-medium text-[12px]">{h.n1_novo || '—'}</td>
-                                            <td className="px-3 py-2.5 text-[#475467]/80 text-[12px]">
+                                            <td className="px-3 py-2.5 text-[#0B1B2E] font-medium text-xs">{h.n1_novo || '—'}</td>
+                                            <td className="px-3 py-2.5 text-[#475467]/80 text-xs">
                                                 <span className={h.n2_anterior ? 'line-through opacity-60' : 'opacity-40 italic'}>{h.n2_anterior || '—'}</span>
                                             </td>
-                                            <td className="px-3 py-2.5 text-[#0B1B2E] font-medium text-[12px]">{h.n2_novo || '—'}</td>
-                                            <td className="px-3 py-2.5 text-[#475467]/80 text-[12px]">
+                                            <td className="px-3 py-2.5 text-[#0B1B2E] font-medium text-xs">{h.n2_novo || '—'}</td>
+                                            <td className="px-3 py-2.5 text-[#475467]/80 text-xs">
                                                 <span className={h.gerente_anterior ? 'line-through opacity-60' : 'opacity-40 italic'}>{h.gerente_anterior || '—'}</span>
                                             </td>
-                                            <td className="px-3 py-2.5 text-[#0B1B2E] font-medium text-[12px]">{h.gerente_novo || '—'}</td>
+                                            <td className="px-3 py-2.5 text-[#0B1B2E] font-medium text-xs">{h.gerente_novo || '—'}</td>
                                         </tr>
                                     );
                                 })}
@@ -185,7 +185,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                 {/* Pagination footer */}
                 {!loading && !erro && total > 0 && (
                     <div className="shrink-0 px-5 py-3 border-t border-[#E4ECF5] bg-[#F7FAFD] rounded-b-2xl flex items-center justify-between gap-4">
-                        <p className="text-[12px] text-[#475467] font-medium">
+                        <p className="text-xs text-[#475467] font-medium">
                             {total <= SERVER_PAGE_SIZE
                                 ? `${total} registro${total !== 1 ? 's' : ''} no total`
                                 : `Mostrando ${((page - 1) * SERVER_PAGE_SIZE) + 1}–${Math.min(page * SERVER_PAGE_SIZE, total)} de ${total}`
@@ -218,12 +218,12 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                     }, [])
                                     .map((p, i) =>
                                         p === '...' ? (
-                                            <span key={`e-${i}`} className="px-1 text-[#475467] text-[12px]">…</span>
+                                            <span key={`e-${i}`} className="px-1 text-[#475467] text-xs">…</span>
                                         ) : (
                                             <button
                                                 key={p}
                                                 onClick={() => goToPage(p)}
-                                                className={`w-7 h-7 rounded-lg text-[12px] font-bold transition-colors ${p === page ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-sm' : 'hover:bg-[#FFF7ED] text-[#475467]'}`}
+                                                className={`w-7 h-7 rounded-lg text-xs font-bold transition-colors ${p === page ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-sm' : 'hover:bg-[#FFF7ED] text-[#475467]'}`}
                                             >
                                                 {p}
                                             </button>

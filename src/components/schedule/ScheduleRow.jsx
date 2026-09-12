@@ -18,7 +18,7 @@ export default function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr
                 <div className="flex items-center gap-2">
                     {date}
                     {isToday && (
-                        <span className="text-[9px] font-extrabold uppercase tracking-widest bg-[var(--accent)] text-white px-1.5 py-0.5 rounded-full">Hoje</span>
+                        <span className="text-[11px] font-extrabold uppercase tracking-widest bg-[var(--accent)] text-white px-1.5 py-0.5 rounded-full">Hoje</span>
                     )}
                 </div>
             </td>
@@ -44,11 +44,13 @@ export default function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr
                             <UserAvatar user={u} hideName size="size-8" className="gap-0" />
                             <span className="font-bold text-foreground text-[11px] whitespace-nowrap">{u.name}</span>
                         </div>
-                    )) : (
+                    )) : mgr ? (
                         <div className="flex items-center gap-2 bg-[var(--accent-soft)]/60 rounded-full pl-1.5 pr-3 py-1 border border-[var(--accent)]/10">
                             <UserAvatar user={mgr} hideName size="size-8" className="gap-0" />
                             <span className="font-bold text-foreground text-[11px] whitespace-nowrap">{mgr.name}</span>
                         </div>
+                    ) : (
+                        <UserAvatar user={null} allowEmpty size="size-8" />
                     )}
                 </div>
             </td>

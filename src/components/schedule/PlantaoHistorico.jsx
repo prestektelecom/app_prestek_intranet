@@ -94,17 +94,17 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
     };
 
     return (
-        <div className="flex-1 flex flex-col w-full max-w-[1200px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: '#F5F9FF' }}>
+        <div className="flex-1 flex flex-col w-full max-w-[1200px] mx-auto px-4 md:px-8 py-8 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 bg-background" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
             <main className="flex-1 flex flex-col gap-8">
                 <div className="flex flex-col gap-2">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
-                            <h1 className="font-display text-3xl font-extrabold tracking-tight text-[#0B1B2E]">Histórico de Plantões</h1>
-                            <p className="text-[#475467] font-medium mt-1">Auditoria completa de todas as alterações realizadas na escala.</p>
+                            <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">Histórico de Plantões</h1>
+                            <p className="text-faint font-medium mt-1">Auditoria completa de todas as alterações realizadas na escala.</p>
                         </div>
                         <button
                             onClick={() => setCurrentView?.('schedule')}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[#E4ECF5] rounded-lg text-[#0B1B2E] font-bold shadow-sm hover:bg-[#F7FAFD] transition-colors self-start md:self-auto"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-surface border border-border rounded-lg text-foreground font-bold shadow-sm hover:bg-surface-raised transition-colors self-start md:self-auto"
                         >
                             <span className="material-symbols-outlined text-[20px]">arrow_back</span>
                             Voltar à Escala
@@ -115,43 +115,43 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                 {/* Filtros */}
                 <form
                     onSubmit={aplicarFiltros}
-                    className="bg-white rounded-[20px] p-6 shadow-sm border border-[#E4ECF5] flex flex-wrap gap-4 items-end"
+                    className="bg-surface rounded-[20px] p-6 shadow-sm border border-border flex flex-wrap gap-4 items-end"
                 >
                     <div className="flex flex-col gap-1.5">
-                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest">Data início</span>
+                        <span className="text-[11px] font-bold text-faint uppercase tracking-widest">Data início</span>
                         <input
                             type="date"
                             value={filtroDataInicio}
                             onChange={e => setFiltroDataInicio(e.target.value)}
-                            className="bg-[#F7FAFD] border border-transparent rounded-lg px-3 py-2.5 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] font-bold transition-all"
+                            className="bg-surface-raised border border-transparent rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] font-bold transition-all"
                         />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest">Data fim</span>
+                        <span className="text-[11px] font-bold text-faint uppercase tracking-widest">Data fim</span>
                         <input
                             type="date"
                             value={filtroDataFim}
                             onChange={e => setFiltroDataFim(e.target.value)}
-                            className="bg-[#F7FAFD] border border-transparent rounded-lg px-3 py-2.5 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] font-bold transition-all"
+                            className="bg-surface-raised border border-transparent rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] font-bold transition-all"
                         />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <span className="text-[10px] font-bold text-[#475467] uppercase tracking-widest">Admin</span>
+                        <span className="text-[11px] font-bold text-faint uppercase tracking-widest">Admin</span>
                         <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#475467] text-lg">search</span>
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-faint text-lg">search</span>
                             <input
                                 type="text"
                                 placeholder="Buscar por nome..."
                                 value={filtroAdmin}
                                 onChange={e => setFiltroAdmin(e.target.value)}
-                                className="bg-[#F7FAFD] border border-transparent rounded-lg py-2.5 pl-10 pr-3 text-sm text-[#0B1B2E] focus:outline-none focus:border-[#EC7D23] focus:ring-1 focus:ring-[#EC7D23] font-bold placeholder-[#475467]/50 transition-all w-52"
+                                className="bg-surface-raised border border-transparent rounded-lg py-2.5 pl-10 pr-3 text-sm text-foreground focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] font-bold placeholder-faint/50 transition-all w-52"
                             />
                         </div>
                     </div>
                     <div className="flex gap-2 items-end">
                         <button
                             type="submit"
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-[#EC7D23]/20"
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent)] text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-[var(--accent)]/20"
                         >
                             <span className="material-symbols-outlined text-[18px]">filter_alt</span>
                             Filtrar
@@ -160,7 +160,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                             <button
                                 type="button"
                                 onClick={limparFiltros}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#E4ECF5] text-[#475467] font-bold hover:bg-[#F7FAFD] transition-colors text-sm"
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border text-faint font-bold hover:bg-surface-raised transition-colors text-sm"
                             >
                                 <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
                                 Limpar
@@ -168,14 +168,14 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                         )}
                     </div>
                     <div className="ml-auto flex items-center gap-3">
-                        <span className="text-xs text-[#475467] font-bold">
+                        <span className="text-xs text-faint font-bold">
                             {carregando ? 'Carregando...' : `${total} registro${total !== 1 ? 's' : ''}`}
                         </span>
                         <button
                             type="button"
                             onClick={exportarCSV}
                             disabled={exportando || carregando || total === 0}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#1F8A5B]/60 bg-[var(--success-soft)] text-[var(--success-bento)] font-bold text-sm hover:bg-[#1F8A5B]/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--success-bento)]/60 bg-[var(--success-soft)] text-[var(--success-bento)] font-bold text-sm hover:bg-[var(--success-bento)]/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
                         >
                             <span className="material-symbols-outlined text-[18px]">
                                 {exportando ? 'hourglass_empty' : 'download'}
@@ -187,14 +187,14 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
 
                 {/* Error state */}
                 {erro && (
-                    <div className="p-4 rounded-xl border border-[#E84545]/20 bg-[var(--danger-soft)] text-[var(--danger-bento)] text-sm font-medium flex items-center gap-2">
+                    <div className="p-4 rounded-xl border border-[var(--danger-bento)]/20 bg-[var(--danger-soft)] text-[var(--danger-bento)] text-sm font-medium flex items-center gap-2">
                         <span className="material-symbols-outlined">error</span>
                         {erro}
                     </div>
                 )}
 
                 {/* Table */}
-                <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-[#E4ECF5]">
+                <div className="bg-surface rounded-3xl shadow-sm overflow-hidden border border-border">
                     <HistoricoColumnHeader />
 
                     {carregando ? (
@@ -219,22 +219,22 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
 
                     {/* Pagination */}
                     {totalPaginas > 1 && (
-                        <div className="flex items-center justify-between px-6 py-4 border-t border-[#E4ECF5]/50 bg-[#F7FAFD]/30">
+                        <div className="flex items-center justify-between px-6 py-4 border-t border-border/50 bg-surface-raised/30">
                             <button
                                 disabled={pagina === 1 || carregando}
                                 onClick={() => setPagina(p => p - 1)}
-                                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-[#E4ECF5] text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-border text-sm font-bold text-faint hover:bg-[var(--accent-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                                 Anterior
                             </button>
-                            <span className="text-xs font-bold text-[#475467]">
+                            <span className="text-xs font-bold text-faint">
                                 Página {pagina} de {totalPaginas} · {total} registros
                             </span>
                             <button
                                 disabled={pagina === totalPaginas || carregando}
                                 onClick={() => setPagina(p => p + 1)}
-                                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-[#E4ECF5] text-sm font-bold text-[#475467] hover:bg-[#FFF7ED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="flex items-center gap-1 px-4 py-2 rounded-lg border border-border text-sm font-bold text-faint hover:bg-[var(--accent-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 Próxima
                                 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -243,11 +243,11 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                     )}
                 </div>
 
-                <footer className="mt-4 pt-8 border-t border-[#E4ECF5] pb-4 flex flex-col md:flex-row justify-between items-center text-xs text-[#8896A8] font-bold gap-4 uppercase tracking-widest">
+                <footer className="mt-4 pt-8 border-t border-border pb-4 flex flex-col md:flex-row justify-between items-center text-xs text-faint font-bold gap-4 uppercase tracking-widest">
                     <p>© 2026 Prestek Intranet • Portal Interno</p>
                     <div className="flex gap-6">
-                        <a className="hover:text-[#C2410C] transition-colors" href="#">Políticas</a>
-                        <a className="hover:text-[#C2410C] transition-colors" href="#">Suporte</a>
+                        <a className="hover:text-[var(--accent-dark)] transition-colors" href="#">Políticas</a>
+                        <a className="hover:text-[var(--accent-dark)] transition-colors" href="#">Suporte</a>
                     </div>
                 </footer>
             </main>

@@ -134,7 +134,7 @@ export default function MultiSelectEmployee({
                                 key={val}
                                 className="flex items-center gap-1 text-[11px] bg-[var(--accent-soft)] text-[var(--accent-dark)] pl-1 pr-1.5 py-0.5 rounded-full font-bold"
                             >
-                                <span className="w-4 h-4 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-[9px] font-extrabold shrink-0">
+                                <span className="w-4 h-4 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-[11px] font-extrabold shrink-0">
                                     {getInitial(name)}
                                 </span>
                                 {shortName}

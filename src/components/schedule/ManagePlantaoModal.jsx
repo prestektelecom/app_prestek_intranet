@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import MultiSelectEmployee from './MultiSelectEmployee';
 import { getDiaSemana } from '../../utils/dateHelpers';
+import { useDismissable } from '../../hooks/useDismissable';
 
 const SECTIONS = {
     N1: 'n1',
@@ -8,6 +9,11 @@ const SECTIONS = {
     SUP: 'sup',
     HISTORICO: 'historico',
 };
+
+// `aria-modal="true"` sem trap de Tab deixava o foco escapar para o hero por
+// trás do backdrop; useDismissable cobre Escape/clique fora/foco de entrada
+// e retorno, o trapTab abaixo é o mesmo padrão do TiSupportModal/BottomSheet.
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export default function ManagePlantaoModal({
     isOpen,
@@ -31,15 +37,19 @@ export default function ManagePlantaoModal({
 }) {
     const [validationError, setValidationError] = useState('');
     const [openSection, setOpenSection] = useState(SECTIONS.N1);
+    const modalRef = useRef(null);
 
-    useEffect(() => {
-        if (!isOpen) return;
-        const handleKeyDown = (e) => {
-            if (e.key === 'Escape') onClose();
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
+    useDismissable(modalRef, { open: isOpen, onClose, lockScroll: true, closeOnOutside: true });
+
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !modalRef.current) return;
+        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
 
     if (!isOpen) return null;
 
@@ -75,7 +85,7 @@ export default function ManagePlantaoModal({
                     <span className="material-symbols-outlined text-[16px] text-[var(--muted-bento)]">{icon}</span>
                     <span className="text-[11px] font-extrabold uppercase text-[var(--muted-bento)] tracking-widest">{label}</span>
                     {count > 0 && (
-                        <span className="text-[10px] bg-[var(--accent-soft)] text-[var(--accent-dark)] px-1.5 py-0.5 rounded-full font-extrabold">
+                        <span className="text-[11px] bg-[var(--accent-soft)] text-[var(--accent-dark)] px-1.5 py-0.5 rounded-full font-extrabold">
                             {count} selecionado{count > 1 ? 's' : ''}
                         </span>
                     )}
@@ -96,9 +106,11 @@ export default function ManagePlantaoModal({
             onClick={onClose}
         >
             <div
+                ref={modalRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="manage-plantao-title"
+                onKeyDown={trapTab}
                 className="bg-[var(--surface)] rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md border border-[var(--line)] flex flex-col max-h-[92vh] sm:max-h-[85vh] animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -123,7 +135,7 @@ export default function ManagePlantaoModal({
                         {/* Data */}
                         {dateEditable ? (
                             <label className="flex flex-col gap-1">
-                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--muted-bento)]">Data do plantão</span>
+                                <span className="text-[11px] font-extrabold uppercase tracking-widest text-[var(--muted-bento)]">Data do plantão</span>
                                 <input
                                     type="date"
                                     value={selectedDate || ''}
@@ -149,7 +161,7 @@ export default function ManagePlantaoModal({
                         {/* Aviso de plantão existente */}
                         {existingPlantao && (
                             <div className="flex flex-col gap-1.5 bg-[var(--warning-soft)] border border-[var(--warning-bento)]/30 text-[var(--warning-strong)] px-3 py-2.5 rounded-lg text-xs">
-                                <div className="flex items-center gap-1.5 font-extrabold uppercase tracking-wider text-[10px]">
+                                <div className="flex items-center gap-1.5 font-extrabold uppercase tracking-wider text-[11px]">
                                     <span className="material-symbols-outlined text-[16px]">warning</span>
                                     Já existe um plantão — salvar irá substituir.
                                 </div>
@@ -242,12 +254,12 @@ export default function ManagePlantaoModal({
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-1">
                                                                 <span className="material-symbols-outlined text-[12px] text-[var(--accent-dark)]">manage_accounts</span>
-                                                                <span className="text-[10px] font-extrabold text-[var(--ink)]">{h.admin_nome || 'Desconhecido'}</span>
+                                                                <span className="text-[11px] font-extrabold text-[var(--ink)]">{h.admin_nome || 'Desconhecido'}</span>
                                                             </div>
-                                                            <span className="text-[9px] text-[var(--muted-bento)] font-medium">{fmt}</span>
+                                                            <span className="text-[11px] text-[var(--muted-bento)] font-medium">{fmt}</span>
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px] text-[var(--muted-bento)] mt-0.5">
-                                                            <div className="col-span-2 font-extrabold text-[9px] uppercase tracking-wider text-[var(--muted-bento)]/70 mb-0.5">Antes → Depois</div>
+                                                        <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-[var(--muted-bento)] mt-0.5">
+                                                            <div className="col-span-2 font-extrabold text-[11px] uppercase tracking-wider text-[var(--muted-bento)]/70 mb-0.5">Antes → Depois</div>
                                                             <div><span className="font-extrabold text-[var(--ink)]/60">N1:</span> {h.n1_anterior || '—'}</div>
                                                             <div><span className="font-extrabold text-[var(--accent-dark)]">N1:</span> {h.n1_novo || '—'}</div>
                                                             <div><span className="font-extrabold text-[var(--ink)]/60">N2:</span> {h.n2_anterior || '—'}</div>

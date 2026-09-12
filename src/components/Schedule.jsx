@@ -13,7 +13,7 @@ import { useBentoTheme } from '../hooks/useBentoTheme';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
 
-const HERO_LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
+const HERO_LABEL_MONO = 'font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-white/75';
 
 function HeroKpiTile({ label, value, icon }) {
   return (
@@ -21,7 +21,7 @@ function HeroKpiTile({ label, value, icon }) {
       <span className="material-symbols-outlined shrink-0 text-white/70 text-[18px]" aria-hidden="true">{icon}</span>
       <div className="min-w-0">
         <div className={HERO_LABEL_MONO}>{label}</div>
-        <div className="mt-0.5 truncate text-[17px] font-extrabold leading-none tracking-tight text-white tabular-nums">{value}</div>
+        <div className="mt-0.5 truncate text-lg font-extrabold leading-none tracking-tight text-white tabular-nums">{value}</div>
       </div>
     </div>
   );
@@ -74,7 +74,7 @@ function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, use
             <h1 className="m-0 mt-1.5 font-display text-3xl font-extrabold tracking-tight leading-[1.1] text-white">
               Visão Geral da Escala
             </h1>
-            <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">
+            <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-base">
               Visualize e gerencie as atribuições de cobertura mensal do time.
             </p>
           </div>
@@ -270,34 +270,18 @@ export default function Schedule({ setCurrentView, user }) {
     const monthLabel = () => new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1)
         .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
-    const openNewPlantao = () => {
-        if (!user?.is_admin) return;
-        // Não usar toIsoDay(new Date()) aqui: aquela função lê os campos UTC
-        // (pensada para strings de data "ingênuas" do IXC), e `new Date()` é o
-        // instante atual — à noite no fuso de Brasília (UTC-3) isso já "vira o
-        // dia seguinte" em UTC. `isHoje` usa hora local; hoje precisa usar o
-        // mesmo horário local para os dois concordarem sobre qual dia é "hoje".
-        const agora = new Date();
-        const hojeLocal = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
-        setSelectedDate(hojeLocal);
-        setDateEditable(true);
-        setExistingPlantao(null);
-        setFormData({ n1_ids: [], n2_ids: [], gerente_ids: [] });
-        setHistorico([]);
-        setIsModalOpen(true);
+    const parseIds = (val) => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val;
+        return val.split(',').filter(Boolean);
     };
 
-    const openManagement = (dateStr) => {
-        if (!user?.is_admin) return;
-        setSelectedDate(dateStr);
-        setDateEditable(false);
-        setHistorico([]);
+    // Carrega formData/existingPlantao/histórico para uma data — usada tanto
+    // ao abrir o modal quanto ao trocar a data dentro dele (modo "Novo
+    // Plantão"), para que trocar a data revalide sobreposição em vez de
+    // manter o aviso/formulário da data anterior (achado P0 da crítica).
+    const carregarDadosDaData = (dateStr) => {
         const existingInfo = plantoes.find(p => toIsoDay(p?.data) === dateStr);
-        const parseIds = (val) => {
-            if (!val) return [];
-            if (Array.isArray(val)) return val;
-            return val.split(',').filter(Boolean);
-        };
         if (existingInfo) {
             setFormData({
                 n1_ids: parseIds(existingInfo.n1_id),
@@ -309,8 +293,35 @@ export default function Schedule({ setCurrentView, user }) {
             setFormData({ n1_ids: [], n2_ids: [], gerente_ids: [] });
             setExistingPlantao(null);
         }
-        setIsModalOpen(true);
         fetchHistorico(dateStr);
+    };
+
+    const openNewPlantao = () => {
+        if (!user?.is_admin) return;
+        // Não usar toIsoDay(new Date()) aqui: aquela função lê os campos UTC
+        // (pensada para strings de data "ingênuas" do IXC), e `new Date()` é o
+        // instante atual — à noite no fuso de Brasília (UTC-3) isso já "vira o
+        // dia seguinte" em UTC. `isHoje` usa hora local; hoje precisa usar o
+        // mesmo horário local para os dois concordarem sobre qual dia é "hoje".
+        const agora = new Date();
+        const hojeLocal = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+        setSelectedDate(hojeLocal);
+        setDateEditable(true);
+        setIsModalOpen(true);
+        carregarDadosDaData(hojeLocal);
+    };
+
+    const trocarDataNoModal = (dateStr) => {
+        setSelectedDate(dateStr);
+        if (dateStr) carregarDadosDaData(dateStr);
+    };
+
+    const openManagement = (dateStr) => {
+        if (!user?.is_admin) return;
+        setSelectedDate(dateStr);
+        setDateEditable(false);
+        setIsModalOpen(true);
+        carregarDadosDaData(dateStr);
     };
 
     const executarSalvamento = async () => {
@@ -456,7 +467,7 @@ export default function Schedule({ setCurrentView, user }) {
                                 {filtrosAtivos && (
                                     <button
                                         onClick={limparFiltros}
-                                        className="text-[10px] uppercase font-bold tracking-widest text-faint hover:text-[var(--accent-dark)] transition-colors flex items-center gap-1 bg-[var(--accent-soft)] px-2 py-1 rounded-md"
+                                        className="text-[11px] uppercase font-bold tracking-widest text-faint hover:text-[var(--accent-dark)] transition-colors flex items-center gap-1 bg-[var(--accent-soft)] px-2 py-1 rounded-md"
                                         aria-label="Limpar filtros"
                                     >
                                         <span className="material-symbols-outlined text-[14px]">close_small</span> Limpar
@@ -466,7 +477,7 @@ export default function Schedule({ setCurrentView, user }) {
                             <div className="flex flex-col gap-4">
                                 <div className="grid grid-cols-2 gap-3">
                                     <label className="flex flex-col gap-1.5 cursor-pointer group">
-                                        <span className="text-[10px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors">Mês</span>
+                                        <span className="text-[11px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors">Mês</span>
                                         <div className="relative">
                                             <select
                                                 value={filterMonth}
@@ -483,7 +494,7 @@ export default function Schedule({ setCurrentView, user }) {
                                         </div>
                                     </label>
                                     <label className="flex flex-col gap-1.5 cursor-pointer group">
-                                        <span className="text-[10px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors">Ano</span>
+                                        <span className="text-[11px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors">Ano</span>
                                         <div className="relative">
                                             <select
                                                 value={filterYear}
@@ -500,7 +511,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     </label>
                                 </div>
                                 <label className="flex flex-col gap-1.5 group cursor-pointer">
-                                    <span className="text-[10px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors block mb-0.5">Atendente</span>
+                                    <span className="text-[11px] font-bold text-faint uppercase tracking-widest group-focus-within:text-[var(--accent-dark)] transition-colors block mb-0.5">Atendente</span>
                                     <div className="relative">
                                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-faint text-lg group-focus-within:text-[var(--accent-dark)] transition-colors">search</span>
                                         <input
@@ -549,7 +560,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     {new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                                 </h3>
                             </div>
-                            <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-3 font-extrabold text-faint uppercase tracking-widest opacity-80">
+                            <div className="grid grid-cols-7 gap-1 text-center text-[11px] mb-3 font-extrabold text-faint uppercase tracking-widest opacity-80">
                                 {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => <div key={i}>{d}</div>)}
                             </div>
                             <div className="grid grid-cols-7 gap-1 text-sm bg-surface-raised/60 rounded-xl p-1">
@@ -573,7 +584,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     );
                                 })}
                             </div>
-                            <div className="mt-5 flex gap-4 text-[10px] font-extrabold text-faint uppercase tracking-widest">
+                            <div className="mt-5 flex gap-4 text-[11px] font-extrabold text-faint uppercase tracking-widest">
                                 <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-[var(--accent)] rounded-full shadow-sm shadow-[var(--accent)]/20"></div> Hoje</div>
                                 <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-[var(--accent)] rounded-full"></div> Plantão</div>
                             </div>
@@ -582,7 +593,7 @@ export default function Schedule({ setCurrentView, user }) {
                         {/* Stats */}
                         <div className="bg-surface rounded-[20px] p-6 shadow-sm border border-border animate-in fade-in slide-in-from-left-4 duration-1000 flex items-center justify-between hover:shadow-md transition-shadow">
                             <div>
-                                <div className="text-[10px] font-bold text-faint uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                <div className="text-[11px] font-bold text-faint uppercase tracking-widest mb-1 flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-[14px]">insights</span>
                                     Status do Filtro
                                 </div>
@@ -599,7 +610,7 @@ export default function Schedule({ setCurrentView, user }) {
                         {user?.is_admin && (
                             <div className="bg-surface rounded-[20px] p-6 shadow-sm border border-border animate-in fade-in slide-in-from-left-4 duration-1000 flex items-center justify-between hover:shadow-md transition-shadow">
                                 <div>
-                                    <div className="text-[10px] font-bold text-faint uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                                    <div className="text-[11px] font-bold text-faint uppercase tracking-widest mb-1 flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-[14px]">edit_calendar</span>
                                         Alterações no Mês
                                     </div>
@@ -636,7 +647,7 @@ export default function Schedule({ setCurrentView, user }) {
                                     <p className="text-sm font-medium text-faint mt-1">Clique nas linhas {user?.is_admin ? "ou no calendário" : ""} para ver detalhes.</p>
                                 </div>
                                 {user?.is_admin && (
-                                    <div className="bg-[var(--accent-soft)] text-[var(--accent-dark)] text-[10px] font-extrabold uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[var(--accent)]/20">
+                                    <div className="bg-[var(--accent-soft)] text-[var(--accent-dark)] text-[11px] font-extrabold uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-[var(--accent)]/20">
                                         <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
                                         Gestão Ativa
                                     </div>
@@ -675,7 +686,7 @@ export default function Schedule({ setCurrentView, user }) {
                                                     isWeekend={isFimDeSemana(p.data)}
                                                     n1={mapIdsToPessoas(p.n1_id)}
                                                     n2={p.n2_id ? mapIdsToPessoas(p.n2_id) : null}
-                                                    mgr={mapIdsToPessoas(p.gerente_id)}
+                                                    mgr={p.gerente_id ? mapIdsToPessoas(p.gerente_id) : null}
                                                     isAdmin={user?.is_admin}
                                                     onEdit={() => openManagement(toIsoDay(p.data))}
                                                 />
@@ -701,7 +712,7 @@ export default function Schedule({ setCurrentView, user }) {
                                             isWeekend={isFimDeSemana(p.data)}
                                             n1={mapIdsToPessoas(p.n1_id)}
                                             n2={p.n2_id ? mapIdsToPessoas(p.n2_id) : [{ name: 'Não atribuído', initials: '??', img: null }]}
-                                            mgr={mapIdsToPessoas(p.gerente_id)}
+                                            mgr={p.gerente_id ? mapIdsToPessoas(p.gerente_id) : null}
                                             isAdmin={user?.is_admin}
                                             onEdit={() => openManagement(toIsoDay(p.data))}
                                         />
@@ -719,7 +730,7 @@ export default function Schedule({ setCurrentView, user }) {
                         isOpen={isModalOpen}
                         selectedDate={selectedDate}
                         dateEditable={dateEditable}
-                        onDateChange={setSelectedDate}
+                        onDateChange={trocarDataNoModal}
                         existingPlantao={existingPlantao}
                         formData={formData}
                         setFormData={setFormData}

@@ -72,7 +72,7 @@ export function ErrorState({ onRetry }) {
             className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-surface px-6 py-16 text-center"
         >
             <span className="material-symbols-outlined text-4xl text-[var(--danger-bento)]" aria-hidden="true">cloud_off</span>
-            <p className="m-0 text-[15px] font-bold text-foreground">Não foi possível carregar a escala</p>
+            <p className="m-0 text-base font-bold text-foreground">Não foi possível carregar a escala</p>
             <p className="m-0 max-w-sm text-[13px] leading-relaxed text-faint">
                 O servidor não respondeu. Isso costuma ser temporário — tente novamente em instantes.
             </p>
