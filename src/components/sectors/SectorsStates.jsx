@@ -71,7 +71,7 @@ export function ErrorState({ onRetry }) {
                 cloud_off
             </span>
             <p className="m-0 text-[15px] font-bold text-foreground">Não foi possível carregar os setores</p>
-            <p className="m-0 max-w-sm text-[13px] leading-relaxed text-muted">
+            <p className="m-0 max-w-sm text-[13px] leading-relaxed text-faint">
                 O servidor não respondeu. Isso costuma ser temporário — a lista não foi perdida.
             </p>
             <button
@@ -93,7 +93,7 @@ export function EmptyState({ temFiltro, onClear }) {
             <p className="m-0 text-[15px] font-bold text-foreground">
                 {temFiltro ? 'Nenhum setor corresponde à busca' : 'Nenhum setor encontrado'}
             </p>
-            <p className="m-0 max-w-sm text-[13px] leading-relaxed text-muted">
+            <p className="m-0 max-w-sm text-[13px] leading-relaxed text-faint">
                 {temFiltro
                     ? 'Tente outro termo — a busca cobre nome do setor e do responsável.'
                     : 'Ainda não há setores para exibir.'}
@@ -102,7 +102,7 @@ export function EmptyState({ temFiltro, onClear }) {
                 <button
                     type="button"
                     onClick={onClear}
-                    className="mt-1 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-muted transition-all hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                    className="mt-1 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-faint transition-all hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                 >
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">search_off</span>
                     Limpar busca

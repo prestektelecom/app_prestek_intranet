@@ -1,10 +1,16 @@
 import React from 'react';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
 
-// Mesmo segmented control do DirectoryToolbar.
-const SEG_BASE = 'inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]';
-const SEG_ATIVO = 'bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-inset ring-[var(--accent)]/50';
-const SEG_INATIVO = 'text-muted hover:bg-background';
+// Mesmo segmented control do DirectoryToolbar — inclusive o mesmo bug ainda
+// não corrigido lá (registrado em MEMORIA.md para uma varredura futura):
+// `h-9` reprova o alvo de toque de 44px, e `text-[var(--accent)]` sobre
+// `bg-[var(--accent-soft)]` mede 2,6:1, abaixo do piso de texto. `--accent`
+// é tom de marca (~500), não de texto; `--accent-dark` é o par correto (o
+// mesmo `accentSoft`/`accentDark` já usado pela Sidebar e por ChipButton.jsx,
+// só exposto como variável CSS em vez do hook `useBentoTheme`).
+const SEG_BASE = 'inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]';
+const SEG_ATIVO = 'bg-[var(--accent-soft)] text-[var(--accent-dark)] ring-1 ring-inset ring-[var(--accent)]/50';
+const SEG_INATIVO = 'text-faint hover:bg-background';
 
 /**
  * Busca + ordenação + visão do diretório de setores.
@@ -86,8 +92,7 @@ export default function SectorsToolbar({
                 min-h impede o salto de layout enquanto carrega. */}
             <p
                 aria-live="polite"
-                className="m-0 min-h-[18px] font-mono text-[12px] tracking-[0.05em]"
-                style={{ color: C.muted }}
+                className="m-0 min-h-[18px] font-mono text-[13px] tracking-[0.05em] text-faint"
             >
                 {isLoading ? '' : textoContador}
             </p>

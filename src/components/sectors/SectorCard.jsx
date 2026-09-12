@@ -4,6 +4,7 @@ import { tone } from '../../utils/tone';
 import { neumorfismo, relevo, reentrancia } from '../directory/neumorfismo';
 import { useDeptColor } from '../directory/deptColors';
 import { getDescricaoForSetor, getIconForSetor } from './sectorMeta';
+import { coresSituacao } from '../directory/EmployeeCard';
 
 /**
  * Card de setor — mesma superfície neumórfica do EmployeeCard, com o conteúdo
@@ -82,9 +83,12 @@ export default function SectorCard({ setor, isAdmin, onSaveDescription, setCurre
 
             {/* Título + descrição */}
             <div>
-                <h3 className="m-0 mb-2 text-[19px] font-extrabold tracking-[-0.01em]" style={{ color: C.ink }}>
-                    {setor.nome}
-                </h3>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <h3 className="m-0 text-[18px] font-extrabold tracking-[-0.01em]" style={{ color: C.ink }}>
+                        {setor.nome}
+                    </h3>
+                    {setor._situacaoSetor && <SituacaoBadge situacao={setor._situacaoSetor} C={C} />}
+                </div>
 
                 {isEditing ? (
                     <div className="flex flex-col gap-2">
@@ -109,7 +113,7 @@ export default function SectorCard({ setor, isAdmin, onSaveDescription, setCurre
                                 onClick={() => { setIsEditing(false); setErroSalvar(''); }}
                                 disabled={salvando}
                                 className="min-h-[40px] cursor-pointer rounded-lg px-3 text-[12.5px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-60"
-                                style={{ color: C.muted, background: 'none', border: 'none' }}
+                                style={{ color: C.ink2, background: 'none', border: 'none' }}
                             >
                                 Cancelar
                             </button>
@@ -117,8 +121,8 @@ export default function SectorCard({ setor, isAdmin, onSaveDescription, setCurre
                                 type="button"
                                 onClick={handleSave}
                                 disabled={salvando}
-                                className="inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-lg px-4 text-[12.5px] font-bold text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-70"
-                                style={{ background: C.accent, border: 'none' }}
+                                className="inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-lg px-4 text-[12.5px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-70"
+                                style={{ background: C.accent, color: C.onAccent, border: 'none' }}
                             >
                                 {salvando && (
                                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
@@ -150,7 +154,10 @@ export default function SectorCard({ setor, isAdmin, onSaveDescription, setCurre
                                 type="button"
                                 onClick={() => setIsExpanded(v => !v)}
                                 aria-expanded={isExpanded}
-                                className="mt-1.5 inline-flex cursor-pointer items-center gap-1 rounded p-0 text-[12px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                                // after:-inset-y-[13px] leva o alvo de 18px de altura
+                                // para 44px sem empurrar o layout — mesma técnica do
+                                // botão de editar, logo abaixo.
+                                className="relative mt-1.5 inline-flex cursor-pointer items-center gap-1 rounded p-0 text-[13px] font-bold transition-colors after:absolute after:-inset-y-[13px] after:-inset-x-2 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                                 style={{ color: tinta, background: 'none', border: 'none' }}
                             >
                                 {isExpanded ? 'Ver menos' : 'Ver mais'}
@@ -197,17 +204,20 @@ export default function SectorCard({ setor, isAdmin, onSaveDescription, setCurre
                             </div>
                         )}
                         <div className="min-w-0 flex-1">
-                            <p className="m-0 font-mono text-[10px] font-extrabold uppercase tracking-[0.1em]" style={{ color: C.muted }}>Responsável</p>
-                            <p className="m-0 mt-0.5 truncate text-[13.5px] font-bold" style={{ color: C.ink }}>{managerName}</p>
+                            <p className="m-0 font-mono text-[13px] font-extrabold uppercase tracking-[0.1em]" style={{ color: C.ink2 }}>Responsável</p>
+                            <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                                <p className="m-0 truncate text-[13.5px] font-bold" style={{ color: C.ink }}>{managerName}</p>
+                                {setor._situacaoResp && <SituacaoBadge situacao={setor._situacaoResp} C={C} />}
+                            </div>
                         </div>
                     </>
                 ) : (
                     <div className="min-w-0 flex-1">
-                        <p className="m-0 text-[12.5px] font-semibold" style={{ color: C.muted }}>Sem responsável definido</p>
+                        <p className="m-0 text-[12.5px] font-semibold" style={{ color: C.ink2 }}>Sem responsável definido</p>
                     </div>
                 )}
                 <div className="shrink-0 pl-3 text-right" style={{ borderLeft: `1px solid ${C.line}` }}>
-                    <p className="m-0 font-mono text-[10px] font-extrabold uppercase tracking-[0.1em]" style={{ color: C.muted }}>Equipe</p>
+                    <p className="m-0 font-mono text-[13px] font-extrabold uppercase tracking-[0.1em]" style={{ color: C.ink2 }}>Equipe</p>
                     <p className="m-0 mt-0.5 text-[13.5px] font-bold tabular-nums" style={{ color: C.ink }}>{setor.totalMembros}</p>
                 </div>
             </div>
@@ -275,7 +285,7 @@ function ComposicaoGrupos({ grupos, marca, tinta, C }) {
 
     return (
         <div>
-            <p className="m-0 mb-2 font-mono text-[10px] font-extrabold uppercase tracking-[0.1em]" style={{ color: C.muted }}>
+            <p className="m-0 mb-2 font-mono text-[13px] font-extrabold uppercase tracking-[0.1em]" style={{ color: C.ink2 }}>
                 Composição
             </p>
             <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
@@ -292,7 +302,7 @@ function ComposicaoGrupos({ grupos, marca, tinta, C }) {
                             // neutro para não competir com os grupos reais.
                             g.id
                                 ? { background: tone(marca, 0.12), color: tinta }
-                                : { background: C.surfaceSoft, color: C.muted }
+                                : { background: C.surfaceSoft, color: C.ink2 }
                         }
                     >
                         {g.supervisor && (
@@ -306,13 +316,26 @@ function ComposicaoGrupos({ grupos, marca, tinta, C }) {
                     <li
                         title={porMassa.slice(MOSTRAR).map(g => `${g.nome}: ${g.total}`).join('\n')}
                         className="inline-flex items-center rounded-lg px-2.5 py-1.5 font-mono text-[11px] font-bold tabular-nums"
-                        style={{ background: C.surfaceSoft, color: C.muted }}
+                        style={{ background: C.surfaceSoft, color: C.ink2 }}
                     >
                         +{restante}
                     </li>
                 )}
             </ul>
         </div>
+    );
+}
+
+/** Badge de situação (Inativo/Férias/Afastado), mesma paleta do Diretório. */
+function SituacaoBadge({ situacao, C }) {
+    const cor = coresSituacao(situacao.tom, C);
+    return (
+        <span
+            className="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 font-mono text-[10.5px] font-bold uppercase tracking-[0.06em]"
+            style={{ background: cor.fundo, color: cor.texto, border: `1px solid ${cor.borda}` }}
+        >
+            {situacao.rotulo}
+        </span>
     );
 }
 

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useDismissable } from '../hooks/useDismissable';
 
 function tone(hex, a) {
     const h = hex.replace('#', '');
@@ -10,10 +11,31 @@ function tone(hex, a) {
 const MONO = '"JetBrains Mono", monospace';
 const FONT = '"Plus Jakarta Sans", system-ui, sans-serif';
 
+// Sem isso o editor não tinha NENHUMA semântica de diálogo: Escape não
+// fechava, o foco não entrava nele ao abrir e Tab escapava para a página por
+// trás. É o admin editando o organograma da empresa inteira — o mesmo padrão
+// (useDismissable + trap de Tab local) já usado em TiSupportModal,
+// ManagePlantaoModal e CrudModal/DeleteModal (Comunicados).
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+const ORGCHART_EDITOR_TITLE_ID = 'orgchart-editor-titulo';
+
 export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
     const C = useBentoTheme();
     const [draft, setDraft] = useState(() => JSON.parse(JSON.stringify(data)));
     const [activeTab, setActiveTab] = useState('ceo');
+    const modalRef = useRef(null);
+
+    useDismissable(modalRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
+
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !modalRef.current) return;
+        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
 
     useEffect(() => {
         setDraft(JSON.parse(JSON.stringify(data)));
@@ -103,7 +125,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                 border: 'none',
                 borderBottom: `2px solid ${activeTab === id ? C.accent : 'transparent'}`,
                 background: 'transparent',
-                color: activeTab === id ? C.accentDeep : C.muted,
+                color: activeTab === id ? C.accentDeep : C.ink2,
                 fontWeight: 700,
                 fontSize: 13,
                 cursor: 'pointer',
@@ -120,9 +142,13 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
             position: 'fixed', inset: 0, zIndex: 1100,
             background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-        }} onClick={onClose}>
+        }}>
             <div
-                onClick={e => e.stopPropagation()}
+                ref={modalRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={ORGCHART_EDITOR_TITLE_ID}
+                onKeyDown={trapTab}
                 style={{
                     width: '100%', maxWidth: 720, maxHeight: '90vh',
                     background: C.surface, borderRadius: 20, border: `1px solid ${C.line}`,
@@ -133,11 +159,18 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                 {/* Header */}
                 <div style={{ padding: '20px 24px', borderBottom: `1px solid ${C.line}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <h2 className="font-display" style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.ink }}>Editar Organograma</h2>
-                        <p style={{ margin: '4px 0 0', fontSize: 12.5, color: C.muted }}>Edite textos sem precisar alterar código.</p>
+                        <h2 id={ORGCHART_EDITOR_TITLE_ID} className="font-display" style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.ink }}>Editar Organograma</h2>
+                        <p style={{ margin: '4px 0 0', fontSize: 12.5, color: C.ink2 }}>Edite textos sem precisar alterar código.</p>
                     </div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: 24 }}>close</span>
+                    <button
+                        onClick={onClose}
+                        aria-label="Fechar"
+                        style={{
+                            width: 44, height: 44, borderRadius: 10, background: 'none', border: 'none',
+                            color: C.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                    >
+                        <span className="material-symbols-outlined" style={{ fontSize: 24 }} aria-hidden="true">close</span>
                     </button>
                 </div>
 
@@ -153,7 +186,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                     {activeTab === 'ceo' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             <div>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: MONO, marginBottom: 6 }}>Nome do CEO</label>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: C.ink2, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: MONO, marginBottom: 6 }}>Nome do CEO</label>
                                 <input
                                     value={draft.root.name}
                                     onChange={e => updateRoot('name', e.target.value)}
@@ -164,7 +197,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: MONO, marginBottom: 6 }}>Cargo</label>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: C.ink2, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: MONO, marginBottom: 6 }}>Cargo</label>
                                 <input
                                     value={draft.root.role}
                                     onChange={e => updateRoot('role', e.target.value)}
@@ -175,7 +208,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: MONO, marginBottom: 6 }}>URL da foto (opcional)</label>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: C.ink2, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: MONO, marginBottom: 6 }}>URL da foto (opcional)</label>
                                 <input
                                     value={draft.root.photo || ''}
                                     onChange={e => updateRoot('photo', e.target.value || null)}
@@ -206,7 +239,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO, marginBottom: 4 }}>Título</label>
+                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: C.ink2, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO, marginBottom: 4 }}>Título</label>
                                             <input
                                                 value={area.title}
                                                 onChange={e => updateArea(idx, 'title', e.target.value)}
@@ -214,7 +247,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                             />
                                         </div>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO, marginBottom: 4 }}>Responsável</label>
+                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: C.ink2, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO, marginBottom: 4 }}>Responsável</label>
                                             <input
                                                 value={area.name || ''}
                                                 onChange={e => updateArea(idx, 'name', e.target.value || null)}
@@ -224,7 +257,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO, marginBottom: 4 }}>Ícone (Material Symbol)</label>
+                                            <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: C.ink2, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO, marginBottom: 4 }}>Ícone (Material Symbol)</label>
                                             <input
                                                 value={area.icon}
                                                 onChange={e => updateArea(idx, 'icon', e.target.value)}
@@ -243,7 +276,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                         </div>
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO, marginBottom: 8 }}>Sub-setores</label>
+                                        <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: C.ink2, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: MONO, marginBottom: 8 }}>Sub-setores</label>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                             {area.children.map((child, cidx) => (
                                                 <div key={cidx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -281,11 +314,11 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                 }}
                             />
                             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                                <button onClick={exportJson} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: C.accent, color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <button onClick={exportJson} style={{ minHeight: 44, padding: '10px 16px', borderRadius: 10, border: 'none', background: C.accent, color: C.onAccent, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <span className="material-symbols-outlined" style={{ fontSize: 18 }}>download</span>
                                     Exportar JSON
                                 </button>
-                                <label style={{ padding: '10px 16px', borderRadius: 10, border: `1.5px solid ${C.accent}`, background: C.accentSoft, color: C.accentDeep, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <label style={{ minHeight: 44, boxSizing: 'border-box', padding: '10px 16px', borderRadius: 10, border: `1.5px solid ${C.accent}`, background: C.accentSoft, color: C.accentDeep, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <span className="material-symbols-outlined" style={{ fontSize: 18 }}>upload</span>
                                     Importar JSON
                                     <input type="file" accept="application/json" onChange={importJson} style={{ display: 'none' }} />
@@ -297,14 +330,14 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
 
                 {/* Footer */}
                 <div style={{ padding: '16px 24px', borderTop: `1px solid ${C.line}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <button onClick={onReset} style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: 'transparent', color: C.muted, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                    <button onClick={onReset} style={{ minHeight: 44, padding: '10px 14px', borderRadius: 10, border: 'none', background: 'transparent', color: C.ink2, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                         Restaurar padrão
                     </button>
                     <div style={{ display: 'flex', gap: 10 }}>
-                        <button onClick={onClose} style={{ padding: '10px 16px', borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, color: C.ink, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                        <button onClick={onClose} style={{ minHeight: 44, padding: '10px 16px', borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, color: C.ink, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                             Cancelar
                         </button>
-                        <button onClick={() => onSave(draft)} style={{ padding: '10px 18px', borderRadius: 10, border: 'none', background: C.accent, color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                        <button onClick={() => onSave(draft)} style={{ minHeight: 44, padding: '10px 18px', borderRadius: 10, border: 'none', background: C.accent, color: C.onAccent, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                             Salvar alterações
                         </button>
                     </div>

@@ -8,7 +8,7 @@ import SectorCard from './sectors/SectorCard';
 import SectorRow from './sectors/SectorRow';
 import OrgChart from './sectors/OrgChart';
 import { SkeletonCard, SkeletonRow, ErrorState, EmptyState } from './sectors/SectorsStates';
-import { semAcento } from './directory/statusColaborador';
+import { semAcento, situacaoColaborador } from './directory/statusColaborador';
 
 const CHAVE_VISAO = '@Stitch:sectorsView';
 
@@ -84,19 +84,45 @@ export default function Sectors({ user, setCurrentView }) {
         }
     }, [user]);
 
+    // O backend devolve nome de setor e de responsável com o mesmo prefixo de
+    // situação que o Diretório já sabia tratar ("(INATIVO) AUDITORIA DE
+    // CONTRATOS", "(AFASTADO) JOYCE..."). Sem isso, o prefixo aparecia cru na
+    // tela, ordenava alfabeticamente ANTES de qualquer setor real (parêntese
+    // vem antes de letra) e um responsável afastado lia como um responsável
+    // comum. Reaproveita `situacaoColaborador` — mesma extração de prefixo já
+    // testada no Diretório — passando `ativo='S'` como padrão seguro, já que
+    // aqui não existe uma flag "setor ativo" para comparar: o efeito é que só
+    // o prefixo entre parênteses vira badge, nunca a ausência dele.
+    const enriquecidos = useMemo(() => setores.map(s => {
+        const situacaoSetor = situacaoColaborador(s.nome, 'S');
+        const situacaoResp = s.responsavel?.nome ? situacaoColaborador(s.responsavel.nome, 'S') : null;
+        return {
+            ...s,
+            nome: situacaoSetor.nome,
+            _situacaoSetor: situacaoSetor.rotulo !== 'Ativo' ? situacaoSetor : null,
+            responsavel: s.responsavel ? { ...s.responsavel, nome: situacaoResp?.nome || s.responsavel.nome } : s.responsavel,
+            _situacaoResp: situacaoResp && situacaoResp.rotulo !== 'Ativo' ? situacaoResp : null,
+        };
+    }), [setores]);
+
     const setoresFiltrados = useMemo(() => {
         const termo = semAcento(busca.trim());
         const filtrados = termo
-            ? setores.filter(s =>
+            ? enriquecidos.filter(s =>
                 semAcento(s.nome).includes(termo)
                 || semAcento(s.responsavel?.nome || '').includes(termo))
-            : [...setores];
-        return filtrados.sort((a, b) =>
-            ordenacao === 'membros'
+            : [...enriquecidos];
+        // Setores com prefixo de situação (inativos, em regra) vão para o
+        // fim, independente da ordenação escolhida — a base real tem um caso
+        // hoje, mas sem isso ele venceria "A" de qualquer setor ativo.
+        return filtrados.sort((a, b) => {
+            if (!!a._situacaoSetor !== !!b._situacaoSetor) return a._situacaoSetor ? 1 : -1;
+            return ordenacao === 'membros'
                 ? (Number(b.totalMembros) || 0) - (Number(a.totalMembros) || 0)
                     || a.nome.localeCompare(b.nome, 'pt-BR')
-                : a.nome.localeCompare(b.nome, 'pt-BR'));
-    }, [setores, busca, ordenacao]);
+                : a.nome.localeCompare(b.nome, 'pt-BR');
+        });
+    }, [enriquecidos, busca, ordenacao]);
 
     const kpis = useMemo(() => {
         const comResponsavel = setores.filter(s => s.responsavel?.nome).length;

@@ -3,6 +3,7 @@ import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { tone } from '../../utils/tone';
 import { useDeptColor } from '../directory/deptColors';
 import { getIconForSetor } from './sectorMeta';
+import { coresSituacao } from '../directory/EmployeeCard';
 
 /**
  * Linha compacta da visão em lista — antes a "lista" era o mesmo card em uma
@@ -17,6 +18,7 @@ export default function SectorRow({ setor, setCurrentView }) {
 
     const ramal = setor.responsavel?.ramal && setor.responsavel.ramal !== '0' ? setor.responsavel.ramal : '';
     const managerName = setor.responsavel?.nome || '';
+    const corSituacaoSetor = setor._situacaoSetor ? coresSituacao(setor._situacaoSetor.tom, C) : null;
 
     const handleVerEquipe = () => {
         sessionStorage.setItem('@Stitch:directoryFilter', setor.id);
@@ -45,10 +47,18 @@ export default function SectorRow({ setor, setCurrentView }) {
                 </span>
             </div>
 
-            <div className="min-w-0 flex-1 basis-40">
-                <p className="m-0 truncate text-[15px] font-bold leading-tight" style={{ color: C.ink }}>
+            <div className="flex min-w-0 flex-1 basis-40 items-center gap-1.5">
+                <p className="m-0 truncate text-[14px] font-bold leading-tight" style={{ color: C.ink }}>
                     {setor.nome}
                 </p>
+                {setor._situacaoSetor && (
+                    <span
+                        className="inline-flex shrink-0 items-center rounded-full px-1.5 py-0.5 font-mono text-[9.5px] font-bold uppercase tracking-[0.06em]"
+                        style={{ background: corSituacaoSetor.fundo, color: corSituacaoSetor.texto, border: `1px solid ${corSituacaoSetor.borda}` }}
+                    >
+                        {setor._situacaoSetor.rotulo}
+                    </span>
+                )}
             </div>
 
             <span className="hidden min-w-0 max-w-[220px] flex-1 basis-40 truncate text-[13px] md:block" style={{ color: managerName ? C.ink2 : C.muted }}>
@@ -59,7 +69,7 @@ export default function SectorRow({ setor, setCurrentView }) {
                 {ramal ? `R. ${ramal}` : '—'}
             </span>
 
-            <span className="w-[86px] shrink-0 text-right font-mono text-[12px] tabular-nums" style={{ color: C.muted }}>
+            <span className="w-[86px] shrink-0 text-right font-mono text-[13px] tabular-nums" style={{ color: C.ink2 }}>
                 {setor.totalMembros} {Number(setor.totalMembros) === 1 ? 'pessoa' : 'pessoas'}
             </span>
 

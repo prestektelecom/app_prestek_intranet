@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { tone } from '../../utils/tone';
 import { gradienteHero } from '../ui/heroGradiente';
 
-const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em]';
+const LABEL_MONO = 'font-mono text-[11px] font-semibold uppercase tracking-[0.14em]';
 
 /**
  * Organograma estático (JSON + localStorage, via useOrgChartData).
@@ -16,11 +16,25 @@ const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14
 export default function OrgChart({ data, loaded, isAdmin, onEdit }) {
     const C = useBentoTheme();
     const connectorColor = tone(C.accent, 0.35);
+    const scrollRef = useRef(null);
+
+    // O CEO fica centralizado na largura TOTAL do diagrama (1144px+), não na
+    // borda esquerda — com `scrollLeft` padrão em 0, a viewport de um celular
+    // (~345px) mostrava só a metade esquerda das áreas e o CEO inteiro ficava
+    // fora da tela, sem nenhuma pista de que a raiz do organograma não estava
+    // ali. Centralizar a rolagem na montagem resolve os dois lados de uma vez:
+    // o CEO some para o meio da viewport, e "arraste para ver as áreas" passa
+    // a valer para os dois sentidos, não só para a direita.
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+    }, [data]);
 
     if (!loaded || !data) {
         return (
             <section className="flex min-h-[200px] items-center justify-center rounded-[24px] border border-border bg-surface p-6 sm:p-8">
-                <p className="m-0 animate-pulse font-semibold text-muted">Carregando organograma...</p>
+                <p className="m-0 animate-pulse font-semibold text-faint">Carregando organograma...</p>
             </section>
         );
     }
@@ -45,13 +59,13 @@ export default function OrgChart({ data, loaded, isAdmin, onEdit }) {
                 </div>
                 <div className="flex items-center gap-3">
                     {atualizadoEm && (
-                        <span className="font-mono text-[11px] text-muted">Atualizado em {atualizadoEm}</span>
+                        <span className="font-mono text-[11px] text-faint">Atualizado em {atualizadoEm}</span>
                     )}
                     {isAdmin && (
                         <button
                             type="button"
                             onClick={onEdit}
-                            className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-surface px-4 text-[12.5px] font-bold text-muted transition-colors hover:border-[var(--accent)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                            className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-surface px-4 text-[12.5px] font-bold text-faint transition-colors hover:border-[var(--accent)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                         >
                             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">edit</span>
                             Editar
@@ -65,6 +79,7 @@ export default function OrgChart({ data, loaded, isAdmin, onEdit }) {
                 quando NÃO há overflow — sem ele, a máscara apagaria a borda
                 direita da última coluna em telas largas. */}
             <div
+                ref={scrollRef}
                 className="w-full overflow-x-auto pb-2 pl-1 pt-6"
                 style={{
                     maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent 100%)',
@@ -90,7 +105,7 @@ export default function OrgChart({ data, loaded, isAdmin, onEdit }) {
                                 <span className="material-symbols-outlined text-[32px] text-white" aria-hidden="true">person</span>
                             </div>
                         )}
-                        <p className="m-0 text-[17px] font-extrabold">{root.name}</p>
+                        <p className="m-0 text-[18px] font-extrabold">{root.name}</p>
                         <p className="m-0 mt-0.5 font-mono text-[11px] font-extrabold uppercase tracking-[0.12em] text-white/85">{root.role}</p>
                     </div>
 
@@ -115,7 +130,7 @@ export default function OrgChart({ data, loaded, isAdmin, onEdit }) {
                 </div>
             </div>
 
-            <p className="m-0 mt-1 text-center font-mono text-[11px] text-muted sm:hidden">
+            <p className="m-0 mt-1 text-center font-mono text-[11px] text-faint sm:hidden">
                 ← arraste para ver todas as áreas →
             </p>
         </section>
@@ -166,7 +181,7 @@ function OrgAreaNode({ icon, title, name, isStaff = false }) {
             </div>
             <p className="m-0 text-[12.5px] font-bold leading-[1.25]" style={{ color: C.ink }}>{title}</p>
             {name && (
-                <p className="m-0 mt-1 font-mono text-[10.5px] font-extrabold uppercase tracking-[0.07em]" style={{ color: C.muted }}>{name}</p>
+                <p className="m-0 mt-1 font-mono text-[11px] font-extrabold uppercase tracking-[0.07em]" style={{ color: C.ink2 }}>{name}</p>
             )}
         </div>
     );
