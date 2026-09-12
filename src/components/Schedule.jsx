@@ -42,7 +42,7 @@ function HeroActionButton({ onClick, icon, children, primary, C }) {
   );
 }
 
-function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, user, onPrint, onExport, onHistory, onAudit }) {
+function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, user, onPrint, onExport, onHistory, onAudit, onNewPlantao }) {
   const C = useBentoTheme();
   const kpis = [
     { label: 'Plantões', value: totalPlantoes, icon: 'event_available' },
@@ -80,6 +80,9 @@ function ScheduleHero({ monthLabel, totalPlantoes, diasCobertos, alteracoes, use
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {user?.is_admin && onNewPlantao && (
+              <HeroActionButton onClick={onNewPlantao} icon="add" C={C}>Novo Plantão</HeroActionButton>
+            )}
             <HeroActionButton onClick={onPrint} icon="print" C={C}>Imprimir</HeroActionButton>
             <HeroActionButton onClick={onExport} icon="ios_share" primary C={C}>Exportar iCal</HeroActionButton>
             {user?.is_admin && onHistory && (
@@ -117,6 +120,7 @@ export default function Schedule({ setCurrentView, user }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isHistoricoModalOpen, setIsHistoricoModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
+    const [dateEditable, setDateEditable] = useState(false);
     const [formData, setFormData] = useState({ n1_ids: [], n2_ids: [], gerente_ids: [] });
     const [existingPlantao, setExistingPlantao] = useState(null);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -266,9 +270,27 @@ export default function Schedule({ setCurrentView, user }) {
     const monthLabel = () => new Date(parseInt(filterYear), parseInt(filterMonth) - 1, 1)
         .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
+    const openNewPlantao = () => {
+        if (!user?.is_admin) return;
+        // Não usar toIsoDay(new Date()) aqui: aquela função lê os campos UTC
+        // (pensada para strings de data "ingênuas" do IXC), e `new Date()` é o
+        // instante atual — à noite no fuso de Brasília (UTC-3) isso já "vira o
+        // dia seguinte" em UTC. `isHoje` usa hora local; hoje precisa usar o
+        // mesmo horário local para os dois concordarem sobre qual dia é "hoje".
+        const agora = new Date();
+        const hojeLocal = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+        setSelectedDate(hojeLocal);
+        setDateEditable(true);
+        setExistingPlantao(null);
+        setFormData({ n1_ids: [], n2_ids: [], gerente_ids: [] });
+        setHistorico([]);
+        setIsModalOpen(true);
+    };
+
     const openManagement = (dateStr) => {
         if (!user?.is_admin) return;
         setSelectedDate(dateStr);
+        setDateEditable(false);
         setHistorico([]);
         const existingInfo = plantoes.find(p => toIsoDay(p?.data) === dateStr);
         const parseIds = (val) => {
@@ -359,6 +381,8 @@ export default function Schedule({ setCurrentView, user }) {
         setConfirmDeleteOpen(false);
         setExistingPlantao(null);
         setHistorico([]);
+        setSelectedDate(null);
+        setDateEditable(false);
     };
 
     const daysInMonth = new Date(parseInt(filterYear), parseInt(filterMonth), 0).getDate();
@@ -384,6 +408,7 @@ export default function Schedule({ setCurrentView, user }) {
                     onExport={() => handleExportarICal(filteredPlantoes, filterMonth, filterYear, showToast)}
                     onHistory={user?.is_admin ? () => setIsHistoricoModalOpen(true) : null}
                     onAudit={user?.is_admin ? () => setCurrentView?.('plantao-historico') : null}
+                    onNewPlantao={user?.is_admin ? openNewPlantao : null}
                 />
 
                 {erroCarregamento && (
@@ -693,6 +718,8 @@ export default function Schedule({ setCurrentView, user }) {
                     <ManagePlantaoModal
                         isOpen={isModalOpen}
                         selectedDate={selectedDate}
+                        dateEditable={dateEditable}
+                        onDateChange={setSelectedDate}
                         existingPlantao={existingPlantao}
                         formData={formData}
                         setFormData={setFormData}

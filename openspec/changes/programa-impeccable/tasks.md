@@ -40,7 +40,7 @@
 
 ## 4. Plantão
 
-- [ ] 4.1 Resolver `escala-botao-criar-plantao` (0/11) e `modernizar-visao-geral-escala` (já completa, arquivar se ainda não foi)
+- [x] 4.1 Resolver `escala-botao-criar-plantao` (0/11) e `modernizar-visao-geral-escala` (já completa, arquivar se ainda não foi) — ambas arquivadas em 2026-09-11 (`archive/2026-09-11-modernizar-visao-geral-escala`, `archive/2026-09-11-escala-botao-criar-plantao`), specs sincronizadas manualmente (o `openspec archive` deu EPERM no rename da pasta as duas vezes, como de praxe nesta máquina; a ferramenta reverte a escrita das specs de forma atômica quando isso acontece, então nada ficou em estado parcial). `modernizar-visao-geral-escala`: 4 requisitos renomeados via REMOVED+ADDED (headers do delta não batiam com o spec base). `escala-botao-criar-plantao`: implementado (botão "Novo Plantão" no Hero, campo de data editável no `ManagePlantaoModal`, tooltip no `CalendarDay`) e verificado ao vivo com Playwright — achado e corrigido no caminho um bug real de fuso horário (`toIsoDay(new Date())` usa campos UTC, então à noite em Brasília a data "hoje" pré-selecionada vinha adiantada em 1 dia)
 - [ ] 4.2 `critique src/components/Schedule.jsx`
 - [ ] 4.3 `audit src/components/schedule`
 - [ ] 4.4 Consolidar backlog: aba Escala, aba Histórico, ManagePlantaoModal, HistoricoPreviewModal, ScheduleMobileCard, MultiSelectEmployee com nome longo do IXC, estados vazio/erro

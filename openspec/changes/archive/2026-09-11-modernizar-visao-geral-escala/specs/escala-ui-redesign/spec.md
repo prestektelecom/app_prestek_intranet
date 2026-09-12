@@ -36,6 +36,38 @@ com KPIs resumidos.
 - **AND** a decoração de fundo usa `aneisHero()`/reticula de pontos, sem
   elementos `filter: blur()` posicionados atrás do painel escuro.
 
+### Requirement: Dark Mode Consistente
+
+O dark mode da página SHALL usar os tokens do tema escuro ativo
+(cyber/aurora/amoled) em vez de cor hex fixa.
+
+#### Scenario: Usuário ativa o modo escuro
+- **WHEN** um tema escuro é aplicado
+- **THEN** a página usa `bg-background`/`bg-surface` do tema ativo para
+  fundo e superfícies.
+- **AND** o accent de destaque é o `var(--accent)` do tema ativo (rampa
+  laranja da marca), sem hex hardcoded sobrepondo o token.
+
+## REMOVED Requirements
+
+### Requirement: Cards Brancos com Borda Azul
+- **Reason**: os cards passam a usar os tokens de superfície compartilhados (`bg-surface`/`border-border`) em vez de uma cor azul fixa amarrada ao nome do requisito — renomeado para "Cards com Borda em Token Semântico" nesta mesma change.
+- **Migration**: nenhuma migração de usuário necessária; apenas a nomenclatura do requisito mudou para refletir a migração de hex fixo para tokens semânticos.
+
+### Requirement: Botões Primários Gradiente Azul
+- **Reason**: os botões primários usam o gradiente de accent da marca (laranja) via `var(--accent)`, não mais uma cor azul fixa — renomeado para "Botões Primários com Gradiente de Destaque" nesta mesma change.
+- **Migration**: nenhuma migração de usuário necessária.
+
+### Requirement: Tabela de Escala no Tom Azul
+- **Reason**: a tabela usa tokens semânticos (`bg-surface`, `border-border`, `text-muted`) em vez de hex fixo — renomeado para "Tabela de Escala com Tokens Semânticos" nesta mesma change.
+- **Migration**: nenhuma migração de usuário necessária.
+
+### Requirement: Mini Calendário Azul
+- **Reason**: o mini calendário usa o token de accent do tema ativo (`var(--accent)`) em vez de uma cor azul fixa — renomeado para "Mini Calendário com Cor de Destaque do Tema" nesta mesma change.
+- **Migration**: nenhuma migração de usuário necessária.
+
+## ADDED Requirements
+
 ### Requirement: Cards com Borda em Token Semântico
 
 Todos os cards da página (filtros, resumos, container da tabela) SHALL
@@ -86,20 +118,6 @@ para estados ativos e indicadores.
 - **THEN** o dia usa `var(--accent)` como fundo e texto branco.
 - **AND** dias com plantão exibem um dot na cor de accent do tema.
 - **AND** hover sobre dias usa `bg-surface-raised`.
-
-### Requirement: Dark Mode Consistente
-
-O dark mode da página SHALL usar os tokens do tema escuro ativo
-(cyber/aurora/amoled) em vez de cor hex fixa.
-
-#### Scenario: Usuário ativa o modo escuro
-- **WHEN** um tema escuro é aplicado
-- **THEN** a página usa `bg-background`/`bg-surface` do tema ativo para
-  fundo e superfícies.
-- **AND** o accent de destaque é o `var(--accent)` do tema ativo (rampa
-  laranja da marca), sem hex hardcoded sobrepondo o token.
-
-## ADDED Requirements
 
 ### Requirement: Container e Espaçamento Padronizados
 

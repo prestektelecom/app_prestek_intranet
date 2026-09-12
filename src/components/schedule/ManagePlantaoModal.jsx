@@ -12,6 +12,8 @@ const SECTIONS = {
 export default function ManagePlantaoModal({
     isOpen,
     selectedDate,
+    dateEditable,
+    onDateChange,
     existingPlantao,
     formData,
     setFormData,
@@ -45,6 +47,10 @@ export default function ManagePlantaoModal({
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!selectedDate) {
+            setValidationError('Selecione uma data para o plantão.');
+            return;
+        }
         if (!formData.n1_ids || formData.n1_ids.length === 0) {
             setValidationError('É necessário selecionar ao menos um colaborador no N1.');
             setOpenSection(SECTIONS.N1);
@@ -115,15 +121,30 @@ export default function ManagePlantaoModal({
                 <form onSubmit={handleSubmit} className="flex flex-col overflow-y-auto flex-1 min-h-0">
                     <div className="p-3 flex flex-col gap-3">
                         {/* Data */}
-                        <div className="flex gap-2 items-center bg-[var(--accent-soft)] text-[var(--accent-deep)] px-3 py-2.5 rounded-lg border border-[var(--accent)]/20">
-                            <span className="material-symbols-outlined text-[18px] shrink-0">calendar_today</span>
-                            <span className="font-extrabold text-xs">
-                                {selectedDate?.split('-').reverse().join('/')}
-                            </span>
-                            {diaSemana && (
-                                <span className="text-[11px] font-bold opacity-80">· {diaSemana}</span>
-                            )}
-                        </div>
+                        {dateEditable ? (
+                            <label className="flex flex-col gap-1">
+                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--muted-bento)]">Data do plantão</span>
+                                <input
+                                    type="date"
+                                    value={selectedDate || ''}
+                                    onChange={(e) => {
+                                        onDateChange?.(e.target.value);
+                                        if (e.target.value) setValidationError('');
+                                    }}
+                                    className="bg-surface-raised border border-transparent rounded-lg py-2.5 px-3 text-foreground font-bold text-sm focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+                                />
+                            </label>
+                        ) : (
+                            <div className="flex gap-2 items-center bg-[var(--accent-soft)] text-[var(--accent-deep)] px-3 py-2.5 rounded-lg border border-[var(--accent)]/20">
+                                <span className="material-symbols-outlined text-[18px] shrink-0">calendar_today</span>
+                                <span className="font-extrabold text-xs">
+                                    {selectedDate?.split('-').reverse().join('/')}
+                                </span>
+                                {diaSemana && (
+                                    <span className="text-[11px] font-bold opacity-80">· {diaSemana}</span>
+                                )}
+                            </div>
+                        )}
 
                         {/* Aviso de plantão existente */}
                         {existingPlantao && (

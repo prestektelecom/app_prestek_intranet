@@ -18,7 +18,7 @@ export default function CalendarDay({ day, isToday, active, onClick, isAdmin }) 
     }
 
     return (
-        <button onClick={onClick} className={classes} aria-label={`Dia ${day}${active ? ', tem plantão' : ''}${isToday ? ', hoje' : ''}`}>
+        <button onClick={onClick} className={classes} title={isAdmin ? 'Gerenciar plantão' : undefined} aria-label={`Dia ${day}${active ? ', tem plantão' : ''}${isToday ? ', hoje' : ''}`}>
             {isAdmin && <div className="absolute inset-0 bg-foreground opacity-0 group-hover:opacity-[0.04] transition-opacity"></div>}
             <span className="relative z-10">{day}</span>
             {active && !isToday && (
