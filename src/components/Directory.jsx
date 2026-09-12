@@ -5,7 +5,7 @@ import EmployeeCard from './directory/EmployeeCard';
 import EmployeeRow from './directory/EmployeeRow';
 import { SkeletonCard, SkeletonRow, EmptyState, ErrorState, AvisoTaxonomia } from './directory/DirectoryStates';
 import GrupoSecao from './directory/GrupoSecao';
-import { situacaoColaborador, semAcento } from './directory/statusColaborador';
+import { situacaoColaborador, semAcento, SITUACOES_FILTRO } from './directory/statusColaborador';
 
 // Quantidade por lote do scroll infinito. O esqueleto usa o MESMO número —
 // antes eram 8 esqueletos para um primeiro lote de 16, e o grid dobrava de
@@ -20,6 +20,12 @@ const CHAVE_VISAO = '@Stitch:directoryView';
 // change, o CHIP também precisa contar os três, senão o número no chip
 // contradiz o "Exibindo X de Y" logo abaixo dele.
 const DEPTOS_MESCLADOS = { '13': ['15', '68'] };
+
+// Mesma ordem do chip de situação (statusColaborador.js), transformada num
+// mapa de prioridade: quem está na empresa hoje aparece antes de quem não
+// está mais — a base real tem quase 2/3 de gente afastada/inativa, e a busca
+// dominante desta tela é achar um colega que trabalha aqui.
+const PRIORIDADE_SITUACAO = new Map(SITUACOES_FILTRO.map((rotulo, i) => [rotulo, i]));
 
 /** Ids que o filtro `id` deve aceitar, já com as mesclagens aplicadas. */
 function idsDoFiltro(id) {
@@ -167,11 +173,18 @@ export default function Directory({ user }) {
 
     const colaboradoresFiltrados = useMemo(() => {
         const aceitos = deptoFiltro ? new Set(idsDoFiltro(deptoFiltro)) : null;
-        if (!aceitos && !situacaoFiltro) return colaboradoresPorBusca;
-        return colaboradoresPorBusca.filter(c =>
-            (!aceitos || aceitos.has(String(c.id_departamento).trim()))
-            && (!situacaoFiltro || c._situacao.rotulo === situacaoFiltro)
-        );
+        const base = (!aceitos && !situacaoFiltro)
+            ? colaboradoresPorBusca
+            : colaboradoresPorBusca.filter(c =>
+                (!aceitos || aceitos.has(String(c.id_departamento).trim()))
+                && (!situacaoFiltro || c._situacao.rotulo === situacaoFiltro)
+            );
+        // Com um chip de situação ativo todo mundo já está na mesma situação —
+        // ordenar seria custo sem efeito. Ordenação estável: dentro de cada
+        // situação, a ordem que o backend já manda (por nome) é preservada.
+        if (situacaoFiltro) return base;
+        return [...base].sort((a, b) =>
+            (PRIORIDADE_SITUACAO.get(a._situacao.rotulo) ?? 9) - (PRIORIDADE_SITUACAO.get(b._situacao.rotulo) ?? 9));
     }, [colaboradoresPorBusca, deptoFiltro, situacaoFiltro]);
 
     // Contagem por situação, calculada ANTES do filtro de situação — senão o
@@ -207,18 +220,26 @@ export default function Directory({ user }) {
     }, [colaboradoresPorBusca, resolverDepartamento, isAdmin]);
 
     const kpis = useMemo(() => {
-        const ativos = colaboradores.filter(c => c.ativo === 'S').length;
+        // Antes este KPI vinha da flag crua `ativo`, e o chip de situação vinha
+        // do prefixo no nome — as duas fontes discordam em pessoas reais da
+        // base (Joyce: ativo='S' mas "(AFASTADO)"; Michele: o inverso). A tela
+        // mostrava dois números de "quem está ativo" ao mesmo tempo. Contar a
+        // partir de `_situacao.rotulo`, a mesma fonte do chip, resolve os dois
+        // de uma vez — e escopar por `colaboradoresPorBusca`, não pelo total
+        // bruto, resolve a segunda contradição: "Departamentos" já reagia à
+        // busca, "Colaboradores"/"Ativos" ficavam congelados.
+        const ativos = colaboradoresPorBusca.filter(c => c._situacao.rotulo === 'Ativo').length;
         return [
             // Para não-admin a API não manda ?all=true, então total e ativos
             // seriam o mesmo número em duas pílulas vizinhas. Nesse caso a
             // segunda vira "Com ramal", que é informação de verdade.
-            { label: 'Colaboradores', valor: colaboradores.length },
+            { label: 'Colaboradores', valor: colaboradoresPorBusca.length },
             isAdmin
-                ? { label: 'Ativos', valor: ativos, sub: `${colaboradores.length - ativos} inativos` }
-                : { label: 'Com ramal', valor: colaboradores.filter(c => c.ramal && c.ramal !== '0').length },
+                ? { label: 'Ativos', valor: ativos, sub: `${colaboradoresPorBusca.length - ativos} inativos` }
+                : { label: 'Com ramal', valor: colaboradoresPorBusca.filter(c => c.ramal && c.ramal !== '0').length },
             { label: 'Departamentos', valor: kpiDeptos },
         ];
-    }, [colaboradores, kpiDeptos, isAdmin]);
+    }, [colaboradoresPorBusca, kpiDeptos, isAdmin]);
 
     // Agrupar por grupo IXC só faz sentido DENTRO de um setor: o grupo atravessa
     // setores (o de supervisão aparece em 10), então na lista completa ele
@@ -366,14 +387,14 @@ export default function Directory({ user }) {
                                 )}
 
                                 {temMais && (
-                                    <div ref={sentinelRef} className="flex items-center justify-center gap-2.5 py-8 text-muted">
+                                    <div ref={sentinelRef} className="flex items-center justify-center gap-2.5 py-8 text-faint">
                                         <span className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-[var(--accent)]" aria-hidden="true" />
                                         <span className="font-mono text-[13px]">carregando mais...</span>
                                     </div>
                                 )}
 
                                 {!temMais && colaboradoresFiltrados.length > LOTE && (
-                                    <p className="m-0 py-6 text-center font-mono text-[12px] text-muted">
+                                    <p className="m-0 py-6 text-center font-mono text-[13px] text-faint">
                                         <span className="material-symbols-outlined mr-1 align-middle text-[16px]" aria-hidden="true">check_circle</span>
                                         Todos os {colaboradoresFiltrados.length} colaboradores exibidos
                                     </p>

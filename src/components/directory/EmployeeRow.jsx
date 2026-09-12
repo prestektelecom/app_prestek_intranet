@@ -60,7 +60,7 @@ export default function EmployeeRow({ colab, departamentoNome, situacao: situaca
                     o chip de situação, e a caixa alta do IXC virou capitalização
                     normal. Numa lista de 478 linhas, o contorno da palavra é o
                     que torna a varredura possível. */}
-                <p className="m-0 truncate text-[15px] font-bold leading-tight" style={{ color: C.ink }}>
+                <p className="m-0 truncate text-[14px] font-bold leading-tight" style={{ color: C.ink }}>
                     {situacao.nome}
                 </p>
             </div>
@@ -68,7 +68,7 @@ export default function EmployeeRow({ colab, departamentoNome, situacao: situaca
             <ChipSituacao situacao={situacao} C={C} />
 
             <span
-                className="hidden max-w-[190px] shrink-0 truncate rounded-md px-2 py-0.5 text-[12px] font-semibold md:inline-block"
+                className="hidden max-w-[190px] shrink-0 truncate rounded-md px-2 py-0.5 text-[13px] font-semibold md:inline-block"
                 style={{ background: tone(marca, 0.12), color: tinta }}
                 title={departamentoNome}
             >
@@ -116,7 +116,7 @@ function ChipSituacao({ situacao, C }) {
     const cor = coresSituacao(situacao.tom, C);
     return (
         <span
-            className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.06em]"
+            className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em]"
             style={{ background: cor.fundo, color: cor.texto, border: `1px solid ${cor.borda}` }}
         >
             {situacao.rotulo}

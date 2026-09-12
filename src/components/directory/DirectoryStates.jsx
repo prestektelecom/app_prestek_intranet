@@ -77,7 +77,7 @@ export function ErrorState({ onRetry }) {
                 cloud_off
             </span>
             <p className="m-0 text-[15px] font-bold text-foreground">Não foi possível carregar os colaboradores</p>
-            <p className="m-0 max-w-sm text-[13px] leading-relaxed text-muted">
+            <p className="m-0 max-w-sm text-[13px] leading-relaxed text-faint">
                 O servidor não respondeu. Isso costuma ser temporário — a lista não foi perdida.
             </p>
             <button
@@ -120,7 +120,7 @@ export function EmptyState({ temFiltro, onClear }) {
         <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-surface px-6 py-16 text-center">
             <span className="material-symbols-outlined text-4xl text-muted" aria-hidden="true">person_search</span>
             <p className="m-0 text-[15px] font-bold text-foreground">Nenhum colaborador encontrado</p>
-            <p className="m-0 max-w-sm text-[13px] leading-relaxed text-muted">
+            <p className="m-0 max-w-sm text-[13px] leading-relaxed text-faint">
                 {temFiltro
                     ? 'Nenhum resultado para a busca e o departamento selecionados.'
                     : 'Ainda não há colaboradores para exibir.'}
@@ -129,7 +129,7 @@ export function EmptyState({ temFiltro, onClear }) {
                 <button
                     type="button"
                     onClick={onClear}
-                    className="mt-1 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-muted transition-all hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                    className="mt-1 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-faint transition-all hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                 >
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">filter_alt_off</span>
                     Limpar filtros

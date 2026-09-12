@@ -16,7 +16,11 @@ import React from 'react';
 export default function GrupoSecao({ nome, total, supervisor, children, classeLista }) {
     return (
         <section className="flex flex-col gap-3">
-            <h3 className="m-0 flex items-baseline gap-2 font-mono text-[12px] font-extrabold uppercase tracking-[0.1em] text-muted">
+            {/* `text-muted` (`--foreground-muted`) reprova como texto no tema
+                claro (~3:1 contra `--background`); `text-faint`, apesar do
+                nome, é o token com MAIS contraste dos dois — mesmo par
+                ink2/muted já corrigido em outras fases. */}
+            <h3 className="m-0 flex items-baseline gap-2 font-mono text-[13px] font-extrabold uppercase tracking-[0.1em] text-faint">
                 {supervisor && (
                     <span
                         className="material-symbols-outlined self-center text-[15px] text-[var(--accent)]"

@@ -81,12 +81,12 @@
 ## 10. Verificação
 
 - [x] 10.1 `npm run build` sem erro
-- [ ] 10.2 Conferir a tela nos cinco temas: gradiente monotônico, badge legível, borda visível, sombra perceptível
-- [ ] 10.3 Medir no DevTools o contraste do badge dos 8 departamentos no tema claro e no amoled
-- [ ] 10.4 Percorrer a tela só com `Tab`: foco sempre visível, ações aparecem ao receber foco, chips anunciam `aria-pressed`
-- [ ] 10.5 Derrubar o backend e recarregar → erro com "Tentar novamente", não "Nenhum colaborador"
-- [ ] 10.6 Conferir que o KPI "Departamentos" bate com a contagem de chips, e que o chip do depto 13 bate com "Exibindo X de Y"
+- [x] 10.2 Conferir a tela nos cinco temas: gradiente monotônico, badge legível, borda visível, sombra perceptível — verificado ao vivo (screenshot) em claro e AMOLED; contraste dos 5 temas medido no item 10.3 abaixo. Achado durante a verificação: o chip "Todos" e o badge de contagem usavam `C.accent` (tom de marca ~500) como cor de texto, reprovando a 2,48:1 — não fazia parte do escopo original desta change, mas é o mesmo requisito ("badge legível") e foi corrigido no `ui/ChipButton.jsx` (compartilhado com Comunicados/Directory) junto com a área de toque de 44px (ver 10.8)
+- [x] 10.3 Medir no DevTools o contraste do badge dos 8 departamentos no tema claro e no amoled — todos passam com folga (5,88-10,04:1, calculado com composição alfa real contra o fundo). O chip "Todos" (cor de marca, não de departamento) reprovava e foi corrigido: `accentDeep` no claro (7,92:1) e `accentDark` nos 4 temas escuros (9,61-11,14:1) — não dá para usar o mesmo token nos dois grupos de tema porque o fundo é translúcido (`tone(accent, .12)`) e composita de forma oposta contra um fundo claro vs. escuro
+- [x] 10.4 Percorrer a tela só com `Tab`: foco sempre visível, ações aparecem ao receber foco, chips anunciam `aria-pressed` — confirmado (anel de foco de 2px, `aria-pressed` correto nos chips de situação e departamento; ações do card já são sempre visíveis, não só no hover, ver 3.2)
+- [x] 10.5 Derrubar o backend e recarregar → erro com "Tentar novamente", não "Nenhum colaborador" — confirmado ao vivo via patch de `window.fetch`: aparece o banner com "Tentar novamente" e a lista se recupera ao restaurar o fetch e clicar
+- [x] 10.6 Conferir que o KPI "Departamentos" bate com a contagem de chips, e que o chip do depto 13 bate com "Exibindo X de Y" — confirmado: KPI mostra 24, faixa visível tem 8 chips + "Mais 16" (8+16=24); "Exibindo 16 de 490" bate com o tamanho do primeiro lote
 - [x] 10.7 Confirmar que "Marketing" e "Logística" não recebem mais a cor do TI
-- [ ] 10.8 Viewport de 360px: padding de 16px, sem overflow horizontal, alvos ≥44px
-- [ ] 10.9 Alternar grid/lista, recarregar, preferência persiste
-- [ ] 10.10 Comparar lado a lado com a Central de Vendas: largura, padding e ritmo vertical idênticos
+- [x] 10.8 Viewport de 360px: padding de 16px, sem overflow horizontal, alvos ≥44px — confirmado ao vivo; também achado e corrigido durante a verificação: os alvos de `DirectoryToolbar.jsx` (segmentado Cards/Lista, chips de situação) e `ui/ChipButton.jsx` estavam a 36-38px, abaixo do piso do AGENTS.md — ambos foram para 44px
+- [x] 10.9 Alternar grid/lista, recarregar, preferência persiste — confirmado (`localStorage['@Stitch:directoryView']`)
+- [x] 10.10 Comparar lado a lado com a Central de Vendas: largura, padding e ritmo vertical idênticos — não é comparação visual solta: `Directory.jsx` copia literalmente as classes (`px-4 md:px-10 py-8 max-w-[1200px] gap-8`) com comentário explícito citando a Central de Vendas como referência (linha ~309)

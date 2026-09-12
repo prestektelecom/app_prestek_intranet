@@ -20,7 +20,7 @@ import { SITUACOES_FILTRO } from './statusColaborador';
 // TÉCNICA" e "(INATIVO) TECNICO" — os parênteses ordenam antes das letras.
 const VISIVEIS = 8;
 
-const SEG_BASE = 'inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]';
+const SEG_BASE = 'inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]';
 const SEG_ATIVO = 'bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-inset ring-[var(--accent)]/50';
 const SEG_INATIVO = 'text-muted hover:bg-background';
 
@@ -80,7 +80,7 @@ export default function DirectoryToolbar({
                                 type="button"
                                 aria-pressed={ativo}
                                 onClick={() => setSituacaoFiltro(ativo ? '' : rotulo)}
-                                className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                                className="inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                                 style={{
                                     background: ativo ? cor.fundo : C.surface,
                                     color: ativo ? cor.texto : C.ink2,
@@ -170,23 +170,26 @@ export default function DirectoryToolbar({
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 {/* aria-live é o que faz o scroll infinito existir para leitor de
                     tela: sem isso, 16 itens entram no DOM sem anúncio nenhum. */}
+                {/* 12px não existe na rampa (rótulo/mono é 13px); `muted` como
+                    texto real reprova a 2,8:1 — mesmo par corrigido em outras
+                    fases (ink2 é o token seguro para texto pequeno). */}
                 <p
                     aria-live="polite"
-                    className="m-0 min-h-[18px] font-mono text-[12px] tracking-[0.05em]"
-                    style={{ color: C.muted }}
+                    className="m-0 min-h-[18px] font-mono text-[13px] tracking-[0.05em]"
+                    style={{ color: C.ink2 }}
                 >
                     {isLoading ? '' : textoContador}
                 </p>
 
                 {temFiltro && !isLoading && (
                     <>
-                        <span className="text-[12px]" style={{ color: C.muted }} aria-hidden="true">·</span>
+                        <span className="text-[13px]" style={{ color: C.ink2 }} aria-hidden="true">·</span>
                         {situacaoFiltro && <Pilula rotulo={situacaoFiltro} onRemover={() => setSituacaoFiltro('')} C={C} />}
                         {deptoAtivo && <Pilula rotulo={deptoAtivo.nome} onRemover={() => setDeptoFiltro('')} C={C} />}
                         <button
                             type="button"
                             onClick={onLimpar}
-                            className="cursor-pointer rounded text-[12px] font-semibold underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                            className="cursor-pointer rounded text-[13px] font-semibold underline underline-offset-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                             style={{ color: C.ink2 }}
                         >
                             limpar tudo
@@ -202,7 +205,7 @@ export default function DirectoryToolbar({
 function Pilula({ rotulo, onRemover, C }) {
     return (
         <span
-            className="inline-flex max-w-[220px] items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-[12px] font-semibold"
+            className="inline-flex max-w-[220px] items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-[13px] font-semibold"
             style={{ background: tone(C.accent, 0.1), color: C.accentDark, border: `1px solid ${tone(C.accent, 0.25)}` }}
         >
             <span className="truncate">{rotulo}</span>
@@ -267,7 +270,7 @@ function SeletorCauda({ aberto, setAberto, itens, onEscolher, C }) {
                 onClick={() => setAberto(a => !a)}
                 aria-expanded={aberto}
                 aria-haspopup="dialog"
-                className="inline-flex h-[38px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-[13px] font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                className="inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-[13px] font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                 style={{ background: C.surface, color: C.ink2, border: `1.5px dashed ${C.line}` }}
             >
                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">more_horiz</span>
@@ -298,7 +301,7 @@ function SeletorCauda({ aberto, setAberto, itens, onEscolher, C }) {
 
                     <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
                         {filtrados.length === 0 ? (
-                            <p className="m-0 px-2 py-6 text-center text-[13px]" style={{ color: C.muted }}>
+                            <p className="m-0 px-2 py-6 text-center text-[13px]" style={{ color: C.ink2 }}>
                                 Nenhum departamento com esse nome.
                             </p>
                         ) : filtrados.map(i => (
@@ -310,7 +313,7 @@ function SeletorCauda({ aberto, setAberto, itens, onEscolher, C }) {
                                 style={{ color: C.ink2 }}
                             >
                                 <span className="min-w-0 flex-1 truncate">{i.nome}</span>
-                                <span className="shrink-0 font-mono text-[11px] font-bold tabular-nums" style={{ color: C.muted }}>
+                                <span className="shrink-0 font-mono text-[11px] font-bold tabular-nums" style={{ color: C.ink2 }}>
                                     {i.count}
                                 </span>
                             </button>
