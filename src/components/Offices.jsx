@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useId } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useDismissable } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
+
+const DIALOG_FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 // ─── Helpers de mapa ────────────────────────────────────────────────────────
 
@@ -139,6 +142,27 @@ function OfficesHero({ total, contAL, contSE, matriz, onAdd, isAdmin }) {
 }
 
 function EscritorioModal({ escritorio, onSalvar, onFechar }) {
+    const C = useBentoTheme();
+    const dialogRef = useRef(null);
+    const tituloId = useId();
+    const idPrefix = useId();
+    const fieldId = (nome) => `${idPrefix}-${nome}`;
+
+    // Sem isso o modal não tinha NENHUMA semântica de diálogo: só o Escape
+    // funcionava (via handler global do componente pai). Mesmo padrão
+    // (useDismissable + trap de Tab local) já usado em ModalShell.jsx/
+    // OrgChartEditor.jsx/ServicesDirectory.jsx.
+    useDismissable(dialogRef, { open: true, onClose: onFechar, lockScroll: true, closeOnOutside: true });
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !dialogRef.current) return;
+        const items = Array.from(dialogRef.current.querySelectorAll(DIALOG_FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+
     const isEdicao = Boolean(escritorio?.id);
     const [form, setForm] = useState(() => {
         if (!escritorio) return FORM_VAZIO;
@@ -209,29 +233,46 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
         }
     }
 
-    const inputCls = "w-full px-3 py-2 border border-[#E4ECF5] rounded-lg bg-[#F7FAFD] text-[#0B1B2E] text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
-    const labelCls = "block text-[10px] font-extrabold text-[#475467] uppercase tracking-widest mb-1.5";
+    const inputStyle = { border: `1px solid ${C.line}`, background: C.surfaceSoft, color: C.ink };
+    const labelCls = "block text-[10px] font-extrabold uppercase tracking-widest mb-1.5";
+    const inputCls = "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all";
+    const ctaGradient = { background: `linear-gradient(to right, ${C.accentDeep}, ${C.accent})`, color: C.onAccent, boxShadow: `0 4px 12px ${tone(C.accent, 0.2)}` };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-[#E4ECF5]">
+            <div className="absolute inset-0 backdrop-blur-sm" style={{ background: tone(C.ink, 0.6) }} />
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={tituloId}
+                onKeyDown={trapTab}
+                className="relative flex max-h-[90vh] w-full max-w-lg flex-col rounded-2xl border shadow-2xl"
+                style={{ background: C.surface, borderColor: C.line }}
+            >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4ECF5] bg-[#F7FAFD]">
+                <div className="flex items-center justify-between border-b px-6 py-4" style={{ borderColor: C.line, background: C.surfaceSoft }}>
                     <div className="flex items-center gap-3">
-                        <div className="bg-[#FFF7ED] p-2 rounded-lg">
-                            <span className="material-symbols-outlined text-[#C2410C] text-xl">
+                        <div className="rounded-lg p-2" style={{ background: C.accentSoft }}>
+                            <span className="material-symbols-outlined text-xl" style={{ color: C.accentDark }}>
                                 {isEdicao ? 'edit_location' : 'add_location'}
                             </span>
                         </div>
                         <div>
-                            <h2 className="font-display text-[#0B1B2E] font-bold text-xl">
+                            <h2 id={tituloId} className="font-display font-bold text-xl" style={{ color: C.ink }}>
                                 {isEdicao ? 'Editar Escritório' : 'Novo Escritório'}
                             </h2>
-                            {isEdicao && <p className="text-xs text-[#8896A8] font-mono">ID {escritorio.id}</p>}
+                            {isEdicao && <p className="text-xs font-mono" style={{ color: C.ink2 }}>ID {escritorio.id}</p>}
                         </div>
                     </div>
-                    <button onClick={onFechar} className="text-[#8896A8] hover:text-[#E84545] p-1 rounded-full hover:bg-[var(--danger-soft)] transition-colors">
+                    <button
+                        onClick={onFechar}
+                        aria-label="Fechar"
+                        className="rounded-full p-1 transition-colors"
+                        style={{ color: C.ink2 }}
+                        onMouseEnter={e => { e.currentTarget.style.color = C.dangerFill; e.currentTarget.style.background = C.dangerSoft; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = C.ink2; e.currentTarget.style.background = 'transparent'; }}
+                    >
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -240,47 +281,49 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                 <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="sm:col-span-2">
-                            <label className={labelCls}>Nome *</label>
-                            <input className={inputCls} value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Ex: PENEDO/AL (MATRIZ)" />
+                            <label htmlFor={fieldId('nome')} className={labelCls} style={{ color: C.ink2 }}>Nome *</label>
+                            <input id={fieldId('nome')} className={inputCls} style={inputStyle} value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Ex: PENEDO/AL (MATRIZ)" />
                         </div>
                         <div>
-                            <label className={labelCls}>Tipo *</label>
-                            <select className={inputCls} value={form.tipo} onChange={e => set('tipo', e.target.value)}>
+                            <label htmlFor={fieldId('tipo')} className={labelCls} style={{ color: C.ink2 }}>Tipo *</label>
+                            <select id={fieldId('tipo')} className={inputCls} style={inputStyle} value={form.tipo} onChange={e => set('tipo', e.target.value)}>
                                 <option value="Matriz">Matriz</option>
                                 <option value="Filial">Filial</option>
                             </select>
                         </div>
                         <div>
-                            <label className={labelCls}>Estado *</label>
-                            <select className={inputCls} value={form.estado} onChange={e => set('estado', e.target.value)}>
+                            <label htmlFor={fieldId('estado')} className={labelCls} style={{ color: C.ink2 }}>Estado *</label>
+                            <select id={fieldId('estado')} className={inputCls} style={inputStyle} value={form.estado} onChange={e => set('estado', e.target.value)}>
                                 {ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}
                             </select>
                         </div>
                         <div className="sm:col-span-2">
-                            <label className={labelCls}>Cidade *</label>
-                            <input className={inputCls} value={form.cidade} onChange={e => set('cidade', e.target.value)} placeholder="Ex: Penedo" />
+                            <label htmlFor={fieldId('cidade')} className={labelCls} style={{ color: C.ink2 }}>Cidade *</label>
+                            <input id={fieldId('cidade')} className={inputCls} style={inputStyle} value={form.cidade} onChange={e => set('cidade', e.target.value)} placeholder="Ex: Penedo" />
                         </div>
                         <div className="sm:col-span-2">
-                            <label className={labelCls}>Endereço</label>
-                            <input className={inputCls} value={form.endereco} onChange={e => set('endereco', e.target.value)} placeholder="Ex: Av. Duque de Caxias, 253" />
+                            <label htmlFor={fieldId('endereco')} className={labelCls} style={{ color: C.ink2 }}>Endereço</label>
+                            <input id={fieldId('endereco')} className={inputCls} style={inputStyle} value={form.endereco} onChange={e => set('endereco', e.target.value)} placeholder="Ex: Av. Duque de Caxias, 253" />
                         </div>
                         <div>
-                            <label className={labelCls}>CEP</label>
-                            <input className={inputCls} value={form.cep} onChange={e => set('cep', e.target.value)} placeholder="00000-000" />
+                            <label htmlFor={fieldId('cep')} className={labelCls} style={{ color: C.ink2 }}>CEP</label>
+                            <input id={fieldId('cep')} className={inputCls} style={inputStyle} value={form.cep} onChange={e => set('cep', e.target.value)} placeholder="00000-000" />
                         </div>
                         <div>
-                            <label className={labelCls}>Cor do Marcador</label>
+                            <label htmlFor={fieldId('cor')} className={labelCls} style={{ color: C.ink2 }}>Cor do Marcador</label>
                             <div className="flex items-center gap-2">
-                                <input type="color" value={form.cor} onChange={e => set('cor', e.target.value)} className="h-9 w-12 cursor-pointer rounded-lg border border-[#E4ECF5] bg-transparent p-0.5" />
-                                <input className={`${inputCls} flex-1`} value={form.cor} onChange={e => set('cor', e.target.value)} placeholder="#3B82F6" />
+                                <input id={fieldId('cor')} type="color" value={form.cor} onChange={e => set('cor', e.target.value)} className="h-9 w-12 cursor-pointer rounded-lg bg-transparent p-0.5" style={{ border: `1px solid ${C.line}` }} />
+                                <input aria-label="Valor hexadecimal da cor do marcador" className={`${inputCls} flex-1`} style={inputStyle} value={form.cor} onChange={e => set('cor', e.target.value)} placeholder="#3B82F6" />
                             </div>
                         </div>
                         {/* Extrator de coordenadas via link do Google Maps */}
                         <div className="sm:col-span-2">
-                            <label className={labelCls}>Link do Google Maps</label>
+                            <label htmlFor={fieldId('linkMaps')} className={labelCls} style={{ color: C.ink2 }}>Link do Google Maps</label>
                             <div className="flex gap-2">
                                 <input
+                                    id={fieldId('linkMaps')}
                                     className={`${inputCls} flex-1`}
+                                    style={inputStyle}
                                     value={linkMaps}
                                     onChange={e => { setLinkMaps(e.target.value); setErroLink(''); }}
                                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), extrairCoordenadas())}
@@ -291,7 +334,8 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                                     onClick={extrairCoordenadas}
                                     disabled={!linkMaps.trim() || extraindo}
                                     title="Extrair latitude e longitude do link"
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 disabled:opacity-50 text-white text-sm font-bold whitespace-nowrap transition-colors shadow-md shadow-[#EC7D23]/20"
+                                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold whitespace-nowrap transition-colors hover:brightness-110 disabled:opacity-50"
+                                    style={ctaGradient}
                                 >
                                     <span className="material-symbols-outlined text-[18px]">
                                         {extraindo ? 'sync' : 'my_location'}
@@ -300,42 +344,43 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                                 </button>
                             </div>
                             {erroLink && (
-                                <p className="text-[#E84545] text-xs mt-1 flex items-center gap-1">
+                                <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: C.dangerFill }}>
                                     <span className="material-symbols-outlined text-sm">error</span>{erroLink}
                                 </p>
                             )}
                             {!erroLink && form.lat && form.lng && (
-                                <p className="text-[#1F8A5B] text-xs mt-1 flex items-center gap-1">
+                                <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: C.successStrong }}>
                                     <span className="material-symbols-outlined text-sm">check_circle</span>
                                     Coordenadas preenchidas automaticamente
                                 </p>
                             )}
                         </div>
                         <div>
-                            <label className={labelCls}>Latitude *</label>
-                            <input className={inputCls} value={form.lat} onChange={e => set('lat', e.target.value)} placeholder="-10.2892274" />
+                            <label htmlFor={fieldId('lat')} className={labelCls} style={{ color: C.ink2 }}>Latitude *</label>
+                            <input id={fieldId('lat')} className={inputCls} style={inputStyle} value={form.lat} onChange={e => set('lat', e.target.value)} placeholder="-10.2892274" />
                         </div>
                         <div>
-                            <label className={labelCls}>Longitude *</label>
-                            <input className={inputCls} value={form.lng} onChange={e => set('lng', e.target.value)} placeholder="-36.5635948" />
+                            <label htmlFor={fieldId('lng')} className={labelCls} style={{ color: C.ink2 }}>Longitude *</label>
+                            <input id={fieldId('lng')} className={inputCls} style={inputStyle} value={form.lng} onChange={e => set('lng', e.target.value)} placeholder="-36.5635948" />
                         </div>
                     </div>
                     {erro && (
-                        <p className="text-[#E84545] text-sm flex items-center gap-1">
+                        <p className="flex items-center gap-1 text-sm" style={{ color: C.dangerFill }}>
                             <span className="material-symbols-outlined text-base">error</span>{erro}
                         </p>
                     )}
                 </form>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-[#E4ECF5] bg-white flex justify-end gap-3">
-                    <button type="button" onClick={onFechar} className="px-4 py-2 text-sm font-bold text-[#0B1B2E] border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] transition-colors">
+                <div className="flex justify-end gap-3 border-t px-6 py-4" style={{ borderColor: C.line, background: C.surface }}>
+                    <button type="button" onClick={onFechar} className="rounded-lg border px-4 py-2 text-sm font-bold transition-colors" style={{ borderColor: C.line, color: C.ink }}>
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={salvando}
-                        className="px-5 py-2 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 disabled:opacity-60 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2"
+                        className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-bold transition-colors hover:brightness-110 disabled:opacity-60"
+                        style={ctaGradient}
                     >
                         <span className="material-symbols-outlined text-[18px]">{isEdicao ? 'save' : 'add_location'}</span>
                         {salvando ? 'Salvando…' : isEdicao ? 'Salvar Alterações' : 'Criar Escritório'}
@@ -367,6 +412,9 @@ export default function Offices({ user, setCurrentView }) {
     const [erroCarregar, setErroCarregar] = useState(false);
     const [modal, setModal] = useState(null);
     const [confirmandoExclusao, setConfirmandoExclusao] = useState(null);
+    const [erroExclusao, setErroExclusao] = useState('');
+    const deleteDialogRef = useRef(null);
+    const deleteDialogTituloId = useId();
     const [listWidth, setListWidth] = useState(25); // percentual
 
     const isAdmin = user?.is_admin;
@@ -456,13 +504,14 @@ export default function Offices({ user, setCurrentView }) {
         };
     }, [offices.length > 0]);
 
-    // Sincroniza markers com a lista de offices
+    // Sincroniza markers com a lista FILTRADA — antes usava `offices` bruto, então
+    // o mapa nunca refletia o chip de estado nem a busca (P0 achado na Fase 11).
     useEffect(() => {
         if (!mapPronto || !mapRef.current) return;
         const { map, L } = mapRef.current;
-        const idsAtuais = new Set(offices.map(o => o.id));
+        const idsAtuais = new Set(filtrados.map(o => o.id));
 
-        // Remove markers de escritórios excluídos
+        // Remove markers de escritórios excluídos OU que saíram do filtro atual
         Object.keys(markersRef.current).forEach(id => {
             if (!idsAtuais.has(Number(id))) {
                 markersRef.current[id].remove();
@@ -471,7 +520,7 @@ export default function Offices({ user, setCurrentView }) {
         });
 
         // Adiciona/atualiza markers
-        offices.forEach(office => {
+        filtrados.forEach(office => {
             const isMatriz = office.tipo === 'Matriz';
             const isSel = office.id === selecionado;
             if (markersRef.current[office.id]) {
@@ -488,7 +537,18 @@ export default function Offices({ user, setCurrentView }) {
                 markersRef.current[office.id] = marker;
             }
         });
-    }, [mapPronto, offices]);
+    }, [mapPronto, filtrados]);
+
+    // Reenquadra o mapa quando o filtro/busca muda a lista visível — sem isso,
+    // filtrar para uma única cidade distante deixava o zoom/posição do universo
+    // inteiro, com o marcador solitário perdido num canto do mapa.
+    useEffect(() => {
+        if (!mapPronto || !mapRef.current || filtrados.length === 0) return;
+        const { map } = mapRef.current;
+        const L = mapRef.current.L;
+        const bounds = L.latLngBounds(filtrados.map(o => [o.lat, o.lng]));
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+    }, [mapPronto, filtro, busca]);
 
     // Atualiza destaque dos markers ao mudar seleção
     useEffect(() => {
@@ -500,13 +560,23 @@ export default function Offices({ user, setCurrentView }) {
         });
     }, [selecionado]);
 
-    // Fecha modal com Escape
-    useEffect(() => {
-        if (!modal && !confirmandoExclusao) return;
-        function onKey(e) { if (e.key === 'Escape') { setModal(null); setConfirmandoExclusao(null); } }
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [modal, confirmandoExclusao]);
+    // Escape de cada diálogo agora é responsabilidade do seu próprio
+    // useDismissable (EscritorioModal e o diálogo de exclusão abaixo).
+    const trapDeleteDialogTab = (e) => {
+        if (e.key !== 'Tab' || !deleteDialogRef.current) return;
+        const items = Array.from(deleteDialogRef.current.querySelectorAll(DIALOG_FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    useDismissable(deleteDialogRef, {
+        open: confirmandoExclusao !== null,
+        onClose: () => { setConfirmandoExclusao(null); setErroExclusao(''); },
+        lockScroll: true,
+        closeOnOutside: true,
+    });
 
     function flyToOffice(office) {
         setSelecionado(office.id);
@@ -528,8 +598,15 @@ export default function Offices({ user, setCurrentView }) {
     }
 
     async function excluirEscritorio(id) {
+        setErroExclusao('');
         const res = await fetch(`/api/escritorios/${id}`, { method: 'DELETE' });
-        if (!res.ok) { const e = await res.json(); alert(e.erro || 'Erro ao excluir.'); return; }
+        if (!res.ok) {
+            const e = await res.json();
+            // Feedback inline em vez de alert() nativo — antipadrão banido desde
+            // a Fase 2, mais disruptivo ainda num caminho de ação destrutiva.
+            setErroExclusao(e.erro || 'Erro ao excluir. Tente novamente.');
+            return;
+        }
         setConfirmandoExclusao(null);
         if (selecionado === id) setSelecionado(null);
         await carregarEscritorios();
@@ -541,7 +618,7 @@ export default function Offices({ user, setCurrentView }) {
     const contMatriz = offices.filter(o => o.tipo === 'Matriz').length;
 
     return (
-        <div className="flex flex-col flex-1 overflow-hidden" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: C.bg }}>
+        <div className="flex flex-col flex-1 overflow-y-auto md:overflow-hidden" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', backgroundColor: C.bg }}>
             {modal && (
                 <EscritorioModal
                     escritorio={modal.modo === 'editar' ? modal.escritorio : null}
@@ -553,20 +630,45 @@ export default function Offices({ user, setCurrentView }) {
             {/* Diálogo de confirmação de exclusão */}
             {confirmandoExclusao !== null && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={() => setConfirmandoExclusao(null)} />
-                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-[#E4ECF5]">
+                    <div className="absolute inset-0 backdrop-blur-sm" style={{ background: tone(C.ink, 0.6) }} onClick={() => { setConfirmandoExclusao(null); setErroExclusao(''); }} />
+                    <div
+                        ref={deleteDialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby={deleteDialogTituloId}
+                        onKeyDown={trapDeleteDialogTab}
+                        className="relative w-full max-w-sm rounded-2xl border p-6 shadow-2xl"
+                        style={{ background: C.surface, borderColor: C.line }}
+                    >
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="bg-[var(--danger-soft)] p-2 rounded-lg">
-                                <span className="material-symbols-outlined text-[#E84545] text-xl">delete</span>
+                            <div className="rounded-lg p-2" style={{ background: C.dangerSoft }}>
+                                <span className="material-symbols-outlined text-xl" style={{ color: C.dangerFill }}>delete</span>
                             </div>
-                            <h3 className="font-extrabold text-[#0B1B2E]">Excluir Escritório</h3>
+                            <h3 id={deleteDialogTituloId} className="font-extrabold" style={{ color: C.ink }}>Excluir Escritório</h3>
                         </div>
-                        <p className="text-sm text-[#475467] mb-6">
+                        <p className="text-sm mb-6" style={{ color: C.ink2 }}>
                             Esta ação é irreversível. O escritório será removido do mapa e da lista.
                         </p>
+                        {erroExclusao && (
+                            <p className="mb-4 flex items-center gap-1 text-sm" style={{ color: C.dangerFill }}>
+                                <span className="material-symbols-outlined text-base">error</span>{erroExclusao}
+                            </p>
+                        )}
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setConfirmandoExclusao(null)} className="px-4 py-2 text-sm font-bold border border-[#E4ECF5] rounded-lg hover:bg-[#F7FAFD] text-[#0B1B2E] transition-colors">Cancelar</button>
-                            <button onClick={() => excluirEscritorio(confirmandoExclusao)} className="px-4 py-2 text-sm font-bold bg-[#E84545] hover:bg-[#d13a3a] text-white rounded-lg shadow transition-colors">Excluir</button>
+                            <button
+                                onClick={() => { setConfirmandoExclusao(null); setErroExclusao(''); }}
+                                className="rounded-lg border px-4 py-2 text-sm font-bold transition-colors"
+                                style={{ borderColor: C.line, color: C.ink }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => excluirEscritorio(confirmandoExclusao)}
+                                className="rounded-lg px-4 py-2 text-sm font-bold shadow transition-colors"
+                                style={{ background: C.dangerFill, color: C.onDanger }}
+                            >
+                                Excluir
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -601,11 +703,11 @@ export default function Offices({ user, setCurrentView }) {
                             <button
                                 key={label}
                                 onClick={() => setFiltro(label === 'AL' ? 'AL' : label === 'SE' ? 'SE' : 'Todos')}
-                                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                                    filtro === (label === 'Todos' ? 'Todos' : label)
-                                        ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20'
-                                        : 'bg-white border border-[#E4ECF5] text-[#475467] hover:border-[#EC7D23] hover:text-[#C2410C]'
-                                }`}
+                                aria-pressed={filtro === (label === 'Todos' ? 'Todos' : label)}
+                                className="min-h-[44px] rounded-full px-3 text-xs font-bold transition-all"
+                                style={filtro === (label === 'Todos' ? 'Todos' : label)
+                                    ? { background: `linear-gradient(to right, ${C.accentDeep}, ${C.accent})`, color: C.onAccent, boxShadow: `0 4px 12px ${tone(C.accent, 0.2)}` }
+                                    : { background: C.surface, border: `1px solid ${C.line}`, color: C.ink2 }}
                             >
                                 {label} <span className="opacity-70">({count})</span>
                             </button>
@@ -614,13 +716,15 @@ export default function Offices({ user, setCurrentView }) {
                     <div className="flex items-center gap-2 flex-wrap">
                         {/* Busca */}
                         <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#8896A8] text-[16px]">search</span>
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px]" style={{ color: C.muted }} aria-hidden="true">search</span>
                             <input
                                 type="text"
                                 value={busca}
                                 onChange={e => setBusca(e.target.value)}
                                 placeholder="Buscar unidade..."
-                                className="pl-9 pr-3 py-1.5 text-xs rounded-full border border-[#E4ECF5] bg-white text-[#0B1B2E] placeholder-[#8896A8] focus:outline-none focus:border-[#EC7D23] focus:ring-2 focus:ring-[#EC7D23]/20 w-44 transition-all"
+                                aria-label="Buscar unidade"
+                                className="min-h-[44px] w-44 rounded-full pl-9 pr-3 text-xs transition-all focus:outline-none focus:ring-2"
+                                style={{ background: C.surface, border: `1px solid ${C.line}`, color: C.ink, '--tw-ring-color': tone(C.accent, 0.2) }}
                             />
                         </div>
                     </div>
@@ -628,23 +732,32 @@ export default function Offices({ user, setCurrentView }) {
             </div>
 
             {/* Corpo: lista + mapa */}
-            <div ref={corpoRef} className="flex flex-col md:flex-row flex-1 min-h-0 px-6 pb-6 gap-3 md:gap-0">
+            {/* Abaixo de md, o wrapper raiz vira scrollável (acima) e este bloco
+                não força mais altura de flex-item — lista e mapa recebem uma
+                altura mínima real (min-h) em vez de uma fatia de "45%/55%" de
+                um espaço que já não cabia. Antes disso, os dois ficavam
+                espremidos a ~27-55px visíveis, sem nenhuma rota de rolagem. */}
+            <div ref={corpoRef} className="flex flex-col md:flex-row flex-1 md:min-h-0 px-6 pb-6 gap-3 md:gap-0">
                 {/* Lista lateral — largura controlada por drag (apenas desktop) */}
-                <div style={{ width: `${listWidth}%`, minWidth: `${LIST_MIN_PX}px` }} className="offices-list flex flex-col min-h-0 bg-white rounded-2xl md:rounded-r-none md:rounded-l-2xl border border-[#E4ECF5] md:border-r-0 overflow-hidden shadow-sm h-[45%] md:h-auto">
+                <div
+                    style={{ width: `${listWidth}%`, minWidth: `${LIST_MIN_PX}px`, background: C.surface, borderColor: C.line }}
+                    className="offices-list flex h-[360px] shrink-0 flex-col overflow-hidden rounded-2xl border shadow-sm md:h-auto md:rounded-l-2xl md:rounded-r-none md:border-r-0"
+                >
                     <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-3 space-y-2 min-h-0">
                         {carregando && (
-                            <div className="text-center text-sm text-[#8896A8] py-8">Carregando escritórios…</div>
+                            <div className="text-center text-sm py-8" style={{ color: C.ink2 }}>Carregando escritórios…</div>
                         )}
                         {!carregando && erroCarregar && (
                             <div className="flex flex-col items-center gap-2 text-center py-8 px-2">
-                                <span className="material-symbols-outlined text-[#E84545] text-2xl">cloud_off</span>
-                                <p className="text-sm font-bold text-[#0B1B2E] m-0">Não foi possível carregar as unidades</p>
-                                <p className="text-xs text-[#8896A8] m-0 max-w-[220px] leading-relaxed">
+                                <span className="material-symbols-outlined text-2xl" style={{ color: C.dangerFill }}>cloud_off</span>
+                                <p className="text-sm font-bold m-0" style={{ color: C.ink }}>Não foi possível carregar as unidades</p>
+                                <p className="text-xs m-0 max-w-[220px] leading-relaxed" style={{ color: C.ink2 }}>
                                     O servidor não respondeu. Isso costuma ser temporário.
                                 </p>
                                 <button
                                     onClick={carregarEscritorios}
-                                    className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20 hover:brightness-110 transition-all"
+                                    className="mt-1 inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-all hover:brightness-110"
+                                    style={{ background: `linear-gradient(to right, ${C.accentDeep}, ${C.accent})`, color: C.onAccent, boxShadow: `0 4px 12px ${tone(C.accent, 0.2)}` }}
                                 >
                                     <span className="material-symbols-outlined text-[15px]">refresh</span>
                                     Tentar novamente
@@ -652,7 +765,7 @@ export default function Offices({ user, setCurrentView }) {
                             </div>
                         )}
                         {!carregando && !erroCarregar && filtrados.length === 0 && (
-                            <div className="text-center text-sm text-[#8896A8] py-8">Nenhuma unidade encontrada.</div>
+                            <div className="text-center text-sm py-8" style={{ color: C.ink2 }}>Nenhuma unidade encontrada.</div>
                         )}
                         {!erroCarregar && filtrados.map(office => {
                             const isSel = selecionado === office.id;
@@ -660,47 +773,59 @@ export default function Offices({ user, setCurrentView }) {
                                 <div key={office.id} className="relative group/item">
                                     <button
                                         onClick={() => flyToOffice(office)}
-                                        className={`w-full text-left rounded-xl p-3 border transition-all duration-150 ${
-                                            isSel
-                                                ? 'border-[#EC7D23] bg-[#FFF7ED] shadow-sm'
-                                                : 'border-[#E4ECF5] bg-white hover:border-[#EC7D23]/50 hover:bg-[#F7FAFD]'
-                                        } ${isAdmin ? 'pr-16' : ''}`}
+                                        className={`w-full text-left rounded-xl border p-3 transition-all duration-150 ${isAdmin ? 'pr-16' : ''}`}
+                                        style={isSel
+                                            ? { borderColor: C.accent, background: C.accentSoft, boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }
+                                            : { borderColor: C.line, background: C.surface }}
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className="flex-shrink-0 w-3 h-3 rounded-full mt-0.5" style={{ background: office.cor }} />
-                                                <span className="text-xs font-bold text-[#0B1B2E] truncate leading-tight">
+                                                <span className="text-xs font-bold truncate leading-tight" style={{ color: C.ink }}>
                                                     {office.nome}
                                                 </span>
                                             </div>
                                             {office.tipo === 'Matriz' && (
-                                                <span className="flex-shrink-0 text-[9px] font-extrabold bg-[#F97316] text-white px-2 py-0.5 rounded-full uppercase tracking-wide">
+                                                <span
+                                                    className="flex-shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide"
+                                                    style={{ background: C.accent, color: C.onAccent }}
+                                                >
                                                     Matriz
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="mt-1.5 text-[11px] text-[#475467] leading-tight pl-5">
+                                        <div className="mt-1.5 pl-5 text-[11px] leading-tight" style={{ color: C.ink2 }}>
                                             {office.endereco}
                                         </div>
-                                        <div className="mt-0.5 text-[10px] text-[#8896A8] pl-5">
+                                        <div className="mt-0.5 pl-5 text-[10px]" style={{ color: C.ink2 }}>
                                             {office.cidade} — {office.estado}
                                         </div>
                                     </button>
 
-                                    {/* Botões admin — aparecem no hover */}
+                                    {/* Botões admin — visíveis em hover, foco de teclado (focus-within) e
+                                        sempre em dispositivos sem :hover (toque) — antes só apareciam no
+                                        mouse-hover, invisíveis mesmo focadas e inatingíveis em toque (P0). */}
                                     {isAdmin && (
-                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                        <div className="absolute right-2 top-1/2 flex -translate-y-1/2 flex-col gap-1 opacity-0 transition-opacity [@media(hover:none)]:opacity-100 group-hover/item:opacity-100 group-focus-within/item:opacity-100">
                                             <button
                                                 onClick={e => { e.stopPropagation(); setModal({ modo: 'editar', escritorio: office }); }}
                                                 title="Editar escritório"
-                                                className="p-1 rounded text-[#8896A8] hover:text-[#C2410C] hover:bg-[#FFF7ED] transition-colors"
+                                                aria-label={`Editar ${office.nome}`}
+                                                className="rounded p-1 transition-colors"
+                                                style={{ color: C.ink2 }}
+                                                onMouseEnter={e => { e.currentTarget.style.color = C.accentDark; e.currentTarget.style.background = C.accentSoft; }}
+                                                onMouseLeave={e => { e.currentTarget.style.color = C.ink2; e.currentTarget.style.background = 'transparent'; }}
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">edit</span>
                                             </button>
                                             <button
-                                                onClick={e => { e.stopPropagation(); setConfirmandoExclusao(office.id); }}
+                                                onClick={e => { e.stopPropagation(); setErroExclusao(''); setConfirmandoExclusao(office.id); }}
                                                 title="Excluir escritório"
-                                                className="p-1 rounded text-[#8896A8] hover:text-[#E84545] hover:bg-[var(--danger-soft)] transition-colors"
+                                                aria-label={`Excluir ${office.nome}`}
+                                                className="rounded p-1 transition-colors"
+                                                style={{ color: C.ink2 }}
+                                                onMouseEnter={e => { e.currentTarget.style.color = C.dangerFill; e.currentTarget.style.background = C.dangerSoft; }}
+                                                onMouseLeave={e => { e.currentTarget.style.color = C.ink2; e.currentTarget.style.background = 'transparent'; }}
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">delete</span>
                                             </button>
@@ -710,15 +835,17 @@ export default function Offices({ user, setCurrentView }) {
                             );
                         })}
                     </div>
-                    {/* Legenda */}
-                    <div className="px-4 py-2 border-t border-[#E4ECF5] bg-[#F7FAFD] flex items-center gap-3 flex-wrap">
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#475467]">
+                    {/* Legenda — os pontos de cor são fixos de propósito: são as
+                        mesmas cores literais dos marcadores no mapa (`office.cor`),
+                        não um token semântico que precise inverter por tema. */}
+                    <div className="flex flex-wrap items-center gap-3 border-t px-4 py-2" style={{ borderColor: C.line, background: C.surfaceSoft }}>
+                        <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: C.ink2 }}>
                             <span className="w-2.5 h-2.5 rounded-full bg-[#F97316] inline-block" /> Matriz
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#475467]">
+                        <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: C.ink2 }}>
                             <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6] inline-block" /> Alagoas
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-[#475467]">
+                        <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: C.ink2 }}>
                             <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] inline-block" /> Sergipe
                         </span>
                     </div>
@@ -729,13 +856,19 @@ export default function Offices({ user, setCurrentView }) {
                     onMouseDown={startResize}
                     onTouchStart={startResize}
                     title="Arrastar para redimensionar"
-                    className="hidden md:flex w-1.5 shrink-0 cursor-col-resize group relative items-center justify-center bg-[#E4ECF5] hover:bg-[#EC7D23]/40 transition-colors duration-150"
+                    role="separator"
+                    aria-orientation="vertical"
+                    className="group relative hidden w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-150 md:flex"
+                    style={{ background: C.line }}
                 >
-                    <div className="w-0.5 h-8 rounded-full bg-[#8896A8]/50 group-hover:bg-[#EC7D23] group-hover:h-12 transition-all duration-150" />
+                    <div className="h-8 w-0.5 rounded-full transition-all duration-150 group-hover:h-12" style={{ background: tone(C.ink2, 0.5) }} />
                 </div>
 
                 {/* Mapa */}
-                <div className="offices-map flex-1 relative bg-white rounded-2xl md:rounded-l-none md:rounded-r-2xl border border-[#E4ECF5] md:border-l-0 overflow-hidden shadow-sm h-[55%] md:h-auto">
+                <div
+                    className="offices-map relative h-[360px] shrink-0 overflow-hidden rounded-2xl border shadow-sm md:h-auto md:flex-1 md:rounded-l-none md:rounded-r-2xl md:border-l-0"
+                    style={{ background: C.surface, borderColor: C.line }}
+                >
                     <div
                         ref={containerRef}
                         style={{ height: '100%', width: '100%', isolation: 'isolate' }}
