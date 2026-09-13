@@ -85,7 +85,7 @@
 - [x] 8.4 Backlog consolidado: 3 P1 (acima) + P2 (card mobile duplica o "Assunto" como título e nunca mostra o ID do chamado — a coluna `id`, índice 0, é pulada pelo `ResponsiveTable`; mismatch copy-vs-dado real).
 - [x] 8.5 Change filha `impeccable-chamados` criada com escopo P1 (decisão do Felix). Corrigido: KPI "Pendentes" conta estritamente `pendente`; pill ativo troca `C.surface` por `C.onAccent`; pills ganham `aria-pressed`/foco/44px; achado no caminho, mesma classe: badge de contagem do `FilterBar.jsx` (compartilhado) tinha o mesmo bug de `C.surface`, corrigido junto; "Limpar filtros"/"Limpar" (`FilterBar.jsx`) ganham alvo de 44px via pseudo-elemento, mesma técnica de `Pilula`/`SectorCard`.
 - [x] 8.6 `npx vite build` limpo; contraste (6,22:1 claro, 7,06:1 AMOLED), `aria-pressed`, foco, alvo de toque e KPI verificados ao vivo com dado real de produção (1000 chamados); `openspec validate --strict` limpo na spec tocada.
-- [ ] 8.7 Commit
+- [x] 8.7 Commit — `357ec0d`
 
 ## 9. Cobertura
 
