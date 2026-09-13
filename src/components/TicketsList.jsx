@@ -224,10 +224,11 @@ export default function TicketsList({ user }) {
     total: tickets.length,
     abertos: tickets.filter(t => getStatusCategory(t.status) === 'aberto').length,
     finalizados: tickets.filter(t => getStatusCategory(t.status) === 'finalizado').length,
-    pendentes: tickets.filter(t => {
-      const cat = getStatusCategory(t.status);
-      return cat !== 'aberto' && cat !== 'finalizado';
-    }).length,
+    // Estritamente 'pendente', não "tudo que não é aberto/finalizado" — a versão
+    // anterior também somava 'cancelado' aqui, então o KPI podia contradizer o
+    // filtro "Pendentes" assim que existisse um chamado cancelado (mesmo padrão
+    // de divergência já corrigido em Comunicados e Colaboradores).
+    pendentes: tickets.filter(t => getStatusCategory(t.status) === 'pendente').length,
   }), [tickets]);
 
   const filteredTickets = useMemo(() => {
@@ -302,11 +303,16 @@ export default function TicketsList({ user }) {
                       return (
                         <button
                           key={filter.key}
+                          type="button"
                           onClick={() => setActiveFilter(filter.key)}
-                          className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                          aria-pressed={isActive}
+                          className="inline-flex min-h-[44px] items-center px-3 rounded-full text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                           style={{
                             background: isActive ? C.accent : C.surfaceSoft,
-                            color: isActive ? C.surface : C.ink2,
+                            // `C.surface` era branco no claro (2,79:1, reprova) e só
+                            // passava nos 4 temas escuros por `surface` coincidir com
+                            // `onAccent` ali — `onAccent` é o token certo nos 5 temas.
+                            color: isActive ? C.onAccent : C.ink2,
                             border: `1px solid ${isActive ? C.accent : C.line}`,
                           }}
                         >

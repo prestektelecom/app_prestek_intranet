@@ -20,8 +20,11 @@ export default function FilterBar({ children, activeFilters = [], onClear }) {
         {children}
         {hasActiveFilters && onClear && (
           <button
+            type="button"
             onClick={onClear}
-            className="text-xs font-semibold underline-offset-2 hover:underline"
+            // after:-inset-y-[14px] leva o alvo de ~16px de altura para 44px sem
+            // empurrar o layout — o texto sublinhado continua do mesmo tamanho.
+            className="relative text-xs font-semibold underline-offset-2 hover:underline after:absolute after:-inset-y-[14px] after:-inset-x-2 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             style={{ color: C.danger }}
           >
             Limpar filtros
@@ -42,7 +45,7 @@ export default function FilterBar({ children, activeFilters = [], onClear }) {
             {hasActiveFilters && (
               <span
                 className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                style={{ background: C.accent, color: C.surface }}
+                style={{ background: C.accent, color: C.onAccent }}
               >
                 {activeFilters.length}
               </span>
@@ -51,8 +54,9 @@ export default function FilterBar({ children, activeFilters = [], onClear }) {
 
           {hasActiveFilters && onClear && (
             <button
+              type="button"
               onClick={onClear}
-              className="text-xs font-semibold"
+              className="relative text-xs font-semibold after:absolute after:-inset-y-[14px] after:-inset-x-2 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               style={{ color: C.danger }}
             >
               Limpar
