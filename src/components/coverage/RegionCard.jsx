@@ -123,7 +123,9 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
                     onClick={() => onConfigurar(row)}
                     title={row.tem_override ? 'Editar configuração' : 'Configurar cobertura'}
                     aria-label={`${row.tem_override ? 'Editar' : 'Configurar'} cobertura de ${row.bairro || row.cidade}`}
-                    className="absolute right-2 top-2 grid size-8 cursor-pointer place-items-center rounded-lg transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                    // after:-inset-1.5 leva o alvo de 32px para 44px sem crescer
+                    // visualmente — mesma técnica de Pilula/SectorCard (Fases 6/7).
+                    className="absolute right-2 top-2 grid size-8 cursor-pointer place-items-center rounded-lg transition-colors after:absolute after:-inset-1.5 after:content-[''] hover:bg-[var(--accent-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                     style={{ color: row.tem_override ? 'var(--foreground-muted)' : 'var(--accent)' }}
                 >
                     <span className="material-symbols-outlined text-[18px]">

@@ -58,10 +58,12 @@ export default function RegionPanel({
                                     onClick={() => setOrdem(o.key)}
                                     aria-pressed={ativo}
                                     title={`Ordenar por ${o.label}`}
+                                    // Mesmo bug de `Coverage.jsx` (toggle Mapa/Lista):
+                                    // `text-[var(--accent)]` reprova a 2,63:1 no claro.
                                     className={`inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                                         ativo
-                                            ? 'bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-inset ring-[var(--accent)]/50'
-                                            : 'text-muted hover:bg-background'
+                                            ? 'bg-[var(--accent-soft)] text-[var(--accent-dark)] ring-1 ring-inset ring-[var(--accent)]/50'
+                                            : 'text-faint hover:bg-background'
                                     }`}
                                 >
                                     <span className="material-symbols-outlined text-[14px]">{o.icon}</span>

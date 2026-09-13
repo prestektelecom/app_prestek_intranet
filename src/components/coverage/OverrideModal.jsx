@@ -38,13 +38,25 @@ function Segmentado({ opcoes, valor, onChange, metaPorValor }) {
 }
 
 export default function OverrideModal({ registro, onFechar, onSalvar }) {
+    // Antes, uma região sem NENHUM dado (316 das 319 reais) abria o modal já
+    // com "FTTH" / "Ativo" / "100%" marcados — indistinguível de uma
+    // classificação de verdade. Um admin que abrisse e salvasse sem tocar em
+    // nada gravava dado inventado como se fosse verificado, e um vendedor
+    // confiaria nesse "Ativo" para prometer serviço a um cliente. Agora o
+    // padrão é "sem seleção" (`Segmentado` já trata `null` como nenhum botão
+    // ativo) e `tocado` rastreia se o admin de fato escolheu algo.
     const [form, setForm] = useState({
-        tecnologia: registro.tecnologia || 'FTTH',
+        tecnologia: registro.tecnologia ?? null,
         velocidade_maxima: registro.velocidade_maxima || '100 MEGA',
-        status: registro.status || 'Ativo',
-        percentual_cobertura: registro.percentual_cobertura ?? 100,
+        status: registro.status ?? null,
+        percentual_cobertura: registro.percentual_cobertura ?? 0,
         latitude: registro.latitude ?? '',
         longitude: registro.longitude ?? '',
+    });
+    const [tocado, setTocado] = useState({
+        tecnologia: registro.tecnologia != null,
+        status: registro.status != null,
+        percentual: registro.percentual_cobertura != null,
     });
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState('');
@@ -60,7 +72,11 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
         return () => document.removeEventListener('keydown', onKey);
     }, [onFechar]);
 
-    const handleChange = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }));
+    const handleChange = (campo, valor) => {
+        setForm(f => ({ ...f, [campo]: valor }));
+        if (campo === 'tecnologia' || campo === 'status') setTocado(t => ({ ...t, [campo]: true }));
+        if (campo === 'percentual_cobertura') setTocado(t => ({ ...t, percentual: true }));
+    };
 
     // Locale pt-BR digita decimal com vírgula; o parseFloat só aceita ponto.
     const handleCoordChange = (campo, valor) =>
@@ -145,7 +161,10 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className={ROTULO}>Tecnologia</label>
+                            <label className={ROTULO}>
+                                Tecnologia
+                                {!tocado.tecnologia && <span className="ml-1.5 normal-case tracking-normal text-muted">— ainda não definida</span>}
+                            </label>
                             <Segmentado
                                 opcoes={TECNOLOGIAS}
                                 valor={form.tecnologia}
@@ -167,7 +186,10 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                         </div>
 
                         <div className="sm:col-span-2">
-                            <label className={ROTULO}>Status da rede</label>
+                            <label className={ROTULO}>
+                                Status da rede
+                                {!tocado.status && <span className="ml-1.5 normal-case tracking-normal text-muted">— ainda não definido</span>}
+                            </label>
                             <Segmentado
                                 opcoes={STATUS_OPCOES}
                                 valor={form.status}
@@ -179,6 +201,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                         <div className="sm:col-span-2">
                             <label className={ROTULO} htmlFor="ov-percentual">
                                 Percentual de cobertura
+                                {!tocado.percentual && <span className="ml-1.5 normal-case tracking-normal text-muted">— ainda não definido</span>}
                             </label>
                             <div className="flex items-center gap-3">
                                 <input

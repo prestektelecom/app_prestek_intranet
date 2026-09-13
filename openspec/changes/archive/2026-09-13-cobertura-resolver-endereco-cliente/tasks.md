@@ -53,13 +53,13 @@
 - [x] 7.3 Conferir a ordem de grandeza esperada: ~21.172 contratos, ~333 regiões, 27 cidades — obtido 21.162 contratos, **326** regiões, 27 cidades (a simulação previa 333 porque ainda não colapsava acentos)
 - [x] 7.4 Conferir que as 3 regiões com override (`1683::CHINARE`, `1758::BREJAO`, `1792::ALTO SANTO ANTONIO`) mantêm tecnologia, status e coordenada configurados
 - [x] 7.5 Medir a latência do primeiro request (cache MISS) e registrar o resultado; abrir tarefa de pré-aquecimento se ficar inaceitável — **medido, inaceitável, tarefas abertas no grupo 9**
-- [ ] 7.6 Conferir na UI que mapa, lista e modal continuam casando após a mudança de chave de região — **não executado**: exige abrir a aplicação no navegador. A consistência da chave foi verificada por dado (0 divergências entre a chave do backend e `chaveRegiao()` do front), mas a conferência visual continua pendente.
+- [x] 7.6 Verificado ao vivo (2026-09-13, Fase 9 do Impeccable): clicado "DOM CONSTANTINO" na lista — o mapa centraliza no marcador correto e abre um popup "Penedo / DOM CONSTANTINO", batendo com cidade e bairro exibidos na lista. Sem divergência observada entre lista, mapa e popup.
 
 ## 8. Fechamento
 
-- [ ] 8.1 Comunicar à operação a mudança de escala dos números (2.075 → ~21.162 contratos, 198 → 326 regiões) antes do deploy
-- [ ] 8.2 Levar as questões em aberto do design a quem decide: critério contrato ativo vs. internet ativa, e uso de `bairro_cob`/`cidade_cob`
-- [ ] 8.3 Revisitar a escolha média vs. mediana no centroide, com base nas regiões observadas na validação
+- [ ] 8.1 Comunicar à operação a mudança de escala dos números (2.075 → ~21.538 contratos, 198 → 326 regiões) — **o deploy já aconteceu**: verificado ao vivo em 2026-09-13 que a Central de Cobertura em produção já exibe os novos números. Item deixado pendente porque é uma comunicação do Felix à operação, não uma tarefa de código — registrado em MEMORIA.md.
+- [ ] 8.2 Levar as questões em aberto do design a quem decide: critério contrato ativo vs. internet ativa, e uso de `bairro_cob`/`cidade_cob` — decisão de produto, não de código; registrado em MEMORIA.md.
+- [ ] 8.3 Revisitar a escolha média vs. mediana no centroide, com base nas regiões observadas na validação — registrado em MEMORIA.md para uma rodada futura.
 
 ## 9. Latência do request frio (aberto por 7.5)
 
@@ -73,6 +73,6 @@ Medições contra produção, servidor dedicado na porta 3099:
 
 A coleta de clientes responde por ~250 s. Já mitigado em parte elevando `COBERTURA_CLIENTES` para 6 h — o custo passa de uma vez a cada 10 min para uma vez a cada 6 h. Os 98 s recorrentes são a busca de contratos, que já existia antes deste change.
 
-- [ ] 9.1 Pré-aquecer o cache de cobertura na subida do servidor, para que nenhum usuário pague os 349 s
-- [ ] 9.2 Avaliar revalidação em segundo plano (servir dado vencido e atualizar fora do request) em vez de bloquear quem chega no cache frio
-- [ ] 9.3 Avaliar se a busca de contratos (98 s) comporta o mesmo tratamento
+- [x] 9.1 Implementado na change `cobertura-warmup-swr-cache` (tarefa 4.1): `buildCoberturaCache()` chamada em fire-and-forget dentro do callback de `app.listen()`.
+- [x] 9.2 Implementado na change `cobertura-warmup-swr-cache` (tarefas 1-3): stale-while-revalidate completo em `cache.js`/`server.js`, com `_coberturaRevalidando` evitando corridas duplas.
+- [x] 9.3 Resolvido: `buildCoberturaCache()` renova `cobertura-ixc:resultado` E `cobertura-ixc:contratos-brutos` juntos (mesma função, mesmo `await`), então a busca de contratos já ganha o mesmo tratamento sem esforço adicional.

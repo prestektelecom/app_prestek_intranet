@@ -168,10 +168,15 @@ export default function Coverage({ user }) {
                                 type="button"
                                 onClick={() => setVistaMobile(v.key)}
                                 aria-pressed={ativo}
-                                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                                // `text-[var(--accent)]` é tom de marca (~500), não
+                                // de texto — media 2,63:1 sobre `--accent-soft` no
+                                // claro (mesmo bug já corrigido em ChipButton.jsx e
+                                // SectorsToolbar.jsx, Fases 6/7). `--accent-dark`
+                                // inverte por tema e resolve nos cinco.
+                                className={`inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                                     ativo
-                                        ? 'bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-inset ring-[var(--accent)]/50'
-                                        : 'text-muted hover:bg-background'
+                                        ? 'bg-[var(--accent-soft)] text-[var(--accent-dark)] ring-1 ring-inset ring-[var(--accent)]/50'
+                                        : 'text-faint hover:bg-background'
                                 }`}
                             >
                                 <span className="material-symbols-outlined text-[17px]">{v.icon}</span>

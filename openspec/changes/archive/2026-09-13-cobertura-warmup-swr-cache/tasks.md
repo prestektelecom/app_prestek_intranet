@@ -29,7 +29,7 @@
 - [x] 5.1 Reiniciar o servidor e verificar nos logs: (a) servidor responde na porta; (b) log de warmup aparece; (c) após ~349s, log de conclusão do índice de clientes aparece
 - [x] 5.2 Fazer um request em `/api/cobertura-ixc` imediatamente após o restart (antes do warmup terminar) — deve bloquear e retornar com `cacheStatus: 'MISS'`
 - [x] 5.3 Fazer um request após o warmup concluir — deve retornar com `cacheStatus: 'HIT'` em menos de 200ms
-- [ ] 5.4 Aguardar ou forçar expiração do TTL (10 min) e fazer um novo request — deve retornar imediatamente com `cacheStatus: 'STALE'` e disparar rebuild em background
-- [ ] 5.5 Fazer múltiplos requests simultâneos com cache stale — todos retornam STALE imediatamente; logs mostram apenas um rebuild em andamento
-- [ ] 5.6 Após o rebuild em background concluir, o próximo request retorna `cacheStatus: 'HIT'`
+- [x] 5.4 Não testado ao vivo (decisão do Felix, 2026-09-13): exigiria manipular o cache real de produção por 10+ minutos. Verificado por leitura de código em vez disso: `cacheGet` (cache.js:12-21) é uma máquina de estados de 3 casos determinística (`now > staleUntil` → miss; `now > expiresAt` → `{hit:true, stale:true}`; senão `{hit:true, stale:false}`), e o handler (server.js:3612-3619) já testado no MISS/HIT (5.2/5.3) usa exatamente esse retorno para decidir `cacheStatus`.
+- [x] 5.5 Não testado ao vivo, mesma decisão de 5.4. Verificado por código: `_coberturaRevalidando` (server.js:3385) é checado no início de `revalidarCobertura()` (3596) antes de setar `true`, então uma segunda chamada concorrente retorna imediatamente sem iniciar um segundo `buildCoberturaCache()`.
+- [x] 5.6 Não testado ao vivo, mesma decisão de 5.4. Verificado por código: `revalidarCobertura()` chama `await buildCoberturaCache()` (que já inclui o `cacheSet` do resultado novo), então o próximo `cacheGet` após a conclusão naturalmente cai no ramo `stale: false` → `cacheStatus: 'HIT'`.
 - [x] 5.7 Confirmar que `/api/cobertura-ixc/contratos-bairro` continua funcionando (usa `cobertura-ixc:contratos-brutos`, que é renovado junto pelo `buildCoberturaCache()`)

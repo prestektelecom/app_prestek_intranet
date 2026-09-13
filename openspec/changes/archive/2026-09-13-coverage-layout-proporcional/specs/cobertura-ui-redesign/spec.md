@@ -50,6 +50,10 @@ O espaçamento da página SHALL seguir o mesmo sistema da Central de Vendas, de 
 - **WHEN** a viewport é menor que `md` (768px)
 - **THEN** a lista de cidades e bairros é exibida como drawer deslizável ou bottom sheet, liberando espaço para o mapa
 
+#### Scenario: Mapa adaptável
+- **WHEN** a página é exibida em qualquer breakpoint
+- **THEN** o mapa ocupa o espaço restante sem ser comprimido por elementos fixos
+
 #### Scenario: Ícones corretos
 - **WHEN** a página de Cobertura exibe ícones de localização, tune ou navegação
 - **THEN** os ícones são renderizados como glifos visuais, nunca como texto
