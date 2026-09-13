@@ -373,8 +373,12 @@
   --foreground-rgb: 255 255 255;
   --foreground-muted:#888888;
   --foreground-muted-rgb: 136 136 136;
-  --foreground-faint:#777777;
-  --foreground-faint-rgb: 119 119 119;
+  /* #777777 reprovava 4,5:1 contra --surface (4,18:1) e --surface-raised (3,88:1)
+     — achado na Fase 12 (Processos), medido ao vivo e recalculado de forma
+     independente. #999999 passa nos dois (~6,6:1 / ~6,1:1) mantendo faint mais
+     contrastante que muted (#888888), como nos outros 4 temas. */
+  --foreground-faint:#999999;
+  --foreground-faint-rgb: 153 153 153;
 
   /* Primária (Laranja de Alto Contraste) */
   --primary:         #F97316;

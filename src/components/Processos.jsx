@@ -58,7 +58,7 @@ function KpiTile({ label, value, icon }) {
     );
 }
 
-function ProcessosHero({ total, ativos, revisao, categorias, onAdd }) {
+function ProcessosHero({ total, ativos, revisao, categorias, onAdd, isAdmin }) {
     const C = useBentoTheme();
     const kpis = [
         { label: 'Processos', value: total, icon: 'folder_open' },
@@ -96,14 +96,16 @@ function ProcessosHero({ total, ativos, revisao, categorias, onAdd }) {
                         </p>
                     </div>
 
-                    <button
-                        onClick={onAdd}
-                        className="inline-flex w-fit items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-bold shadow-sm transition-colors hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                        style={{ background: C.surface, color: C.accentDeep }}
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
-                        Novo Processo
-                    </button>
+                    {isAdmin && (
+                        <button
+                            onClick={onAdd}
+                            className="inline-flex w-fit items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-bold shadow-sm transition-colors hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                            style={{ background: C.surface, color: C.accentDeep }}
+                        >
+                            <span className="material-symbols-outlined text-[18px]">add</span>
+                            Novo Processo
+                        </button>
+                    )}
                 </div>
 
                 <div className="rounded-2xl border border-white/15 bg-black/60 p-4 2xl:col-span-6">
@@ -124,7 +126,10 @@ function ProcessosHero({ total, ativos, revisao, categorias, onAdd }) {
 const FORM_VAZIO = {
     nome: '',
     descricao: '',
-    categoria: 'atendimento',
+    // Sobrescrita sempre com categorias[0]?.id ao abrir "Novo Processo" — ver
+    // ProcessoModal. Um literal fixo aqui podia ficar órfão se essa categoria
+    // fosse renomeada/excluída em "Gerenciar Categorias".
+    categoria: '',
     status: 'ativo',
     versao: '1.0',
     docUrl: '',
@@ -151,7 +156,10 @@ function CampoSecao({ titulo, children }) {
 function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
     const isEdicao = Boolean(processo?.id);
     const [form, setForm] = useState(() => {
-        if (!processo) return FORM_VAZIO;
+        // Categoria padrão vem da lista carregada, não de um id fixo no código
+        // — 'atendimento' hardcoded podia ficar órfão assim que o admin
+        // renomeasse ou excluísse essa categoria em "Gerenciar Categorias".
+        if (!processo) return { ...FORM_VAZIO, categoria: categorias[0]?.id ?? '' };
         return {
             nome: processo.nome,
             descricao: processo.descricao,
@@ -221,9 +229,15 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
         const novosErros = {};
         if (!form.nome.trim()) novosErros.nome = 'O nome do processo é obrigatório.';
         if (!form.descricao.trim()) novosErros.descricao = 'A descrição é obrigatória.';
+        // Categoria pode ter ficado órfã (renomeada/excluída em "Gerenciar
+        // Categorias" depois deste processo ter sido criado) — bloqueia em vez
+        // de gravar um id que não existe mais na lista atual.
+        if (!categorias.some(c => c.id === form.categoria)) {
+            novosErros.categoria = 'Esta categoria não existe mais. Selecione outra.';
+        }
         if (Object.keys(novosErros).length > 0) {
             setErros(novosErros);
-            (novosErros.nome ? nomeRef : descricaoRef).current?.focus();
+            (novosErros.nome ? nomeRef : novosErros.descricao ? descricaoRef : null)?.current?.focus();
             return;
         }
         const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
@@ -324,13 +338,26 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                         <div>
                             <label htmlFor="processo-categoria" className={labelCls}>Categoria *</label>
                             <div className="relative">
-                                <select id="processo-categoria" className={`${inputCls} appearance-none pr-9`} value={form.categoria} onChange={e => set('categoria', e.target.value)}>
+                                <select
+                                    id="processo-categoria"
+                                    className={`${inputCls} appearance-none pr-9 ${erros.categoria ? inputErroCls : ''}`}
+                                    value={form.categoria}
+                                    onChange={e => set('categoria', e.target.value)}
+                                    aria-invalid={Boolean(erros.categoria)}
+                                    aria-describedby={erros.categoria ? 'processo-categoria-erro' : undefined}
+                                >
                                     {categorias.map(c => (
                                         <option key={c.id} value={c.id}>{c.label}</option>
                                     ))}
                                 </select>
                                 <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-muted text-[18px] pointer-events-none" aria-hidden="true">expand_more</span>
                             </div>
+                            {erros.categoria && (
+                                <p id="processo-categoria-erro" role="alert" className="mt-1.5 text-xs text-[#E84545] flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
+                                    {erros.categoria}
+                                </p>
+                            )}
                         </div>
 
                         <div>
@@ -510,6 +537,37 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState('');
 
+    // O único diálogo desta tela que grava/exclui dado REAL (categorias) não
+    // tinha nenhuma semântica de teclado — só os atributos ARIA estáticos.
+    // Escape não fechava e o Tab escapava para "Novo Processo" atrás do modal.
+    // Mesmo padrão (foco inicial + trap de Tab + Escape) já usado no
+    // ProcessoModal logo acima neste arquivo.
+    const modalRef = useRef(null);
+    const fecharRef = useRef(null);
+
+    useEffect(() => { fecharRef.current?.focus(); }, []);
+
+    useEffect(() => {
+        function onKeyDown(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                onFechar();
+                return;
+            }
+            if (e.key !== 'Tab' || !modalRef.current) return;
+            const focaveis = modalRef.current.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            if (focaveis.length === 0) return;
+            const primeiro = focaveis[0];
+            const ultimo = focaveis[focaveis.length - 1];
+            if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+            else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+        }
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [onFechar]);
+
     const inputCls = "w-full px-3 py-2 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
     const labelCls = "block text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1";
 
@@ -586,7 +644,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
     return (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
-            <div role="dialog" aria-modal="true" aria-labelledby="categorias-admin-titulo" className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col border border-border">
+            <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="categorias-admin-titulo" className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col border border-border">
                 <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-surface-raised">
                     <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-br from-[#9A3412] to-[#EC7D23] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30">
@@ -597,7 +655,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                             <p className="text-xs text-faint mt-0.5">Adicione, edite ou remova as categorias de processos.</p>
                         </div>
                     </div>
-                    <button onClick={onFechar} aria-label="Fechar" className="text-muted hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]">
+                    <button ref={fecharRef} onClick={onFechar} aria-label="Fechar" className="text-muted hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -614,10 +672,10 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                                     <p className="text-sm font-bold text-foreground truncate">{cat.label}</p>
                                     <p className="text-xs text-faint font-mono">{cat.id} · {cat.prefixo || '—'}</p>
                                 </div>
-                                <button type="button" onClick={() => editar(cat)} aria-label={`Editar ${cat.label}`} className="p-2 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">
+                                <button type="button" onClick={() => editar(cat)} aria-label={`Editar ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] after:absolute after:-inset-1 after:content-['']">
                                     <span className="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
-                                <button type="button" onClick={() => excluir(cat)} aria-label={`Excluir ${cat.label}`} className="p-2 rounded-md text-muted hover:text-[#E84545] hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545]">
+                                <button type="button" onClick={() => excluir(cat)} aria-label={`Excluir ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[#E84545] hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] after:absolute after:-inset-1 after:content-['']">
                                     <span className="material-symbols-outlined text-[18px]">delete</span>
                                 </button>
                             </div>
@@ -682,7 +740,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
     );
 }
 
-function EmptyState({ onAdd }) {
+function EmptyState({ onAdd, isAdmin }) {
     return (
         <div className="bg-surface border border-border rounded-[20px] shadow-sm px-6 py-16 flex flex-col items-center text-center">
             <div className="bg-[var(--accent-soft)] p-4 rounded-2xl text-[var(--accent-dark)] mb-5">
@@ -690,15 +748,19 @@ function EmptyState({ onAdd }) {
             </div>
             <h2 className="font-display text-foreground font-bold text-xl mb-2">Nenhum processo cadastrado ainda</h2>
             <p className="text-faint text-sm max-w-md mb-6">
-                Cadastre o primeiro procedimento operacional para começar a organizar os fluxos de trabalho do seu setor.
+                {isAdmin
+                    ? 'Cadastre o primeiro procedimento operacional para começar a organizar os fluxos de trabalho do seu setor.'
+                    : 'Ainda não há procedimentos operacionais cadastrados para o seu setor.'}
             </p>
-            <button
-                onClick={onAdd}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white text-sm font-bold shadow-md shadow-[#EC7D23]/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
-            >
-                <span className="material-symbols-outlined text-[18px]">add</span>
-                Cadastrar Primeiro Processo
-            </button>
+            {isAdmin && (
+                <button
+                    onClick={onAdd}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white text-sm font-bold shadow-md shadow-[#EC7D23]/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                >
+                    <span className="material-symbols-outlined text-[18px]">add</span>
+                    Cadastrar Primeiro Processo
+                </button>
+            )}
         </div>
     );
 }
@@ -709,6 +771,7 @@ const ROWS_PER_PAGE = 10;
 
 export default function Processos({ user, setCurrentView }) {
     const C = useBentoTheme();
+    const isAdmin = Boolean(user?.is_admin);
     const [lista, setLista] = useState(PROCESSOS);
     const [busca, setBusca] = useState('');
     const [categoriaAtiva, setCategoriaAtiva] = useState('todos');
@@ -759,7 +822,10 @@ export default function Processos({ user, setCurrentView }) {
     function handleBusca(e) { setBusca(e.target.value); setPagina(1); }
 
     function abrirNovo() { setModal({ modo: 'novo' }); }
-    function abrirEditar(p) { setModal({ modo: 'editar', processo: p }); }
+    // Só admin pode editar — antes qualquer usuário autenticado abria o
+    // formulário completo de edição de qualquer processo, sem nenhuma guarda
+    // (ao contrário de "Gerenciar Categorias", que já era admin-only).
+    function abrirEditar(p) { if (!isAdmin) return; setModal({ modo: 'editar', processo: p }); }
     function fecharModal() { setModal(null); }
 
     function exportarCSV() {
@@ -823,9 +889,19 @@ export default function Processos({ user, setCurrentView }) {
                 revisao={totalRevisao}
                 categorias={categorias.length}
                 onAdd={abrirNovo}
+                isAdmin={isAdmin}
             />
 
             <div className="mt-8 flex flex-col gap-8">
+            {/* Este CRUD ainda não tem persistência real (PROCESSOS é um array
+                estático, sem rota de backend) — criar/editar dava feedback de
+                sucesso completo mas desaparecia ao recarregar, sem nenhum
+                aviso. Enquanto isso não muda, a tela é honesta sobre isso. */}
+            <div className="flex items-center gap-2 rounded-xl border border-border px-4 py-3 text-[13px] font-semibold" style={{ background: 'var(--warning-soft)', color: 'var(--warning-bento)' }}>
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">science</span>
+                Esta tela usa dados de demonstração — processos criados ou editados aqui não são salvos permanentemente e desaparecem ao recarregar a página.
+            </div>
+
             {/* Ações secundárias — só faz sentido com processos cadastrados */}
             {lista.length > 0 && (
             <div className="flex flex-wrap justify-end gap-3">
@@ -864,7 +940,7 @@ export default function Processos({ user, setCurrentView }) {
                                     key={cat.id}
                                     onClick={() => handleCategoria(cat.id)}
                                     aria-pressed={categoriaAtiva === cat.id}
-                                    className={`snap-start shrink-0 lg:shrink flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 ${
+                                    className={`snap-start shrink-0 lg:shrink flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 ${
                                         categoriaAtiva === cat.id
                                             ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20'
                                             : 'bg-surface-raised border border-border text-faint hover:border-[#EC7D23] hover:text-[var(--accent-dark)]'
@@ -879,7 +955,7 @@ export default function Processos({ user, setCurrentView }) {
                             {user?.is_admin && (
                                 <button
                                     onClick={() => setCategoriasAbertas(true)}
-                                    className="snap-start shrink-0 lg:shrink flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal border border-dashed border-[var(--accent-dark)] text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                                    className="snap-start shrink-0 lg:shrink flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal border border-dashed border-[var(--accent-dark)] text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">tune</span>
                                     Gerenciar Categorias
@@ -898,7 +974,7 @@ export default function Processos({ user, setCurrentView }) {
             )}
 
             {lista.length === 0 ? (
-                <EmptyState onAdd={abrirNovo} />
+                <EmptyState onAdd={abrirNovo} isAdmin={isAdmin} />
             ) : (
             <>
             {/* Lista Mobile (Cards) — oculta em md+ */}
