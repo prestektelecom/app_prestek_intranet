@@ -95,7 +95,7 @@
 - [x] 9.4 Backlog consolidado: 1 P0 + 2 P1 (acima) + P2 (KPI "Cobertura méd." e filtros de tecnologia cobrindo ~1% do dado real sem sinalizar isso; link de atribuição do Leaflet com 2,92:1; `aria-label` ambíguo em 15+ botões "Configurar cobertura de CENTRO"; sem clusterização de marcadores num mapa com ~290 pontos; busca não sincronizada com o mapa — os 2 últimos são mudança de comportamento, não polish, ficaram de fora do backlog de fix mesmo com "tudo" escolhido).
 - [x] 9.5 Change filha `impeccable-cobertura` criada com escopo P0+P1 (decisão do Felix). Corrigido: `OverrideModal.jsx` não fabrica mais dado — estado inicial vira `null`/`0` para região sem classificação, com rótulo "ainda não definido" até o admin escolher algo; `Coverage.jsx`/`RegionPanel.jsx` trocam `text-[var(--accent)]` por `text-[var(--accent-dark)]`; toggle Mapa/Lista ganha 44px, engrenagem do `RegionCard.jsx` ganha expansão de área de clique por pseudo-elemento.
 - [x] 9.6 `npx vite build` limpo; P0 verificado ao vivo abrindo o modal de uma região real sem dado (nenhum campo pré-marcado); contraste (4,88:1 claro, 8,31:1 AMOLED) e alvo de toque (44px, `elementFromPoint` confirmando a expansão) verificados ao vivo; `openspec validate --strict` limpo na spec tocada.
-- [ ] 9.7 Commit
+- [x] 9.7 Commit — `11a8860`
 
 ## 10. Serviços
 
