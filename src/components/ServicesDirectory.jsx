@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useId, useRef } from 'react';
+import { useDismissable } from '../hooks/useDismissable';
 import TechBentoCard from './services/TechBentoCard';
 import StreamingBentoCard from './services/StreamingBentoCard';
 import PlanoComparador from './services/PlanoComparador';
@@ -28,8 +29,12 @@ function AvisoDadosLocais() {
     );
 }
 
+const DELETE_DIALOG_FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+
 export default function ServicesDirectory({ user, searchQuery }) {
     const isAdmin = user?.is_admin;
+    const deleteDialogRef = useRef(null);
+    const deleteDialogTituloId = useId();
 
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '', type: '' });
     const [detailModal, setDetailModal] = useState({ isOpen: false, data: null, type: 'plan' });
@@ -303,6 +308,25 @@ export default function ServicesDirectory({ user, searchQuery }) {
         }
     };
 
+    // O diálogo de exclusão só fechava clicando no backdrop — sem Escape, sem
+    // role="dialog" e sem trap de Tab. Mesmo padrão do ModalShell.jsx/OrgChartEditor.jsx.
+    useDismissable(deleteDialogRef, {
+        open: deleteModal.isOpen,
+        onClose: () => setDeleteModal(d => ({ ...d, isOpen: false })),
+        lockScroll: true,
+        closeOnOutside: true,
+    });
+
+    const trapDeleteDialogTab = (e) => {
+        if (e.key !== 'Tab' || !deleteDialogRef.current) return;
+        const items = Array.from(deleteDialogRef.current.querySelectorAll(DELETE_DIALOG_FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+
     const handleSort = (key) => {
         setSortConfig(prev => ({
             key,
@@ -502,7 +526,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                         <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
                                 <h2 className="font-display text-xl font-bold text-foreground">Serviços Técnicos</h2>
-                                <p className="mt-0.5 text-xs text-muted sm:text-sm">Valores, prazos e formas de pagamento</p>
+                                <p className="mt-0.5 text-xs text-faint sm:text-sm">Valores, prazos e formas de pagamento</p>
                             </div>
                             {isAdmin && (
                                 <button
@@ -539,7 +563,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                         <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
                                 <h2 className="font-display text-xl font-bold text-foreground">Pacotes de Streaming</h2>
-                                <p className="mt-0.5 text-xs text-muted sm:text-sm">Combos de entretenimento e valores mensais</p>
+                                <p className="mt-0.5 text-xs text-faint sm:text-sm">Combos de entretenimento e valores mensais</p>
                             </div>
                             {isAdmin && (
                                 <button
@@ -617,13 +641,20 @@ export default function ServicesDirectory({ user, searchQuery }) {
             {deleteModal.isOpen && (
                 <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })} />
-                    <div className="relative w-full max-w-sm transform overflow-hidden rounded-2xl border border-border bg-surface p-6 text-left align-middle shadow-2xl transition-all">
+                    <div
+                        ref={deleteDialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby={deleteDialogTituloId}
+                        onKeyDown={trapDeleteDialogTab}
+                        className="relative w-full max-w-sm transform overflow-hidden rounded-2xl border border-border bg-surface p-6 text-left align-middle shadow-2xl transition-all"
+                    >
                         <div className="flex flex-col items-center text-center">
                             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--danger-soft)] text-[var(--danger-bento)]">
                                 <span className="material-symbols-outlined text-3xl">delete_forever</span>
                             </div>
-                            <h3 className="text-xl font-bold text-foreground">Confirmar Exclusão</h3>
-                            <p className="mt-2 text-sm text-muted">
+                            <h3 id={deleteDialogTituloId} className="text-xl font-bold text-foreground">Confirmar Exclusão</h3>
+                            <p className="mt-2 text-sm text-faint">
                                 Tem certeza que deseja excluir <span className="font-bold text-foreground">"{deleteModal.title}"</span>? Esta ação não poderá ser desfeita.
                             </p>
                         </div>
@@ -631,7 +662,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                             <button
                                 type="button"
                                 onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}
-                                className="flex-1 cursor-pointer rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-muted transition-all hover:bg-surface-raised"
+                                className="flex-1 cursor-pointer rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-faint transition-all hover:bg-surface-raised"
                             >
                                 Cancelar
                             </button>

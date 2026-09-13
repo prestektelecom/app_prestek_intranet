@@ -49,6 +49,19 @@ const GradientCard = React.forwardRef(
       else if (onCtaClick) onCtaClick(e);
     };
 
+    // O card inteiro era só um onClick — Tab passava pelos botões internos
+    // (editar/comparar) mas nunca conseguia abrir o próprio card, a ação
+    // primária da tela. `target !== currentTarget` evita disparar aqui de
+    // novo quando Enter/Espaço já ativou um botão aninhado (o keydown ainda
+    // borbulha até este div mesmo com o stopPropagation do onClick deles).
+    const handleKeyDown = (e) => {
+      if (e.target !== e.currentTarget) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleClick(e);
+      }
+    };
+
     return (
       <motion.div
         variants={cardAnimation}
@@ -56,8 +69,11 @@ const GradientCard = React.forwardRef(
         whileHover="hover"
         animate="rest"
         transition={{ type: "spring", stiffness: 350, damping: 20 }}
-        className="h-full w-full cursor-pointer select-none"
+        className="h-full w-full cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
         onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
         ref={ref}
       >
         <div

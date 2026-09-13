@@ -77,7 +77,9 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
                                 e.stopPropagation();
                                 onEditClick(plan);
                             }}
-                            className="p-1 rounded-full bg-black/10 dark:bg-white/10 hover:bg-black/20 text-current transition-colors cursor-pointer"
+                            // Sem vizinho no cluster (plano não tem exclusão local): expansão
+                            // generosa por pseudo-elemento, sem risco de sobrepor outro botão.
+                            className="relative p-1 rounded-full bg-black/10 dark:bg-white/10 hover:bg-black/20 text-current transition-colors cursor-pointer after:absolute after:-inset-3 after:content-['']"
                             title="Editar Plano"
                         >
                             <span className="material-symbols-outlined text-sm font-bold">edit</span>

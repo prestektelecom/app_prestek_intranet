@@ -201,7 +201,7 @@ const iguaisNaLinha = (linha, plans) => {
 
 // ─── Pedaços de UI ────────────────────────────────────────────────────────────
 
-const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-muted';
+const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-faint';
 
 const TOM = {
     success: {
@@ -305,7 +305,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                         <button
                             type="button"
                             onClick={onClear}
-                            className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg px-4 text-[13px] font-semibold text-muted transition-colors hover:bg-surface-raised hover:text-foreground"
+                            className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg px-4 text-[13px] font-semibold text-faint transition-colors hover:bg-surface-raised hover:text-foreground"
                         >
                             <span className="material-symbols-outlined text-[18px]">close</span>
                             Fechar
@@ -337,7 +337,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                                         <span className={LABEL}>Diferença de velocidade</span>
                                         <span className="font-mono text-[24px] font-bold leading-none tabular-nums text-foreground">
                                             +{recomendacao.velMax - recomendacao.velMin}
-                                            <span className="text-[13px] font-medium text-muted"> Mbps</span>
+                                            <span className="text-[13px] font-medium text-faint"> Mbps</span>
                                         </span>
                                         <span className="font-mono text-[11px] tabular-nums text-faint">
                                             {recomendacao.velMin} → {recomendacao.velMax} Mbps
@@ -383,7 +383,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                                     <h4 className="truncate text-[15px] font-bold leading-tight text-foreground">
                                         {nomeCurtoPlano(plan)}
                                     </h4>
-                                    <span className="truncate font-mono text-[10px] text-muted">IXC-{plan.id}</span>
+                                    <span className="truncate font-mono text-[10px] text-faint">IXC-{plan.id}</span>
                                 </div>
                             ))}
 
@@ -432,7 +432,7 @@ export default function PlanoComparador({ plans = [], isOpen = false, onClear, f
                                                 key={plan.id}
                                                 className={`min-w-0 rounded-lg px-3 py-2 ${venceu ? t.anel : 'bg-surface-raised'}`}
                                             >
-                                                <span className="mb-0.5 block truncate font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+                                                <span className="mb-0.5 block truncate font-mono text-[10px] uppercase tracking-[0.1em] text-faint">
                                                     {nomeCurtoPlano(plan)}
                                                 </span>
                                                 <span className={`block truncate font-mono text-[16px] font-bold tabular-nums ${venceu ? t.valor : 'text-foreground'}`}>

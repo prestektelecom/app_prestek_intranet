@@ -23,7 +23,7 @@ export default function PlansGrid({ plans, isLoading, hasSearch, comparingIds = 
                 <span className="material-symbols-outlined mb-2 text-4xl text-muted">
                     {hasSearch ? 'search_off' : 'wifi_off'}
                 </span>
-                <p className="text-sm font-medium text-muted">
+                <p className="text-sm font-medium text-faint">
                     {hasSearch ? 'Nenhum plano encontrado para essa busca.' : 'Nenhum plano encontrado.'}
                 </p>
             </div>

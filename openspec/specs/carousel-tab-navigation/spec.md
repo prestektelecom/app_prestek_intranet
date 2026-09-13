@@ -1,5 +1,9 @@
-﻿## ADDED Requirements
+# carousel-tab-navigation Specification
 
+## Purpose
+Navegação por tabs (com ícone e rótulo) do carousel de Rankings do Mês na Central de Serviços, substituindo os antigos pontinhos de navegação e o efeito de confetti.
+
+## Requirements
 ### Requirement: Navegacao do carousel via tabs com rotulo
 
 O componente de ranking SHALL exibir 3 botoes de tab com icone e rotulo textual acima do container do carousel, permitindo ao usuario selecionar qual slide (Top Planos, Top Colaboradoras, Ticket Medio) quer visualizar diretamente.
@@ -7,7 +11,7 @@ O componente de ranking SHALL exibir 3 botoes de tab com icone e rotulo textual 
 #### Scenario: Selecionar slide via tab
 
 - **WHEN** o usuario clica em uma das 3 tabs de navegacao (ex: "Colaboradoras")
-- **THEN** o carousel transiciona imediatamente para o slide correspondente e a tab clicada recebe o estilo de estado ativo (gradiente azul)
+- **THEN** o carousel transiciona imediatamente para o slide correspondente e a tab clicada recebe o estilo de estado ativo (gradiente laranja da marca)
 
 #### Scenario: Estado ativo reflete slide do auto-play
 

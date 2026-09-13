@@ -47,7 +47,7 @@ export default function ServicesFilterBar({ filter, onFilterChange, counts, sort
 
             {showSort && (
                 <div className="flex items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-hide">
-                    <span className="mr-1 hidden text-sm font-medium text-muted sm:block">Ordenar por:</span>
+                    <span className="mr-1 hidden text-sm font-medium text-faint sm:block">Ordenar por:</span>
                     <div className="inline-flex items-center gap-1 rounded-2xl bg-surface-raised p-1">
                         {ORDENACOES.map(opt => {
                             const active = sortConfig.key === opt.key;
@@ -58,12 +58,12 @@ export default function ServicesFilterBar({ filter, onFilterChange, counts, sort
                                     onClick={() => onSort(opt.key)}
                                     aria-pressed={active}
                                     style={active ? { color: tintaAtiva } : undefined}
-                                    className={`inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold transition-all sm:text-sm ${
+                                    className={`inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold transition-all sm:text-sm ${
                                         active
                                             // No claro, --accent-soft e o tray --surface-raised
                                             // são quase iguais; o anel é o que marca o ativo.
                                             ? 'bg-[var(--accent-soft)] ring-1 ring-inset ring-[var(--accent)]/50'
-                                            : 'bg-transparent text-muted hover:bg-background'
+                                            : 'bg-transparent text-faint hover:bg-background'
                                     }`}
                                 >
                                     <span className="material-symbols-outlined text-[16px]">{opt.icon}</span>

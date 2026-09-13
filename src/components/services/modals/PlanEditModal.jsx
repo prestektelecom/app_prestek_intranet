@@ -9,7 +9,7 @@ export default function PlanEditModal({ plan, form, onChange, onClose, onSave, i
                     type="text"
                     value={plan.descricao || ''}
                     disabled
-                    className="w-full rounded-xl border border-border bg-background px-4 py-2 text-muted"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-2 text-faint"
                 />
             </ModalField>
 

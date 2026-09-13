@@ -254,7 +254,11 @@ export default function ServicesHero({
                                             type="button"
                                             onClick={() => { setAba(opt.key); setIndiceAtivo(null); }}
                                             aria-pressed={ativo}
-                                            className={`inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+                                            // O toggle é compacto de propósito (painel denso do hero) — a
+                                            // área de toque cresce por pseudo-elemento em vez de inchar a
+                                            // caixa visual. -inset-x-1 encosta exatamente no meio do gap-1
+                                            // entre as duas abas, sem sobrepor a vizinha.
+                                            className={`relative inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors after:absolute after:-inset-x-1 after:-inset-y-[10px] after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
                                                 ativo ? 'bg-white/25 text-white' : 'text-white/70 hover:bg-white/10'
                                             }`}
                                         >

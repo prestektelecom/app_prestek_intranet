@@ -90,10 +90,25 @@ function derivarApresentacao(data, type, maxVendas, formatCurrency) {
     };
 }
 
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+
 export default function ServiceDetailModal({ isOpen, onClose, data, type, formatCurrency, onToggleCompare, isComparing, isAdmin, onEditClick, maxVendas = 0 }) {
     const C = useBentoTheme();
     const tituloId = useId();
     const fecharRef = useRef(null);
+    const dialogRef = useRef(null);
+
+    // Trap de Tab: sem isso, Tab/Shift+Tab escapavam do modal para a página
+    // de trás mesmo com Escape e foco inicial já funcionando.
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !dialogRef.current) return;
+        const items = Array.from(dialogRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
 
     // Hooks antes de qualquer return — a condição mora dentro do efeito.
     useEffect(() => {
@@ -147,10 +162,12 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 15 }}
                     transition={{ duration: 0.2 }}
+                    ref={dialogRef}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby={tituloId}
                     onClick={(e) => e.stopPropagation()}
+                    onKeyDown={trapTab}
                     className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl sm:rounded-3xl border border-border bg-surface shadow-2xl"
                 >
                     {/* Hero */}
@@ -223,7 +240,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                         {/* Preço */}
                         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface-raised p-4">
                             <div>
-                                <span className="mb-1 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted">
+                                <span className="mb-1 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-faint">
                                     {isPlan ? 'Valor / Mensalidade' : 'Valor'}
                                 </span>
                                 <div className="flex items-baseline gap-1">
@@ -231,7 +248,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                                         {p.valor}
                                     </span>
                                     {p.sufixoValor && (
-                                        <span className="text-sm font-semibold text-muted">{p.sufixoValor}</span>
+                                        <span className="text-sm font-semibold text-faint">{p.sufixoValor}</span>
                                     )}
                                 </div>
                             </div>
@@ -245,7 +262,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                                     className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                                         isComparing
                                             ? 'bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-[var(--accent)]'
-                                            : 'border border-border bg-surface text-muted hover:bg-surface-raised'
+                                            : 'border border-border bg-surface text-faint hover:bg-surface-raised'
                                     }`}
                                 >
                                     {isComparing ? <Check className="h-3.5 w-3.5" /> : <ArrowLeftRight className="h-3.5 w-3.5" />}
@@ -258,7 +275,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             {p.specs.map(({ icon: Icon, label, value }) => (
                                 <div key={label} className="rounded-xl border border-border bg-surface-raised p-3.5">
-                                    <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-muted">
+                                    <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-faint">
                                         <Icon className="h-3.5 w-3.5 text-[var(--accent)]" />
                                         <span>{label}</span>
                                     </div>
@@ -272,7 +289,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                         {/* Streamings inclusos */}
                         {p.streamings.length > 0 && (
                             <div className="rounded-xl border border-border bg-surface-raised p-4">
-                                <span className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted">
+                                <span className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-faint">
                                     Streamings inclusos
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
@@ -313,7 +330,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                             type="button"
                             ref={fecharRef}
                             onClick={onClose}
-                            className="flex-1 cursor-pointer rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-muted transition-all hover:bg-surface-raised focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                            className="flex-1 cursor-pointer rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-faint transition-all hover:bg-surface-raised focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                         >
                             Fechar
                         </button>

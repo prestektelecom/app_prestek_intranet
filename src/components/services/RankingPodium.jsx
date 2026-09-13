@@ -9,10 +9,16 @@ const RANK_STYLES = {
     3: { border: 'border border-[#C2410C]/30', label: '3º Lugar', bg: 'bg-gradient-to-br from-[#C2410C] to-[#EC7D23]', glow: 'shadow-lg shadow-[#EC7D23]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#C2410C]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
 };
 
+// O pódio abaixo é um cartão opaco com gradiente laranja fixo — identidade de
+// "troféu" que não precisa inverter por tema. Já o cabeçalho e esta legenda
+// ficam direto sobre o fundo da página, então usam o par accent-soft/accent-dark
+// (inverte por tema) em vez de hex cru — removeu de quebra um resquício
+// `dark:bg-[#9A3412]/20`/`hover:bg-[#D6E9FF]` da paleta "Bento Blue" abandonada.
+const LEGENDA_CLS = 'bg-[var(--accent-soft)] text-[var(--accent-dark)]';
 const LEGENDA = [
-    { label: '1º Lugar', cls: 'text-[#9A3412] dark:bg-[#9A3412]/20 dark:text-[#FDBA74]' },
-    { label: '2º Lugar', cls: 'text-[#C2410C] dark:bg-[#C2410C]/20 dark:text-[#E4ECF5]' },
-    { label: '3º Lugar', cls: 'text-[#C2410C] dark:bg-[#EC7D23]/20 dark:text-[#FDBA74]' },
+    { label: '1º Lugar' },
+    { label: '2º Lugar' },
+    { label: '3º Lugar' },
 ];
 
 export default function RankingPodium({
@@ -37,10 +43,10 @@ export default function RankingPodium({
     return (
         <div className="flex w-full shrink-0 flex-col gap-5 px-1 py-2">
             <div className="flex items-center justify-center gap-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
+                <h3 className="text-lg font-bold text-foreground">{title}</h3>
                 <div className="hidden items-center gap-1.5 sm:flex">
                     {LEGENDA.map(l => (
-                        <span key={l.label} className={`inline-flex items-center gap-1 rounded-full bg-[#FFF7ED] px-2.5 py-0.5 text-[10px] font-bold ${l.cls}`}>
+                        <span key={l.label} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${LEGENDA_CLS}`}>
                             <span className="material-symbols-outlined text-[12px]">workspace_premium</span> {l.label}
                         </span>
                     ))}
@@ -55,7 +61,7 @@ export default function RankingPodium({
                 ) : items.length === 0 ? (
                     <div className="flex w-full flex-col items-center justify-center py-10 text-center">
                         <span className="material-symbols-outlined mb-1 text-3xl text-muted">{emptyIcon}</span>
-                        <p className="text-sm text-muted">{emptyText}</p>
+                        <p className="text-sm text-faint">{emptyText}</p>
                     </div>
                 ) : (
                     podiumOrder.map((item, i) => {

@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useId, useRef } from 'react';
+import { useDismissable } from '../../../hooks/useDismissable';
+
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 // Casca comum dos três modais de edição — os formulários variavam, a moldura não.
 export const FIELD_CLASS =
@@ -19,19 +22,47 @@ export function ModalField({ label, hint, children }) {
 }
 
 export default function ModalShell({ title, onClose, onSave, isSaving = false, saveLabel = 'Salvar Alterações', children }) {
+    const dialogRef = useRef(null);
+    const tituloId = useId();
+
+    // Nenhum dos três modais de edição admin tinha semântica de diálogo: Escape
+    // não fechava, o foco não entrava e Tab escapava para a página por trás.
+    // Mesmo padrão (useDismissable + trap de Tab local) já usado em
+    // OrgChartEditor.jsx/TiSupportModal.jsx/ManagePlantaoModal.jsx.
+    useDismissable(dialogRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
+
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !dialogRef.current) return;
+        const items = Array.from(dialogRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+
     return (
         // z-[1100] fica acima do Header e da Sidebar (ambos z-1000), senão o
         // header continua opaco por cima do overlay como uma barra solta.
         <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl duration-200 animate-in fade-in zoom-in">
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={tituloId}
+                onKeyDown={trapTab}
+                className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl duration-200 animate-in fade-in zoom-in"
+            >
                 <div className="border-b border-border p-6">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-foreground">{title}</h3>
+                        <h3 id={tituloId} className="text-lg font-bold text-foreground">{title}</h3>
                         <button
                             type="button"
                             onClick={onClose}
                             aria-label="Fechar"
-                            className="cursor-pointer text-muted transition-colors hover:text-[var(--accent)]"
+                            // -m-2 compensa o p-2: o ícone fica visualmente no
+                            // mesmo lugar, mas a área clicável cresce para 44px.
+                            className="-m-2.5 cursor-pointer rounded-full p-2.5 text-muted transition-colors hover:bg-surface-raised hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                         >
                             <span className="material-symbols-outlined">close</span>
                         </button>
@@ -44,7 +75,7 @@ export default function ModalShell({ title, onClose, onSave, isSaving = false, s
                     <button
                         type="button"
                         onClick={onClose}
-                        className="cursor-pointer rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-muted transition-all hover:bg-surface-raised"
+                        className="cursor-pointer rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-faint transition-all hover:bg-surface-raised"
                     >
                         Cancelar
                     </button>
