@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import ThemeSwitcher from './ThemeSwitcher';
 import { AVATAR_PNGS, resolveAvatarUrl } from '../utils/avatarPngs';
-import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 
 const PREDEFINED_PNG_AVATARS = AVATAR_PNGS;
 
@@ -14,8 +14,11 @@ const toBoolPref = (valor, fallback) => {
 
 export default function Configuracoes({ user, setCurrentView }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const fileInputRef = useRef(null);
     const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+    const avatarTriggerRef = useRef(null);
+    const avatarFirstItemRef = useRef(null);
 
     // Dados da tabela funcionarios (vem embutido no login)
     const func = user?.funcionario ?? {};
@@ -41,6 +44,7 @@ export default function Configuracoes({ user, setCurrentView }) {
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [saveError, setSaveError] = useState(false);
+    const [uploadError, setUploadError] = useState(false);
 
     // Listas do IXC
     const [departamentosList, setDepartamentosList] = useState([]);
@@ -188,6 +192,25 @@ export default function Configuracoes({ user, setCurrentView }) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // O popover de troca de avatar não tinha NENHUMA semântica de teclado —
+    // só fechava com o mousedown-fora acima. Escape não fechava, e o Tab
+    // escapava dele para o resto da página deixando-o aberto e órfão na tela
+    // (confirmado ao vivo). Foco inicial em "Fazer Upload" ao abrir, devolvido
+    // ao gatilho ao fechar por Escape.
+    useEffect(() => {
+        if (!showAvatarMenu) return undefined;
+        avatarFirstItemRef.current?.focus();
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                setShowAvatarMenu(false);
+                avatarTriggerRef.current?.focus();
+            }
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [showAvatarMenu]);
+
     /**
      * Upload de imagem: converte para base64 para persistir no banco.
      * blob: URLs são temporárias e expiram ao recarregar a página.
@@ -198,10 +221,12 @@ export default function Configuracoes({ user, setCurrentView }) {
 
         // Valida tamanho máximo: 2MB
         if (file.size > 2 * 1024 * 1024) {
-            alert('Imagem muito grande. Use uma imagem de até 2MB.');
+            setUploadError(true);
+            setTimeout(() => setUploadError(false), 4000);
             return;
         }
 
+        setUploadError(false);
         const reader = new FileReader();
         reader.onloadend = () => {
             const base64 = reader.result; // 'data:image/png;base64,...'
@@ -304,7 +329,7 @@ export default function Configuracoes({ user, setCurrentView }) {
         || displayDepto || 'N/D';
     const filialName = filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.fantasia
         || filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.razao
-        || (displayFilial ? `Filial ${displayFilial}` : 'Sede Principal');
+        || (displayFilial ? `Filial ${displayFilial}` : 'N/D');
 
     // Cargo (id_funcao) — no layout novo será usado o nome do Setor (deptoName) abaixo do nome do usuário
     const cargoName = deptoName !== 'N/D' ? deptoName : safeRole;
@@ -323,9 +348,11 @@ export default function Configuracoes({ user, setCurrentView }) {
     const sSection = { padding: '28px 32px' };
     const sSectionHead = { display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 16, marginBottom: 20, borderBottom: `1px solid ${C.lineSoft}` };
     const sIconBox = (color, bg) => ({ width: 36, height: 36, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color });
-    const sLabel = { fontSize: 10.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, fontFamily: '"JetBrains Mono", monospace', display: 'block', marginBottom: 6 };
+    // C.muted é para ícone/placeholder, não texto real — reprovava 3,01:1 no
+    // claro em praticamente todo rótulo da tela. C.ink2 é o substituto seguro.
+    const sLabel = { fontSize: 10.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.ink2, fontFamily: '"JetBrains Mono", monospace', display: 'block', marginBottom: 6 };
     const sInput = { width: '100%', borderRadius: 10, border: `1.5px solid ${C.line}`, background: C.surfaceSoft, color: C.ink, fontSize: 14, padding: '9px 14px', outline: 'none', transition: 'border-color .18s, box-shadow .18s', fontFamily: 'inherit' };
-    const sInputRO = { ...sInput, background: C.lineSoft, color: C.muted, cursor: 'not-allowed', border: `1.5px solid ${C.lineSoft}` };
+    const sInputRO = { ...sInput, background: C.lineSoft, color: C.ink2, cursor: 'not-allowed', border: `1.5px solid ${C.lineSoft}` };
     const sH3 = { fontSize: 15, fontWeight: 700, color: C.ink, margin: 0 };
 
     // Skeleton de campo — mesmas dimensões de sInput, para não causar layout shift ao carregar
@@ -362,14 +389,14 @@ export default function Configuracoes({ user, setCurrentView }) {
                     {/* Botão Salvar no hero */}
                     <button
                         onClick={handleSave}
-                        disabled={isSaving}
+                        disabled={isSaving || isLoading}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: 8,
-                            padding: '11px 26px', borderRadius: 12, border: 'none', cursor: isSaving ? 'not-allowed' : 'pointer',
+                            padding: '11px 26px', borderRadius: 12, border: 'none', cursor: (isSaving || isLoading) ? 'not-allowed' : 'pointer',
                             background: saveSuccess ? C.success : 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)',
                             color: 'white', fontWeight: 700, fontSize: 14,
                             boxShadow: '0 2px 12px rgba(0,0,0,0.15)', transition: 'all .18s',
-                            opacity: isSaving ? 0.7 : 1,
+                            opacity: (isSaving || isLoading) ? 0.7 : 1,
                         }}>
                         <span className="material-symbols-outlined" style={{ fontSize: 18, ...(isSaving ? { animation: 'spin 1s linear infinite' } : {}) }}>
                             {isSaving ? 'progress_activity' : saveSuccess ? 'check_circle' : 'save'}
@@ -400,7 +427,9 @@ export default function Configuracoes({ user, setCurrentView }) {
                                         <span className="material-symbols-outlined" style={{ fontSize: 44, color: C.accent }}>person</span>
                                     </div>
                                 )}
-                                <button onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+                                <button ref={avatarTriggerRef} onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+                                    aria-expanded={showAvatarMenu} aria-haspopup="true"
+                                    className="relative after:absolute after:-inset-[10px] after:content-['']"
                                     style={{ position: 'absolute', bottom: 2, right: 2, width: 28, height: 28, borderRadius: '50%', background: C.accent, border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 2px 8px ${tone(C.accentDeep, 0.3)}` }}
                                     title="Alterar Foto" aria-label="Alterar foto de perfil">
                                     <span className="material-symbols-outlined" style={{ fontSize: 15, color: 'white' }}>photo_camera</span>
@@ -410,13 +439,13 @@ export default function Configuracoes({ user, setCurrentView }) {
                                 {/* Popover de avatar — upload, grade de avatares e remover, tudo num painel só */}
                                 {showAvatarMenu && (
                                     <div style={{ position: 'absolute', top: 108, left: '50%', transform: 'translateX(-50%)', zIndex: 20, width: 288, background: C.surface, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 12px 32px ${tone(C.accentDeep, 0.14)}`, overflow: 'hidden' }}>
-                                        <button onClick={() => fileInputRef.current?.click()}
+                                        <button ref={avatarFirstItemRef} onClick={() => fileInputRef.current?.click()}
                                             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'none', border: 'none', borderBottom: `1px solid ${C.lineSoft}`, cursor: 'pointer', color: C.ink, fontSize: 13, textAlign: 'left' }}>
                                             <span className="material-symbols-outlined" style={{ fontSize: 16, color: C.muted }}>upload</span>Fazer Upload
                                         </button>
 
                                         <div style={{ padding: 12, maxHeight: 320, overflowY: 'auto' }}>
-                                            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, textAlign: 'center', marginBottom: 10, fontFamily: '"JetBrains Mono", monospace' }}>Avatares 3D</p>
+                                            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.ink2, textAlign: 'center', marginBottom: 10, fontFamily: '"JetBrains Mono", monospace' }}>Avatares 3D</p>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                                                 {PREDEFINED_PNG_AVATARS.map((url, idx) => (
                                                     <button key={idx} onClick={() => handleChangeAvatar(url)}
@@ -440,7 +469,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                             {/* Nome e cargo */}
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: 18, fontWeight: 800, color: C.ink, letterSpacing: '-0.01em' }}>{safeName}</div>
-                                <div style={{ fontSize: 12.5, color: C.accent, fontWeight: 600, marginTop: 3 }}>{cargoName}</div>
+                                <div style={{ fontSize: 12.5, color: isDark ? C.accentDark : C.accentDeep, fontWeight: 600, marginTop: 3 }}>{cargoName}</div>
                                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 10, padding: '3px 10px', borderRadius: 999, background: isActive ? C.successSoft : C.dangerSoft, color: isActive ? C.success : C.danger, fontSize: 11, fontWeight: 700 }}>
                                     <span className="material-symbols-outlined" style={{ fontSize: 13 }}>{isActive ? 'check_circle' : 'cancel'}</span>
                                     {isActive ? 'Colaborador Ativo' : 'Inativo'}
@@ -539,7 +568,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                             </div>
                             <ThemeSwitcher />
                             <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${C.lineSoft}` }}>
-                                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.muted, fontFamily: '"JetBrains Mono", monospace', marginBottom: 14 }}>Notificações por E-mail</p>
+                                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.ink2, fontFamily: '"JetBrains Mono", monospace', marginBottom: 14 }}>Notificações por E-mail</p>
                                 {isLoading ? (
                                     [1, 2].map(i => (
                                         <div key={i} style={{ height: 20, borderRadius: 999, background: C.lineSoft, marginBottom: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -550,13 +579,17 @@ export default function Configuracoes({ user, setCurrentView }) {
                                 ].map(({ label, name }) => {
                                     const checked = !!formData[name];
                                     return (
-                                        <label key={name} htmlFor={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, cursor: 'pointer' }}>
+                                        <label key={name} htmlFor={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, marginBottom: 4, cursor: 'pointer' }}>
                                             <span style={{ fontSize: 13.5, color: C.ink2 }}>{label}</span>
                                             <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                                                 <input id={name} name={name} type="checkbox" checked={checked}
                                                     onChange={e => setFormData(prev => ({ ...prev, [name]: e.target.checked }))}
                                                     className="sr-only peer" />
-                                                <span style={{ width: 36, height: 20, borderRadius: 999, background: checked ? C.accent : C.line, position: 'relative', transition: 'background .2s', display: 'inline-block' }}
+                                                {/* Desligado usava C.line direto contra C.surface — 1,19-1,21:1, abaixo do piso 3:1 do WCAG 1.4.11.
+                                                    C.line/lineSoft são cinzas quase idênticos ao próprio fundo no AMOLED (medido ao vivo: 1,06:1/1,24:1,
+                                                    a correção original não resolvia nada lá) — C.ink2 já é o tom calibrado para 4,5:1+ de TEXTO em
+                                                    todo tema, então como borda de 1px sobra contraste de sobra (5,6:1+ medido no AMOLED). */}
+                                                <span style={{ width: 36, height: 20, borderRadius: 999, background: checked ? C.accent : C.lineSoft, border: checked ? 'none' : `1px solid ${C.ink2}`, position: 'relative', transition: 'background .2s', display: 'inline-block' }}
                                                     className="after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-[2px] after:left-[2px] peer-checked:after:translate-x-4 after:transition-all after:shadow-sm" />
                                             </span>
                                         </label>
@@ -568,16 +601,16 @@ export default function Configuracoes({ user, setCurrentView }) {
                 </div>
             </div>
 
-            {/* Toast de erro — é o único canal de aviso de falha; sucesso já é sinalizado pelo próprio botão Salvar */}
-            {saveError && (
+            {/* Toast de erro — único canal de aviso de falha (salvar ou upload); sucesso do salvar já é sinalizado pelo próprio botão */}
+            {(saveError || uploadError) && (
                 <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, animation: 'toastUp .35s ease-out' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.dangerSoft}`, boxShadow: `0 8px 32px ${tone(C.danger, 0.2)}` }}>
+                    <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 22px', borderRadius: 14, background: C.surface, border: `1px solid ${C.dangerSoft}`, boxShadow: `0 8px 32px ${tone(C.danger, 0.2)}` }}>
                         <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.dangerSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 20, color: C.danger }}>error</span>
                         </div>
                         <div>
-                            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>Não foi possível salvar</div>
-                            <div style={{ fontSize: 12, color: C.muted }}>Verifique sua conexão e tente novamente.</div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>{uploadError ? 'Imagem muito grande' : 'Não foi possível salvar'}</div>
+                            <div style={{ fontSize: 12, color: C.ink2 }}>{uploadError ? 'Use uma imagem de até 2MB.' : 'Verifique sua conexão e tente novamente.'}</div>
                         </div>
                     </div>
                     <style>{`@keyframes toastUp { from { opacity:0; transform:translateX(-50%) translateY(16px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
