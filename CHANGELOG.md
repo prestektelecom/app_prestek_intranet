@@ -7,6 +7,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 ## [Unreleased]
 
 ### Adicionado
+- Aba **TI** (admin), com hub extensível por registry (`src/components/ti/registry.js`) e a primeira ferramenta, **Cadastro de Colaborador**: upload de ficha de registro em PDF (camada de texto ou OCR via `tesseract.js`, com confiança por campo), formulário completo por seções, checagem de duplicidade e dry-run contra o IXC (monta os 1-3 payloads de criação sem gravar nada). `POST /api/ti/colaborador/criar` existe como stub `501` — a gravação real é uma fase futura separada.
+- Rotas de apoio ao Cadastro de Colaborador: `GET /api/funcoes`, `GET /api/ti/colaborador/taxonomias`, `GET /api/ti/colaborador/cidades`, `GET /api/ti/colaborador/duplicado`, `POST /api/ti/colaborador/extrair-pdf`, `POST /api/ti/colaborador/dry-run`.
 - Componentes responsivos reutilizáveis em `src/components/responsive/`:
   - `ResponsiveBreadcrumb`, `ResponsiveTable`, `FilterBar`, `MobileDrawer`, `PageShell`, `TouchFriendlyActions`
 - Hook `useTouchOnly` para detectar dispositivos touchscreen.

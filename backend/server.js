@@ -4310,31 +4310,21 @@ app.get('/api/ti/colaborador/cidades', adminAuth, async (req, res) => {
 // 'nenhum'` com aviso, liberando o preenchimento manual.
 app.post(
     '/api/ti/colaborador/extrair-pdf',
-    (req, res, next) => {
-        console.log('[DEBUG extrair-pdf] 1. Recebeu requisição. Content-Type:', req.headers['content-type'], 'Length:', req.headers['content-length']);
-        next();
-    },
-    express.raw({ type: () => true, limit: '25mb' }),
-    (req, res, next) => {
-        console.log('[DEBUG extrair-pdf] 2. express.raw executado. isBuffer:', Buffer.isBuffer(req.body), 'Length:', req.body?.length);
-        next();
-    },
+    // Limite de 15mb (tarefa 4.10) — o front sempre manda Content-Type:
+    // application/pdf de propósito (`UploadFicha.jsx`), então o filtro de
+    // tipo não bloqueia o uso real; ele existe para o corpo não-PDF cair
+    // fora do parser em vez de virar um buffer aceito por acidente.
+    express.raw({ type: 'application/pdf', limit: '15mb' }),
     adminAuth,
     async (req, res) => {
         const adminEmail = req.usuario.email;
-        console.log('[DEBUG extrair-pdf] 3. adminAuth passou para:', adminEmail);
         try {
             if (!req.body || !Buffer.isBuffer(req.body) || req.body.length === 0) {
-                console.log('[DEBUG extrair-pdf] 3b. Nenhum buffer válido.');
                 return res.status(400).json({ sucesso: false, erro: 'Nenhum arquivo recebido ou arquivo vazio.' });
             }
 
-            console.log('[DEBUG extrair-pdf] 4. Chamando extrairTextoPdf...');
             const { texto, origem } = await extrairTextoPdf(req.body);
-            console.log('[DEBUG extrair-pdf] 5. extrairTextoPdf retornou:', { origem, textoLen: (texto || '').length });
-
             const { campos, confianca, textoBruto, naoReconhecido } = extrairCampos(texto, { origemOCR: origem === 'ocr' });
-            console.log('[DEBUG extrair-pdf] 6. extrairCampos concluído.');
 
             registrarAuditoria(
                 adminEmail,
@@ -4439,6 +4429,46 @@ app.post('/api/ti/colaborador/dry-run', adminAuth, async (req, res) => {
         console.error('[ti/dry-run] Erro:', e.message);
         return res.status(502).json({ sucesso: false, erro: `Falha ao montar o dry-run: ${e.message}` });
     }
+});
+
+// Stub da fase 2 (`ti-hub-cadastro-colaborador`, tarefa 8.1) — a v1 só
+// simula (`dry-run`, acima); esta rota grava de verdade e não foi
+// implementada ainda de propósito (ver Decisão 2 em design.md: FK circular
+// funcionarios<->usuarios sem transação no IXC, e o `ixcsoft: 'incluir'`
+// só tem um precedente comprovado no projeto, `su_oss_chamado`).
+//
+// Algoritmo para preencher este stub, reaproveitando `montarPlano()`:
+//   1. Validar de novo no servidor (`validarColaborador`) — nunca confiar
+//      só no dry-run anterior, que pode estar desatualizado.
+//   2. POST payloadFuncionario em /webservice/v1/funcionarios com
+//      { ixcsoft: 'incluir' } → { type, id: idFuncionario }.
+//      Se falhar aqui: nada foi criado, devolver o erro do IXC tal qual.
+//   3. Se criar_usuario === 'S': POST payloadUsuario (com `funcionario:
+//      idFuncionario` e `senha` já em SHA-256) em /webservice/v1/usuarios
+//      com { ixcsoft: 'incluir' } → { type, id: idUsuario }.
+//      Se falhar aqui: funcionário ÓRFÃO no ERP (sem login, mas existe).
+//      Compensação (decisão de produto ainda não tomada — não implementar
+//      sem validar com o Felix): OU (a) DELETE do funcionário recém-criado
+//      se o recurso aceitar exclusão dura, OU (b) PUT do funcionário com
+//      `ativo: 'N'` para marcá-lo como inativo em vez de apagar, deixando
+//      rastro para quem for reconciliar manualmente. Sempre registrar em
+//      auditoria quando a compensação disparar, citando o id órfão.
+//   4. Se o passo 3 rodou: GET /webservice/v1/funcionarios/{idFuncionario}
+//      para reler o registro INTEIRO (o IXC sobrescreve tudo num PUT —
+//      mesmo padrão de server.js:1003-1024), depois PUT do registro relido
+//      com `usuario_id: idUsuario` mesclado. Se falhar aqui: vínculo pela
+//      metade (usuário aponta para o funcionário, funcionário não aponta de
+//      volta) — registrar em auditoria com os dois ids para reconciliação
+//      manual; não é seguro tentar desfazer automaticamente neste ponto.
+//   5. `registrarAuditoria(adminEmail, 'ti_criar_colaborador', 'colaborador',
+//      idFuncionario, ...)` com o resultado final (sucesso pleno, parcial
+//      com id órfão, ou falha no passo 2).
+//   6. Responder { sucesso, idFuncionario, idUsuario, passos_executados }.
+app.post('/api/ti/colaborador/criar', adminAuth, async (_req, res) => {
+    return res.status(501).json({
+        sucesso: false,
+        erro: 'Gravação real ainda não implementada — use /api/ti/colaborador/dry-run para simular. Ver o comentário acima desta rota em server.js para o algoritmo planejado.',
+    });
 });
 
 // ─── Health Check ────────────────────────────────────────────────

@@ -79,3 +79,9 @@ tmp_output.txt
 lovable_keys.txt
 tmp_check_ti.js
 
+# Cache do modelo de OCR (tesseract.js) — baixado sob demanda no primeiro
+# uso do Cadastro de Colaborador (TI), ~2,4MB; achado commitado por engano
+# (cachePath sem valor caía no cwd) e corrigido para cá na Fase 14 Impeccable
+backend/.cache/
+*.traineddata
+
