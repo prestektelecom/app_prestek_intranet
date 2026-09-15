@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useTaxonomiasIxc from './useTaxonomiasIxc';
-import { AVISO_AMBAR, AVISO_ERRO } from './cadastro/estilos';
+import { AVISO_AMBAR, AVISO_ERRO, BTN_PRIMARIO } from './cadastro/estilos';
 import { CAMPOS, SECOES, OBRIGATORIOS, VALOR_INICIAL } from './cadastro/campos';
 import { aplicarMascara } from './cadastro/normalizadores';
 import { validarCampo } from './cadastro/validadores';
@@ -69,11 +69,15 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
         setTimeout(() => setToast(t => ({ ...t, show: false })), 4000);
     }, []);
 
-    // Alimenta o painel do hero.
+    // Alimenta o painel do hero. `etapa` reflete o estado real — não existe
+    // hoje uma 3ª fase de gravação (a criação é um stub 501), então o rótulo
+    // nunca promete um passo que a ferramenta não alcança (achado ao vivo,
+    // Fase 14 Impeccable: o antigo "Etapa 1 de 3" nunca mudava, nem depois de
+    // uma simulação bem-sucedida).
     useEffect(() => {
         onHero?.({
             isLoading: carregando,
-            etapa: 'Etapa 1 de 3 · Ficha',
+            etapa: resultadoDryRun ? 'Simulado' : 'Preenchendo',
             kpis: [
                 { label: 'Obrigatórios', valor: `${obrigatoriosPreenchidos}/${OBRIGATORIOS.length}`, sub: 'preenchidos' },
                 { label: 'Filiais', valor: taxonomias.filiais.length, sub: 'cadastro IXC' },
@@ -81,7 +85,7 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
                 { label: 'Gravação', valor: 'simulação', sub: 'nada é enviado' },
             ],
         });
-    }, [carregando, taxonomias, obrigatoriosPreenchidos, onHero]);
+    }, [carregando, taxonomias, obrigatoriosPreenchidos, resultadoDryRun, onHero]);
 
     useEffect(() => {
         if (erro) onLog?.(`Falha ao carregar listas do IXC: ${erro}`, 'erro');
@@ -196,9 +200,35 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
         return mapa;
     }, []);
 
+    const errosVisiveis = Object.values(erros).filter(Boolean).length;
+
     return (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
             <div className="flex min-w-0 flex-col gap-6">
+                {/* Abaixo de xl, "Simular cadastro" fica no PainelLateral, depois
+                    de 6 seções — medido ao vivo em 3,4 a 5,7 telas de rolagem
+                    abaixo da dobra (Fase 14 Impeccable). Esta barra mantém a
+                    ação e a contagem sempre alcançáveis sem rolar tudo antes;
+                    o painel completo (com o resultado do dry-run e o log)
+                    continua existindo mais abaixo, inalterado. */}
+                <div className="sticky top-2 z-30 flex items-center gap-3 rounded-2xl border border-border bg-surface/95 px-4 py-3 shadow-lg backdrop-blur-md xl:hidden">
+                    <div className="min-w-0 flex-1 text-xs text-faint">
+                        <b className="text-foreground">{obrigatoriosPreenchidos}/{OBRIGATORIOS.length}</b> obrigatórios
+                        {errosVisiveis > 0 ? <span className="text-red-600 dark:text-red-400"> · {errosVisiveis} erro(s)</span> : null}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleSimular}
+                        disabled={simulando}
+                        className={`${BTN_PRIMARIO} shrink-0`}
+                    >
+                        <span className="material-symbols-outlined text-[17px]" aria-hidden="true">
+                            {simulando ? 'hourglass_top' : 'science'}
+                        </span>
+                        {simulando ? 'Validando…' : 'Simular'}
+                    </button>
+                </div>
+
                 {erro ? (
                     <div className={AVISO_ERRO} role="alert">
                         <span className="material-symbols-outlined shrink-0 text-[16px]" aria-hidden="true">error</span>
@@ -273,11 +303,11 @@ export default function CadastroColaborador({ user, onLog, onHero, log }) {
             />
 
             {toast.show && (
-                <div className="fixed right-4 top-4 z-[9999] duration-300 animate-in fade-in slide-in-from-top-4 sm:right-8 sm:top-8">
+                <div role="alert" className="fixed right-4 top-4 z-[9999] duration-300 animate-in fade-in slide-in-from-top-4 sm:right-8 sm:top-8">
                     <div className={`flex items-center gap-3 rounded-2xl border px-6 py-4 shadow-2xl backdrop-blur-md ${
                         toast.type === 'success'
                             ? 'border-emerald-400 bg-emerald-500/90 text-white'
-                            : 'border-red-400 bg-red-500/90 text-white'
+                            : 'border-red-600 bg-red-600 text-white'
                     }`}>
                         <span className="material-symbols-outlined text-2xl font-bold">
                             {toast.type === 'success' ? 'check_circle' : 'error'}

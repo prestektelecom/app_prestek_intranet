@@ -2,9 +2,9 @@ import React, { useCallback, useRef, useState } from 'react';
 import { CARD, BTN_SECUNDARIO, AVISO_AMBAR, AVISO_ERRO, AVISO_INFO } from './estilos';
 
 const ESTADOS = {
-    vazio: { icone: 'upload_file', titulo: 'Arraste a ficha aqui', cor: 'text-muted' },
+    vazio: { icone: 'upload_file', titulo: 'Arraste a ficha aqui', cor: 'text-faint' },
     arrastando: { icone: 'download', titulo: 'Solte para processar', cor: 'text-[var(--accent)]' },
-    lendo: { icone: 'hourglass_top', titulo: 'Lendo ficha…', cor: 'text-muted' },
+    lendo: { icone: 'hourglass_top', titulo: 'Lendo ficha…', cor: 'text-faint' },
     ocr: { icone: 'document_scanner', titulo: 'Reconhecendo texto (OCR)…', cor: 'text-amber-600' },
     ok: { icone: 'check_circle', titulo: 'Ficha processada', cor: 'text-emerald-600' },
     escaneado: { icone: 'scanner', titulo: 'Ficha escaneada processada', cor: 'text-amber-600' },
@@ -106,16 +106,16 @@ export default function UploadFicha({ user, onCamposExtraidos, onLog }) {
                     {meta.icone}
                 </span>
                 <p className="text-sm font-bold text-foreground">{meta.titulo}</p>
-                <p className="text-xs text-muted">
+                <p className="text-xs text-faint">
                     PDF digital, exportado do Word ou escaneado. O arquivo é descartado após a leitura.
                 </p>
                 {progressoOCR && (
-                    <p className="text-xs text-muted">
+                    <p className="text-xs text-faint">
                         Página {progressoOCR.pagina} · {Math.round(progressoOCR.progresso * 100)}%
                     </p>
                 )}
                 {mensagem && (
-                    <p className="text-xs text-muted max-w-md truncate">{mensagem}</p>
+                    <p className="text-xs text-faint max-w-md truncate">{mensagem}</p>
                 )}
                 <button
                     type="button"

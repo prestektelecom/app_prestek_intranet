@@ -56,7 +56,7 @@ export default function Ti({ user }) {
             <main className="flex-1 overflow-y-auto bg-background px-4 py-8 text-foreground md:px-10">
                 <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center justify-center rounded-2xl border border-border bg-surface py-16 text-center">
                     <span className="material-symbols-outlined mb-2 text-4xl text-muted" aria-hidden="true">construction</span>
-                    <p className="text-sm font-medium text-muted">Nenhuma ferramenta de TI disponível para o seu perfil.</p>
+                    <p className="text-sm font-medium text-faint">Nenhuma ferramenta de TI disponível para o seu perfil.</p>
                 </div>
             </main>
         );
@@ -89,10 +89,10 @@ export default function Ti({ user }) {
                                     type="button"
                                     onClick={() => setFerramentaId(f.id)}
                                     aria-current={selecionada ? 'page' : undefined}
-                                    className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                                    className={`inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                                         selecionada
-                                            ? 'bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-inset ring-[var(--accent)]/50'
-                                            : 'text-muted hover:bg-background'
+                                            ? 'bg-[var(--accent-soft)] text-[var(--accent-dark)] ring-1 ring-inset ring-[var(--accent)]/50'
+                                            : 'text-faint hover:bg-background'
                                     }`}
                                 >
                                     <span className="material-symbols-outlined text-[17px]" aria-hidden="true">{f.icon}</span>

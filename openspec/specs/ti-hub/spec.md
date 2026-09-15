@@ -51,6 +51,8 @@ A área de TI SHALL adotar o mesmo sistema visual das demais telas, de modo que 
 
 O espaçamento SHALL seguir o padrão da Central de Vendas, que é a referência do projeto para páginas roláveis.
 
+Texto real sobre fundos decorativos, incluindo o indicador da ferramenta selecionada na bandeja de navegação, SHALL usar um tom calibrado para 4,5:1, nunca o tom de marca reservado para preenchimentos e ícones.
+
 #### Scenario: Espaçamento alinhado à referência do projeto
 - **WHEN** a área de TI e a Central de Vendas são comparadas na mesma viewport
 - **THEN** ambas SHALL apresentar a mesma largura máxima de conteúdo, o mesmo padding lateral e o mesmo espaçamento entre blocos irmãos
@@ -65,3 +67,7 @@ O espaçamento SHALL seguir o padrão da Central de Vendas, que é a referência
 - **WHEN** a área é exibida em qualquer um dos temas suportados, claro ou escuro
 - **THEN** todos os elementos SHALL permanecer legíveis, incluindo blocos de texto pré-formatado e indicadores de alerta
 - **THEN** texto sobreposto a fundo escurecido dentro do cabeçalho SHALL respeitar o piso de contraste adotado no projeto
+
+#### Scenario: Indicador de ferramenta ativa legível em todo tema
+- **WHEN** a bandeja de ferramentas exibe qual ferramenta está selecionada
+- **THEN** o texto do indicador SHALL ter contraste de ao menos 4,5:1 contra seu próprio fundo em todos os temas suportados, incluindo o claro

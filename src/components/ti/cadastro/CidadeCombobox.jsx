@@ -6,12 +6,17 @@ import { obter } from './api';
  * Type-ahead de cidade. Consulta /api/ti/colaborador/cidades, que já traz a
  * tabela inteira cacheada em memória. Nunca pré-seleciona com mais de um
  * resultado — a escolha é sempre explícita.
+ *
+ * Padrão ARIA Combobox de foco virtual: as opções nunca recebem foco real
+ * (o foco fica sempre no input); a navegação por teclado move um destaque
+ * lógico (`ativoIndex`) comunicado via `aria-activedescendant`.
  */
-export default function CidadeCombobox({ id, valor, onChange, onBlur, onCidadeSelecionada, user, erro }) {
+export default function CidadeCombobox({ id, rotuloId, valor, onChange, onBlur, onCidadeSelecionada, user, erro, obrigatorio, descritoPor }) {
     const [aberto, setAberto] = useState(false);
     const [carregando, setCarregando] = useState(false);
     const [opcoes, setOpcoes] = useState([]);
     const [erroBusca, setErroBusca] = useState('');
+    const [ativoIndex, setAtivoIndex] = useState(-1);
     const timerRef = useRef(null);
     const wrapperRef = useRef(null);
 
@@ -32,6 +37,7 @@ export default function CidadeCombobox({ id, valor, onChange, onBlur, onCidadeSe
         if (!termo || termo.length < 2) {
             setOpcoes([]);
             setAberto(false);
+            setAtivoIndex(-1);
             return;
         }
 
@@ -43,6 +49,7 @@ export default function CidadeCombobox({ id, valor, onChange, onBlur, onCidadeSe
                 const dados = await obter(`/api/ti/colaborador/cidades?q=${encodeURIComponent(termo)}&limite=20`, user);
                 setOpcoes(dados.cidades || []);
                 setAberto(true);
+                setAtivoIndex(-1);
             } catch (e) {
                 setErroBusca(e.message);
                 setOpcoes([]);
@@ -59,7 +66,31 @@ export default function CidadeCombobox({ id, valor, onChange, onBlur, onCidadeSe
         onChange(cidade.nome);
         onCidadeSelecionada?.(cidade);
         setAberto(false);
+        setAtivoIndex(-1);
     };
+
+    const handleKeyDown = (e) => {
+        if (!aberto || opcoes.length === 0) return;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setAtivoIndex(i => (i + 1) % opcoes.length);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setAtivoIndex(i => (i <= 0 ? opcoes.length - 1 : i - 1));
+        } else if (e.key === 'Enter') {
+            if (ativoIndex >= 0 && opcoes[ativoIndex]) {
+                e.preventDefault();
+                selecionar(opcoes[ativoIndex]);
+            }
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            setAberto(false);
+            setAtivoIndex(-1);
+        }
+    };
+
+    const listaId = `${id}-lista`;
+    const opcaoId = (i) => `${id}-opcao-${i}`;
 
     return (
         <div ref={wrapperRef} className="relative">
@@ -70,36 +101,47 @@ export default function CidadeCombobox({ id, valor, onChange, onBlur, onCidadeSe
                 value={valor}
                 onChange={e => onChange(e.target.value)}
                 onBlur={onBlur}
+                onKeyDown={handleKeyDown}
                 placeholder="Digite o nome da cidade"
                 autoComplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-labelledby={rotuloId}
                 aria-expanded={aberto}
                 aria-haspopup="listbox"
-                aria-controls={`${id}-lista`}
+                aria-controls={listaId}
+                aria-activedescendant={aberto && ativoIndex >= 0 ? opcaoId(ativoIndex) : undefined}
+                aria-required={obrigatorio || undefined}
+                aria-invalid={erro || undefined}
+                aria-describedby={descritoPor}
             />
             {carregando && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted">…</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-faint">…</span>
             )}
             {aberto && (
                 <ul
-                    id={`${id}-lista`}
+                    id={listaId}
                     role="listbox"
                     className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-border bg-surface shadow-lg"
                 >
                     {erroBusca ? (
                         <li className="px-3 py-2 text-xs text-red-600">{erroBusca}</li>
                     ) : opcoes.length === 0 ? (
-                        <li className="px-3 py-2 text-xs text-muted">Nenhuma cidade encontrada.</li>
+                        <li className="px-3 py-2 text-xs text-faint">Nenhuma cidade encontrada.</li>
                     ) : (
-                        opcoes.map(c => (
-                            <li key={c.id}>
-                                <button
-                                    type="button"
-                                    role="option"
-                                    className="w-full px-3 py-2 text-left text-[13px] hover:bg-surface-raised focus:bg-surface-raised focus:outline-none"
-                                    onClick={() => selecionar(c)}
-                                >
-                                    {c.nome} <span className="text-muted">({c.uf})</span>
-                                </button>
+                        opcoes.map((c, i) => (
+                            <li
+                                key={c.id}
+                                id={opcaoId(i)}
+                                role="option"
+                                aria-selected={i === ativoIndex}
+                                onMouseDown={(e) => { e.preventDefault(); selecionar(c); }}
+                                onMouseEnter={() => setAtivoIndex(i)}
+                                className={`min-h-[44px] cursor-pointer px-3 py-2 text-left text-[13px] flex items-center ${
+                                    i === ativoIndex ? 'bg-[var(--accent-soft)]' : 'hover:bg-surface-raised'
+                                }`}
+                            >
+                                {c.nome} <span className="ml-1 text-faint">({c.uf})</span>
                             </li>
                         ))
                     )}

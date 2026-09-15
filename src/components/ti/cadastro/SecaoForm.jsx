@@ -18,7 +18,7 @@ export default function SecaoForm({ secao, children }) {
                 <div className="min-w-0">
                     <h3 className="text-[15px] font-bold text-foreground">{secao.titulo}</h3>
                     {secao.subtitulo ? (
-                        <p className="text-xs text-muted">{secao.subtitulo}</p>
+                        <p className="text-xs text-faint">{secao.subtitulo}</p>
                     ) : null}
                 </div>
             </header>

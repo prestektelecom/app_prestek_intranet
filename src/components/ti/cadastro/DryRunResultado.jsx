@@ -60,6 +60,8 @@ export default function DryRunResultado({ resultado }) {
     return (
         <div className={CARD}>
             <header
+                role="status"
+                aria-live="polite"
                 className={`flex items-center gap-2 px-5 py-3.5 text-[13px] font-bold ${
                     valido
                         ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
@@ -77,11 +79,11 @@ export default function DryRunResultado({ resultado }) {
 
             {senhaHash ? (
                 <div className="border-t border-border px-5 py-3">
-                    <p className="mb-1 text-xs font-semibold text-muted">Senha do usuário (SHA-256)</p>
+                    <p className="mb-1 text-xs font-semibold text-faint">Senha do usuário (SHA-256)</p>
                     <button
                         type="button"
                         onClick={() => setSenhaRevelada(v => !v)}
-                        className="font-mono text-[11px] text-muted underline decoration-dotted underline-offset-2 hover:no-underline"
+                        className="font-mono text-[11px] text-faint underline decoration-dotted underline-offset-2 hover:no-underline"
                     >
                         {senhaRevelada ? senhaHash : `sha256(${'•'.repeat(12)})`}
                     </button>
@@ -96,10 +98,10 @@ export default function DryRunResultado({ resultado }) {
                     <div className="flex flex-col gap-2">
                         {plano.map(passo => (
                             <details key={passo.passo} className="rounded-xl border border-border">
-                                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-muted">
+                                <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-faint">
                                     {passo.passo}. {passo.titulo} — {passo.metodo}
                                 </summary>
-                                <pre className="max-h-[280px] overflow-auto border-t border-border bg-surface-raised p-3 font-mono text-[11px] whitespace-pre-wrap text-muted">
+                                <pre className="max-h-[280px] overflow-auto border-t border-border bg-surface-raised p-3 font-mono text-[11px] whitespace-pre-wrap text-faint">
                                     {JSON.stringify(passo, null, 2)}
                                 </pre>
                             </details>
