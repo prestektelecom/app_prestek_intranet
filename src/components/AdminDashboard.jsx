@@ -5,12 +5,20 @@ import AdminComunicados from './admin/AdminComunicados';
 import AdminAuditoria from './admin/AdminAuditoria';
 import PlantaoHistorico from './schedule/PlantaoHistorico';
 import BentoAvatar from './common/Avatar';
-import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
+import { iconeParaAcao } from './admin/iconeAcao';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-const tone = (hex, a) => {
-    const h = hex.replace('#', '');
+const tone = (cor, a) => {
+    // C.surface no tema Cyber já vem como 'rgba(...)' (translúcido por design),
+    // não hex — sem este ramo, tone(C.surface, ...) quebrava nesse tema
+    // especificamente (achado ao corrigir o header, Fase 15).
+    const rgbaMatch = cor.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if (rgbaMatch) {
+        return `rgba(${rgbaMatch[1]},${rgbaMatch[2]},${rgbaMatch[3]},${a})`;
+    }
+    const h = cor.replace('#', '');
     const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
     return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
 };
@@ -42,10 +50,11 @@ function NavRow({ C, id, icon, label, active, badge, onClick }) {
     return (
         <button
             onClick={() => onClick(id)}
+            aria-current={active ? 'page' : undefined}
             className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all"
             style={{
                 background: active ? C.accent : 'transparent',
-                color: active ? C.surface : C.ink2,
+                color: active ? C.onAccent : C.ink2,
             }}
             onMouseEnter={(e) => {
                 if (!active) e.currentTarget.style.background = C.accentSoft;
@@ -56,7 +65,7 @@ function NavRow({ C, id, icon, label, active, badge, onClick }) {
         >
             <span
                 className="material-symbols-outlined text-xl"
-                style={{ color: active ? C.surface : C.muted }}
+                style={{ color: active ? C.onAccent : C.muted }}
             >
                 {icon}
             </span>
@@ -64,7 +73,7 @@ function NavRow({ C, id, icon, label, active, badge, onClick }) {
             {badge != null && (
                 <span
                     className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
-                    style={{ background: active ? 'rgba(245,249,255,0.25)' : C.dangerSoft, color: active ? C.surface : C.danger }}
+                    style={{ background: active ? 'rgba(245,249,255,0.25)' : C.dangerSoft, color: active ? C.onAccent : C.danger }}
                 >
                     {badge}
                 </span>
@@ -75,6 +84,7 @@ function NavRow({ C, id, icon, label, active, badge, onClick }) {
 
 export default function AdminDashboard({ setCurrentView, user }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const [abaAtiva, setAbaAtiva] = useState('painel');
     const [stats, setStats] = useState(null);
     const [logsRecentes, setLogsRecentes] = useState([]);
@@ -117,15 +127,6 @@ export default function AdminDashboard({ setCurrentView, user }) {
         setCurrentView('login');
     };
 
-    const ICONE_ACAO = {
-        grant_admin: { icon: 'verified_user', cor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' },
-        revoke_admin: { icon: 'person_off', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
-        update_comunicado: { icon: 'edit_document', cor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' },
-        create_comunicado: { icon: 'add_circle', cor: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' },
-        delete_comunicado: { icon: 'delete', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
-        update_config: { icon: 'settings', cor: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' },
-    };
-
     const menuItens = [
         { id: 'painel', label: 'Painel', icon: 'dashboard' },
         { id: 'usuarios', label: 'Usuários', icon: 'group' },
@@ -142,7 +143,9 @@ export default function AdminDashboard({ setCurrentView, user }) {
             <header
                 className="flex h-16 shrink-0 items-center justify-between px-6"
                 style={{
-                    background: 'rgba(255,255,255,0.88)',
+                    // Era branco fixo — nunca mudava de tema, o nome do produto caía
+                    // para ~1,3:1 nos 4 temas escuros (achado ao vivo, Fase 15).
+                    background: tone(C.surface, 0.88),
                     backdropFilter: 'blur(14px)',
                     WebkitBackdropFilter: 'blur(14px)',
                     borderBottom: `1px solid ${C.line}`,
@@ -159,8 +162,8 @@ export default function AdminDashboard({ setCurrentView, user }) {
                     </span>
                     <button
                         onClick={handleLogout}
-                        className="flex h-9 items-center justify-center gap-2 rounded-lg px-5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
-                        style={{ background: C.accent }}
+                        className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-5 text-sm font-bold shadow-sm transition-all hover:shadow-md active:scale-95"
+                        style={{ background: C.accent, color: C.onAccent }}
                         onMouseEnter={(e) => { e.currentTarget.style.background = C.accentDark; }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = C.accent; }}
                     >
@@ -182,13 +185,13 @@ export default function AdminDashboard({ setCurrentView, user }) {
                             <BentoAvatar name={adminName} size={48} color={[C.accent, '#fff']} />
                             <div className="flex min-w-0 flex-col">
                                 <p className="truncate text-sm font-bold" style={{ color: C.ink }}>{adminName}</p>
-                                <p className="text-xs font-medium" style={{ color: C.muted }}>Super Admin</p>
+                                <p className="text-xs font-medium" style={{ color: C.ink2 }}>Super Admin</p>
                             </div>
                         </div>
 
                         <p
                             className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest"
-                            style={{ color: C.muted }}
+                            style={{ color: C.ink2 }}
                         >
                             Menu
                         </p>
@@ -206,10 +209,10 @@ export default function AdminDashboard({ setCurrentView, user }) {
                     <div className="mt-auto p-4" style={{ borderTop: `1px solid ${C.line}` }}>
                         <button
                             onClick={() => setCurrentView('dashboard')}
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors"
-                            style={{ color: C.muted }}
+                            className="flex w-full min-h-[44px] items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors"
+                            style={{ color: C.ink2 }}
                             onMouseEnter={(e) => { e.currentTarget.style.background = C.surfaceSoft; e.currentTarget.style.color = C.ink; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.muted; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.ink2; }}
                         >
                             <span className="material-symbols-outlined text-base">arrow_back</span>
                             Voltar à Intranet
@@ -218,18 +221,25 @@ export default function AdminDashboard({ setCurrentView, user }) {
                 </aside>
 
                 {/* ── Navegação mobile bottom bar ── */}
+                {/* Mostrava só as 4 primeiras — Auditoria e Plantões ficavam
+                    inatingíveis abaixo de 1024px (achado ao vivo, Fase 15). Os
+                    rótulos já usam só a primeira palavra, então as 6 cabem. */}
                 <div className="fixed bottom-0 left-0 right-0 z-40 flex border-t lg:hidden" style={{ background: C.surface, borderColor: C.line }}>
-                    {menuItens.slice(0, 4).map(item => (
-                        <button
-                            key={item.id}
-                            onClick={() => setAbaAtiva(item.id)}
-                            className="flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors"
-                            style={{ color: abaAtiva === item.id ? C.accent : C.muted }}
-                        >
-                            <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                            <span className="text-[10px] font-medium">{item.label.split(' ')[0]}</span>
-                        </button>
-                    ))}
+                    {menuItens.map(item => {
+                        const ativo = abaAtiva === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => setAbaAtiva(item.id)}
+                                aria-current={ativo ? 'page' : undefined}
+                                className="flex min-h-[44px] flex-1 flex-col items-center gap-0.5 py-2 transition-colors"
+                                style={{ color: ativo ? (isDark ? C.accentDark : C.accentDeep) : C.ink2 }}
+                            >
+                                <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                                <span className="text-[10px] font-medium">{item.label.split(' ')[0]}</span>
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* ── Main Content ── */}
@@ -242,7 +252,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                 <div className="flex flex-wrap items-end justify-between gap-4">
                                     <div>
                                         <h1 className="font-display text-3xl font-extrabold leading-tight tracking-tight" style={{ color: C.ink }}>Visão Geral</h1>
-                                        <p className="mt-1 text-base font-normal" style={{ color: C.muted }}>Bem-vindo, {adminName.split(' ')[0]}.</p>
+                                        <p className="mt-1 text-base font-normal" style={{ color: C.ink2 }}>Bem-vindo, {adminName.split(' ')[0]}.</p>
                                     </div>
                                     <button
                                         onClick={carregarStats}
@@ -281,7 +291,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                             <div>
                                                 <p
                                                     className="mb-1.5 text-[10.5px] font-bold uppercase tracking-widest"
-                                                    style={{ color: C.muted, fontFamily: '"JetBrains Mono", monospace' }}
+                                                    style={{ color: C.ink2, fontFamily: '"JetBrains Mono", monospace' }}
                                                 >
                                                     {kpi.label}
                                                 </p>
@@ -305,20 +315,20 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                         <h3 className="text-base font-bold" style={{ color: C.ink }}>Atividades Recentes</h3>
                                         <button
                                             onClick={() => setAbaAtiva('auditoria')}
-                                            className="text-sm font-bold transition-opacity hover:opacity-70"
-                                            style={{ color: C.accent }}
+                                            className="flex min-h-[44px] items-center text-sm font-bold transition-opacity hover:opacity-70"
+                                            style={{ color: isDark ? C.accentDark : C.accentDeep }}
                                         >
                                             Ver Tudo
                                         </button>
                                     </div>
                                     {carregandoStats ? (
-                                        <p className="text-sm" style={{ color: C.muted }}>Carregando...</p>
+                                        <p className="text-sm" style={{ color: C.ink2 }}>Carregando...</p>
                                     ) : logsRecentes.length === 0 ? (
-                                        <p className="text-sm" style={{ color: C.muted }}>Nenhuma atividade registrada ainda.</p>
+                                        <p className="text-sm" style={{ color: C.ink2 }}>Nenhuma atividade registrada ainda.</p>
                                     ) : (
                                         <div className="flex flex-col gap-5">
                                             {logsRecentes.map(log => {
-                                                const { icon, cor } = ICONE_ACAO[log.acao] || { icon: 'info', cor: 'bg-gray-100 dark:bg-gray-800/40 text-gray-500 dark:text-gray-400' };
+                                                const { icon, cor } = iconeParaAcao(log.acao);
                                                 return (
                                                     <div key={log.id} className="flex items-start gap-4">
                                                         <div className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cor}`}>
@@ -326,7 +336,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-medium" style={{ color: C.ink }}>{log.descricao}</p>
-                                                            <p className="mt-0.5 text-xs" style={{ color: C.muted }}>
+                                                            <p className="mt-0.5 text-xs" style={{ color: C.ink2 }}>
                                                                 {log.admin_nome || log.admin_email} · {new Date(log.criado_em).toLocaleString('pt-BR')}
                                                             </p>
                                                         </div>
@@ -339,11 +349,15 @@ export default function AdminDashboard({ setCurrentView, user }) {
 
                                 {/* Atalhos */}
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                                    {/* Gerenciar Usuários — gradiente azul */}
-                                    <div
+                                    {/* Gerenciar Usuários — gradiente de marca. Capado em
+                                        accentDeep→accentDark (sem o 3º stop accent, claro
+                                        demais): o texto branco reprovava contraste nessa
+                                        ponta do próprio degradê (achado ao vivo, Fase 15). */}
+                                    <button
+                                        type="button"
                                         onClick={() => setAbaAtiva('usuarios')}
-                                        className="group relative cursor-pointer overflow-hidden rounded-2xl p-6 text-white shadow-lg transition-shadow hover:shadow-xl"
-                                        style={{ background: `linear-gradient(135deg, ${C.accentDeep} 0%, ${C.accentDark} 50%, ${C.accent} 100%)` }}
+                                        className="group relative min-h-[44px] cursor-pointer overflow-hidden rounded-2xl p-6 text-left text-white shadow-lg transition-shadow hover:shadow-xl"
+                                        style={{ background: `linear-gradient(135deg, ${C.accentDeep} 0%, ${C.accentDark} 100%)` }}
                                     >
                                         <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 transform opacity-10 transition-transform duration-500 group-hover:scale-110">
                                             <span className="material-symbols-outlined" style={{ fontSize: '120px' }}>group</span>
@@ -353,14 +367,15 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                                 <span className="material-symbols-outlined">group</span>
                                             </div>
                                             <h3 className="mb-1 text-lg font-bold">Gerenciar Usuários</h3>
-                                            <p className="text-sm text-white/80">Conceder ou revogar permissões de administrador.</p>
+                                            <p className="text-sm text-white/90">Conceder ou revogar permissões de administrador.</p>
                                         </div>
-                                    </div>
+                                    </button>
 
                                     {/* Comunicados — hover bg */}
-                                    <div
+                                    <button
+                                        type="button"
                                         onClick={() => setAbaAtiva('comunicados')}
-                                        className="group cursor-pointer rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md"
+                                        className="group min-h-[44px] cursor-pointer rounded-2xl border p-6 text-left shadow-sm transition-all hover:shadow-md"
                                         style={{ background: C.surface, borderColor: C.line }}
                                         onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${C.accent}66`; e.currentTarget.style.background = C.accentSoft; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.background = C.surface; }}
@@ -369,13 +384,14 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                             <span className="material-symbols-outlined">campaign</span>
                                         </div>
                                         <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Comunicados</h3>
-                                        <p className="text-sm" style={{ color: C.muted }}>Criar, editar e excluir comunicados da intranet.</p>
-                                    </div>
+                                        <p className="text-sm" style={{ color: C.ink2 }}>Criar, editar e excluir comunicados da intranet.</p>
+                                    </button>
 
                                     {/* Logs de Auditoria — hover bg */}
-                                    <div
+                                    <button
+                                        type="button"
                                         onClick={() => setAbaAtiva('auditoria')}
-                                        className="group cursor-pointer rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md"
+                                        className="group min-h-[44px] cursor-pointer rounded-2xl border p-6 text-left shadow-sm transition-all hover:shadow-md"
                                         style={{ background: C.surface, borderColor: C.line }}
                                         onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${C.accent}66`; e.currentTarget.style.background = C.accentSoft; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.background = C.surface; }}
@@ -384,8 +400,8 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                             <span className="material-symbols-outlined">description</span>
                                         </div>
                                         <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Logs de Auditoria</h3>
-                                        <p className="text-sm" style={{ color: C.muted }}>Histórico completo de ações administrativas.</p>
-                                    </div>
+                                        <p className="text-sm" style={{ color: C.ink2 }}>Histórico completo de ações administrativas.</p>
+                                    </button>
                                 </div>
                             </>
                         )}

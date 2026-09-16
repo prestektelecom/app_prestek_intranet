@@ -1,8 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
+import { useDismissable } from '../../hooks/useDismissable';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const FORM_VAZIO = { titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '' };
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+const COMUNICADO_MODAL_TITULO_ID = 'admin-comunicado-modal-titulo';
 
 // ── Paleta Bento Blue ─────────────────────────────────────────────────────
 
@@ -53,6 +56,23 @@ export default function AdminComunicados({ adminEmail }) {
     const [focusedInput, setFocusedInput] = useState(null);
     const [busca, setBusca] = useState('');
     const [filtroTipo, setFiltroTipo] = useState('Todos');
+    const modalRef = useRef(null);
+
+    // O modal (edita o feed publicado para a empresa inteira) não tinha
+    // NENHUMA semântica de diálogo — Escape não fechava, foco não entrava
+    // nem retornava (achado ao vivo, Fase 15). Mesmo padrão já em produção
+    // no CrudModal de Comunicados.jsx.
+    useDismissable(modalRef, { open: modalAberto, onClose: () => setModalAberto(false), lockScroll: true, closeOnOutside: true });
+
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !modalRef.current) return;
+        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
 
     const carregar = useCallback(async () => {
         setCarregando(true); setErro(null);
@@ -137,12 +157,12 @@ export default function AdminComunicados({ adminEmail }) {
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="font-display text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Gerenciar Comunicados</h1>
-                    <p className="mt-1 text-sm" style={{ color: C.muted }}>Crie, edite e exclua os comunicados exibidos na intranet.</p>
+                    <p className="mt-1 text-sm" style={{ color: C.ink2 }}>Crie, edite e exclua os comunicados exibidos na intranet.</p>
                 </div>
                 <button
                     onClick={abrirNovo}
-                    className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
-                    style={{ background: C.accent }}
+                    className="flex min-h-[44px] items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold shadow-sm transition-all hover:shadow-md active:scale-95"
+                    style={{ background: C.accent, color: C.onAccent }}
                     onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                     onMouseLeave={e => e.currentTarget.style.background = C.accent}
                 >
@@ -163,7 +183,7 @@ export default function AdminComunicados({ adminEmail }) {
                             <span className="material-symbols-outlined">{s.icon}</span>
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>{s.label}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>{s.label}</p>
                             <p className="text-2xl font-extrabold" style={{ color: C.ink }}>{carregando ? '—' : s.valor}</p>
                         </div>
                     </div>
@@ -210,7 +230,7 @@ export default function AdminComunicados({ adminEmail }) {
                                 className="rounded-lg px-3 py-1.5 text-xs font-bold transition-all"
                                 style={{
                                     background: filtroTipo === tipo ? C.accent : C.surfaceSoft,
-                                    color: filtroTipo === tipo ? '#fff' : C.ink2,
+                                    color: filtroTipo === tipo ? C.onAccent : C.ink2,
                                     border: `1px solid ${filtroTipo === tipo ? C.accent : C.line}`,
                                 }}
                             >
@@ -223,26 +243,26 @@ export default function AdminComunicados({ adminEmail }) {
 
             {/* Lista */}
             {carregando ? (
-                <div className="flex flex-col items-center gap-3 py-16" style={{ color: C.muted }}>
+                <div className="flex flex-col items-center gap-3 py-16" style={{ color: C.ink2 }}>
                     <span className="material-symbols-outlined animate-spin text-4xl" style={{ color: C.accent }}>progress_activity</span>
                     Carregando comunicados...
                 </div>
             ) : comunicados.length === 0 ? (
-                <div className="flex flex-col items-center gap-3 rounded-2xl border py-16" style={{ background: C.surface, borderColor: C.line, color: C.muted }}>
+                <div className="flex flex-col items-center gap-3 rounded-2xl border py-16" style={{ background: C.surface, borderColor: C.line, color: C.ink2 }}>
                     <div className="flex h-14 w-14 items-center justify-center rounded-full" style={{ background: C.accentSoft, color: C.accent }}>
                         <span className="material-symbols-outlined text-3xl">campaign</span>
                     </div>
                     <p className="text-sm font-medium">Nenhum comunicado cadastrado.</p>
                     <button
                         onClick={abrirNovo}
-                        className="mt-1 rounded-lg px-4 py-2 text-sm font-bold text-white"
-                        style={{ background: C.accent }}
+                        className="mt-1 min-h-[44px] rounded-lg px-4 py-2 text-sm font-bold"
+                        style={{ background: C.accent, color: C.onAccent }}
                     >
                         Criar primeiro comunicado
                     </button>
                 </div>
             ) : comunicadosFiltrados.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-16" style={{ color: C.muted }}>
+                <div className="flex flex-col items-center gap-2 py-16" style={{ color: C.ink2 }}>
                     <span className="material-symbols-outlined text-3xl">search_off</span>
                     <p className="text-sm">Nenhum comunicado encontrado com os filtros aplicados.</p>
                 </div>
@@ -268,7 +288,7 @@ export default function AdminComunicados({ adminEmail }) {
                                                 <span className="material-symbols-outlined text-xs">{meta.icon}</span>
                                                 {meta.label}
                                             </span>
-                                            <span className="text-[11px] font-medium" style={{ color: C.muted, fontFamily: '"JetBrains Mono", monospace' }}>{relativeTime(c.criado_em)}</span>
+                                            <span className="text-[11px] font-medium" style={{ color: C.ink2, fontFamily: '"JetBrains Mono", monospace' }}>{relativeTime(c.criado_em)}</span>
                                         </div>
                                         <div className="flex gap-1">
                                             <button
@@ -294,7 +314,7 @@ export default function AdminComunicados({ adminEmail }) {
                                     </div>
                                     <h3 className="text-base font-bold leading-snug" style={{ color: C.ink }}>{c.titulo}</h3>
                                     <p className="text-sm leading-relaxed" style={{ color: C.ink2, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.descricao}</p>
-                                    <div className="mt-auto flex items-center justify-between border-t pt-3 text-[11px] font-bold" style={{ borderColor: C.lineSoft, color: C.muted, fontFamily: '"JetBrains Mono", monospace' }}>
+                                    <div className="mt-auto flex items-center justify-between border-t pt-3 text-[11px] font-bold" style={{ borderColor: C.lineSoft, color: C.ink2, fontFamily: '"JetBrains Mono", monospace' }}>
                                         <span>DEPTO: {c.departamento_autor || 'GERAL'}</span>
                                         {c.link_opcional && (
                                             <a
@@ -318,51 +338,59 @@ export default function AdminComunicados({ adminEmail }) {
             {/* Modal */}
             {modalAberto && (
                 <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4" style={{ background: 'rgba(11, 27, 46, 0.5)', backdropFilter: 'blur(4px)' }}>
-                    <div className="w-full max-w-[520px] overflow-hidden rounded-2xl border shadow-2xl" style={{ background: C.surface, borderColor: C.line }}>
+                    <div
+                        ref={modalRef}
+                        onKeyDown={trapTab}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby={COMUNICADO_MODAL_TITULO_ID}
+                        className="w-full max-w-[520px] overflow-hidden rounded-2xl border shadow-2xl"
+                        style={{ background: C.surface, borderColor: C.line }}
+                    >
                         <div
                             className="flex items-center justify-between px-5 py-4 text-white"
-                            style={{ background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accent})` }}
+                            style={{ background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accentDark})` }}
                         >
-                            <h2 className="font-display flex items-center gap-2 text-xl font-bold">
+                            <h2 id={COMUNICADO_MODAL_TITULO_ID} className="font-display flex items-center gap-2 text-xl font-bold">
                                 <span className="material-symbols-outlined text-xl">{editando ? 'edit' : 'campaign'}</span>
                                 {editando ? 'Editar Comunicado' : 'Novo Comunicado'}
                             </h2>
-                            <button onClick={() => setModalAberto(false)} className="inline-flex items-center text-white">
+                            <button onClick={() => setModalAberto(false)} aria-label="Fechar" className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-white">
                                 <span className="material-symbols-outlined text-xl">close</span>
                             </button>
                         </div>
                         <form onSubmit={salvar} className="flex flex-col gap-4 p-5">
                             <div>
-                                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Título *</label>
-                                <input required value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} onFocus={() => setFocusedInput('titulo')} onBlur={() => setFocusedInput(null)} style={getInputStyle('titulo')} />
+                                <label htmlFor="admin-comunicado-titulo" className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>Título *</label>
+                                <input id="admin-comunicado-titulo" required value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} onFocus={() => setFocusedInput('titulo')} onBlur={() => setFocusedInput(null)} style={getInputStyle('titulo')} />
                             </div>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Tipo *</label>
-                                    <select value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })} style={getInputStyle('tipo')}>
+                                    <label htmlFor="admin-comunicado-tipo" className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>Tipo *</label>
+                                    <select id="admin-comunicado-tipo" value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })} style={getInputStyle('tipo')}>
                                         <option value="Geral">Geral — Verde</option>
                                         <option value="Importante">Importante — Amarelo</option>
                                         <option value="Urgente">Urgente — Vermelho</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Depto. Autor *</label>
-                                    <input required value={form.departamento_autor} onChange={e => setForm({ ...form, departamento_autor: e.target.value })} onFocus={() => setFocusedInput('depto')} onBlur={() => setFocusedInput(null)} style={getInputStyle('depto')} />
+                                    <label htmlFor="admin-comunicado-depto" className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>Depto. Autor *</label>
+                                    <input id="admin-comunicado-depto" required value={form.departamento_autor} onChange={e => setForm({ ...form, departamento_autor: e.target.value })} onFocus={() => setFocusedInput('depto')} onBlur={() => setFocusedInput(null)} style={getInputStyle('depto')} />
                                 </div>
                             </div>
                             <div>
-                                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Conteúdo *</label>
-                                <textarea required rows={4} value={form.descricao} onChange={e => setForm({ ...form, descricao: e.target.value })} onFocus={() => setFocusedInput('descricao')} onBlur={() => setFocusedInput(null)} style={{ ...getInputStyle('descricao'), resize: 'none' }} />
+                                <label htmlFor="admin-comunicado-descricao" className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>Conteúdo *</label>
+                                <textarea id="admin-comunicado-descricao" required rows={4} value={form.descricao} onChange={e => setForm({ ...form, descricao: e.target.value })} onFocus={() => setFocusedInput('descricao')} onBlur={() => setFocusedInput(null)} style={{ ...getInputStyle('descricao'), resize: 'none' }} />
                             </div>
                             <div>
-                                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.muted }}>Link Adicional (Opcional)</label>
-                                <input type="url" value={form.link_opcional} onChange={e => setForm({ ...form, link_opcional: e.target.value })} onFocus={() => setFocusedInput('link')} onBlur={() => setFocusedInput(null)} style={getInputStyle('link')} />
+                                <label htmlFor="admin-comunicado-link" className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>Link Adicional (Opcional)</label>
+                                <input id="admin-comunicado-link" type="url" value={form.link_opcional} onChange={e => setForm({ ...form, link_opcional: e.target.value })} onFocus={() => setFocusedInput('link')} onBlur={() => setFocusedInput(null)} style={getInputStyle('link')} />
                             </div>
                             <div className="flex justify-end gap-3 border-t pt-4" style={{ borderColor: C.line }}>
                                 <button
                                     type="button"
                                     onClick={() => setModalAberto(false)}
-                                    className="rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
+                                    className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
                                     style={{ borderColor: C.line, background: C.surface, color: C.ink2 }}
                                 >
                                     Cancelar
@@ -370,8 +398,8 @@ export default function AdminComunicados({ adminEmail }) {
                                 <button
                                     type="submit"
                                     disabled={salvando}
-                                    className="rounded-lg px-5 py-2 text-sm font-bold text-white transition-all disabled:opacity-60"
-                                    style={{ background: C.accent }}
+                                    className="min-h-[44px] rounded-lg px-5 py-2 text-sm font-bold transition-all disabled:opacity-60"
+                                    style={{ background: C.accent, color: C.onAccent }}
                                     onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                                     onMouseLeave={e => e.currentTarget.style.background = C.accent}
                                 >

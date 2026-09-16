@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import BentoAvatar from './common/Avatar';
-import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 
 // ── Paleta Bento Blue ─────────────────────────────────────────────────────
 
@@ -23,6 +23,7 @@ const sIconBox = (color, bg) => ({
 
 export default function ResponsaveisManual() {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const [setores, setSetores] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
     const [responsaveisManuais, setResponsaveisManuais] = useState({});
@@ -143,7 +144,7 @@ export default function ResponsaveisManual() {
         return (
             <div className="flex h-64 flex-col items-center justify-center gap-3">
                 <span className="material-symbols-outlined animate-spin text-4xl" style={{ color: C.accent }}>refresh</span>
-                <p className="text-sm" style={{ color: C.muted }}>Carregando setores e colaboradores...</p>
+                <p className="text-sm" style={{ color: C.ink2 }}>Carregando setores e colaboradores...</p>
             </div>
         );
     }
@@ -154,14 +155,14 @@ export default function ResponsaveisManual() {
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <h1 className="font-display text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Responsável por Setor</h1>
-                    <p className="mt-1 text-sm" style={{ color: C.muted }}>
+                    <p className="mt-1 text-sm" style={{ color: C.ink2 }}>
                         Defina manualmente o responsável exibido em cada card do Diretório de Setores. Tem prioridade sobre os Grupos de Supervisor.
                     </p>
                 </div>
                 <button
                     onClick={carregarDados}
-                    className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
-                    style={{ background: C.accent }}
+                    className="flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold shadow-sm transition-all hover:shadow-md active:scale-95"
+                    style={{ background: C.accent, color: C.onAccent }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = C.accentDark; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = C.accent; }}
                 >
@@ -182,7 +183,7 @@ export default function ResponsaveisManual() {
                             <span className="material-symbols-outlined">{s.icon}</span>
                         </div>
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>{s.label}</p>
+                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>{s.label}</p>
                             <p className="text-2xl font-extrabold" style={{ color: C.ink }}>{s.valor}</p>
                         </div>
                     </div>
@@ -239,7 +240,7 @@ export default function ResponsaveisManual() {
             {/* Lista de setores */}
             <div className="flex flex-col gap-3">
                 {setoresFiltrados.length === 0 && (
-                    <div className="flex flex-col items-center gap-2 py-10" style={{ color: C.muted }}>
+                    <div className="flex flex-col items-center gap-2 py-10" style={{ color: C.ink2 }}>
                         <div
                             className="flex h-12 w-12 items-center justify-center rounded-full"
                             style={{ background: C.accentSoft, color: C.accent }}
@@ -285,7 +286,7 @@ export default function ResponsaveisManual() {
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <span className="text-sm font-semibold" style={{ color: C.ink }}>{setor.nome}</span>
-                                            <span className="text-xs" style={{ color: C.muted }}>{setor.totalMembros} membro{setor.totalMembros !== 1 ? 's' : ''}</span>
+                                            <span className="text-xs" style={{ color: C.ink2 }}>{setor.totalMembros} membro{setor.totalMembros !== 1 ? 's' : ''}</span>
                                             {manual && (
                                                 <span
                                                     className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold"
@@ -302,7 +303,7 @@ export default function ResponsaveisManual() {
                                                 <>
                                                     <span
                                                         className="font-semibold"
-                                                        style={{ color: responsavelAtual.isManual ? C.accent : C.muted }}
+                                                        style={{ color: responsavelAtual.isManual ? (isDark ? C.accentDark : C.accentDeep) : C.ink2 }}
                                                     >
                                                         {responsavelAtual.nome}
                                                     </span>
@@ -342,8 +343,8 @@ export default function ResponsaveisManual() {
                                             setBuscaFunc('');
                                         }}
                                         disabled={isSalvando}
-                                        className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
-                                        style={{ background: C.accent }}
+                                        className="flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                                        style={{ background: C.accent, color: C.onAccent }}
                                         onMouseEnter={(e) => { if (!isSalvando) e.currentTarget.style.background = C.accentDark; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.background = C.accent; }}
                                     >
@@ -379,7 +380,7 @@ export default function ResponsaveisManual() {
                                         {/* Lista de funcionários */}
                                         <div className="max-h-56 overflow-y-auto scrollbar-hide">
                                             {funcionariosFiltrados.length === 0 && (
-                                                <p className="py-6 text-center text-xs" style={{ color: C.muted }}>
+                                                <p className="py-6 text-center text-xs" style={{ color: C.ink2 }}>
                                                     Nenhum colaborador encontrado.
                                                 </p>
                                             )}
@@ -398,7 +399,7 @@ export default function ResponsaveisManual() {
                                                         <div className="min-w-0">
                                                             <p className="truncate text-sm font-semibold" style={{ color: C.ink }}>{nome}</p>
                                                             {func.usuario_email && (
-                                                                <p className="truncate text-xs" style={{ color: C.muted }}>{func.usuario_email}</p>
+                                                                <p className="truncate text-xs" style={{ color: C.ink2 }}>{func.usuario_email}</p>
                                                             )}
                                                         </div>
                                                     </button>

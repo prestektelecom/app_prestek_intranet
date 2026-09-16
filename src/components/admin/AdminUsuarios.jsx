@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import BentoAvatar from '../common/Avatar';
-import { useBentoTheme } from '../../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../../hooks/useBentoTheme';
+import { useDismissable } from '../../hooks/useDismissable';
 import ResponsiveTable from '../responsive/ResponsiveTable';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-// ── Paleta Bento Blue ─────────────────────────────────────────────────────
 
 const tone = (hex, a) => {
     const h = hex.replace('#', '');
@@ -24,13 +23,93 @@ const sIconBox = (color, bg) => ({
     color,
 });
 
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+const CONFIRMAR_ADMIN_TITULO_ID = 'confirmar-admin-titulo';
+
+// Conceder/revogar admin era um clique só, sem confirmação nenhuma — a ação
+// de maior privilégio do produto inteiro era a única sem proteção alguma
+// (achado ao vivo, Fase 15: excluir um comunicado, reversível, já tinha
+// window.confirm; isto não tinha nada). Modal próprio, nunca window.confirm.
+function ModalConfirmarPrivilegio({ usuario, salvando, erro, onCancelar, onConfirmar, C }) {
+    const modalRef = useRef(null);
+    useDismissable(modalRef, { open: true, onClose: onCancelar, lockScroll: true, closeOnOutside: true });
+
+    const trapTab = (e) => {
+        if (e.key !== 'Tab' || !modalRef.current) return;
+        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+
+    const concedendo = !usuario.is_admin;
+    const nome = usuario.funcionario_nome || usuario.usuario_nome || usuario.usuario_email;
+
+    return (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4" style={{ background: 'rgba(11, 27, 46, 0.5)', backdropFilter: 'blur(4px)' }}>
+            <div
+                ref={modalRef}
+                onKeyDown={trapTab}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={CONFIRMAR_ADMIN_TITULO_ID}
+                className="w-full max-w-[440px] overflow-hidden rounded-2xl border shadow-2xl"
+                style={{ background: C.surface, borderColor: C.line }}
+            >
+                <div className="flex items-center gap-3 px-5 py-4">
+                    <div style={sIconBox(concedendo ? C.accent : C.danger, concedendo ? C.accentSoft : C.dangerSoft)}>
+                        <span className="material-symbols-outlined">{concedendo ? 'verified_user' : 'person_off'}</span>
+                    </div>
+                    <h2 id={CONFIRMAR_ADMIN_TITULO_ID} className="text-base font-bold" style={{ color: C.ink }}>
+                        {concedendo ? 'Conceder acesso de administrador' : 'Revogar acesso de administrador'}
+                    </h2>
+                </div>
+                <div className="px-5 pb-2 text-sm" style={{ color: C.ink2 }}>
+                    {concedendo
+                        ? <>Isto dá a <b style={{ color: C.ink }}>{nome}</b> acesso total ao Painel Admin — usuários, comunicados e auditoria.</>
+                        : <><b style={{ color: C.ink }}>{nome}</b> perde o acesso ao Painel Admin imediatamente.</>}
+                </div>
+                {erro && (
+                    <div role="alert" className="mx-5 mt-3 rounded-lg p-3 text-sm" style={{ background: C.dangerSoft, color: C.danger }}>
+                        {erro}
+                    </div>
+                )}
+                <div className="flex justify-end gap-3 px-5 py-4">
+                    <button
+                        type="button"
+                        onClick={onCancelar}
+                        className="min-h-[44px] rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
+                        style={{ borderColor: C.line, background: C.surface, color: C.ink2 }}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirmar}
+                        disabled={!!salvando}
+                        className="min-h-[44px] rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-60"
+                        style={{ background: concedendo ? C.accent : C.danger, color: C.onAccent }}
+                    >
+                        {salvando ? 'Salvando…' : concedendo ? 'Conceder acesso' : 'Revogar acesso'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function AdminUsuarios({ adminEmail }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const [usuarios, setUsuarios] = useState([]);
     const [busca, setBusca] = useState('');
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
     const [salvando, setSalvando] = useState(null);
+    const [confirmando, setConfirmando] = useState(null);
+    const [erroConfirmacao, setErroConfirmacao] = useState(null);
 
     const carregar = useCallback(async (q = '') => {
         setCarregando(true);
@@ -50,8 +129,11 @@ export default function AdminUsuarios({ adminEmail }) {
 
     useEffect(() => { carregar(); }, [carregar]);
 
-    const toggleAdmin = async (usuario) => {
+    const confirmarToggle = async () => {
+        const usuario = confirmando;
+        if (!usuario) return;
         setSalvando(usuario.usuario_id);
+        setErroConfirmacao(null);
         try {
             const res = await fetch(`${API}/api/admin/usuarios/${usuario.usuario_id}/privilegios`, {
                 method: 'PUT',
@@ -63,11 +145,18 @@ export default function AdminUsuarios({ adminEmail }) {
             setUsuarios(prev => prev.map(u =>
                 u.usuario_id === usuario.usuario_id ? { ...u, is_admin: !u.is_admin } : u
             ));
+            setConfirmando(null);
         } catch (e) {
-            alert(`Erro: ${e.message}`);
+            setErroConfirmacao(`Erro: ${e.message}`);
         } finally {
             setSalvando(null);
         }
+    };
+
+    const fecharConfirmacao = () => {
+        if (salvando) return;
+        setConfirmando(null);
+        setErroConfirmacao(null);
     };
 
     const handleBusca = (e) => { e.preventDefault(); carregar(busca); };
@@ -88,7 +177,7 @@ export default function AdminUsuarios({ adminEmail }) {
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <h1 className="font-display text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Gerenciar Usuários</h1>
-                    <p className="mt-1 text-sm" style={{ color: C.muted }}>Gerencie permissões e visualize todos os colaboradores sincronizados.</p>
+                    <p className="mt-1 text-sm" style={{ color: C.ink2 }}>Gerencie permissões e visualize todos os colaboradores sincronizados.</p>
                 </div>
                 <form onSubmit={handleBusca} className="flex gap-2">
                     <div
@@ -107,8 +196,8 @@ export default function AdminUsuarios({ adminEmail }) {
                     </div>
                     <button
                         type="submit"
-                        className="rounded-xl px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
-                        style={{ background: C.accent }}
+                        className="min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold shadow-sm transition-all hover:shadow-md active:scale-95"
+                        style={{ background: C.accent, color: C.onAccent }}
                         onMouseEnter={(e) => { e.currentTarget.style.background = C.accentDark; }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = C.accent; }}
                     >
@@ -118,7 +207,7 @@ export default function AdminUsuarios({ adminEmail }) {
                         <button
                             type="button"
                             onClick={() => { setBusca(''); carregar(''); }}
-                            className="rounded-xl border px-3 py-2 text-sm font-semibold transition-colors"
+                            className="min-h-[44px] rounded-xl border px-3 py-2 text-sm font-semibold transition-colors"
                             style={{ borderColor: C.line, color: C.ink2, background: C.surface }}
                             onMouseEnter={(e) => { e.currentTarget.style.background = C.surfaceSoft; }}
                             onMouseLeave={(e) => { e.currentTarget.style.background = C.surface; }}
@@ -141,7 +230,7 @@ export default function AdminUsuarios({ adminEmail }) {
                             <span className="material-symbols-outlined">{s.icon}</span>
                         </div>
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>{s.label}</p>
+                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>{s.label}</p>
                             <p className="text-2xl font-extrabold" style={{ color: C.ink }}>{carregando ? '—' : s.valor}</p>
                         </div>
                     </div>
@@ -164,7 +253,7 @@ export default function AdminUsuarios({ adminEmail }) {
                 style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
             >
                 {carregando ? (
-                    <div className="py-14 text-center" style={{ color: C.muted }}>
+                    <div className="py-14 text-center" style={{ color: C.ink2 }}>
                         <div className="flex flex-col items-center gap-3">
                             <span className="material-symbols-outlined animate-spin text-3xl" style={{ color: C.accent }}>progress_activity</span>
                             Carregando usuários...
@@ -183,7 +272,7 @@ export default function AdminUsuarios({ adminEmail }) {
                                             <BentoAvatar name={displayName} size={36} color={[C.accent, '#fff']} />
                                             <div>
                                                 <div className="font-semibold" style={{ color: C.ink }}>{displayName}</div>
-                                                <div className="text-xs md:hidden" style={{ color: C.muted }}>{u.usuario_email}</div>
+                                                <div className="text-xs md:hidden" style={{ color: C.ink2 }}>{u.usuario_email}</div>
                                             </div>
                                         </div>
                                     );
@@ -198,36 +287,20 @@ export default function AdminUsuarios({ adminEmail }) {
                         cardTitle={(u) => u.funcionario_nome || u.usuario_nome || '—'}
                         actions={(u) => (
                             <button
-                                onClick={() => toggleAdmin(u)}
+                                onClick={() => setConfirmando(u)}
                                 disabled={salvando === u.usuario_id}
-                                title={u.is_admin ? 'Revogar acesso admin' : 'Conceder acesso admin'}
-                                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60 min-h-[36px]"
+                                aria-label={u.is_admin ? `Revogar acesso admin de ${u.funcionario_nome || u.usuario_nome || u.usuario_email}` : `Conceder acesso admin a ${u.funcionario_nome || u.usuario_nome || u.usuario_email}`}
+                                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60"
                                 style={{
-                                    background: u.is_admin ? C.accentSoft : C.surfaceSoft,
-                                    color: u.is_admin ? C.accentDeep : C.muted,
-                                    border: `1px solid ${u.is_admin ? C.accent : C.line}`,
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (u.is_admin) {
-                                        e.currentTarget.style.background = C.dangerSoft;
-                                        e.currentTarget.style.color = C.danger;
-                                        e.currentTarget.style.borderColor = C.danger;
-                                    } else {
-                                        e.currentTarget.style.background = C.accentSoft;
-                                        e.currentTarget.style.color = C.accentDeep;
-                                        e.currentTarget.style.borderColor = C.accent;
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = u.is_admin ? C.accentSoft : C.surfaceSoft;
-                                    e.currentTarget.style.color = u.is_admin ? C.accentDeep : C.muted;
-                                    e.currentTarget.style.borderColor = u.is_admin ? C.accent : C.line;
+                                    background: u.is_admin ? C.dangerSoft : C.accentSoft,
+                                    color: u.is_admin ? C.danger : (isDark ? C.accentDark : C.accentDeep),
+                                    border: `1px solid ${u.is_admin ? C.danger : C.accent}`,
                                 }}
                             >
                                 <span className="material-symbols-outlined text-base">
-                                    {salvando === u.usuario_id ? 'sync' : u.is_admin ? 'verified_user' : 'person'}
+                                    {salvando === u.usuario_id ? 'sync' : u.is_admin ? 'person_off' : 'verified_user'}
                                 </span>
-                                {u.is_admin ? 'Admin' : 'Usuário'}
+                                {u.is_admin ? 'Revogar' : 'Conceder'}
                             </button>
                         )}
                         emptyMessage={(
@@ -246,12 +319,23 @@ export default function AdminUsuarios({ adminEmail }) {
                 {!carregando && usuarios.length > 0 && (
                     <div
                         className="border-t px-5 py-3 text-xs font-medium mt-2"
-                        style={{ borderColor: C.line, color: C.muted }}
+                        style={{ borderColor: C.line, color: C.ink2 }}
                     >
                         {usuarios.length} colaborador(es) listado(s)
                     </div>
                 )}
             </div>
+
+            {confirmando && (
+                <ModalConfirmarPrivilegio
+                    usuario={confirmando}
+                    salvando={salvando === confirmando.usuario_id}
+                    erro={erroConfirmacao}
+                    onCancelar={fecharConfirmacao}
+                    onConfirmar={confirmarToggle}
+                    C={C}
+                />
+            )}
         </div>
     );
 }

@@ -1,10 +1,10 @@
-# bento-blue-admin-auditoria-polish Specification
+## REMOVED Requirements
 
-## Purpose
+### Requirement: Botão de filtro da Auditoria usa hex Bento Blue
 
-Garante que os controles da tela de Auditoria do Painel Admin usem o tom de marca real do produto, com o par de contraste correto, em vez de uma paleta abandonada.
+Descrevia cores hex "Bento Blue" (azul `#4A9EF5`) abandonadas — substituída pela versão que usa o tom de marca real via variável CSS.
 
-## Requirements
+## ADDED Requirements
 
 ### Requirement: Botão de filtro da Auditoria usa o tom de marca com par de contraste correto
 O botão de filtro em `src/components/admin/AdminAuditoria.jsx` SHALL usar o tom de marca do tema ativo (via variável CSS) para o fundo, pareado com o token de texto calibrado para uso sobre esse fundo — nunca um hex hardcoded independente do tema.

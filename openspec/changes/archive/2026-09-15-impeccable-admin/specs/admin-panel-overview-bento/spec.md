@@ -1,10 +1,30 @@
-# admin-panel-overview-bento Specification
+## REMOVED Requirements
 
-## Purpose
+### Requirement: KPI cards com design Bento Blue
 
-Garante que a aba "Painel" (Visão Geral) do Painel Admin — KPIs, atividades recentes e atalhos — use o sistema de tema real do produto (não uma paleta abandonada), permaneça alcançável por teclado e em qualquer largura de tela, e identifique a aba ativa a tecnologia assistiva.
+Descrevia a paleta "Bento Blue" (azul `#4A9EF5`) abandonada — substituída pela versão que segue os tokens do tema ativo.
 
-## Requirements
+### Requirement: Card destaque "Gerenciar Usuários" em gradiente azul
+
+Descrevia um gradiente azul abandonado — substituída pela versão em tons de marca.
+
+### Requirement: Cards secundários com hover azul
+
+Descrevia um hover azul abandonado — substituída pela versão no tom de marca.
+
+### Requirement: Atividades Recentes com link azul
+
+Descrevia um link azul abandonado — substituída pela versão no tom de marca calibrado para texto.
+
+### Requirement: Ícone de log create_comunicado em azul
+
+Descrevia uma cor azul abandonada para um único tipo de ação — substituída por um requisito de fonte única de ícone/cor válido para todas as ações.
+
+### Requirement: Fundo do painel em azul-gelo Bento
+
+Descrevia um fundo azul-gelo abandonado — substituída por um requisito de fundo E cabeçalho reagindo ao tema ativo.
+
+## ADDED Requirements
 
 ### Requirement: KPI cards com o tema ativo
 A seção de KPIs da Visão Geral do Painel SHALL exibir os três cartões (Usuários Ativos, Comunicações, Ações) usando os tokens do tema ativo (`useBentoTheme()`) para fundo, borda, texto e a faixa colorida de 4px no topo — nunca hex fixo.

@@ -1,19 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { iconeParaAcao } from './iconeAcao';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-const ICONES_ACAO = {
-    grant_admin:       { icon: 'verified_user', cor: 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30' },
-    revoke_admin:      { icon: 'person_off',    cor: 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30' },
-    update_comunicado: { icon: 'edit_document', cor: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' },
-    create_comunicado: { icon: 'add_circle',    cor: 'text-[#C2410C] bg-[#FFF7ED]' },
-    delete_comunicado: { icon: 'delete',        cor: 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30' },
-    update_config:     { icon: 'settings',      cor: 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30' },
-};
-
-function iconeParaAcao(acao) {
-    return ICONES_ACAO[acao] || { icon: 'info', cor: 'text-[#8896A8] bg-[#F7FAFD]' };
-}
 
 export default function AdminAuditoria({ adminEmail }) {
     const [logs, setLogs] = useState([]);
@@ -55,7 +43,7 @@ export default function AdminAuditoria({ adminEmail }) {
         <div className="flex flex-col gap-6">
             <div>
                 <h1 className="text-foreground font-display text-3xl font-extrabold tracking-tight">Logs de Auditoria</h1>
-                <p className="text-muted text-sm mt-1">Histórico de ações administrativas realizadas na intranet.</p>
+                <p className="text-faint text-sm mt-1">Histórico de ações administrativas realizadas na intranet.</p>
             </div>
 
             {/* Filtros */}
@@ -87,16 +75,16 @@ export default function AdminAuditoria({ adminEmail }) {
                     </select>
                 </div>
                 <div className="flex gap-2">
-                    <button type="submit" className="px-4 py-2 bg-[#EC7D23] text-white rounded-lg text-sm font-medium hover:bg-[#C2410C] transition-colors">
+                    <button type="submit" className="min-h-[44px] px-4 py-2 bg-[var(--accent)] text-[var(--on-accent)] rounded-lg text-sm font-medium hover:bg-[var(--accent-dark)] transition-colors">
                         Filtrar
                     </button>
                     {(filtroEmail || filtroAcao) && (
-                        <button type="button" onClick={limparFiltros} className="px-3 py-2 border border-border rounded-lg text-sm hover:bg-surface-raised transition-colors">
+                        <button type="button" onClick={limparFiltros} className="min-h-[44px] px-3 py-2 border border-border rounded-lg text-sm hover:bg-surface-raised transition-colors">
                             Limpar
                         </button>
                     )}
                 </div>
-                <div className="ml-auto text-xs text-muted self-center">{total} registro(s)</div>
+                <div className="ml-auto text-xs text-faint self-center">{total} registro(s)</div>
             </form>
 
             {erro && (
@@ -110,9 +98,9 @@ export default function AdminAuditoria({ adminEmail }) {
 
             <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden card-elevated">
                 {carregando ? (
-                    <div className="text-center py-16 text-muted">Carregando...</div>
+                    <div className="text-center py-16 text-faint">Carregando...</div>
                 ) : logs.length === 0 ? (
-                    <div className="text-center py-16 text-muted">Nenhum registro encontrado.</div>
+                    <div className="text-center py-16 text-faint">Nenhum registro encontrado.</div>
                 ) : (
                     <div className="flex flex-col divide-y divide-border/60">
                         {logs.map(log => {
@@ -125,11 +113,11 @@ export default function AdminAuditoria({ adminEmail }) {
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <p className="text-sm text-foreground">{log.descricao}</p>
                                         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-                                            <span className="text-xs text-muted">{log.admin_nome || log.admin_email}</span>
-                                            <span className="text-xs text-faint/60">{new Date(log.criado_em).toLocaleString('pt-BR')}</span>
+                                            <span className="text-xs text-faint">{log.admin_nome || log.admin_email}</span>
+                                            <span className="text-xs text-faint">{new Date(log.criado_em).toLocaleString('pt-BR')}</span>
                                         </div>
                                     </div>
-                                    <span className="text-xs bg-surface-raised text-muted px-2 py-0.5 rounded-full self-start shrink-0">
+                                    <span className="text-xs bg-surface-raised text-faint px-2 py-0.5 rounded-full self-start shrink-0">
                                         {log.acao}
                                     </span>
                                 </div>
@@ -140,11 +128,11 @@ export default function AdminAuditoria({ adminEmail }) {
 
                 {totalPaginas > 1 && (
                     <div className="flex items-center justify-between px-5 py-3 border-t border-border">
-                        <button disabled={pagina === 1} onClick={() => setPagina(p => p - 1)} className="px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-raised transition-colors disabled:opacity-40">
+                        <button disabled={pagina === 1} onClick={() => setPagina(p => p - 1)} className="min-h-[44px] px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-raised transition-colors disabled:opacity-40">
                             Anterior
                         </button>
-                        <span className="text-xs text-muted">Página {pagina} de {totalPaginas}</span>
-                        <button disabled={pagina === totalPaginas} onClick={() => setPagina(p => p + 1)} className="px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-raised transition-colors disabled:opacity-40">
+                        <span className="text-xs text-faint">Página {pagina} de {totalPaginas}</span>
+                        <button disabled={pagina === totalPaginas} onClick={() => setPagina(p => p + 1)} className="min-h-[44px] px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-raised transition-colors disabled:opacity-40">
                             Próxima
                         </button>
                     </div>
