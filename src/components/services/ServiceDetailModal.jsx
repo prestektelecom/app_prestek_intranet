@@ -14,6 +14,7 @@ import { resolveIllustration } from '../../utils/serviceIllustrations';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { useCardGradient } from '../../hooks/useCardGradient';
 import { tone } from '../../utils/tone';
+import { makeTrapTab } from '../../hooks/useDismissable';
 
 // taxa_instalacao é texto livre no backend — vem tanto como 'Grátis' quanto
 // como '50'. Mesmo guard do PlanoBentoCard: formata só se for puramente numérico.
@@ -90,8 +91,6 @@ function derivarApresentacao(data, type, maxVendas, formatCurrency) {
     };
 }
 
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
-
 export default function ServiceDetailModal({ isOpen, onClose, data, type, formatCurrency, onToggleCompare, isComparing, isAdmin, onEditClick, maxVendas = 0 }) {
     const C = useBentoTheme();
     const tituloId = useId();
@@ -100,15 +99,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
 
     // Trap de Tab: sem isso, Tab/Shift+Tab escapavam do modal para a página
     // de trás mesmo com Escape e foco inicial já funcionando.
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !dialogRef.current) return;
-        const items = Array.from(dialogRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(dialogRef);
 
     // Hooks antes de qualquer return — a condição mora dentro do efeito.
     useEffect(() => {

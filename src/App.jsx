@@ -1,22 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
-import Dashboard from './components/Dashboard'
-import ServicesDirectory from './components/ServicesDirectory'
-import Coverage from './components/Coverage'
-import Directory from './components/Directory'
-import Sectors from './components/Sectors'
-import Schedule from './components/Schedule'
-import PlantaoHistorico from './components/schedule/PlantaoHistorico'
-import Processos from './components/Processos'
-import Comunicados from './components/Comunicados'
-import Configuracoes from './components/Configuracoes'
 import Login from './components/Login'
-import AdminDashboard from './components/AdminDashboard'
-import TicketsList from './components/TicketsList'
-import Offices from './components/Offices'
-import Ti from './components/Ti'
-import NotFound from './components/NotFound'
 
 import { usePresence } from './hooks/usePresence'
 import { canAccess, viewTitleFor } from './navigation'
@@ -24,6 +9,39 @@ import { useProfileDisplay } from './hooks/useProfileDisplay'
 import { HeaderActionsProvider } from './contexts/HeaderActionsContext'
 import MobileBottomNav from './components/MobileBottomNav'
 import MobileMoreSheet from './components/MobileMoreSheet'
+
+// As 13 telas do switch abaixo, mais AdminDashboard e NotFound, só uma por vez
+// está de fato na tela — eram 100% do bundle principal (1,6MB) mesmo assim.
+// Login fica de fora do code-splitting de propósito: é a PRIMEIRA tela que
+// qualquer visitante não autenticado vê, e adiar seu chunk atrás de uma
+// requisição extra pioraria o caminho mais comum em vez de melhorá-lo.
+const Dashboard = lazy(() => import('./components/Dashboard'))
+const ServicesDirectory = lazy(() => import('./components/ServicesDirectory'))
+const Coverage = lazy(() => import('./components/Coverage'))
+const Directory = lazy(() => import('./components/Directory'))
+const Sectors = lazy(() => import('./components/Sectors'))
+const Schedule = lazy(() => import('./components/Schedule'))
+const PlantaoHistorico = lazy(() => import('./components/schedule/PlantaoHistorico'))
+const Processos = lazy(() => import('./components/Processos'))
+const Comunicados = lazy(() => import('./components/Comunicados'))
+const Configuracoes = lazy(() => import('./components/Configuracoes'))
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'))
+const TicketsList = lazy(() => import('./components/TicketsList'))
+const Offices = lazy(() => import('./components/Offices'))
+const Ti = lazy(() => import('./components/Ti'))
+const NotFound = lazy(() => import('./components/NotFound'))
+
+// Mesma linguagem visual do spinner já usado dentro das telas (ex.: Coverage.jsx
+// enquanto busca regiões no IXC): ícone girando na cor de marca sobre o fundo
+// do tema. Só aparece na troca de aba se o chunk ainda não estiver em cache.
+function ViewLoading() {
+    return (
+        <div className="flex h-full w-full flex-1 flex-col items-center justify-center gap-3 bg-background" role="status" aria-live="polite">
+            <span className="material-symbols-outlined animate-spin text-3xl text-[var(--accent)]" aria-hidden="true">autorenew</span>
+            <p className="text-[13px] font-semibold text-faint">Carregando...</p>
+        </div>
+    )
+}
 
 export default function App() {
     const [user, setUser] = useState(() => {
@@ -144,7 +162,7 @@ export default function App() {
 
     // Tela de login — renderizada isoladamente sem Header/Sidebar
     if (!user && currentView !== 'login') {
-        return <NotFound setCurrentView={setCurrentView} user={null} />
+        return <Suspense fallback={<ViewLoading />}><NotFound setCurrentView={setCurrentView} user={null} /></Suspense>
     }
 
     if (currentView === 'login') {
@@ -176,7 +194,7 @@ export default function App() {
     const permitido = canAccess(currentView, user)
 
     if (currentView === 'admin' && permitido) {
-        return <AdminDashboard setCurrentView={setCurrentView} user={user} />
+        return <Suspense fallback={<ViewLoading />}><AdminDashboard setCurrentView={setCurrentView} user={user} /></Suspense>
     }
 
     const renderView = () => {
@@ -213,7 +231,7 @@ export default function App() {
                         tabIndex={-1}
                         className="flex-1 flex overflow-hidden pb-[var(--bottom-nav-h)] lg:pb-0 outline-none"
                     >
-                        {renderView()}
+                        <Suspense fallback={<ViewLoading />}>{renderView()}</Suspense>
                     </div>
                 </div>
                 <MobileBottomNav

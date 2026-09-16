@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import BentoAvatar from '../common/Avatar';
 import { useBentoTheme, BENTO_LIGHT } from '../../hooks/useBentoTheme';
-import { useDismissable } from '../../hooks/useDismissable';
+import { useDismissable, makeTrapTab } from '../../hooks/useDismissable';
 import ResponsiveTable from '../responsive/ResponsiveTable';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -23,7 +23,6 @@ const sIconBox = (color, bg) => ({
     color,
 });
 
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 const CONFIRMAR_ADMIN_TITULO_ID = 'confirmar-admin-titulo';
 
 // Conceder/revogar admin era um clique só, sem confirmação nenhuma — a ação
@@ -34,15 +33,7 @@ function ModalConfirmarPrivilegio({ usuario, salvando, erro, onCancelar, onConfi
     const modalRef = useRef(null);
     useDismissable(modalRef, { open: true, onClose: onCancelar, lockScroll: true, closeOnOutside: true });
 
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !modalRef.current) return;
-        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(modalRef);
 
     const concedendo = !usuario.is_admin;
     const nome = usuario.funcionario_nome || usuario.usuario_nome || usuario.usuario_email;

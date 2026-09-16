@@ -208,7 +208,9 @@ Nos temas escuros o `accentDark` (#FDBA74) fica mais claro que o `accent`, o inv
 
 **The Badge Pair Rule.** Um badge preenchido de contagem usa sempre o par `dangerFill`/`onDanger` ou `warningFill`/`onWarning` do tema, nunca `danger` com branco à mão: a 11px bold nenhum vermelho passa nos 4,5:1 com branco e com navy ao mesmo tempo, então o par muda por tema (branco no claro e no AMOLED, navy nos outros três). A cor do badge vem da severidade do dado, e a mesma contagem tem a mesma cor no sino, na Sidebar e na barra inferior.
 
-**The Manual Divergence Rule.** O manual de identidade visual registra #D97738 como laranja institucional e #384C9C como azul. O sistema adota o laranja extraído do asset do logo (#EC7D23) para que accent e logo renderizado coincidam na tela, e não adota o azul institucional. Decisão registrada em `.impeccable/critique/ignore.md`, revisão prevista para o encerramento do programa Impeccable ou quando houver logo em SVG.
+**The Manual Divergence Rule.** O manual de identidade visual registra #D97738 como laranja institucional e #384C9C como azul. O sistema adota o laranja extraído do asset do logo (#EC7D23) para que accent e logo renderizado coincidam na tela, e não adota o azul institucional. Decisão registrada em `.impeccable/critique/ignore.md`. Revisada no encerramento do programa Impeccable (Fase 16, 2026-09-16): a divergência permanece — não há logo em SVG ainda, e a decisão de manter o laranja do asset segue de pé.
+
+**The Muted Is Never Text Rule.** `C.muted`/`text-muted` (Azul Neblina, #8896A8) é SOMENTE para ícone inativo e placeholder — nunca para texto real abaixo de 14px. Reprova 4,5:1 em pelo menos um dos cinco temas sempre que usado como corpo de texto, label ou legenda; foi o achado mais repetido do programa inteiro (9+ das 15 fases de superfície encontraram e corrigiram essa mesma instância, sempre trocando por `C.ink2`/`text-faint`). Ao escrever um componente novo, texto secundário real usa `C.ink2` (JS) ou `text-faint` (CSS) desde o início.
 
 ## Typography
 
@@ -282,7 +284,7 @@ Cantos arredondados em uma escala curta e fixa: 8px para botões pequenos e iten
 
 ### Buttons
 - **Shape:** cantos de 12px (`rounded-xl`), altura de 40px, padding 10px 20px, label em 600.
-- **Primary:** dois idiomas coexistem hoje. O sólido usa Laranja Prestek com texto branco e hover em Laranja Prestek Hover. O gradiente, dominante em modais e formulários (25 ocorrências), vai de `#9A3412` a `#EC7D23` com sombra laranja a 25%. O gradiente hardcoda o profundo do tema Aurora no tema claro; ao tocar em um deles, migrar para os tokens.
+- **Primary:** dois idiomas coexistem hoje. O sólido usa Laranja Prestek com texto branco e hover em Laranja Prestek Hover. O gradiente, dominante em modais e formulários (10 ocorrências confirmadas na Fase 16, descendo de 25 na Fase 1 conforme cada fase migrou o que tocou), vai de `#9A3412` a `#EC7D23` com sombra laranja a 25%. O gradiente hardcoda o profundo do tema Aurora no tema claro; ao tocar em um deles, migrar para os tokens (o par `#7C2D12`→`#C2410C`, já usado em `ti/cadastro/estilos.js` desde a Fase 14, é o substituto correto — passa contraste nas DUAS pontas do degradê, não só na média, achado da Fase 14).
 - **Hover / Focus:** hover escurece (sólido) ou reduz opacidade a 90% (gradiente); foco visível é `ring-2` em `--accent` com offset de 2px. Disabled a 70% de opacidade com cursor `not-allowed`.
 - **Secondary:** fundo branco, borda Borda Gelo, texto Azul Mesclado; hover troca o fundo para Azul-gelo Elevado.
 - **Ghost / icon:** sem fundo, ícone em Azul Neblina, hover em laranja. Todo ícone-botão leva `aria-label`.
@@ -309,8 +311,26 @@ Cantos arredondados em uma escala curta e fixa: 8px para botões pequenos e iten
 - **Mobile:** `MobileBottomNav` com cinco itens e o sheet "Mais"; item ativo em laranja, inativo em Azul Neblina.
 - **Modais:** `ModalShell` com cabeçalho, corpo e rodapé separados por Borda Gelo, cantos de 16px, backdrop preto a 60% com blur, entrada com fade e zoom de 200ms.
 
+### Diálogos (modal, sheet, dropdown)
+Todo overlay do sistema — de dropdown de perfil a modal de confirmação de admin — segue o mesmo par de duas peças, consolidado ao longo do programa e, na Fase 16, com o trap de Tab também extraído para um só lugar:
+
+- **`hooks/useDismissable.js`**: hook que cobre Escape (fase de captura, sobrevive a um `stopPropagation` de página), clique fora, trava de scroll do fundo (`lockScroll`) e foco de entrada/retorno automáticos. Recebe um `ref` do container e `{ open, onClose, lockScroll, closeOnOutside }`.
+- **`makeTrapTab(containerRef)`**, exportado do mesmo módulo: fábrica do `onKeyDown` que prende o Tab dentro do container (Shift+Tab do primeiro item volta para o último). Antes da Fase 16 essa função era copiada byte-a-byte em 12 arquivos diferentes; agora é uma chamada só (`const trapTab = makeTrapTab(modalRef)`).
+
+Um diálogo novo sempre ganha `role="dialog"` (ou `"alertdialog"` para confirmação destrutiva), `aria-modal="true"`, `aria-labelledby` apontando para o título, os dois hooks acima, e um botão de fechar com `aria-label`. Nunca reimplemente Escape/foco à mão — se o par acima não servir, é sinal de que falta um terceiro primitivo, não motivo para copiar a lógica de novo.
+
+**Confirmação de ação irreversível/sensível** (ex.: `ModalConfirmarPrivilegio` do Painel Admin, Fase 15): nunca `window.confirm()`/`alert()`. Um diálogo próprio, nomeando a pessoa/recurso afetado e o EFEITO da ação (não o rótulo genérico "Confirmar"), com erro de gravação anunciado dentro do próprio diálogo (`role="alert"` inline), nunca em um alerta nativo do navegador.
+
+### Named Rules
+**The Action Label Rule.** Um controle que executa uma ação (não que exibe um estado) nomeia a AÇÃO que o clique vai disparar, nunca o estado atual do que ele afeta. Achado no pior antipadrão de integridade do programa (Fase 15): um botão de privilégio de admin mostrava "Admin"/"Usuário" — o estado atual — em vez de "Conceder"/"Revogar" — o que o clique realmente faz.
+
+### Combobox
+Um combobox com sugestões (ex.: `CidadeCombobox.jsx`) usa o padrão ARIA Authoring Practices de foco virtual, não uma lista de `<button>` focáveis um a um: input com `role="combobox"` `aria-autocomplete="list"` sempre focado, opções como `<li role="option">` não-focáveis endereçadas por `aria-activedescendant`, e `onKeyDown` no input tratando ArrowUp/ArrowDown (com wraparound), Enter (seleciona) e Escape (fecha sem perder o foco do input). Seleção por mouse usa `onMouseDown` com `preventDefault()`, nunca `onClick` — evita a corrida com o `blur` nativo do input. Uma versão "ARIA incompleta" (papel de combobox presente mas sem teclado de verdade) engana mais um leitor de tela do que nenhum papel — não declare `role="combobox"`/`"listbox"`/`"menu"` sem implementar o conjunto inteiro.
+
 ### Hero de página
-Faixa de 24px de raio com gradiente de 120° de Laranja Prestek Profundo a Laranja Prestek passando por #C2410C fixo, anéis concêntricos brancos a 4 a 7,5% saindo do canto inferior esquerdo (`ui/heroGradiente.js`), título display em branco, subtítulo, e busca de vidro ou KPIs. É o único lugar onde o laranja é fundo grande, e por isso o resto da página fica em azul-gelo.
+Faixa de 24px de raio com gradiente de 120° de Laranja Prestek Profundo a Laranja Prestek passando por #C2410C fixo, anéis concêntricos brancos a 4 a 7,5% saindo do canto inferior esquerdo, título display em branco, subtítulo, e busca de vidro ou KPIs. É o único lugar onde o laranja é fundo grande, e por isso o resto da página fica em azul-gelo.
+
+Moldura extraída como `ui/HeroShell.jsx` na Fase 16 (`HeroShell` + `HERO_LABEL_MONO` + `HeroKpiTile`/`HeroKpiSkeleton`), depois de a mesma composição de fundo+retícula de pontos aparecer idêntica em 5 heroes (Ti, Coverage, Directory, Sectors, Services) e o painel de KPIs (dt/dd em lista de descrição, nunca `<div>` solto) em 4 deles. Cada tela mantém sua própria grade interna e conteúdo — o breakpoint do split de 2 colunas varia por tela (`2xl`, `xl` ou `lg`, conforme o quanto de UI extra cabe na coluna esquerda), e Coverage/Services têm controles próprios (botão de sincronizar, abas com gráfico) que não entraram na abstração de propósito. Um hero novo usa `<HeroShell patternId="algo-unico">`, nunca reconstrói a moldura à mão.
 
 ## Do's and Don'ts
 
@@ -331,3 +351,6 @@ Faixa de 24px de raio com gradiente de 120° de Laranja Prestek Profundo a Laran
 - **Don't** use Manrope abaixo de headline, nem número alinhado em coluna fora de JetBrains Mono.
 - **Don't** aplique o gradiente do hero em botões ou cards; ele é a assinatura da faixa de topo.
 - **Don't** hardcode `#9A3412` ou qualquer valor de um tema específico em código que roda nos cinco temas.
+- **Don't** use `C.muted`/`text-muted` para texto real (The Muted Is Never Text Rule) — só ícone inativo e placeholder.
+- **Don't** implemente Escape/foco/trap de Tab à mão num diálogo novo; use `useDismissable` + `makeTrapTab` (`hooks/useDismissable.js`).
+- **Don't** use `window.confirm()`/`alert()` nativos para confirmar ou anunciar erro de uma ação — nem mesmo em ações reversíveis; um diálogo/toast do próprio sistema sempre existe para isso.

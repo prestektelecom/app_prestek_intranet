@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-07T20:29:19.707Z",
+  "generatedAt": "2026-09-16T00:43:46.000Z",
   "title": "Design System: Prestek Intranet",
   "extensions": {
     "colorMeta": {
@@ -724,6 +724,16 @@
         "name": "The Tonal Dark Rule",
         "body": "No escuro, elevar é clarear a superfície um degrau, não adicionar sombra. No AMOLED, elevar é adicionar um anel de 1px.",
         "section": "elevation"
+      },
+      {
+        "name": "The Muted Is Never Text Rule",
+        "body": "C.muted/text-muted (Azul Neblina, #8896A8) é somente para ícone inativo e placeholder — nunca texto real abaixo de 14px. Reprova 4,5:1 em pelo menos um dos cinco temas sempre que usado como corpo de texto, label ou legenda; foi o achado mais repetido do programa Impeccable (9+ das 15 fases de superfície encontraram e corrigiram a mesma instância, sempre trocando por C.ink2/text-faint).",
+        "section": "colors"
+      },
+      {
+        "name": "The Action Label Rule",
+        "body": "Um controle que executa uma ação nomeia a AÇÃO que o clique vai disparar, nunca o estado atual do que ele afeta. Achado no pior antipadrão de integridade do programa: um botão de privilégio de admin mostrava \"Admin\"/\"Usuário\" (o estado atual) em vez de \"Conceder\"/\"Revogar\" (o que o clique realmente faz).",
+        "section": "components"
       }
     ],
     "dos": [
@@ -733,7 +743,9 @@
       "Do dê a todo controle os estados default, hover, focus-visible, active, disabled e loading, com foco visível em ring-2 laranja.",
       "Do verifique todo componente novo nos cinco temas antes de considerar pronto; AMOLED é onde hex fixo quebra primeiro.",
       "Do desligue efeitos de proximidade do mouse em toque e respeite prefers-reduced-motion, que o index.css já cobre globalmente.",
-      "Do escreva em português do Brasil, com vocabulário do IXC onde o dado vem de lá."
+      "Do escreva em português do Brasil, com vocabulário do IXC onde o dado vem de lá.",
+      "Do use um diálogo próprio do sistema (useDismissable + makeTrapTab, role=\"dialog\"/\"alertdialog\") para toda confirmação ou erro de ação — nunca window.confirm()/alert() nativos.",
+      "Do nomeie o rótulo de um controle de ação pelo que o clique VAI FAZER, não pelo estado atual do que ele afeta (The Action Label Rule)."
     ],
     "donts": [
       "Don't reintroduza bege, âmbar ou qualquer fundo quente: o calor do sistema vem do laranja sobre gelo, não de superfícies quentes.",
@@ -742,7 +754,10 @@
       "Don't invente um raio (10px, 18px) ou um z-index (z-[1137]) fora das tabelas.",
       "Don't use Manrope abaixo de headline, nem número alinhado em coluna fora de JetBrains Mono.",
       "Don't aplique o gradiente do hero em botões ou cards; ele é a assinatura da faixa de topo.",
-      "Don't hardcode #9A3412 ou qualquer valor de um tema específico em código que roda nos cinco temas."
+      "Don't hardcode #9A3412 ou qualquer valor de um tema específico em código que roda nos cinco temas.",
+      "Don't use C.muted/text-muted para texto real — só ícone inativo e placeholder.",
+      "Don't implemente Escape/foco/trap de Tab à mão num diálogo novo; use useDismissable + makeTrapTab (hooks/useDismissable.js).",
+      "Don't use window.confirm()/alert() nativos para confirmar ou anunciar erro de uma ação, nem em ações reversíveis; use o diálogo/toast do próprio sistema."
     ]
   }
 }

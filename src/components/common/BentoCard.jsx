@@ -23,6 +23,7 @@ export function BentoCard({ C, children, accent, glow = false, className = '', h
       }}
     >
       <GlowingEffect
+        variant="brand"
         spread={40}
         glow={true}
         disabled={isTouchOnly}

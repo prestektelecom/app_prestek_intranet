@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
-import { useDismissable } from '../../hooks/useDismissable';
+import { useDismissable, makeTrapTab } from '../../hooks/useDismissable';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const FORM_VAZIO = { titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '' };
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 const COMUNICADO_MODAL_TITULO_ID = 'admin-comunicado-modal-titulo';
 
 // ── Paleta Bento Blue ─────────────────────────────────────────────────────
@@ -64,15 +63,7 @@ export default function AdminComunicados({ adminEmail }) {
     // no CrudModal de Comunicados.jsx.
     useDismissable(modalRef, { open: modalAberto, onClose: () => setModalAberto(false), lockScroll: true, closeOnOutside: true });
 
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !modalRef.current) return;
-        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(modalRef);
 
     const carregar = useCallback(async () => {
         setCarregando(true); setErro(null);

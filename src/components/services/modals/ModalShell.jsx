@@ -1,7 +1,5 @@
 import React, { useId, useRef } from 'react';
-import { useDismissable } from '../../../hooks/useDismissable';
-
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+import { useDismissable, makeTrapTab } from '../../../hooks/useDismissable';
 
 // Casca comum dos três modais de edição — os formulários variavam, a moldura não.
 export const FIELD_CLASS =
@@ -31,15 +29,7 @@ export default function ModalShell({ title, onClose, onSave, isSaving = false, s
     // OrgChartEditor.jsx/TiSupportModal.jsx/ManagePlantaoModal.jsx.
     useDismissable(dialogRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
 
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !dialogRef.current) return;
-        const items = Array.from(dialogRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(dialogRef);
 
     return (
         // z-[1100] fica acima do Header e da Sidebar (ambos z-1000), senão o

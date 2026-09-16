@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState, useMemo, useId } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { useBentoTheme } from '../hooks/useBentoTheme';
-import { useDismissable } from '../hooks/useDismissable';
+import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
-
-const DIALOG_FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 // ─── Helpers de mapa ────────────────────────────────────────────────────────
 
@@ -153,15 +151,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
     // (useDismissable + trap de Tab local) já usado em ModalShell.jsx/
     // OrgChartEditor.jsx/ServicesDirectory.jsx.
     useDismissable(dialogRef, { open: true, onClose: onFechar, lockScroll: true, closeOnOutside: true });
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !dialogRef.current) return;
-        const items = Array.from(dialogRef.current.querySelectorAll(DIALOG_FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(dialogRef);
 
     const isEdicao = Boolean(escritorio?.id);
     const [form, setForm] = useState(() => {
@@ -562,15 +552,7 @@ export default function Offices({ user, setCurrentView }) {
 
     // Escape de cada diálogo agora é responsabilidade do seu próprio
     // useDismissable (EscritorioModal e o diálogo de exclusão abaixo).
-    const trapDeleteDialogTab = (e) => {
-        if (e.key !== 'Tab' || !deleteDialogRef.current) return;
-        const items = Array.from(deleteDialogRef.current.querySelectorAll(DIALOG_FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapDeleteDialogTab = makeTrapTab(deleteDialogRef);
     useDismissable(deleteDialogRef, {
         open: confirmandoExclusao !== null,
         onClose: () => { setConfirmandoExclusao(null); setErroExclusao(''); },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useId, useRef } from 'react';
-import { useDismissable } from '../hooks/useDismissable';
+import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import TechBentoCard from './services/TechBentoCard';
 import StreamingBentoCard from './services/StreamingBentoCard';
 import PlanoComparador from './services/PlanoComparador';
@@ -28,8 +28,6 @@ function AvisoDadosLocais() {
         </div>
     );
 }
-
-const DELETE_DIALOG_FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export default function ServicesDirectory({ user, searchQuery }) {
     const isAdmin = user?.is_admin;
@@ -317,15 +315,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
         closeOnOutside: true,
     });
 
-    const trapDeleteDialogTab = (e) => {
-        if (e.key !== 'Tab' || !deleteDialogRef.current) return;
-        const items = Array.from(deleteDialogRef.current.querySelectorAll(DELETE_DIALOG_FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapDeleteDialogTab = makeTrapTab(deleteDialogRef);
 
     const handleSort = (key) => {
         setSortConfig(prev => ({

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import MultiSelectEmployee from './MultiSelectEmployee';
 import { getDiaSemana } from '../../utils/dateHelpers';
-import { useDismissable } from '../../hooks/useDismissable';
+import { useDismissable, makeTrapTab } from '../../hooks/useDismissable';
 
 const SECTIONS = {
     N1: 'n1',
@@ -13,7 +13,6 @@ const SECTIONS = {
 // `aria-modal="true"` sem trap de Tab deixava o foco escapar para o hero por
 // trás do backdrop; useDismissable cobre Escape/clique fora/foco de entrada
 // e retorno, o trapTab abaixo é o mesmo padrão do TiSupportModal/BottomSheet.
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export default function ManagePlantaoModal({
     isOpen,
@@ -41,15 +40,7 @@ export default function ManagePlantaoModal({
 
     useDismissable(modalRef, { open: isOpen, onClose, lockScroll: true, closeOnOutside: true });
 
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !modalRef.current) return;
-        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(modalRef);
 
     if (!isOpen) return null;
 

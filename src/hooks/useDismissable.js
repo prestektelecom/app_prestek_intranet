@@ -1,7 +1,33 @@
 import { useEffect, useRef } from 'react';
 
-const FOCUSABLE =
+const INITIAL_FOCUSABLE =
   '[data-autofocus], button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+
+// Seletor usado pelo trap de Tab (sem `[data-autofocus]`, que não é
+// necessariamente um item tabulável). Exportado porque vários modais
+// (Comunicados, AdminComunicados, AdminUsuarios, TiSupportModal,
+// ManagePlantaoModal, OrgChartEditor, ModalShell, ServiceDetailModal,
+// Offices, ServicesDirectory, BottomSheet) definiam essa mesma string
+// localmente antes desta extração.
+export const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Fábrica do handler de `onKeyDown` que prende o Tab dentro de um container
+ * (Shift+Tab do primeiro item vai para o último e vice-versa). Combinar com
+ * `useDismissable` no mesmo container cobre o ciclo de diálogo inteiro.
+ */
+export function makeTrapTab(containerRef) {
+  return (e) => {
+    if (e.key !== 'Tab' || !containerRef.current) return;
+    const items = Array.from(containerRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+    if (items.length === 0) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+}
 
 /**
  * Ciclo de vida de um overlay do chrome (dropdown do sino, menu do perfil,
@@ -46,7 +72,7 @@ export function useDismissable(ref, { open, onClose, lockScroll = false, closeOn
     // gatilho (em dropdowns ancorados o gatilho mora no mesmo container).
     const raf = requestAnimationFrame(() => {
       if (!container) return;
-      const first = Array.from(container.querySelectorAll(FOCUSABLE)).find((el) => el !== opener);
+      const first = Array.from(container.querySelectorAll(INITIAL_FOCUSABLE)).find((el) => el !== opener);
       first?.focus();
     });
 

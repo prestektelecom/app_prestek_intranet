@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
-import { useDismissable } from '../hooks/useDismissable';
+import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { fundoHero } from './ui/heroGradiente';
 import HeroSearchInput from './ui/HeroSearchInput';
 
@@ -8,8 +8,7 @@ import HeroSearchInput from './ui/HeroSearchInput';
 // Escape e clique fora não fechavam, e o foco nunca entrava no diálogo.
 // Mesmo padrão do TiSupportModal (Fase 3) e ManagePlantaoModal (Fase 4):
 // useDismissable cobre Escape/clique fora/foco de entrada e retorno; o trap
-// de Tab abaixo é local a cada modal.
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+// de Tab vem de `makeTrapTab` (Fase 16, extraído de 15 cópias idênticas).
 
 // ── Paleta Bento Blue ────────────────────────────────────────────────────────
 
@@ -903,15 +902,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
 
     useDismissable(modalRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
 
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !modalRef.current) return;
-        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(modalRef);
 
     const getInputStyle = (name) => ({
         width: '100%',
@@ -1208,15 +1199,7 @@ function DeleteModal({ onClose, onConfirm }) {
 
     useDismissable(modalRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
 
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !modalRef.current) return;
-        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(modalRef);
 
     return (
         <div style={{

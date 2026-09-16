@@ -1,9 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { useBentoTheme } from '../../hooks/useBentoTheme';
-import { tone } from '../../utils/tone';
 import Sparkline from '../common/Sparkline';
 import HeroSearchInput from '../ui/HeroSearchInput';
-import { fundoHero } from '../ui/heroGradiente';
+import { HeroShell, HERO_LABEL_MONO } from '../ui/HeroShell';
 import { parseVelocidade } from '../../utils/planTaxonomy';
 
 // Os KPIs são de CONTRATOS, não dos planos listados abaixo — o rótulo
@@ -16,11 +14,6 @@ const KPI_SECUNDARIOS = [
     { key: 'negativado', label: 'Negativados', icon: 'gpp_maybe' },
     { key: 'desistiu', label: 'Desistiu', icon: 'cancel' },
 ];
-
-// Opacidades do painel têm piso em /70. Sobre bg-black/55, /70 dá 5,6:1 e /75
-// dá 6,2:1; os valores anteriores (/45 e /55) davam 2,1:1 e 2,5:1, reprovados
-// em AA — e não dava para consertar só subindo opacidade, o fundo é que estava claro.
-const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
 
 const ABAS = [
     { key: 'velocidade', label: 'Velocidade', icon: 'speed' },
@@ -56,7 +49,7 @@ function KpiTile({ label, valor, sub, descricaoCompleta }) {
         // title serve o mouse, aria-label serve teclado e leitor de tela — o
         // nome do plano tem ~70 caracteres e não cabe visível no tile.
         <div className="min-w-0" title={descricaoCompleta} aria-label={descricaoCompleta || undefined}>
-            <div className={LABEL_MONO}>{label}</div>
+            <div className={HERO_LABEL_MONO}>{label}</div>
             <div className="mt-1 truncate text-[15px] font-extrabold leading-none tracking-tight text-white tabular-nums">
                 {valor}
             </div>
@@ -79,7 +72,6 @@ export default function ServicesHero({
     planoCampeao = null,
     formatCurrency = (v) => v,
 }) {
-    const C = useBentoTheme();
     const [aba, setAba] = useState('velocidade');
 
     const visiveis = KPI_SECUNDARIOS.filter(k => (counts[k.key] || 0) > 0);
@@ -154,27 +146,11 @@ export default function ServicesHero({
         : campeaoVelocidade ? rotuloVelocidade(campeaoVelocidade) : planoCampeao.descricao;
 
     return (
-        <div
-            className="relative overflow-hidden rounded-[24px] p-6 text-white sm:p-8"
-            style={{
-                // A parada do meio era C.accentDark, que nos três temas escuros
-                // vale #FDBA74 — o tom CLARO da rampa. O gradiente invertia e o
-                // texto branco caía para 1,71:1. Ver ui/heroGradiente.js.
-                background: fundoHero(C),
-                boxShadow: `0 20px 50px -20px ${tone(C.accentDeep, 0.45)}`,
-            }}
-        >
-            {/* Retícula de pontos no lugar da grade quadrada, e os dois blobs
-                desfocados saíram: renderizavam quase inteiramente atrás do
-                painel escuro. Ver CoverageHero.jsx — as duas telas são irmãs. */}
-            <svg width="100%" height="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.22, pointerEvents: 'none' }}>
-                <defs>
-                    <pattern id="svc-grid" width="22" height="22" patternUnits="userSpaceOnUse">
-                        <circle cx="1" cy="1" r="1" fill="white" />
-                    </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#svc-grid)" />
-            </svg>
+        // A parada do meio do gradiente era C.accentDark, que nos três temas
+        // escuros vale #FDBA74 — o tom CLARO da rampa. O gradiente invertia e o
+        // texto branco caía para 1,71:1. Ver ui/heroGradiente.js (dentro de
+        // HeroShell). Retícula de pontos + anéis também vêm de lá.
+        <HeroShell patternId="svc-grid">
 
             <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-center lg:gap-8">
                 {/* ─── Identidade + busca ─── */}
@@ -352,6 +328,6 @@ export default function ServicesHero({
                     </div>
                 </div>
             </div>
-        </div>
+        </HeroShell>
     );
 }

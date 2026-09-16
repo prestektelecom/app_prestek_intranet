@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
-import { useDismissable } from '../hooks/useDismissable';
+import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 
 function tone(hex, a) {
     const h = hex.replace('#', '');
@@ -16,7 +16,6 @@ const FONT = '"Plus Jakarta Sans", system-ui, sans-serif';
 // trás. É o admin editando o organograma da empresa inteira — o mesmo padrão
 // (useDismissable + trap de Tab local) já usado em TiSupportModal,
 // ManagePlantaoModal e CrudModal/DeleteModal (Comunicados).
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 const ORGCHART_EDITOR_TITLE_ID = 'orgchart-editor-titulo';
 
 export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
@@ -27,15 +26,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
 
     useDismissable(modalRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
 
-    const trapTab = (e) => {
-        if (e.key !== 'Tab' || !modalRef.current) return;
-        const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-        if (items.length === 0) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
+    const trapTab = makeTrapTab(modalRef);
 
     useEffect(() => {
         setDraft(JSON.parse(JSON.stringify(data)));

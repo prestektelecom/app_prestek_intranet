@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useBentoTheme } from '../hooks/useBentoTheme';
-import { useDismissable } from '../hooks/useDismissable';
+import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
 
 // ─── Design system idêntico ao Dashboard ──────────────────────────────────────
@@ -15,7 +15,6 @@ const TECNICOS = [
 // Escape não fazia nada. `useDismissable` cobre Escape (fase de captura),
 // clique fora e foco de entrada/retorno; o trap de Tab abaixo é o mesmo
 // padrão do BottomSheet.jsx do chrome mobile.
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 const TITULO_ID = 'ti-support-modal-titulo';
 
 export default function TiSupportModal({ isOpen, onClose, user }) {
@@ -83,15 +82,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
 
   useDismissable(modalRef, { open: isOpen, onClose: handleClose, lockScroll: true, closeOnOutside: true });
 
-  const trapTab = (e) => {
-    if (e.key !== 'Tab' || !modalRef.current) return;
-    const items = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
-    if (items.length === 0) return;
-    const first = items[0];
-    const last = items[items.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-  };
+  const trapTab = makeTrapTab(modalRef);
 
   if (!isOpen) return null;
 
