@@ -18,6 +18,11 @@ node_modules/.vite/
 .env.development.local
 .env.test.local
 .env.production.local
+# Qualquer variação de nome com credenciais reais (achado 2026-09-16: um
+# arquivo "backend/.env copy.example" com espaço no nome não batia com
+# nenhuma regra acima e ficou rastreado com um token IXC real por meses).
+*.env copy*
+**/.env copy*
 
 # Logs
 npm-debug.log*
