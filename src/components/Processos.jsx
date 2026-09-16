@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { PROCESSOS, STATUS_CONFIG } from '../data/processosData';
-import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
 
@@ -60,6 +60,7 @@ function KpiTile({ label, value, icon }) {
 
 function ProcessosHero({ total, ativos, revisao, categorias, onAdd, isAdmin }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const kpis = [
         { label: 'Processos', value: total, icon: 'folder_open' },
         { label: 'Ativos', value: ativos, icon: 'check_circle' },
@@ -100,7 +101,7 @@ function ProcessosHero({ total, ativos, revisao, categorias, onAdd, isAdmin }) {
                         <button
                             onClick={onAdd}
                             className="inline-flex w-fit items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-bold shadow-sm transition-colors hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                            style={{ background: C.surface, color: C.accentDeep }}
+                            style={{ background: C.surface, color: isDark ? C.accentDark : C.accentDeep }}
                         >
                             <span className="material-symbols-outlined text-[18px]">add</span>
                             Novo Processo
@@ -314,7 +315,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                         <div className="sm:col-span-2">
                             <div className="flex items-baseline justify-between mb-1.5">
                                 <label htmlFor="processo-nome" className="text-[10px] font-extrabold text-faint uppercase tracking-widest">Nome do Processo *</label>
-                                <span className="text-[10px] font-bold text-muted tabular-nums">{form.nome.length}/100</span>
+                                <span className="text-[10px] font-bold text-faint tabular-nums">{form.nome.length}/100</span>
                             </div>
                             <input
                                 id="processo-nome"
@@ -375,7 +376,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                         <div className="sm:col-span-2">
                             <div className="flex items-baseline justify-between mb-1.5">
                                 <label htmlFor="processo-descricao" className="text-[10px] font-extrabold text-faint uppercase tracking-widest">Descrição *</label>
-                                <span className="text-[10px] font-bold text-muted tabular-nums">{form.descricao.length}/500</span>
+                                <span className="text-[10px] font-bold text-faint tabular-nums">{form.descricao.length}/500</span>
                             </div>
                             <textarea
                                 id="processo-descricao"
@@ -421,7 +422,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                             <label htmlFor="processo-tempo" className={labelCls}>Tempo Estimado</label>
                             <input id="processo-tempo" className={inputCls} value={form.tempoEstimado} onChange={e => set('tempoEstimado', e.target.value)} placeholder="Ex: 30min" aria-describedby="processo-tempo-dica" />
                             <div className="mt-1 min-h-[30px]">
-                                <p id="processo-tempo-dica" className="text-[11px] text-muted leading-snug">Duração aproximada (ex: "30min", "2h", "1 dia útil").</p>
+                                <p id="processo-tempo-dica" className="text-[11px] text-faint leading-snug">Duração aproximada (ex: "30min", "2h", "1 dia útil").</p>
                             </div>
                         </div>
                     </CampoSecao>
@@ -430,13 +431,13 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                         <div className="sm:col-span-2">
                             <label htmlFor="processo-doc" className={labelCls}>Link do Google Docs (POP)</label>
                             <input id="processo-doc" className={inputCls} type="url" value={form.docUrl} onChange={e => set('docUrl', e.target.value)} placeholder="https://docs.google.com/..." aria-describedby="processo-doc-dica" />
-                            <p id="processo-doc-dica" className="text-[11px] text-muted mt-1">Use um link com permissão de visualização para "qualquer pessoa com o link".</p>
+                            <p id="processo-doc-dica" className="text-[11px] text-faint mt-1">Use um link com permissão de visualização para "qualquer pessoa com o link".</p>
                         </div>
 
                         <div className="sm:col-span-2">
                             <label htmlFor="processo-tags" className={labelCls}>Tags (separadas por vírgula)</label>
                             <input id="processo-tags" className={inputCls} value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="Ex: IXC, cadastro, ativação" aria-describedby="processo-tags-dica" />
-                            <p id="processo-tags-dica" className="text-[11px] text-muted mt-1">Separe múltiplas tags por vírgula.</p>
+                            <p id="processo-tags-dica" className="text-[11px] text-faint mt-1">Separe múltiplas tags por vírgula.</p>
                         </div>
                     </CampoSecao>
                 </form>
@@ -507,7 +508,7 @@ function IconePicker({ value, onChange }) {
             </div>
             <div className="flex flex-wrap gap-1.5 max-h-[132px] overflow-y-auto">
                 {lista.length === 0 && (
-                    <p className="text-xs text-muted px-1 py-2">Nenhum ícone encontrado para "{busca}".</p>
+                    <p className="text-xs text-faint px-1 py-2">Nenhum ícone encontrado para "{busca}".</p>
                 )}
                 {lista.map(nome => (
                     <button
@@ -663,7 +664,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                 <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
                     <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
                         {categorias.length === 0 && (
-                            <p className="px-4 py-6 text-center text-sm text-muted">Nenhuma categoria cadastrada.</p>
+                            <p className="px-4 py-6 text-center text-sm text-faint">Nenhuma categoria cadastrada.</p>
                         )}
                         {categorias.map(cat => (
                             <div key={cat.id} className="flex items-center gap-3 px-4 py-3 bg-surface">
@@ -980,7 +981,7 @@ export default function Processos({ user, setCurrentView }) {
             {/* Lista Mobile (Cards) — oculta em md+ */}
             <div className="block md:hidden bg-surface border border-border rounded-[20px] overflow-hidden shadow-sm">
                 {processosPagina.length === 0 ? (
-                    <p className="px-6 py-12 text-center text-muted text-sm">
+                    <p className="px-6 py-12 text-center text-faint text-sm">
                         Nenhum processo encontrado para os filtros aplicados.
                     </p>
                 ) : processosPagina.map(p => {
@@ -1056,7 +1057,7 @@ export default function Processos({ user, setCurrentView }) {
                         <tbody className="divide-y divide-border bg-surface">
                             {processosPagina.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-muted text-sm">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-faint text-sm">
                                         Nenhum processo encontrado para os filtros aplicados.
                                     </td>
                                 </tr>

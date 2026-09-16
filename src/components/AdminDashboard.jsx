@@ -182,7 +182,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                     <div className="flex flex-col gap-1 p-4">
                         {/* Avatar Admin Azul Bento */}
                         <div className="mb-5 flex items-center gap-3 rounded-xl p-3" style={{ background: C.surfaceSoft }}>
-                            <BentoAvatar name={adminName} size={48} color={[C.accent, '#fff']} />
+                            <BentoAvatar name={adminName} size={48} color={[C.accent, C.onAccent]} />
                             <div className="flex min-w-0 flex-col">
                                 <p className="truncate text-sm font-bold" style={{ color: C.ink }}>{adminName}</p>
                                 <p className="text-xs font-medium" style={{ color: C.ink2 }}>Super Admin</p>

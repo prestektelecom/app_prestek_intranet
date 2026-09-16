@@ -222,13 +222,13 @@ export default function Coverage({ user }) {
                         {carregando ? (
                             <div className="flex h-full flex-col items-center justify-center gap-3 bg-surface">
                                 <span className="material-symbols-outlined animate-spin text-3xl text-[var(--accent)]">autorenew</span>
-                                <p className="text-[13px] font-semibold text-muted">Buscando regiões no IXC...</p>
+                                <p className="text-[13px] font-semibold text-faint">Buscando regiões no IXC...</p>
                             </div>
                         ) : erro ? (
                             <div role="alert" className="flex h-full flex-col items-center justify-center gap-2 bg-surface px-6 text-center">
                                 <span className="material-symbols-outlined text-4xl text-[var(--danger-bento)]">cloud_off</span>
                                 <p className="text-[13px] font-semibold text-foreground">Não foi possível carregar as regiões</p>
-                                <p className="max-w-xs text-[12px] leading-relaxed text-muted">
+                                <p className="max-w-xs text-[12px] leading-relaxed text-faint">
                                     O IXC não respondeu. Isso costuma ser temporário.
                                 </p>
                                 <button

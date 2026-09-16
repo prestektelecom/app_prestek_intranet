@@ -41,7 +41,7 @@ export default function RegionPanel({
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 border-b border-border px-4 py-3">
                 <div className="flex min-w-0 items-center gap-2">
                     <h2 className="font-display truncate text-xl font-bold text-foreground">Regiões</h2>
-                    <span className="font-mono text-[11px] tabular-nums text-muted">{regioes.length}</span>
+                    <span className="font-mono text-[11px] tabular-nums text-faint">{regioes.length}</span>
                     {carregando && (
                         <span className="material-symbols-outlined animate-spin text-[15px] text-[var(--accent)]">autorenew</span>
                     )}
@@ -97,7 +97,7 @@ export default function RegionPanel({
                     <div className="flex flex-col items-center gap-2 px-4 py-16 text-center">
                         <span className="material-symbols-outlined text-4xl text-muted">location_off</span>
                         <p className="text-[13px] font-semibold text-foreground">Nenhuma região encontrada</p>
-                        <p className="text-[12px] text-muted">Ajuste a busca ou limpe os filtros.</p>
+                        <p className="text-[12px] text-faint">Ajuste a busca ou limpe os filtros.</p>
                     </div>
                 ) : (
                     <>
@@ -116,7 +116,7 @@ export default function RegionPanel({
                             <button
                                 type="button"
                                 onClick={() => setVisiveis(v => v + LOTE)}
-                                className="mt-1 w-full cursor-pointer rounded-xl border border-dashed border-border py-2.5 text-[12px] font-bold text-muted transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                                className="mt-1 w-full cursor-pointer rounded-xl border border-dashed border-border py-2.5 text-[12px] font-bold text-faint transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                             >
                                 Carregar mais {Math.min(LOTE, restantes)} de {restantes}
                             </button>

@@ -9,7 +9,7 @@ import { SkeletonRow, SkeletonCard, EmptyState, ErrorState } from './schedule/Sc
 import { useScheduleData } from '../hooks/useScheduleData';
 import { toIsoDay, formatarData, getDiaSemana, isFimDeSemana, isHoje } from '../utils/dateHelpers';
 import { handleImprimir, handleExportarICal } from '../services/exportService';
-import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
 
@@ -28,12 +28,15 @@ function HeroKpiTile({ label, value, icon }) {
 }
 
 function HeroActionButton({ onClick, icon, children, primary, C }) {
+  // accentDeep é calibrado para texto sobre fundo claro; reprovava 2,11:1 no
+  // AMOLED, onde C.surface é quase preto (achado da auditoria global, Fase 16).
+  const isDark = C.bg !== BENTO_LIGHT.bg;
   return (
     <button
       onClick={onClick}
       className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
       style={primary
-        ? { background: C.surface, color: C.accentDeep }
+        ? { background: C.surface, color: isDark ? C.accentDark : C.accentDeep }
         : { background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', color: 'white' }}
     >
       <span className="material-symbols-outlined text-[18px]">{icon}</span>

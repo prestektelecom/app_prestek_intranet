@@ -25,7 +25,7 @@ export default function FilterBar({ children, activeFilters = [], onClear }) {
             // after:-inset-y-[14px] leva o alvo de ~16px de altura para 44px sem
             // empurrar o layout — o texto sublinhado continua do mesmo tamanho.
             className="relative text-xs font-semibold underline-offset-2 hover:underline after:absolute after:-inset-y-[14px] after:-inset-x-2 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
-            style={{ color: C.danger }}
+            style={{ color: C.dangerStrong }}
           >
             Limpar filtros
           </button>
@@ -57,7 +57,7 @@ export default function FilterBar({ children, activeFilters = [], onClear }) {
               type="button"
               onClick={onClear}
               className="relative text-xs font-semibold after:absolute after:-inset-y-[14px] after:-inset-x-2 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
-              style={{ color: C.danger }}
+              style={{ color: C.dangerStrong }}
             >
               Limpar
             </button>

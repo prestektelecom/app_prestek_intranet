@@ -179,7 +179,10 @@
   --danger-soft:     rgba(255, 107, 107, 0.15);
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
-  --danger-strong:   var(--danger-bento);
+  /* -bento é preenchimento gráfico (piso 3:1); texto precisa de 4,5:1 e o
+     alias direto media 4,50:1 sobre danger-soft — no limite. Tom próprio
+     com folga real (Fase 16, achado da auditoria global). */
+  --danger-strong:   #FF8A8A;
   --danger-fill:     #FF6B6B;
   --on-danger:       #0B1B2E;
   --warning-fill:    #FACC15;
@@ -332,7 +335,10 @@
   --danger-soft:     rgba(255, 0, 122, 0.15);
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
-  --danger-strong:   var(--danger-bento);
+  /* -bento é preenchimento gráfico (piso 3:1); o alias direto reprovava
+     3,57:1 como texto sobre danger-soft. Tom próprio com folga real
+     (Fase 16, achado da auditoria global). */
+  --danger-strong:   #FF7AB8;
   --danger-fill:     #FF4DA0;
   --on-danger:       #0B1B2E;
   --warning-fill:    #FACC15;
@@ -412,7 +418,11 @@
   --danger-soft:     rgba(213, 0, 0, 0.15);
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
-  --danger-strong:   var(--danger-bento);
+  /* -bento é preenchimento gráfico (piso 3:1); o alias direto reprovava
+     2,98:1 como texto sobre danger-soft (a pior medição dos 5 temas — preto
+     puro do AMOLED não perdoa vermelho saturado). Tom próprio com folga real
+     (Fase 16, achado da auditoria global). */
+  --danger-strong:   #FF6E6E;
   --danger-fill:     #D50000;
   --on-danger:       #FFFFFF;
   --warning-fill:    #FACC15;

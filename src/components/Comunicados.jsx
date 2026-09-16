@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { fundoHero } from './ui/heroGradiente';
 import HeroSearchInput from './ui/HeroSearchInput';
@@ -420,6 +420,7 @@ function HeroKpiTile({ label, value, icon, color }) {
 
 function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kpiGerais, isLoading, isAdmin, onNewComunicado }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const kpis = [
         { label: 'Total', value: isLoading ? '···' : kpiTotal, icon: 'campaign', color: null },
         { label: 'Urgentes', value: isLoading ? '···' : kpiUrgentes, icon: 'priority_high', color: C.danger },
@@ -461,7 +462,7 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kp
                         <button
                             onClick={onNewComunicado}
                             className="inline-flex w-fit items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-bold shadow-sm transition-colors hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                            style={{ background: C.surface, color: C.accentDeep }}
+                            style={{ background: C.surface, color: isDark ? C.accentDark : C.accentDeep }}
                         >
                             <span className="material-symbols-outlined text-[18px]">add_circle</span>
                             Novo Comunicado

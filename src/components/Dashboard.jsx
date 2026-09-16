@@ -12,7 +12,7 @@ import { useTouchOnly } from '../hooks/useTouchOnly'
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 /* ── Tokens utilitários do design system semântico (vars em index.css) ── */
-const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-muted'
+const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-faint'
 const CARD_TITLE = 'font-display text-xl font-bold tracking-tight text-foreground'
 const CARD = 'bento-hover-border flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm'
 // `min-h-[44px]`: sem isso os dois botões mediam ~35px, abaixo do piso de
@@ -148,7 +148,7 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
         </div>
         <div className="leading-tight">
           <div className="text-lg font-bold tabular-nums text-foreground">{currentTime || '--:--'}</div>
-          <div className="text-xs text-muted">{currentDate || '...'}</div>
+          <div className="text-xs text-faint">{currentDate || '...'}</div>
         </div>
       </div>
     </header>
@@ -328,7 +328,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         {!osLoading && !osError && !allGood && (
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-deep)] truncate" title="Assumidas">
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-dark)] truncate" title="Assumidas">
                 ⚡ Assumidas
               </span>
               <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
@@ -355,7 +355,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
             </div>
 
             <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-muted truncate" title="Abertas">
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-faint truncate" title="Abertas">
                 📋 Abertas
               </span>
               <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
@@ -688,7 +688,7 @@ function ComunicadosCard({ setCurrentView }) {
     Importante: { chip: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]', border: 'border-l-[var(--warning-bento)]' },
     Aviso:      { chip: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]', border: 'border-l-[var(--warning-bento)]' },
     Geral:      { chip: 'bg-[var(--success-soft)] text-[var(--success-bento)]', border: 'border-l-[var(--success-bento)]' },
-    Info:       { chip: 'bg-[var(--accent-soft)] text-[var(--accent-deep)]',     border: 'border-l-[var(--accent)]' },
+    Info:       { chip: 'bg-[var(--accent-soft)] text-[var(--accent-dark)]',     border: 'border-l-[var(--accent)]' },
   };
   const TAG_FALLBACK = { chip: 'bg-surface-raised text-faint', border: 'border-l-[var(--border)]' };
   const TAG_LABELS = { Urgente: 'URGENTE', Importante: 'IMPORTANTE', Aviso: 'AVISO', Geral: 'GERAL', Info: 'INFO' };
@@ -760,7 +760,7 @@ function ComunicadosCard({ setCurrentView }) {
             <div key={i} className="h-16 shrink-0 animate-pulse rounded-xl bg-surface-raised" />
           )) : erro ? (
             <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <p className="m-0 text-[13px] text-muted">Não foi possível carregar os comunicados.</p>
+              <p className="m-0 text-[13px] text-faint">Não foi possível carregar os comunicados.</p>
               <button
                 type="button"
                 onClick={carregarComunicados}
@@ -771,7 +771,7 @@ function ComunicadosCard({ setCurrentView }) {
               </button>
             </div>
           ) : rest.length === 0 ? (
-            <div className="py-8 text-center text-[13px] text-muted">
+            <div className="py-8 text-center text-[13px] text-faint">
               {comunicados.length === 0 ? 'Nenhum comunicado recente.' : 'Nenhum outro comunicado.'}
             </div>
           ) : rest.map((it, i) => {
@@ -802,7 +802,7 @@ function ComunicadosCard({ setCurrentView }) {
                   <div className="truncate text-[12px] text-faint">{preview}</div>
                 </div>
                 <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[140px]">
-                  <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[10.5px] text-muted">
+                  <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[10.5px] text-faint">
                     {relativeTime(it.criado_em)}
                   </div>
                   <div title={it.departamento_autor || ''} className="truncate max-w-[140px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
@@ -861,12 +861,12 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
                   : 'hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md'
               }`}
             >
-              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.emBreve ? 'bg-surface-raised text-muted' : 'bg-[var(--accent-soft)] text-[var(--accent)]'}`}>
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.emBreve ? 'bg-surface-raised text-faint' : 'bg-[var(--accent-soft)] text-[var(--accent)]'}`}>
                 {IconC && <IconC />}
               </div>
               <div className="min-w-0 flex-1 flex flex-col gap-0.5">
                 <span className="text-[13px] font-semibold text-foreground leading-tight">{a.label}</span>
-                <span className="text-[11px] text-muted leading-tight">{a.emBreve ? 'Em breve' : a.hint}</span>
+                <span className="text-[11px] text-faint leading-tight">{a.emBreve ? 'Em breve' : a.hint}</span>
               </div>
             </button>
           );
@@ -1038,7 +1038,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
           </div>
         )) : erro ? (
           <div className="flex flex-col items-center gap-2 py-4 text-center">
-            <p className="m-0 text-[13px] text-muted">Não foi possível carregar os aniversariantes.</p>
+            <p className="m-0 text-[13px] text-faint">Não foi possível carregar os aniversariantes.</p>
             <button
               type="button"
               onClick={carregarAniversariantes}
@@ -1049,7 +1049,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
             </button>
           </div>
         ) : aniversariantes.length === 0 ? (
-          <div className="py-4 text-center text-[13px] text-muted">Nenhum aniversariante nos próximos 7 dias</div>
+          <div className="py-4 text-center text-[13px] text-faint">Nenhum aniversariante nos próximos 7 dias</div>
         ) : aniversariantes.map(c => {
           const iminente = c.dias <= 1;
           const depto = departamento(c);
@@ -1062,7 +1062,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
               <AvatarAniversariante nome={c.funcionario_nome} foto={c.foto_perfil} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-semibold text-foreground">{nomeCurto(c.funcionario_nome)}</div>
-                <div className="truncate text-[11.5px] text-muted">
+                <div className="truncate text-[11.5px] text-faint">
                   {dataAniversarioExtenso(c.data_nascimento)}{depto ? ` · ${depto}` : ''}
                 </div>
               </div>
@@ -1151,7 +1151,7 @@ function TeamBento() {
           <div key={i} className="h-11 animate-pulse rounded-lg bg-surface-raised" />
         )) : erro ? (
           <div className="flex flex-col items-center gap-2 py-4 text-center">
-            <p className="m-0 text-[13px] text-muted">Não foi possível carregar quem está online.</p>
+            <p className="m-0 text-[13px] text-faint">Não foi possível carregar quem está online.</p>
             <button
               type="button"
               onClick={fetchOnline}
@@ -1162,7 +1162,7 @@ function TeamBento() {
             </button>
           </div>
         ) : members.length === 0 ? (
-          <div className="py-4 text-center text-[13px] text-muted">Nenhum colaborador online.</div>
+          <div className="py-4 text-center text-[13px] text-faint">Nenhum colaborador online.</div>
         ) : members.map(m => (
           <div key={m.id} className="flex items-center gap-2.5 rounded-lg px-1 py-1.5">
             <div className="relative shrink-0">
@@ -1171,7 +1171,7 @@ function TeamBento() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-[13px] font-semibold text-foreground">{m.name}</div>
-              <div className="text-[11.5px] text-muted">{m.role}</div>
+              <div className="text-[11.5px] text-faint">{m.role}</div>
             </div>
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--success-bento)]">Online</span>
           </div>
@@ -1359,7 +1359,7 @@ export default function Dashboard({ setCurrentView, user }) {
           </div>
         </ResponsiveReactGridLayout>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-[11.5px] tracking-wide text-muted">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-[11.5px] tracking-wide text-faint">
           <span>© 2026 Prestek Telecom · Portal Interno · Confidencial.</span>
           <div className="flex gap-5">
             <a href="#" className="text-inherit no-underline hover:text-foreground">Política de Privacidade</a>

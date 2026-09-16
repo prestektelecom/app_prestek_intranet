@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import ResponsiveTable from './responsive/ResponsiveTable';
 import FilterBar from './responsive/FilterBar';
 import { fundoHero } from './ui/heroGradiente';
@@ -166,11 +166,15 @@ function TicketsHero({ total, abertos, finalizados, pendentes }) {
 
 function StatusBadge({ status }) {
   const C = useBentoTheme();
+  const isDark = C.bg !== BENTO_LIGHT.bg;
   const category = getStatusCategory(status);
   const config =
     category === 'finalizado' ? { label: 'Finalizado', bg: C.successSoft, text: C.success } :
     category === 'cancelado' ? { label: 'Cancelado', bg: C.dangerSoft, text: C.danger } :
-    category === 'aberto' ? { label: 'Aberto', bg: C.accentSoft, text: C.accentDeep } :
+    // accentDeep é calibrado para texto sobre fundo claro; reprovava 1,77:1
+    // no AMOLED (achado da auditoria global, Fase 16) — inverte por tema
+    // como o pill de privilégio do Painel Admin (Fase 15).
+    category === 'aberto' ? { label: 'Aberto', bg: C.accentSoft, text: isDark ? C.accentDark : C.accentDeep } :
     { label: 'Pendente', bg: C.warningSoft, text: C.warning };
 
   return (
@@ -185,6 +189,7 @@ function StatusBadge({ status }) {
 
 export default function TicketsList({ user }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -336,7 +341,7 @@ export default function TicketsList({ user }) {
                     className="px-4 py-2 text-sm font-bold rounded-lg transition-all"
                     style={{
                       background: C.accentSoft,
-                      color: C.accentDeep,
+                      color: isDark ? C.accentDark : C.accentDeep,
                     }}
                   >
                     Ver todos

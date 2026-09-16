@@ -138,7 +138,7 @@ export default function ManagePlantaoModal({
                                 />
                             </label>
                         ) : (
-                            <div className="flex gap-2 items-center bg-[var(--accent-soft)] text-[var(--accent-deep)] px-3 py-2.5 rounded-lg border border-[var(--accent)]/20">
+                            <div className="flex gap-2 items-center bg-[var(--accent-soft)] text-[var(--accent-dark)] px-3 py-2.5 rounded-lg border border-[var(--accent)]/20">
                                 <span className="material-symbols-outlined text-[18px] shrink-0">calendar_today</span>
                                 <span className="font-extrabold text-xs">
                                     {selectedDate?.split('-').reverse().join('/')}

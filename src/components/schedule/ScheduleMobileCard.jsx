@@ -37,7 +37,7 @@ export default function ScheduleMobileCard({
           <div
             className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center font-extrabold text-sm ${
               isToday
-                ? 'bg-[var(--accent)] text-white shadow-md shadow-[var(--accent)]/30'
+                ? 'bg-[var(--accent)] text-[var(--on-accent)] shadow-md shadow-[var(--accent)]/30'
                 : isWeekend
                 ? 'bg-surface-raised text-faint/70'
                 : 'bg-surface-raised text-foreground'

@@ -6,7 +6,7 @@ import { TECNOLOGIAS, STATUS_OPCOES, VELOCIDADES, STATUS_META, TECH_META } from 
 const CAMPO =
     'w-full rounded-xl border border-border bg-surface px-3 py-2 text-[13px] text-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--accent)]';
 
-const ROTULO = 'mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-muted';
+const ROTULO = 'mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint';
 
 // Tecnologia e status têm 3 opções cada: um <select> cobra dois toques para
 // escolher entre três, e esconde a cor que o mapa vai usar. Segmentado mostra
@@ -134,7 +134,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                 <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
                     <div className="min-w-0">
                         <h3 className="text-[15px] font-bold text-foreground">Configurar cobertura</h3>
-                        <p className="mt-0.5 truncate text-[12px] text-muted">
+                        <p className="mt-0.5 truncate text-[12px] text-faint">
                             {registro.cidade} — {registro.bairro}
                         </p>
                     </div>
@@ -152,7 +152,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                     <div className="flex items-start gap-2.5 rounded-xl border border-border bg-background px-3.5 py-2.5">
                         <span className="material-symbols-outlined mt-px text-[18px] text-[var(--accent)]">info</span>
                         <div className="min-w-0 text-[12px] leading-relaxed">
-                            <p className="text-muted">Cidade e bairro vêm do IXC e não são editáveis aqui.</p>
+                            <p className="text-faint">Cidade e bairro vêm do IXC e não são editáveis aqui.</p>
                             <p className="font-semibold text-foreground">
                                 {registro.total_contratos} contrato(s) ativo(s) neste bairro
                             </p>
@@ -163,7 +163,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                         <div>
                             <label className={ROTULO}>
                                 Tecnologia
-                                {!tocado.tecnologia && <span className="ml-1.5 normal-case tracking-normal text-muted">— ainda não definida</span>}
+                                {!tocado.tecnologia && <span className="ml-1.5 normal-case tracking-normal text-faint">— ainda não definida</span>}
                             </label>
                             <Segmentado
                                 opcoes={TECNOLOGIAS}
@@ -188,7 +188,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                         <div className="sm:col-span-2">
                             <label className={ROTULO}>
                                 Status da rede
-                                {!tocado.status && <span className="ml-1.5 normal-case tracking-normal text-muted">— ainda não definido</span>}
+                                {!tocado.status && <span className="ml-1.5 normal-case tracking-normal text-faint">— ainda não definido</span>}
                             </label>
                             <Segmentado
                                 opcoes={STATUS_OPCOES}
@@ -201,7 +201,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                         <div className="sm:col-span-2">
                             <label className={ROTULO} htmlFor="ov-percentual">
                                 Percentual de cobertura
-                                {!tocado.percentual && <span className="ml-1.5 normal-case tracking-normal text-muted">— ainda não definido</span>}
+                                {!tocado.percentual && <span className="ml-1.5 normal-case tracking-normal text-faint">— ainda não definido</span>}
                             </label>
                             <div className="flex items-center gap-3">
                                 <input
@@ -223,7 +223,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                                         handleChange('percentual_cobertura', v);
                                     }}
                                 />
-                                <span className="text-[13px] font-bold text-muted">%</span>
+                                <span className="text-[13px] font-bold text-faint">%</span>
                             </div>
                         </div>
                     </div>
@@ -277,7 +277,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
 
                         {mapaAberto && (
                             <div className="mt-3 overflow-hidden rounded-xl border border-border">
-                                <p className="flex items-center gap-1.5 border-b border-border bg-background px-3 py-2 text-[11.5px] text-muted">
+                                <p className="flex items-center gap-1.5 border-b border-border bg-background px-3 py-2 text-[11.5px] text-faint">
                                     <span className="material-symbols-outlined text-[15px]">touch_app</span>
                                     Clique no mapa para definir a posição exata do bairro
                                 </p>
@@ -301,7 +301,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                         <button
                             type="button"
                             onClick={onFechar}
-                            className="cursor-pointer rounded-xl border border-border bg-surface px-4 py-2.5 text-[13px] font-semibold text-muted transition-all hover:bg-surface-raised active:scale-[0.98]"
+                            className="cursor-pointer rounded-xl border border-border bg-surface px-4 py-2.5 text-[13px] font-semibold text-faint transition-all hover:bg-surface-raised active:scale-[0.98]"
                         >
                             Cancelar
                         </button>

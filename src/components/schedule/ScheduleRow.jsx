@@ -18,7 +18,7 @@ export default function ScheduleRow({ date, day, isToday, isWeekend, n1, n2, mgr
                 <div className="flex items-center gap-2">
                     {date}
                     {isToday && (
-                        <span className="text-[11px] font-extrabold uppercase tracking-widest bg-[var(--accent)] text-white px-1.5 py-0.5 rounded-full">Hoje</span>
+                        <span className="text-[11px] font-extrabold uppercase tracking-widest bg-[var(--accent)] text-[var(--on-accent)] px-1.5 py-0.5 rounded-full">Hoje</span>
                     )}
                 </div>
             </td>

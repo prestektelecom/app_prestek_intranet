@@ -9,7 +9,11 @@ export default function UserAvatar({ user, allowEmpty, hideName, className, size
                  <div className="size-8 rounded-full bg-surface-raised border border-border flex items-center justify-center">
                     <span className="material-symbols-outlined text-[16px] text-muted">person_off</span>
                  </div>
-                 {!hideName && <span className="text-[11px] font-bold text-muted opacity-50 italic">Pendente</span>}
+                 {/* opacity-50 saía do fix: mesmo com text-faint, metade da
+                     opacidade reprova 2,35:1 — itálico já sinaliza "pendente"
+                     sem precisar apagar o texto (achado da auditoria global,
+                     Fase 16). */}
+                 {!hideName && <span className="text-[11px] font-bold text-faint italic">Pendente</span>}
             </div>
         );
     }

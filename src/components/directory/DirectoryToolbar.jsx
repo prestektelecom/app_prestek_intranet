@@ -22,7 +22,7 @@ const VISIVEIS = 8;
 
 const SEG_BASE = 'inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]';
 const SEG_ATIVO = 'bg-[var(--accent-soft)] text-[var(--accent-dark)] ring-1 ring-inset ring-[var(--accent)]/50';
-const SEG_INATIVO = 'text-muted hover:bg-background';
+const SEG_INATIVO = 'text-faint hover:bg-background';
 
 export default function DirectoryToolbar({
     chips,

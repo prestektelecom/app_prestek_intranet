@@ -2,13 +2,19 @@ import React from 'react';
 import ChipButton from '../ui/ChipButton';
 import { TECNOLOGIAS, STATUS_OPCOES, STATUS_META, TECH_META } from './constants';
 
+// `ChipButton` usa a cor recebida como TEXTO direto quando ela não é
+// `C.accent` (pressupõe cor já calibrada, como em deptColors.js) — mas
+// `TECH_META`/`STATUS_META` usam `cor` para casar com o marcador do Leaflet,
+// nunca calibrada para texto. `corTexto` (mais clara) evita reprovar 4,5:1 no
+// AMOLED (achado da auditoria global, Fase 16).
+
 // Fora do componente de propósito: definido inline, `Grupo` vira um tipo novo
 // a cada render e o React remonta a subárvore — o que zerava a rolagem
 // horizontal dos chips justamente ao clicar num deles.
 function Grupo({ titulo, children }) {
     return (
         <div className="flex min-w-0 items-center gap-2">
-            <span className="hidden shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-muted sm:block">
+            <span className="hidden shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint sm:block">
                 {titulo}
             </span>
             <div className="min-w-0 snap-x overflow-x-auto scroll-smooth py-1 scrollbar-hide">
@@ -57,7 +63,7 @@ export default function CoverageFilters({
                         key={t}
                         label={t}
                         icon={TECH_META[t]?.icon}
-                        color={TECH_META[t]?.cor}
+                        color={TECH_META[t]?.corTexto || TECH_META[t]?.cor}
                         count={contaTec(t)}
                         active={filtroTec === t}
                         onClick={() => setFiltroTec(filtroTec === t ? '' : t)}
@@ -76,7 +82,7 @@ export default function CoverageFilters({
                         key={s}
                         label={s}
                         icon={STATUS_META[s]?.icon}
-                        color={STATUS_META[s]?.cor}
+                        color={STATUS_META[s]?.corTexto || STATUS_META[s]?.cor}
                         count={contaStatus(s)}
                         active={filtroStatus === s}
                         onClick={() => setFiltroStatus(filtroStatus === s ? '' : s)}

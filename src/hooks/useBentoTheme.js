@@ -95,7 +95,9 @@ export const BENTO_DARK_DEFAULT = {
   warningStrong: '#FACC15',
   danger: '#FF6B6B',
   dangerSoft: 'rgba(255, 107, 107, 0.15)',
-  dangerStrong: '#FF6B6B',
+  // Alias direto de `danger` media 4,50:1 como texto — no limite. Tom próprio
+  // com folga real, mesmo achado/fix da auditoria global (Fase 16).
+  dangerStrong: '#FF8A8A',
   dangerFill: '#FF6B6B',
   onDanger: '#0B1B2E',
   warningFill: '#FACC15',

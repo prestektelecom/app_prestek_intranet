@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo, useId } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { useBentoTheme } from '../hooks/useBentoTheme';
+import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
@@ -76,6 +76,7 @@ function KpiTile({ label, value, icon }) {
 
 function OfficesHero({ total, contAL, contSE, matriz, onAdd, isAdmin }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const kpis = [
         { label: 'Unidades', value: total, icon: 'apartment' },
         { label: 'Alagoas', value: contAL, icon: 'location_on' },
@@ -116,7 +117,7 @@ function OfficesHero({ total, contAL, contSE, matriz, onAdd, isAdmin }) {
                         <button
                             onClick={onAdd}
                             className="inline-flex w-fit items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-bold shadow-sm transition-colors hover:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                            style={{ background: C.surface, color: C.accentDeep }}
+                            style={{ background: C.surface, color: isDark ? C.accentDark : C.accentDeep }}
                         >
                             <span className="material-symbols-outlined text-[18px]">add_location</span>
                             Adicionar Escritório

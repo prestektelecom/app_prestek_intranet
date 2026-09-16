@@ -36,11 +36,11 @@ export default function MapLegend() {
                                 {meta.icon}
                             </span>
                             <b className="font-semibold">{nome}</b>
-                            <span className="text-muted">— {meta.descricao}</span>
+                            <span className="text-faint">— {meta.descricao}</span>
                         </span>
                     ))}
 
-                    <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-2 text-[11px] text-muted">
+                    <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-2 text-[11px] text-faint">
                         <span className="flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-[14px]">location_on</span>
                             Cidade

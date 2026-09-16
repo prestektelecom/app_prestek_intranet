@@ -1,6 +1,6 @@
 import React from 'react';
 import { tone } from '../../utils/tone';
-import { STATUS_META, TECH_META, STATUS_COR_PADRAO } from './constants';
+import { STATUS_META, TECH_META, STATUS_COR_PADRAO, STATUS_COR_TEXTO_PADRAO } from './constants';
 
 // O card inteiro é um <button> e a ação de admin fica como irmão posicionado
 // por cima — botão dentro de botão é HTML inválido e quebra a navegação por
@@ -9,6 +9,9 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
     const status = STATUS_META[row.status];
     const tech = TECH_META[row.tecnologia];
     const cor = status?.cor || STATUS_COR_PADRAO;
+    // Tom só para texto — mais claro que `cor`, que precisa continuar igual
+    // ao marcador do Leaflet. `cor` sozinha reprovava 4,5:1 no AMOLED.
+    const corTexto = status?.corTexto || STATUS_COR_TEXTO_PADRAO;
     const semLocal = row.latitude == null || row.longitude == null;
 
     return (
@@ -27,7 +30,7 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
                 <div className="flex items-start gap-2.5">
                     <span
                         className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg font-mono text-[11px] font-bold"
-                        style={{ background: tone(cor, 0.14), color: cor }}
+                        style={{ background: tone(cor, 0.14), color: corTexto }}
                     >
                         {row.estado}
                     </span>
@@ -36,7 +39,7 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
                         <p className="truncate text-[13px] font-bold leading-tight text-foreground">
                             {row.bairro || row.cidade}
                         </p>
-                        <p className="truncate text-[11.5px] text-muted">
+                        <p className="truncate text-[11.5px] text-faint">
                             {row.bairro ? row.cidade : 'Sede do município'}
                         </p>
                     </div>
@@ -52,13 +55,13 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
                     {tech ? (
                         <span
                             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold"
-                            style={{ background: tone(tech.cor, 0.12), color: tech.cor }}
+                            style={{ background: tone(tech.cor, 0.12), color: tech.corTexto || tech.cor }}
                         >
                             <span className="material-symbols-outlined text-[12px] leading-none">{tech.icon}</span>
                             {row.tecnologia}
                         </span>
                     ) : (
-                        <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-muted">
+                        <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-faint">
                             Sem tecnologia
                         </span>
                     )}
@@ -67,7 +70,7 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
                     {status && (
                         <span
                             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold"
-                            style={{ background: tone(cor, 0.12), color: cor }}
+                            style={{ background: tone(cor, 0.12), color: corTexto }}
                         >
                             <span className="material-symbols-outlined text-[12px] leading-none">{status.icon}</span>
                             {row.status}
@@ -80,7 +83,7 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
                         cada — encolhia a lista sem informar mais nada. */}
                     {semLocal && (
                         <span
-                            className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-muted"
+                            className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-faint"
                             title="Sem coordenadas cadastradas — esta região não aparece no mapa"
                         >
                             <span className="material-symbols-outlined text-[12px] leading-none">location_off</span>
@@ -94,7 +97,7 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
                                 {row.velocidade_maxima}
                             </span>
                         )}
-                        <span className="font-mono text-[11px] font-bold tabular-nums text-muted">
+                        <span className="font-mono text-[11px] font-bold tabular-nums text-faint">
                             {row.total_contratos}
                             <span className="ml-0.5 font-sans font-medium">contr.</span>
                         </span>

@@ -7,7 +7,7 @@ export const FIELD_CLASS =
 
 export const LABEL_CLASS = 'mb-1 block text-sm font-semibold text-foreground';
 
-export const HINT_CLASS = 'mt-1 text-xs text-muted';
+export const HINT_CLASS = 'mt-1 text-xs text-faint';
 
 export function ModalField({ label, hint, children }) {
     return (

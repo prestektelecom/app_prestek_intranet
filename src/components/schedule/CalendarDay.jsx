@@ -10,7 +10,7 @@ export default function CalendarDay({ day, isToday, active, onClick, isAdmin }) 
     }
 
     if (isToday) {
-        classes += "bg-[var(--accent)] text-white shadow-md shadow-[var(--accent)]/40 z-10 ";
+        classes += "bg-[var(--accent)] text-[var(--on-accent)] shadow-md shadow-[var(--accent)]/40 z-10 ";
     } else if (active) {
         classes += "text-foreground hover:bg-[var(--accent-soft)] border border-border bg-surface ";
     } else {
