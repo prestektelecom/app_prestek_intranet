@@ -176,16 +176,25 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
     });
     const [erros, setErros] = useState({});
     const [sujo, setSujo] = useState(false);
+    // Confirmação de descarte inline (nunca window.confirm) — mesmo dialog,
+    // conteúdo coberto por overlay, trap de Tab reescopado para os 2 botões
+    // enquanto ela está aberta.
+    const [confirmDescartar, setConfirmDescartar] = useState(false);
 
     const modalRef = useRef(null);
+    const overlayRef = useRef(null);
+    const continuarEditandoRef = useRef(null);
     const nomeRef = useRef(null);
     const descricaoRef = useRef(null);
     const sujoRef = useRef(false);
+    const confirmDescartarRef = useRef(false);
 
     const tituloId = 'processo-modal-titulo';
     const formId = 'processo-modal-form';
 
     useEffect(() => { sujoRef.current = sujo; }, [sujo]);
+    useEffect(() => { confirmDescartarRef.current = confirmDescartar; }, [confirmDescartar]);
+    useEffect(() => { if (confirmDescartar) continuarEditandoRef.current?.focus(); }, [confirmDescartar]);
 
     // Foco inicial no primeiro campo, ao abrir
     useEffect(() => { nomeRef.current?.focus(); }, []);
@@ -196,12 +205,15 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
         function onKeyDown(e) {
             if (e.key === 'Escape') {
                 e.preventDefault();
-                if (sujoRef.current && !window.confirm('Existem alterações não salvas neste processo. Deseja descartá-las?')) return;
+                if (confirmDescartarRef.current) { setConfirmDescartar(false); return; }
+                if (sujoRef.current) { setConfirmDescartar(true); return; }
                 onFechar();
                 return;
             }
-            if (e.key !== 'Tab' || !modalRef.current) return;
-            const focaveis = modalRef.current.querySelectorAll(
+            if (e.key !== 'Tab') return;
+            const container = confirmDescartarRef.current ? overlayRef.current : modalRef.current;
+            if (!container) return;
+            const focaveis = container.querySelectorAll(
                 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
             );
             if (focaveis.length === 0) return;
@@ -221,7 +233,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
     }
 
     function tentarFechar() {
-        if (sujo && !window.confirm('Existem alterações não salvas neste processo. Deseja descartá-las?')) return;
+        if (sujo) { setConfirmDescartar(true); return; }
         onFechar();
     }
 
@@ -278,6 +290,11 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                 aria-labelledby={tituloId}
                 className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-border"
             >
+                {/* Escondido de leitor de tela e fora do trap de Tab enquanto a
+                    confirmação de descarte está aberta — sem isso, Tab/leitura
+                    por seta ainda alcançaria os campos do formulário embaixo
+                    do overlay. */}
+                <div className="contents" aria-hidden={confirmDescartar || undefined}>
                 {/* Header do modal */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-surface-raised">
                     <div className="flex items-center gap-3">
@@ -403,19 +420,22 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                         <div>
                             <label htmlFor="processo-versao" className={labelCls}>Versão</label>
                             <input id="processo-versao" className={inputCls} value={form.versao} onChange={e => set('versao', e.target.value)} placeholder="1.0" />
-                            <div className="mt-1 min-h-[30px]" />
+                            {/* Espelha a classe/texto real da dica de "Tempo Estimado", só
+                                invisível — a altura acompanha a rampa tipográfica sozinha
+                                em vez de um min-h em pixel fixo que pode descolar dela. */}
+                            <p className="mt-1 text-[11px] text-faint leading-snug invisible" aria-hidden="true">&nbsp;</p>
                         </div>
 
                         <div>
                             <label htmlFor="processo-responsavel" className={labelCls}>Responsável</label>
                             <input id="processo-responsavel" className={inputCls} value={form.responsavelNome} onChange={e => set('responsavelNome', e.target.value)} placeholder="Ex: Coordenador de TI" />
-                            <div className="mt-1 min-h-[30px]" />
+                            <p className="mt-1 text-[11px] text-faint leading-snug invisible" aria-hidden="true">&nbsp;</p>
                         </div>
 
                         <div>
                             <label htmlFor="processo-etapas" className={labelCls}>Nº de Etapas</label>
                             <input id="processo-etapas" className={inputCls} type="number" min="0" value={form.etapas} onChange={e => set('etapas', e.target.value)} placeholder="Ex: 5" />
-                            <div className="mt-1 min-h-[30px]" />
+                            <p className="mt-1 text-[11px] text-faint leading-snug invisible" aria-hidden="true">&nbsp;</p>
                         </div>
 
                         <div>
@@ -456,6 +476,43 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                         {isEdicao ? 'Salvar Alterações' : 'Criar Processo'}
                     </button>
                 </div>
+                </div>
+
+                {confirmDescartar && (
+                    <div
+                        ref={overlayRef}
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-labelledby="processo-confirm-descartar-titulo"
+                        className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-[#0B1B2E]/70 backdrop-blur-sm p-6"
+                    >
+                        <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-5 text-center shadow-2xl">
+                            <h3 id="processo-confirm-descartar-titulo" className="font-display text-base font-bold text-foreground">
+                                Descartar alterações?
+                            </h3>
+                            <p className="mt-1.5 text-sm text-faint">
+                                Existem alterações não salvas neste processo. Elas serão perdidas.
+                            </p>
+                            <div className="mt-4 flex justify-center gap-3">
+                                <button
+                                    ref={continuarEditandoRef}
+                                    type="button"
+                                    onClick={() => setConfirmDescartar(false)}
+                                    className="h-11 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]"
+                                >
+                                    Continuar editando
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onFechar}
+                                    className="h-11 px-4 text-sm font-bold text-white bg-[#E84545] rounded-lg hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]"
+                                >
+                                    Descartar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -518,9 +575,9 @@ function IconePicker({ value, onChange }) {
                         title={nome}
                         aria-label={`Selecionar ícone ${nome}`}
                         aria-pressed={value === nome}
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] ${
+                        className={`w-11 h-11 rounded-lg flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] ${
                             value === nome
-                                ? 'bg-gradient-to-br from-[#9A3412] to-[#EC7D23] text-white'
+                                ? 'bg-gradient-to-br from-[#7C2D12] to-[#C2410C] text-white'
                                 : 'bg-surface border border-border text-muted hover:border-[#EC7D23] hover:text-[var(--accent-dark)]'
                         }`}
                     >
@@ -537,6 +594,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
     const [editandoId, setEditandoId] = useState(null);
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState('');
+    const [confirmExcluirId, setConfirmExcluirId] = useState(null);
 
     // O único diálogo desta tela que grava/exclui dado REAL (categorias) não
     // tinha nenhuma semântica de teclado — só os atributos ARIA estáticos.
@@ -589,7 +647,6 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
     }
 
     async function excluir(cat) {
-        if (!window.confirm(`Excluir a categoria "${cat.label}"? Processos que já usam essa categoria não serão afetados, mas ela deixará de aparecer nos filtros.`)) return;
         try {
             const res = await fetch(`/api/categorias-processos/${cat.id}`, {
                 method: 'DELETE',
@@ -600,6 +657,8 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
             if (editandoId === cat.id) cancelarEdicao();
         } catch (e) {
             setErro(e.message);
+        } finally {
+            setConfirmExcluirId(null);
         }
     }
 
@@ -668,17 +727,35 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                         )}
                         {categorias.map(cat => (
                             <div key={cat.id} className="flex items-center gap-3 px-4 py-3 bg-surface">
-                                <span className="material-symbols-outlined text-[var(--accent-dark)]">{cat.icon}</span>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-foreground truncate">{cat.label}</p>
-                                    <p className="text-xs text-faint font-mono">{cat.id} · {cat.prefixo || '—'}</p>
-                                </div>
-                                <button type="button" onClick={() => editar(cat)} aria-label={`Editar ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] after:absolute after:-inset-1 after:content-['']">
-                                    <span className="material-symbols-outlined text-[18px]">edit</span>
-                                </button>
-                                <button type="button" onClick={() => excluir(cat)} aria-label={`Excluir ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[#E84545] hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] after:absolute after:-inset-1 after:content-['']">
-                                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                                </button>
+                                {confirmExcluirId === cat.id ? (
+                                    <>
+                                        <span className="material-symbols-outlined text-[#E84545]" aria-hidden="true">warning</span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-foreground truncate">Excluir "{cat.label}"?</p>
+                                            <p className="text-xs text-faint">Processos que já usam essa categoria não serão afetados.</p>
+                                        </div>
+                                        <button type="button" onClick={() => setConfirmExcluirId(null)} className="h-9 px-3 text-xs font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]">
+                                            Cancelar
+                                        </button>
+                                        <button type="button" onClick={() => excluir(cat)} className="h-9 px-3 text-xs font-bold text-white bg-[#E84545] rounded-lg hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]">
+                                            Excluir
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-[var(--accent-dark)]">{cat.icon}</span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-foreground truncate">{cat.label}</p>
+                                            <p className="text-xs text-faint font-mono">{cat.id} · {cat.prefixo || '—'}</p>
+                                        </div>
+                                        <button type="button" onClick={() => editar(cat)} aria-label={`Editar ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] after:absolute after:-inset-1 after:content-['']">
+                                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                                        </button>
+                                        <button type="button" onClick={() => setConfirmExcluirId(cat.id)} aria-label={`Excluir ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[#E84545] hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] after:absolute after:-inset-1 after:content-['']">
+                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         ))}
                     </div>

@@ -620,6 +620,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                                 onMouseEnter={e => { e.currentTarget.style.color = C.accent; e.currentTarget.style.background = C.accentSoft; }}
                                 onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.background = 'none'; }}
                                 title="Editar"
+                                aria-label="Editar comunicado"
                             >
                                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>edit</span>
                             </button>
@@ -640,6 +641,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                                 onMouseEnter={e => { e.currentTarget.style.color = C.danger; e.currentTarget.style.background = C.dangerSoft; }}
                                 onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.background = 'none'; }}
                                 title="Excluir"
+                                aria-label="Excluir comunicado"
                             >
                                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>delete</span>
                             </button>
@@ -717,7 +719,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                         letterSpacing: '0.04em',
                         textTransform: 'uppercase'
                     }}>
-                        DEPTO. {item.departamento_autor}
+                        DEPTO. {item.departamento_autor || 'GERAL'}
                     </span>
 
                     {item.link_opcional && (

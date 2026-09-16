@@ -684,7 +684,10 @@
 }
 
 .leaflet-container .leaflet-control-attribution a {
-  color: var(--primary) !important;
+  /* --accent-dark inverte por tema (mais escuro no claro, mais claro no
+     escuro) — --primary é o tom de marca cru e reprovava contraste contra o
+     fundo semitransparente da atribuição (2,92:1). */
+  color: var(--accent-dark) !important;
 }
 
 /* ── Sheets do chrome mobile ─────────────────────────────────

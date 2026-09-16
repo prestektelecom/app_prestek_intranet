@@ -95,25 +95,44 @@ export default function SectorRow({ setor, setCurrentView }) {
 
 /** Ação só-ícone de 44×44 — o alvo de projeto, não os 24×24 do mínimo da SC 2.5.8. */
 function AcaoIcone({ href, onClick, icone, rotulo, ativo, C }) {
-    const Tag = onClick ? 'button' : 'a';
+    const baseClass = "inline-flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]";
+    const icon = <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{icone}</span>;
+
+    // Uma <a> sem href (caso "sem ramal") não é focável nem anunciada como
+    // desativada por leitor de tela — aria-disabled num link é decorativo, o
+    // elemento continua parecendo um link normal para tecnologia assistiva.
+    // Um <button disabled> de verdade sai do fluxo de foco e é anunciado.
+    if (onClick || !ativo) {
+        return (
+            <button
+                type="button"
+                onClick={onClick}
+                disabled={!onClick && !ativo}
+                aria-label={rotulo}
+                title={rotulo}
+                className={baseClass}
+                style={{
+                    background: 'none',
+                    border: 'none',
+                    color: ativo ? C.ink2 : C.muted,
+                    cursor: ativo ? 'pointer' : 'not-allowed',
+                    opacity: ativo ? 1 : 0.5,
+                }}
+            >
+                {icon}
+            </button>
+        );
+    }
+
     return (
-        <Tag
-            href={onClick ? undefined : (ativo ? href : undefined)}
-            type={onClick ? 'button' : undefined}
-            onClick={onClick || (ativo ? undefined : e => e.preventDefault())}
-            aria-disabled={ativo ? undefined : 'true'}
+        <a
+            href={href}
             aria-label={rotulo}
             title={rotulo}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
-            style={{
-                background: 'none',
-                border: 'none',
-                color: ativo ? C.ink2 : C.muted,
-                cursor: ativo ? 'pointer' : 'not-allowed',
-                opacity: ativo ? 1 : 0.5,
-            }}
+            className={baseClass}
+            style={{ color: C.ink2, cursor: 'pointer', opacity: 1 }}
         >
-            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{icone}</span>
-        </Tag>
+            {icon}
+        </a>
     );
 }

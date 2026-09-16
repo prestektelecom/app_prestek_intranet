@@ -39,7 +39,10 @@ function relativeTime(d) {
     if (diff < 3600) return `há ${Math.floor(diff / 60)}min`;
     if (diff < 86400) return `há ${Math.floor(diff / 3600)}h`;
     if (diff < 604800) return `há ${Math.floor(diff / 86400)}d`;
-    return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    // Mesmo tratamento de Comunicados.jsx (a versão pública), para as duas
+    // telas mostrarem a mesma data no mesmo formato — achado de inconsistência
+    // de copy (Fase 5).
+    return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').replace(' de ', ' ');
 }
 
 export default function AdminComunicados({ adminEmail }) {
@@ -52,6 +55,9 @@ export default function AdminComunicados({ adminEmail }) {
     const [form, setForm] = useState(FORM_VAZIO);
     const [salvando, setSalvando] = useState(false);
     const [excluindo, setExcluindo] = useState(null);
+    const [erroModal, setErroModal] = useState('');
+    const [confirmExcluirId, setConfirmExcluirId] = useState(null);
+    const [erroExcluir, setErroExcluir] = useState('');
     const [focusedInput, setFocusedInput] = useState(null);
     const [busca, setBusca] = useState('');
     const [filtroTipo, setFiltroTipo] = useState('Todos');
@@ -77,10 +83,11 @@ export default function AdminComunicados({ adminEmail }) {
 
     useEffect(() => { carregar(); }, [carregar]);
 
-    const abrirNovo = () => { setEditando(null); setForm(FORM_VAZIO); setModalAberto(true); };
+    const abrirNovo = () => { setEditando(null); setForm(FORM_VAZIO); setErroModal(''); setModalAberto(true); };
     const abrirEditar = (c) => {
         setEditando(c);
         setForm({ titulo: c.titulo, descricao: c.descricao || '', tipo: c.tipo || 'Geral', departamento_autor: c.departamento_autor || '', link_opcional: c.link_opcional || '' });
+        setErroModal('');
         setModalAberto(true);
     };
 
@@ -88,6 +95,7 @@ export default function AdminComunicados({ adminEmail }) {
         e.preventDefault();
         if (!form.titulo.trim() || !form.descricao.trim() || !form.departamento_autor.trim()) return;
         setSalvando(true);
+        setErroModal('');
         try {
             const method = editando ? 'PUT' : 'POST';
             const url = editando ? `${API}/api/comunicados/${editando.id}` : `${API}/api/comunicados`;
@@ -98,18 +106,28 @@ export default function AdminComunicados({ adminEmail }) {
             const data = await res.json();
             if (!data.sucesso && !data.comunicado) throw new Error(data.erro || 'Erro ao salvar');
             setModalAberto(false); await carregar();
-        } catch (e) { alert(`Erro: ${e.message}`); } finally { setSalvando(false); }
+        } catch (e) { setErroModal(e.message); } finally { setSalvando(false); }
     };
 
+    // Sem window.confirm: confirmação inline no próprio card, com foco e
+    // Escape tratados pelo estado local em vez de um diálogo nativo bloqueante
+    // (mesmo padrão já usado em Processos.jsx/CategoriasAdminModal).
     const excluir = async (id) => {
-        if (!window.confirm('Excluir este comunicado? Esta ação não pode ser desfeita — ele será removido permanentemente do feed da intranet.')) return;
         setExcluindo(id);
+        setErroExcluir('');
         try {
             const res = await fetch(`${API}/api/comunicados/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (!data.sucesso && !data.ok) throw new Error(data.erro || 'Erro ao excluir');
             setComunicados(prev => prev.filter(c => c.id !== id));
-        } catch (e) { alert(`Erro: ${e.message}`); } finally { setExcluindo(null); }
+            setConfirmExcluirId(null);
+        } catch (e) {
+            // Mantém o card em modo de confirmação para o erro aparecer ali,
+            // com a opção de tentar de novo ou cancelar.
+            setErroExcluir(e.message);
+        } finally {
+            setExcluindo(null);
+        }
     };
 
     const comunicadosFiltrados = useMemo(() => {
@@ -281,32 +299,61 @@ export default function AdminComunicados({ adminEmail }) {
                                             </span>
                                             <span className="text-[11px] font-medium" style={{ color: C.ink2, fontFamily: '"JetBrains Mono", monospace' }}>{relativeTime(c.criado_em)}</span>
                                         </div>
-                                        <div className="flex gap-1">
-                                            <button
-                                                onClick={() => abrirEditar(c)}
-                                                className="inline-flex items-center rounded-lg p-1.5 transition-colors"
-                                                style={{ color: C.muted }}
-                                                onMouseEnter={e => e.currentTarget.style.color = C.accent}
-                                                onMouseLeave={e => e.currentTarget.style.color = C.muted}
-                                            >
-                                                <span className="material-symbols-outlined text-lg">edit</span>
-                                            </button>
-                                            <button
-                                                onClick={() => excluir(c.id)}
-                                                disabled={excluindo === c.id}
-                                                className="inline-flex items-center rounded-lg p-1.5 transition-colors disabled:opacity-50"
-                                                style={{ color: C.muted }}
-                                                onMouseEnter={e => e.currentTarget.style.color = C.danger}
-                                                onMouseLeave={e => e.currentTarget.style.color = C.muted}
-                                            >
-                                                <span className="material-symbols-outlined text-lg">{excluindo === c.id ? 'sync' : 'delete'}</span>
-                                            </button>
-                                        </div>
+                                        {confirmExcluirId === c.id ? (
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => { setConfirmExcluirId(null); setErroExcluir(''); }}
+                                                    className="rounded-lg px-2.5 py-1 text-xs font-bold transition-colors"
+                                                    style={{ color: C.ink2 }}
+                                                >
+                                                    Cancelar
+                                                </button>
+                                                <button
+                                                    onClick={() => excluir(c.id)}
+                                                    disabled={excluindo === c.id}
+                                                    className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold text-white transition-colors disabled:opacity-60"
+                                                    style={{ background: C.danger }}
+                                                >
+                                                    <span className="material-symbols-outlined text-sm" aria-hidden="true">{excluindo === c.id ? 'sync' : 'delete'}</span>
+                                                    Excluir
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-1">
+                                                <button
+                                                    onClick={() => abrirEditar(c)}
+                                                    className="inline-flex items-center rounded-lg p-1.5 transition-colors"
+                                                    style={{ color: C.muted }}
+                                                    onMouseEnter={e => e.currentTarget.style.color = C.accent}
+                                                    onMouseLeave={e => e.currentTarget.style.color = C.muted}
+                                                    title="Editar"
+                                                    aria-label="Editar comunicado"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">edit</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => { setConfirmExcluirId(c.id); setErroExcluir(''); }}
+                                                    className="inline-flex items-center rounded-lg p-1.5 transition-colors"
+                                                    style={{ color: C.muted }}
+                                                    onMouseEnter={e => e.currentTarget.style.color = C.danger}
+                                                    onMouseLeave={e => e.currentTarget.style.color = C.muted}
+                                                    title="Excluir"
+                                                    aria-label="Excluir comunicado"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">delete</span>
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
+                                    {confirmExcluirId === c.id && (
+                                        <p role={erroExcluir ? 'alert' : 'status'} className="text-[11px] font-semibold" style={{ color: C.danger }}>
+                                            {erroExcluir || 'Excluir este comunicado do feed da intranet? Esta ação não pode ser desfeita.'}
+                                        </p>
+                                    )}
                                     <h3 className="text-base font-bold leading-snug" style={{ color: C.ink }}>{c.titulo}</h3>
                                     <p className="text-sm leading-relaxed" style={{ color: C.ink2, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.descricao}</p>
                                     <div className="mt-auto flex items-center justify-between border-t pt-3 text-[11px] font-bold" style={{ borderColor: C.lineSoft, color: C.ink2, fontFamily: '"JetBrains Mono", monospace' }}>
-                                        <span>DEPTO: {c.departamento_autor || 'GERAL'}</span>
+                                        <span>DEPTO. {c.departamento_autor || 'GERAL'}</span>
                                         {c.link_opcional && (
                                             <a
                                                 href={c.link_opcional}
@@ -377,6 +424,11 @@ export default function AdminComunicados({ adminEmail }) {
                                 <label htmlFor="admin-comunicado-link" className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>Link Adicional (Opcional)</label>
                                 <input id="admin-comunicado-link" type="url" value={form.link_opcional} onChange={e => setForm({ ...form, link_opcional: e.target.value })} onFocus={() => setFocusedInput('link')} onBlur={() => setFocusedInput(null)} style={getInputStyle('link')} />
                             </div>
+                            {erroModal && (
+                                <p role="alert" className="text-sm font-semibold" style={{ color: C.danger }}>
+                                    {erroModal}
+                                </p>
+                            )}
                             <div className="flex justify-end gap-3 border-t pt-4" style={{ borderColor: C.line }}>
                                 <button
                                     type="button"

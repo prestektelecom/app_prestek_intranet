@@ -22,6 +22,7 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
     const C = useBentoTheme();
     const [draft, setDraft] = useState(() => JSON.parse(JSON.stringify(data)));
     const [activeTab, setActiveTab] = useState('ceo');
+    const [importError, setImportError] = useState('');
     const modalRef = useRef(null);
 
     useDismissable(modalRef, { open: true, onClose, lockScroll: true, closeOnOutside: true });
@@ -99,8 +100,9 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
             try {
                 const parsed = JSON.parse(ev.target.result);
                 setDraft(parsed);
+                setImportError('');
             } catch (err) {
-                alert('Arquivo JSON inválido.');
+                setImportError('Arquivo JSON inválido.');
             }
         };
         reader.readAsText(file);
@@ -314,6 +316,11 @@ export default function OrgChartEditor({ data, onSave, onClose, onReset }) {
                                     Importar JSON
                                     <input type="file" accept="application/json" onChange={importJson} style={{ display: 'none' }} />
                                 </label>
+                                {importError && (
+                                    <span role="alert" style={{ fontSize: 12, fontWeight: 600, color: C.dangerStrong }}>
+                                        {importError}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     )}

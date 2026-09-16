@@ -49,8 +49,9 @@ export default function AdminAuditoria({ adminEmail }) {
             {/* Filtros */}
             <form onSubmit={aplicarFiltros} className="bg-card border border-border rounded-xl p-4 shadow-sm flex flex-wrap gap-3 items-end card-elevated">
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-faint uppercase">E-mail do Admin</label>
+                    <label htmlFor="auditoria-filtro-email" className="text-xs font-bold text-faint uppercase">E-mail do Admin</label>
                     <input
+                        id="auditoria-filtro-email"
                         type="text"
                         placeholder="filtrar por email..."
                         value={filtroEmail}
@@ -59,8 +60,9 @@ export default function AdminAuditoria({ adminEmail }) {
                     />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-faint uppercase">Tipo de Ação</label>
+                    <label htmlFor="auditoria-filtro-acao" className="text-xs font-bold text-faint uppercase">Tipo de Ação</label>
                     <select
+                        id="auditoria-filtro-acao"
                         value={filtroAcao}
                         onChange={e => setFiltroAcao(e.target.value)}
                         className="border border-border rounded-lg px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"

@@ -135,23 +135,38 @@ function ChipSituacao({ situacao, C }) {
 
 /** Ação só-ícone de 44×44 — o alvo de projeto, não os 24×24 do mínimo da SC 2.5.8. */
 function AcaoIcone({ href, icone, rotulo, ativo, externo, C }) {
+    const baseClass = "inline-flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]";
+    const icon = <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{icone}</span>;
+
+    // Uma <a> sem href (caso "sem contato") não é focável nem anunciada como
+    // desativada por leitor de tela — aria-disabled num link é decorativo. Um
+    // <button disabled> de verdade sai do fluxo de foco e é anunciado.
+    if (!ativo) {
+        return (
+            <button
+                type="button"
+                disabled
+                aria-label={rotulo}
+                title={rotulo}
+                className={baseClass}
+                style={{ color: C.muted, cursor: 'not-allowed', opacity: 0.5 }}
+            >
+                {icon}
+            </button>
+        );
+    }
+
     return (
         <a
-            href={ativo ? href : undefined}
-            onClick={ativo ? undefined : e => e.preventDefault()}
-            aria-disabled={ativo ? undefined : 'true'}
+            href={href}
             aria-label={rotulo}
             title={rotulo}
             target={externo ? '_blank' : undefined}
             rel={externo ? 'noopener noreferrer' : undefined}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
-            style={{
-                color: ativo ? C.ink2 : C.muted,
-                cursor: ativo ? 'pointer' : 'not-allowed',
-                opacity: ativo ? 1 : 0.5,
-            }}
+            className={baseClass}
+            style={{ color: C.ink2, cursor: 'pointer', opacity: 1 }}
         >
-            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{icone}</span>
+            {icon}
         </a>
     );
 }

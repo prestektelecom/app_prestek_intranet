@@ -185,7 +185,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                             <BentoAvatar name={adminName} size={48} color={[C.accent, C.onAccent]} />
                             <div className="flex min-w-0 flex-col">
                                 <p className="truncate text-sm font-bold" style={{ color: C.ink }}>{adminName}</p>
-                                <p className="text-xs font-medium" style={{ color: C.ink2 }}>Super Admin</p>
+                                <p className="text-xs font-medium" style={{ color: C.ink2 }}>Administrador</p>
                             </div>
                         </div>
 
@@ -268,8 +268,8 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     {[
                                         { label: 'Usuários Ativos', valor: stats?.total_usuarios, icon: 'group', stripe: C.accent, iconCor: C.accent, iconBg: C.accentSoft },
-                                        { label: 'Comunicações', valor: stats?.total_comunicados, icon: 'campaign', stripe: C.info, iconCor: C.info, iconBg: tone(C.info, 0.15) },
-                                        { label: 'Ações (g)', valor: stats?.acoes_recentes, icon: 'edit_document', stripe: C.success, iconCor: C.success, iconBg: C.successSoft },
+                                        { label: 'Comunicados', valor: stats?.total_comunicados, icon: 'campaign', stripe: C.info, iconCor: C.info, iconBg: tone(C.info, 0.15) },
+                                        { label: 'Ações Recentes', valor: stats?.acoes_recentes, icon: 'edit_document', stripe: C.success, iconCor: C.success, iconBg: C.successSoft },
                                     ].map(kpi => (
                                         <div
                                             key={kpi.label}
