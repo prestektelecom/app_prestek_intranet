@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useBentoTheme, isDarkActive } from '../../hooks/useBentoTheme'
 import { useTheme } from '../../hooks/useTheme'
 import { UserIcon, LockIcon, EyeIcon, EyeOffIcon, ArrowIcon } from './Icons'
-import logo from '../../image/logos/Logo.webp'
+import logo from '../../image/logos/Logo_480.webp'
 
 // Formulário de entrada. Toda cor vem de `C` (useBentoTheme), como no resto
 // do portal; o anel de foco é o global do index.css. Campos nomeados para o

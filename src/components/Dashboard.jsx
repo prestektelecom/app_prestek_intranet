@@ -387,7 +387,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
 // (CSS) e para o setTimeout, então os dois contam o mesmo tempo.
 const AUTOPLAY_MS = 6000;
 
-function ComunicadoBanner({ setCurrentView }) {
+function ComunicadoBanner({ setCurrentView, onActiveChange }) {
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
@@ -434,6 +434,17 @@ function ComunicadoBanner({ setCurrentView }) {
     });
     return unicos;
   }, [comunicados]);
+
+  const activeSlide = slides.length ? (slides[currentIndex % slides.length] || slides[0]) : null;
+
+  // Avisa o Dashboard qual comunicado está em destaque agora, para o
+  // ComunicadosCard (lista abaixo) excluir o MESMO item ativo em vez de
+  // calcular seu próprio "destaque" de forma independente — antes os dois
+  // cálculos coincidiam só no slide inicial, e girar para o 2º/3º slide
+  // reabria a repetição entre o banner e a lista.
+  useEffect(() => {
+    onActiveChange?.(activeSlide?.id ?? null);
+  }, [activeSlide?.id, onActiveChange]);
 
   // Troca de slide (automática ou por clique no dot) zera o relógio. Precisa
   // vir ANTES do cronômetro: a limpeza dele desconta o tempo decorrido
@@ -514,7 +525,6 @@ function ComunicadoBanner({ setCurrentView }) {
 
   if (!slides.length) return null;
 
-  const activeSlide = slides[currentIndex % slides.length] || slides[0];
   const tagInfo = TAG_STYLES[activeSlide.tipo] || TAG_DEFAULT;
   const description = stripMarkdown(activeSlide.descricao);
   const slideKey = activeSlide.id ?? (currentIndex % slides.length);
@@ -662,7 +672,7 @@ function ComunicadoBanner({ setCurrentView }) {
   );
 }
 
-function ComunicadosCard({ setCurrentView }) {
+function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
   const isTouchOnly = useTouchOnly();
   const [comunicados, setComunicados] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -731,10 +741,16 @@ function ComunicadosCard({ setCurrentView }) {
       .trim();
   }
 
-  const featured = comunicados.find(c => c.tipo === 'Urgente')
-    || comunicados.find(c => c.tipo === 'Importante')
-    || comunicados[0]
-    || null;
+  // `destaqueAtivoId` vem do ComunicadoBanner (fonte única) e reflete o slide
+  // ATUAL dele, não só o de maior prioridade — segue a rotação automática.
+  // O cálculo local só serve de fallback para antes do banner reportar (ou
+  // se ele estiver em erro/vazio), replicando a mesma prioridade dele.
+  const featured = destaqueAtivoId
+    ? (comunicados.find(c => c.id === destaqueAtivoId) || null)
+    : (comunicados.find(c => c.tipo === 'Urgente')
+      || comunicados.find(c => c.tipo === 'Importante')
+      || comunicados[0]
+      || null);
 
   const rest = comunicados.filter(c => c.id !== featured?.id);
 
@@ -790,7 +806,7 @@ function ComunicadosCard({ setCurrentView }) {
                     setCurrentView('announcements');
                   }
                 }}
-                className={`flex min-h-16 max-h-16 shrink-0 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${tag.border}`}
+                className={`flex min-h-20 max-h-20 shrink-0 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${tag.border}`}
               >
                 <div className="flex flex-1 flex-col justify-center gap-1 min-w-0 px-3 py-2">
                   <div className="flex items-center gap-1.5 overflow-hidden">
@@ -799,7 +815,12 @@ function ComunicadosCard({ setCurrentView }) {
                     </span>
                     <span className="truncate text-[13.5px] font-semibold text-foreground">{it.titulo}</span>
                   </div>
-                  <div className="truncate text-[12px] text-faint">{preview}</div>
+                  <div
+                    className="text-[12px] text-faint"
+                    style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                  >
+                    {preview}
+                  </div>
                 </div>
                 <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[140px]">
                   <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[10.5px] text-faint">
@@ -1316,13 +1337,17 @@ export default function Dashboard({ setCurrentView, user }) {
   const safeName = func.funcionario || user?.nome || 'Usuário';
   const firstName = safeName.split(' ')[0] || 'Usuário';
 
+  // Fonte única do comunicado em destaque, reportada pelo banner e consumida
+  // pela lista logo abaixo — ver comentário em ComunicadoBanner/ComunicadosCard.
+  const [destaqueAtivoId, setDestaqueAtivoId] = useState(null);
+
   return (
     <main className="flex-1 overflow-y-auto bg-background text-foreground">
       <div className="mx-auto max-w-[1200px] px-6 pb-10 pt-7 md:px-8">
 
         <DashboardHeader firstName={firstName} cargoName={cargoName} aniversariantesHoje={aniversariantesHoje} />
 
-        <ComunicadoBanner setCurrentView={setCurrentView} />
+        <ComunicadoBanner setCurrentView={setCurrentView} onActiveChange={setDestaqueAtivoId} />
 
         <ResponsiveReactGridLayout
           className="layout"
@@ -1340,7 +1365,7 @@ export default function Dashboard({ setCurrentView, user }) {
             <OsBento osCount={osCount} osStatusCount={osStatusCount} osLoading={osLoading} osError={osError} onRetry={carregarOs} setCurrentView={setCurrentView} />
           </div>
           <div key="comunicados">
-            <ComunicadosCard setCurrentView={setCurrentView} />
+            <ComunicadosCard setCurrentView={setCurrentView} destaqueAtivoId={destaqueAtivoId} />
           </div>
           <div key="setor">
             <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} eficienciaError={eficienciaError} onRetry={carregarEficiencia} />

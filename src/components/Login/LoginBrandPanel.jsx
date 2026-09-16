@@ -1,6 +1,6 @@
 import { useBentoTheme } from '../../hooks/useBentoTheme'
 import { fundoHero } from '../ui/heroGradiente'
-import logo from '../../image/logos/Logo.webp'
+import logo from '../../image/logos/Logo_480.webp'
 
 // Painel da marca ao lado do formulário (só acima de `lg`; o Login.jsx só o
 // monta quando a media query casa, então o celular não carrega nada daqui).
