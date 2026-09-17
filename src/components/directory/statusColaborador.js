@@ -61,6 +61,19 @@ export function nomeProprio(texto) {
  * @returns {{ nome: string, rotulo: string, tom: 'ok'|'neutro'|'info'|'aviso', divergente: boolean }}
  *          `divergente` marca os casos em que o prefixo e a flag discordam.
  */
+// Dado real de produção tem 2 sujeiras que nenhuma etapa daqui limpava: um
+// ")" sobrando logo depois do prefixo de situação — "(INATIVO) ) ANDRELIANE
+// SANTOS DE JESUS", provável erro de digitação na origem; sem o texto que
+// deveria estar ali, só dá pra remover o caractere solto, não reconstruir o
+// que era — e um dígito colado direto no fim do último sobrenome
+// ("...SANTOS2", provável desambiguação de homônimos no cadastro do IXC,
+// nunca faz parte de um nome de verdade). Aplicado sobre o que SOBRA depois
+// do prefixo (ou a string inteira, quando não há prefixo), nunca sobre o
+// prefixo em si.
+function limparNome(texto) {
+    return texto.replace(/^\)\s*/, '').replace(/(\p{L})\d+$/u, '$1').trim();
+}
+
 export function situacaoColaborador(nomeBruto, ativo) {
     // O trim é necessário nos dois lados: há nomes com espaço à esquerda e à
     // direita na base, e "(FERIAS)MICHELE" vem sem espaço após o parêntese.
@@ -70,7 +83,7 @@ export function situacaoColaborador(nomeBruto, ativo) {
 
     if (!casamento) {
         return {
-            nome: nomeProprio(bruto) || 'Colaborador',
+            nome: nomeProprio(limparNome(bruto)) || 'Colaborador',
             rotulo: estaAtivo ? 'Ativo' : 'Inativo',
             tom: estaAtivo ? 'ok' : 'neutro',
             divergente: false,
@@ -79,7 +92,7 @@ export function situacaoColaborador(nomeBruto, ativo) {
 
     const dentro = semAcento(casamento[1].trim());
     const conhecida = SITUACOES.find(s => s.chaves.some(k => dentro.includes(k)));
-    const nome = nomeProprio(bruto.slice(casamento[0].length).trim()) || 'Colaborador';
+    const nome = nomeProprio(limparNome(bruto.slice(casamento[0].length))) || 'Colaborador';
 
     if (!conhecida) {
         // Prefixo que não está no mapa ainda: mostra o texto ORIGINAL, sem

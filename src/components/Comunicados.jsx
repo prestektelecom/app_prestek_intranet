@@ -406,9 +406,9 @@ export default function Comunicados({ user, setCurrentView }) {
 
 const HERO_LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
 
-function HeroKpiTile({ label, value, icon, color }) {
+function HeroKpiTile({ label, value, icon, color, title }) {
     return (
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex min-w-0 items-center gap-2.5" title={title}>
             <span className="material-symbols-outlined shrink-0 text-[18px]" style={{ color: color || 'rgba(255,255,255,0.7)' }} aria-hidden="true">{icon}</span>
             <div className="min-w-0">
                 <div className={HERO_LABEL_MONO}>{label}</div>
@@ -421,11 +421,16 @@ function HeroKpiTile({ label, value, icon, color }) {
 function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kpiGerais, isLoading, isAdmin, onNewComunicado }) {
     const C = useBentoTheme();
     const isDark = C.bg !== BENTO_LIGHT.bg;
+    // Título explica por que este número pode divergir dos chips logo abaixo:
+    // os KPIs do hero somam TODO o sistema, os chips somam só o resultado da
+    // busca atual — achado de "divergência de contagem" da Fase 5, resolvido
+    // deixando a diferença explícita em vez de forçar os dois a coincidir
+    // (o hero perderia o total real do sistema durante uma busca).
     const kpis = [
-        { label: 'Total', value: isLoading ? '···' : kpiTotal, icon: 'campaign', color: null },
-        { label: 'Urgentes', value: isLoading ? '···' : kpiUrgentes, icon: 'priority_high', color: C.danger },
-        { label: 'Importantes', value: isLoading ? '···' : kpiImportantes, icon: 'notification_important', color: C.warning },
-        { label: 'Gerais', value: isLoading ? '···' : kpiGerais, icon: 'article', color: C.success },
+        { label: 'Total', value: isLoading ? '···' : kpiTotal, icon: 'campaign', color: null, title: 'Total de comunicados no sistema (não considera a busca abaixo)' },
+        { label: 'Urgentes', value: isLoading ? '···' : kpiUrgentes, icon: 'priority_high', color: C.danger, title: 'Urgentes no sistema (não considera a busca abaixo)' },
+        { label: 'Importantes', value: isLoading ? '···' : kpiImportantes, icon: 'notification_important', color: C.warning, title: 'Importantes no sistema (não considera a busca abaixo)' },
+        { label: 'Gerais', value: isLoading ? '···' : kpiGerais, icon: 'article', color: C.success, title: 'Gerais no sistema (não considera a busca abaixo)' },
     ];
 
     return (
@@ -506,6 +511,7 @@ function ChipButton({ label, count, active, onClick, color }) {
             style={{
                 flexShrink: 0,
                 display: 'inline-flex', alignItems: 'center', gap: 8,
+                minHeight: 44,
                 padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
                 border: active ? `1.5px solid ${color}` : `1.5px solid ${C.line}`,
                 background: active ? `rgba(${rgb}, 0.12)` : (hover ? C.surfaceSoft : C.surface),
@@ -649,8 +655,10 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                     )}
                 </div>
 
-                {/* Título */}
-                <h3 style={{
+                {/* Título — h2, não h3: o h1 é só o do hero, então cada card
+                    de comunicado (mesmo nível, um por item do feed) é o
+                    próximo nível real da página, sem h2 nenhum entre eles. */}
+                <h2 style={{
                     margin: '0 0 10px 0',
                     fontSize: 17,
                     fontWeight: 800,
@@ -659,7 +667,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                     lineHeight: 1.4
                 }}>
                     {item.titulo}
-                </h3>
+                </h2>
 
                 {/* Descrição / Conteúdo — comunicados chegam como texto colado de
                     WhatsApp, às vezes com centenas de palavras; trunca por padrão

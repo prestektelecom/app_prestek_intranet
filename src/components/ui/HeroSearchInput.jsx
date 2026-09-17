@@ -42,6 +42,12 @@ export default function HeroSearchInput({ value, onChange, placeholder = 'Buscar
                     color: 'white',
                     fontSize: 14,
                     fontWeight: 500,
+                    // Sem isso, o placeholder é cortado cru no meio da palavra em
+                    // telas estreitas (achado ~390px) — texto/overflow explícitos
+                    // dão as reticências que o corte automático do input não dá.
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
                     // O foco era só a borda passando de rgba(255,255,255,.3) para
                     // .6 — 2,19:1 contra o preenchimento do input, abaixo dos 3:1
                     // que a WCAG 1.4.11 exige de indicador não-textual. Outline

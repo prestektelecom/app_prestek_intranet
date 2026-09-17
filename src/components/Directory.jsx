@@ -5,7 +5,7 @@ import EmployeeCard from './directory/EmployeeCard';
 import EmployeeRow from './directory/EmployeeRow';
 import { SkeletonCard, SkeletonRow, EmptyState, ErrorState, AvisoTaxonomia } from './directory/DirectoryStates';
 import GrupoSecao from './directory/GrupoSecao';
-import { situacaoColaborador, semAcento, SITUACOES_FILTRO } from './directory/statusColaborador';
+import { situacaoColaborador, semAcento, nomeProprio, SITUACOES_FILTRO } from './directory/statusColaborador';
 
 // Quantidade por lote do scroll infinito. O esqueleto usa o MESMO número —
 // antes eram 8 esqueletos para um primeiro lote de 16, e o grid dobrava de
@@ -136,10 +136,15 @@ export default function Directory({ user }) {
     const resolverDepartamento = useCallback((idDepto) => {
         if (!idDepto) return 'N/D';
         const id = String(idDepto).trim();
-        return departamentos.find(d => String(d.id).trim() === id)?.departamento
+        const bruto = departamentos.find(d => String(d.id).trim() === id)?.departamento
             || cargos.find(c => String(c.id).trim() === id)?.setor
-            || deptosEmpresa.find(d => String(d.id).trim() === id)?.setor
-            || 'N/D';
+            || deptosEmpresa.find(d => String(d.id).trim() === id)?.setor;
+        // Mesmo problema dos nomes de pessoa (CAIXA ALTA crua do IXC), e mesma
+        // função resolve os dois — nomeProprio já lida com partícula em
+        // minúscula ("Atendimento ao Cliente"), útil aqui também. O filtro de
+        // "(INATIVO)" duas linhas abaixo continua funcionando porque ele
+        // reconverte para maiúscula antes de comparar.
+        return bruto ? nomeProprio(bruto) : 'N/D';
     }, [departamentos, cargos, deptosEmpresa]);
 
     // Enriquecimento numa passada só: situação extraída do nome, nome do
@@ -319,6 +324,12 @@ export default function Directory({ user }) {
                 colab={colab}
                 situacao={colab._situacao}
                 departamentoNome={colab._deptoNome}
+                // Agrupado: o nome fica sob o h2 do GrupoSecao (departamento),
+                // então vira h3. Sem agrupamento não existe esse nível
+                // intermediário — o nome É o próximo nível real depois do h1
+                // do hero, então vira h2. EmployeeRow ignora a prop (não tem
+                // heading, é uma linha de tabela).
+                headingLevel={agrupado ? 3 : 2}
             />
         );
     };

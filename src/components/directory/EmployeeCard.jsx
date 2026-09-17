@@ -46,7 +46,7 @@ export function coresSituacao(tom, C) {
  * O relevo mora em `neumorfismo.js`, que resolve a condição que o efeito exige
  * — face da mesma cor do fundo — nos cinco temas do projeto.
  */
-export default function EmployeeCard({ colab, departamentoNome, situacao: situacaoProp }) {
+export default function EmployeeCard({ colab, departamentoNome, situacao: situacaoProp, headingLevel = 2 }) {
     const C = useBentoTheme();
     const corDe = useDeptColor();
     const [hover, setHover] = useState(false);
@@ -67,6 +67,11 @@ export default function EmployeeCard({ colab, departamentoNome, situacao: situac
 
     const avatarSrc = resolveAvatarUrl(colab.foto_perfil)
         || AVATAR_PNGS[(colab.funcionario_id || colab.usuario_id || 0) % AVATAR_PNGS.length];
+
+    // h2 direto sob o hero (visão sem agrupamento) ou h3 dentro do h2 de
+    // GrupoSecao (visão agrupada por departamento) — nunca um h3 sozinho
+    // sem h2 nenhum na página, que era o bug catalogado na Fase 6.
+    const TituloNome = headingLevel === 3 ? 'h3' : 'h2';
 
     return (
         <li
@@ -137,7 +142,7 @@ export default function EmployeeCard({ colab, departamentoNome, situacao: situac
                 >
                     <img
                         src={avatarSrc}
-                        // alt vazio: o nome está no <h3> logo abaixo. Com alt={nome}
+                        // alt vazio: o nome está no heading logo abaixo. Com alt={nome}
                         // o leitor de tela lia cada card duas vezes.
                         alt=""
                         loading="lazy"
@@ -150,9 +155,9 @@ export default function EmployeeCard({ colab, departamentoNome, situacao: situac
 
             <div className="relative z-10 text-center transition-transform duration-300 group-hover:-translate-y-1">
                 {/* Nome sem o prefixo "(FÉRIAS) " e fora do caixa alta do IXC. */}
-                <h3 className="m-0 text-lg font-bold leading-tight" style={{ color: C.ink }}>
+                <TituloNome className="m-0 text-lg font-bold leading-tight" style={{ color: C.ink }}>
                     {situacao.nome}
-                </h3>
+                </TituloNome>
 
                 {/* O lugar do "role". Colorido com a tinta do setor: é o único
                     canal categórico que sobrou depois que a tarja lateral saiu. */}
@@ -165,10 +170,19 @@ export default function EmployeeCard({ colab, departamentoNome, situacao: situac
                     sobre a face neumórfica (#F5F9FF) muted dá 2,85:1, e esta
                     linha carrega o ramal — o dado que a tela existe para
                     entregar. Não pode ser o texto menos legível do card. */}
+                {/* As 3 opções aqui têm que casar exatamente com o que decide
+                    mostrar o botão de contato logo abaixo (`semNenhumContato`)
+                    — antes só checava ramal/email, então quem tinha SÓ
+                    fone_celular via "Sem contato cadastrado" ao lado de um
+                    botão de WhatsApp funcional. */}
                 <p className="m-0 mt-2 truncate text-xs" style={{ color: C.ink2 }} title={email || undefined}>
                     {ramal
                         ? <span className="font-mono tabular-nums tracking-[0.05em]">Ramal {ramal}</span>
-                        : email || 'Sem contato cadastrado'}
+                        : email
+                            ? email
+                            : whatsAppUrl
+                                ? <span className="font-mono tabular-nums tracking-[0.05em]">{colab.fone_celular}</span>
+                                : 'Sem contato cadastrado'}
                 </p>
             </div>
 
