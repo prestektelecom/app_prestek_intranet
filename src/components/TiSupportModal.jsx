@@ -25,6 +25,8 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
   const [feedback, setFeedback] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [protocoloData, setProtocoloData] = useState(null);
+  const [osCriada, setOsCriada] = useState(true);
+  const [avisoOS, setAvisoOS] = useState(null);
 
   const [tecnicoSelecionado, setTecnicoSelecionado] = useState('');
 
@@ -33,6 +35,8 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
     setTimeout(() => {
       setIsSuccess(false);
       setProtocoloData(null);
+      setOsCriada(true);
+      setAvisoOS(null);
       setFeedback(null);
       setMensagem('');
       setTecnicoSelecionado('');
@@ -68,6 +72,8 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
 
       if (data.sucesso) {
         setProtocoloData(data.protocolo);
+        setOsCriada(data.os_criada !== false);
+        setAvisoOS(data.aviso || null);
         setIsSuccess(true);
         setMensagem('');
       } else {
@@ -173,21 +179,29 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
               <div style={{
                 width: 64, height: 64, borderRadius: 32,
-                background: C.successSoft,
+                background: osCriada ? C.successSoft : C.warningSoft,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 20px',
-                border: `1px solid ${tone(C.success, 0.15)}`,
+                border: `1px solid ${tone(osCriada ? C.success : C.warning, 0.15)}`,
               }}>
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={C.success} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m5 12 5 5L20 7"/>
-                </svg>
+                {osCriada ? (
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={C.success} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m5 12 5 5L20 7"/>
+                  </svg>
+                ) : (
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={C.warningStrong} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+                  </svg>
+                )}
               </div>
 
               <div style={{ fontSize: 20, fontWeight: 800, color: C.ink, letterSpacing: '-0.025em', marginBottom: 8 }}>
-                Chamado Aberto!
+                {osCriada ? 'Chamado Aberto!' : 'Chamado Registrado'}
               </div>
               <div style={{ fontSize: 13.5, color: C.ink2, lineHeight: 1.6, marginBottom: 24, maxWidth: 360, margin: '0 auto 24px' }}>
-                Seu chamado foi registrado com sucesso. O setor de TI foi notificado.
+                {osCriada
+                  ? 'Seu chamado foi registrado com sucesso. O setor de TI foi notificado.'
+                  : (avisoOS || 'Seu chamado foi registrado, mas não foi possível criar a ordem de serviço automaticamente. Avise o setor de TI diretamente.')}
               </div>
 
               {protocoloData && (
@@ -203,7 +217,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
                     fontFamily: '"JetBrains Mono", monospace',
                     fontSize: 10.5, fontWeight: 600,
                     letterSpacing: '0.15em', textTransform: 'uppercase',
-                    color: C.muted, marginBottom: 8,
+                    color: C.ink2, marginBottom: 8,
                   }}>
                     Número do Protocolo
                   </div>

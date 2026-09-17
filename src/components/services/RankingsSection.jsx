@@ -51,7 +51,7 @@ export default function RankingsSection({ topPlans, topVendors, topTicket, loadi
                         <span className="material-symbols-outlined text-[var(--accent)]">emoji_events</span>
                         Rankings do Mês
                     </h2>
-                    <p className="mt-0.5 text-xs text-faint sm:text-sm">Destaques de vendas da equipe — atualizado automaticamente</p>
+                    <p className="mt-0.5 text-xs text-faint sm:text-sm">Destaques de vendas da equipe, atualizado automaticamente</p>
                 </div>
                 <div className="flex gap-2 overflow-x-auto">
                     {RANKING_TABS.map((tab, idx) => (

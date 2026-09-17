@@ -1,3 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+const host = process.env.IXC_HOST;
+const API_TOKEN = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
+
 async function test() {
     // Pegando a data de hoje (YYYY-MM-DD)
     const data = new Date().toISOString().split('T')[0];
@@ -7,10 +13,10 @@ async function test() {
     console.log('Data detectada (Hoje):', data);
 
     try {
-        const response = await fetch('https://sistema.prestek.com.br/webservice/v1/cliente', {
+        const response = await fetch(`https://${host}/webservice/v1/cliente`, {
             method: 'POST',
             headers: {
-                'Authorization': 'Basic NzI6OTMwZjY0NTA2YWFjYTkyYmE4OTU2ZGE2NjE5NjJjZTQ4Yjg1MTcxYWJlYmNlYWMxZDQwOWIyNTE3M2I0NzVkMg==',
+                'Authorization': 'Basic ' + Buffer.from(API_TOKEN).toString('base64'),
                 'ixcsoft': 'listar',
                 'Content-Type': 'application/x-www-form-urlencoded'
             },

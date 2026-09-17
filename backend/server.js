@@ -317,8 +317,11 @@ app.get('/api/comunicados', async (req, res) => {
     }
 });
 
-app.post('/api/comunicados', async (req, res) => {
-    const { titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url, criado_por } = req.body;
+app.post('/api/comunicados', adminAuth, async (req, res) => {
+    const { titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url } = req.body;
+    // Autoria vem sempre do JWT verificado, nunca do corpo da requisição —
+    // do contrário qualquer chamada direta à API poderia forjar quem "criou".
+    const criado_por = req.usuario.email;
 
     if (!titulo || !descricao || !tipo || !departamento_autor) {
         return res.status(400).json({ sucesso: false, erro: 'Preencha os campos obrigatórios.' });
@@ -338,13 +341,13 @@ app.post('/api/comunicados', async (req, res) => {
     }
 });
 
-app.put('/api/comunicados/:id', async (req, res) => {
+app.put('/api/comunicados/:id', adminAuth, async (req, res) => {
     const { id } = req.params;
     const { titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url } = req.body;
 
     try {
         const query = `
-            UPDATE comunicados 
+            UPDATE comunicados
             SET titulo = $1, descricao = $2, tipo = $3, departamento_autor = $4, link_opcional = $5, imagem_url = $6
             WHERE id = $7 RETURNING *;
         `;
@@ -357,7 +360,7 @@ app.put('/api/comunicados/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/comunicados/:id', async (req, res) => {
+app.delete('/api/comunicados/:id', adminAuth, async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query('DELETE FROM comunicados WHERE id = $1 RETURNING *;', [id]);
@@ -396,7 +399,8 @@ app.get('/api/departamentos', async (req, res) => {
         const dados = await resposta.json()
         return res.json({ sucesso: true, departamentos: dados.registros || [] })
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message })
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 })
 
@@ -427,7 +431,8 @@ app.get('/api/departamentos-empresa', async (req, res) => {
         const dados = await resposta.json()
         return res.json({ sucesso: true, departamentos: dados.registros || [] })
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message })
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 })
 
@@ -492,7 +497,8 @@ app.get('/api/debug-funcionario/:id', async (req, res) => {
             }
         })
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message })
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 })
 
@@ -523,7 +529,8 @@ app.get('/api/cargos', async (req, res) => {
         const dados = await resposta.json()
         return res.json({ sucesso: true, cargos: dados.registros || [] })
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message })
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 })
 
@@ -556,7 +563,8 @@ app.get('/api/test-ixc', async (req, res) => {
         const dados = await resposta.json()
         return res.json({ sucesso: true, registros: dados.registros || [] })
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message })
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' })
     }
 });
 
@@ -585,7 +593,8 @@ app.get('/api/filiais', async (req, res) => {
         const dados = await resposta.json();
         return res.json({ sucesso: true, filiais: dados.registros || [] });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -660,6 +669,14 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
         return res.status(400).json({ sucesso: false, erro: 'ID do funcionário é obrigatório.' });
     }
 
+    // O cálculo abaixo é pesado (busca todas as OS fechadas do técnico + um
+    // loop minuto-a-minuto de horas úteis para cada uma) e roda a cada
+    // carregamento de Dashboard — cache curto evita refazer isso a cada
+    // requisição na mesma janela de 1 min.
+    const CHAVE_CACHE = `ixc:eficiencia:${funcionarioId}`;
+    const cache = cacheGet(CHAVE_CACHE);
+    if (cache.hit) return res.json(cache.data);
+
     const host = process.env.IXC_HOST;
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
     const headers = {
@@ -696,7 +713,9 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
 
         if (!ixcTecnicoId) {
             console.log(`[Eficiência] falha ao resolver ixcTecnicoId para funcionarioId=${funcionarioId}`);
-            return res.json({ sucesso: false, sem_dados: true, erro: 'Técnico não encontrado no IXC' });
+            const semTecnico = { sucesso: false, sem_dados: true, erro: 'Técnico não encontrado no IXC' };
+            cacheSet(CHAVE_CACHE, semTecnico, TTL.OS_CHAMADOS);
+            return res.json(semTecnico);
         }
 
         console.log(`[Eficiência] funcionarioId=${funcionarioId} → ixcTecnicoId=${ixcTecnicoId}`);
@@ -870,7 +889,7 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
 
         console.log(`[Eficiência] Técnico ${ixcTecnicoId}: Atual=${dadosMesAtual.eficiencia}% (${dadosMesAtual.noPrazo}/${dadosMesAtual.total}), Sem prazo=${dadosMesAtual.osSemPrazo}, Anterior=${dadosMesAnterior.eficiencia}%, Variação=${variacao}`);
 
-        return res.json({
+        const respostaEficiencia = {
             sucesso: true,
             eficiencia_atual: dadosMesAtual.eficiencia,
             eficiencia_anterior: dadosMesAnterior.eficiencia,
@@ -882,7 +901,9 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
             periodo: periodoNome,
             sem_dados: dadosMesAtual.total === 0 || dadosMesAtual.semPrazo === true,
             historico_semanal: historicoSemanal
-        });
+        };
+        cacheSet(CHAVE_CACHE, respostaEficiencia, TTL.OS_CHAMADOS);
+        return res.json(respostaEficiencia);
 
     } catch (e) {
         console.error('[Eficiência] Erro:', e.message);
@@ -892,7 +913,10 @@ app.get('/api/eficiencia/:funcionarioId', async (req, res) => {
 
 // ─── Rota: Atualizar dados de Funcionário no IXC ───────────────────────────
 app.put('/api/funcionario/:usuarioId', async (req, res) => {
-    const { usuarioId } = req.params;
+    // A identidade vem sempre do JWT verificado, nunca do parâmetro da URL —
+    // sem isso, qualquer usuário logado poderia editar o funcionário de outro
+    // ID no IXC só trocando o número na URL.
+    const usuarioId = req.usuario.id;
     const formData = req.body;
 
     try {
@@ -1091,7 +1115,9 @@ app.get('/api/colaboradores', async (req, res) => {
 });
 
 app.get('/api/usuario/perfil/:usuarioId', async (req, res) => {
-    const { usuarioId } = req.params;
+    // Sempre o próprio usuário do JWT — ignora o parâmetro da URL para
+    // impedir que um usuário logado leia o perfil de outro trocando o ID.
+    const usuarioId = req.usuario.id;
     try {
         // Busca perfil na tabela usuarios_perfil
         const result = await pool.query(
@@ -1121,7 +1147,8 @@ app.get('/api/usuario/perfil/:usuarioId', async (req, res) => {
 
 // ─── Rota de Configurações ───────────────────────────────────────────────
 app.get('/api/configuracoes/:usuarioId', async (req, res) => {
-    const { usuarioId } = req.params;
+    // Sempre o próprio usuário do JWT — ignora o parâmetro da URL.
+    const usuarioId = req.usuario.id;
     try {
         const result = await pool.query('SELECT chave, valor FROM usuarios_preferencias WHERE usuario_id = $1', [usuarioId]);
         const preferencias = result.rows.reduce((acc, curr) => {
@@ -1137,7 +1164,8 @@ app.get('/api/configuracoes/:usuarioId', async (req, res) => {
 
 // ─── Rotas: Presença e Colaboradores Online ──────────────────────────────
 app.post('/api/presenca/:usuarioId', async (req, res) => {
-    const { usuarioId } = req.params;
+    // Sempre o próprio usuário do JWT — impede forjar presença de outro.
+    const usuarioId = req.usuario.id;
     try {
         await pool.query(
             'UPDATE usuarios_perfil SET ultima_atividade = NOW() WHERE usuario_id = $1',
@@ -1151,7 +1179,8 @@ app.post('/api/presenca/:usuarioId', async (req, res) => {
 });
 
 app.post('/api/presenca/:usuarioId/logout', async (req, res) => {
-    const { usuarioId } = req.params;
+    // Sempre o próprio usuário do JWT — impede forjar logout de outro.
+    const usuarioId = req.usuario.id;
     try {
         await pool.query(
             "UPDATE usuarios_perfil SET ultima_atividade = '1970-01-01' WHERE usuario_id = $1",
@@ -1238,7 +1267,9 @@ app.get('/api/colaboradores/online', async (req, res) => {
 });
 
 app.post('/api/configuracoes/:usuarioId', async (req, res) => {
-    const { usuarioId } = req.params;
+    // Sempre o próprio usuário do JWT — ignora o parâmetro da URL, para
+    // impedir que um usuário logado sobrescreva a preferência de outro.
+    const usuarioId = req.usuario.id;
     const { email, chave, valor } = req.body;
 
     if (!chave) {
@@ -1261,6 +1292,43 @@ app.post('/api/configuracoes/:usuarioId', async (req, res) => {
 });
 
 // ─── Rotas: Plantões ────────────────────────────────────────────────────────
+
+// N1/N2/gerente são guardados como strings "id1,id2" em `plantoes`/
+// `plantoes_historico`; cada rota abaixo resolvia cada célula com sua
+// própria query (até ~1200 queries extras numa única página de 200 linhas
+// do histórico). Busca todos os IDs únicos da página numa só consulta e
+// resolve o resto em memória a partir do mapa.
+async function buscarMapaFuncionarios(idsCsvList) {
+    const idsUnicos = [...new Set(
+        idsCsvList.flatMap(csv => (csv ? String(csv).split(',').filter(Boolean) : []))
+    )];
+    if (!idsUnicos.length) return new Map();
+    const { rows } = await pool.query(
+        'SELECT funcionario_id, funcionario_nome, foto_perfil FROM usuarios_perfil WHERE funcionario_id = ANY($1)',
+        [idsUnicos]
+    );
+    return new Map(rows.map(r => [String(r.funcionario_id), r]));
+}
+
+function nomesDoMapa(mapa, idsCsv, vazio = null) {
+    if (!idsCsv) return vazio;
+    const idList = String(idsCsv).split(',').filter(Boolean);
+    if (!idList.length) return vazio;
+    const nomes = idList.map(id => mapa.get(String(id))?.funcionario_nome).filter(Boolean);
+    return nomes.join(', ') || vazio;
+}
+
+function pessoasDoMapa(mapa, idsCsv) {
+    if (!idsCsv) return { nomes: null, fotos: null };
+    const idList = String(idsCsv).split(',').filter(Boolean);
+    if (!idList.length) return { nomes: null, fotos: null };
+    const encontrados = idList.map(id => mapa.get(String(id))).filter(Boolean);
+    if (!encontrados.length) return { nomes: null, fotos: null };
+    return {
+        nomes: encontrados.map(p => p.funcionario_nome).join('|||'),
+        fotos: encontrados.map(p => p.foto_perfil).join('|||')
+    };
+}
 
 app.get('/api/plantoes/supervisores', async (req, res) => {
     try {
@@ -1312,7 +1380,7 @@ app.get('/api/plantoes/supervisores', async (req, res) => {
         return res.json({ sucesso: true, supervisores });
     } catch (e) {
         console.error('Erro ao buscar supervisores do plantão:', e.message);
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -1330,7 +1398,7 @@ app.get('/api/funcionarios', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar funcionários.' });
     }
 });
-app.delete('/api/plantoes', async (req, res) => {
+app.delete('/api/plantoes', adminAuth, async (req, res) => {
     const { data, admin_usuario_id } = req.body;
     if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
 
@@ -1387,7 +1455,7 @@ app.delete('/api/plantoes', async (req, res) => {
     }
 });
 
-app.post('/api/plantoes', async (req, res) => {
+app.post('/api/plantoes', adminAuth, async (req, res) => {
     const { data, n1_ids, n2_ids, gerente_ids, admin_usuario_id } = req.body;
     if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
     
@@ -1514,30 +1582,22 @@ app.get('/api/plantoes/historico', async (req, res) => {
             params
         );
 
-        const resolverNomes = async (ids) => {
-            if (!ids) return null;
-            const idList = ids.split(',').filter(Boolean);
-            if (!idList.length) return null;
-            const placeholders = idList.map((_, i) => `$${i + 1}`).join(',');
-            const r = await pool.query(
-                `SELECT funcionario_nome FROM usuarios_perfil WHERE funcionario_id IN (${placeholders})`,
-                idList
-            );
-            return r.rows.map(x => x.funcionario_nome).join(', ') || null;
-        };
+        const mapaFuncionarios = await buscarMapaFuncionarios(
+            result.rows.flatMap(h => [h.n1_anterior, h.n2_anterior, h.gerente_anterior, h.n1_novo, h.n2_novo, h.gerente_novo])
+        );
 
-        const historico = await Promise.all(result.rows.map(async (h) => ({
+        const historico = result.rows.map((h) => ({
             id: h.id,
             plantao_data: h.plantao_data,
-            n1_anterior: await resolverNomes(h.n1_anterior),
-            n2_anterior: await resolverNomes(h.n2_anterior),
-            gerente_anterior: await resolverNomes(h.gerente_anterior),
-            n1_novo: await resolverNomes(h.n1_novo),
-            n2_novo: await resolverNomes(h.n2_novo),
-            gerente_novo: await resolverNomes(h.gerente_novo),
+            n1_anterior: nomesDoMapa(mapaFuncionarios, h.n1_anterior),
+            n2_anterior: nomesDoMapa(mapaFuncionarios, h.n2_anterior),
+            gerente_anterior: nomesDoMapa(mapaFuncionarios, h.gerente_anterior),
+            n1_novo: nomesDoMapa(mapaFuncionarios, h.n1_novo),
+            n2_novo: nomesDoMapa(mapaFuncionarios, h.n2_novo),
+            gerente_novo: nomesDoMapa(mapaFuncionarios, h.gerente_novo),
             admin_nome: h.admin_nome,
             alterado_em: h.alterado_em
-        })));
+        }));
 
         return res.json({ sucesso: true, historico, total, pagina: pag, limite: lim });
     } catch (err) {
@@ -1575,29 +1635,21 @@ app.get('/api/plantoes/historico/export', adminAuth, async (req, res) => {
             params
         );
 
-        const resolverNomes = async (ids) => {
-            if (!ids) return '';
-            const idList = ids.split(',').filter(Boolean);
-            if (!idList.length) return '';
-            const placeholders = idList.map((_, i) => `$${i + 1}`).join(',');
-            const r = await pool.query(
-                `SELECT funcionario_nome FROM usuarios_perfil WHERE funcionario_id IN (${placeholders})`,
-                idList
-            );
-            return r.rows.map(x => x.funcionario_nome).join(', ') || '';
-        };
+        const mapaFuncionarios = await buscarMapaFuncionarios(
+            result.rows.flatMap(h => [h.n1_anterior, h.n1_novo, h.n2_anterior, h.n2_novo, h.gerente_anterior, h.gerente_novo])
+        );
 
-        const rows = await Promise.all(result.rows.map(async (h) => ({
+        const rows = result.rows.map((h) => ({
             plantao_data: h.plantao_data ? new Date(h.plantao_data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '',
             admin_nome: h.admin_nome || '',
             alterado_em: h.alterado_em ? new Date(h.alterado_em).toLocaleString('pt-BR') : '',
-            n1_anterior: await resolverNomes(h.n1_anterior),
-            n1_novo: await resolverNomes(h.n1_novo),
-            n2_anterior: await resolverNomes(h.n2_anterior),
-            n2_novo: await resolverNomes(h.n2_novo),
-            gerente_anterior: await resolverNomes(h.gerente_anterior),
-            gerente_novo: await resolverNomes(h.gerente_novo),
-        })));
+            n1_anterior: nomesDoMapa(mapaFuncionarios, h.n1_anterior, ''),
+            n1_novo: nomesDoMapa(mapaFuncionarios, h.n1_novo, ''),
+            n2_anterior: nomesDoMapa(mapaFuncionarios, h.n2_anterior, ''),
+            n2_novo: nomesDoMapa(mapaFuncionarios, h.n2_novo, ''),
+            gerente_anterior: nomesDoMapa(mapaFuncionarios, h.gerente_anterior, ''),
+            gerente_novo: nomesDoMapa(mapaFuncionarios, h.gerente_novo, ''),
+        }));
 
         const escapeCsv = (val) => {
             const str = String(val ?? '');
@@ -1642,30 +1694,22 @@ app.get('/api/plantoes/historico/:data', async (req, res) => {
             [data]
         );
 
-        const resolverNomes = async (ids) => {
-            if (!ids) return null;
-            const idList = ids.split(',').filter(Boolean);
-            if (!idList.length) return null;
-            const placeholders = idList.map((_, i) => `$${i + 1}`).join(',');
-            const r = await pool.query(
-                `SELECT funcionario_nome FROM usuarios_perfil WHERE funcionario_id IN (${placeholders})`,
-                idList
-            );
-            return r.rows.map(x => x.funcionario_nome).join(', ') || null;
-        };
+        const mapaFuncionarios = await buscarMapaFuncionarios(
+            result.rows.flatMap(h => [h.n1_anterior, h.n2_anterior, h.gerente_anterior, h.n1_novo, h.n2_novo, h.gerente_novo])
+        );
 
-        const historico = await Promise.all(result.rows.map(async (h) => ({
+        const historico = result.rows.map((h) => ({
             id: h.id,
             plantao_data: h.plantao_data,
-            n1_anterior: await resolverNomes(h.n1_anterior),
-            n2_anterior: await resolverNomes(h.n2_anterior),
-            gerente_anterior: await resolverNomes(h.gerente_anterior),
-            n1_novo: await resolverNomes(h.n1_novo),
-            n2_novo: await resolverNomes(h.n2_novo),
-            gerente_novo: await resolverNomes(h.gerente_novo),
+            n1_anterior: nomesDoMapa(mapaFuncionarios, h.n1_anterior),
+            n2_anterior: nomesDoMapa(mapaFuncionarios, h.n2_anterior),
+            gerente_anterior: nomesDoMapa(mapaFuncionarios, h.gerente_anterior),
+            n1_novo: nomesDoMapa(mapaFuncionarios, h.n1_novo),
+            n2_novo: nomesDoMapa(mapaFuncionarios, h.n2_novo),
+            gerente_novo: nomesDoMapa(mapaFuncionarios, h.gerente_novo),
             admin_nome: h.admin_nome,
             alterado_em: h.alterado_em
-        })));
+        }));
 
         return res.json({ sucesso: true, historico });
     } catch (err) {
@@ -1682,28 +1726,16 @@ app.get('/api/plantoes', async (req, res) => {
             ORDER BY p.data ASC;
         `;
         const result = await pool.query(query);
-        
-        const plantoes = await Promise.all(result.rows.map(async (p) => {
-            const getPessoas = async (ids) => {
-                if (!ids) return { nomes: null, fotos: null };
-                const idList = (ids || '').split(',').filter(Boolean);
-                if (idList.length === 0) return { nomes: null, fotos: null };
-                
-                const placeholders = idList.map((_, i) => `$${i + 1}`).join(',');
-                const res = await pool.query(
-                    `SELECT funcionario_nome, foto_perfil FROM usuarios_perfil WHERE funcionario_id IN (${placeholders})`,
-                    idList
-                );
-                return {
-                    nomes: res.rows.map(r => r.funcionario_nome).join('|||'),
-                    fotos: res.rows.map(r => r.foto_perfil).join('|||')
-                };
-            };
-            
-            const n1 = await getPessoas(p.n1_id);
-            const n2 = await getPessoas(p.n2_id);
-            const mgr = await getPessoas(p.gerente_id);
-            
+
+        const mapaFuncionarios = await buscarMapaFuncionarios(
+            result.rows.flatMap(p => [p.n1_id, p.n2_id, p.gerente_id])
+        );
+
+        const plantoes = result.rows.map((p) => {
+            const n1 = pessoasDoMapa(mapaFuncionarios, p.n1_id);
+            const n2 = pessoasDoMapa(mapaFuncionarios, p.n2_id);
+            const mgr = pessoasDoMapa(mapaFuncionarios, p.gerente_id);
+
             return {
                 ...p,
                 n1_nome: n1.nomes || null,
@@ -1713,8 +1745,8 @@ app.get('/api/plantoes', async (req, res) => {
                 mgr_nome: mgr.nomes || null,
                 mgr_foto: mgr.fotos || null
             };
-        }));
-        
+        });
+
         return res.json({ sucesso: true, plantoes });
     } catch (err) {
         console.error('Erro ao buscar plantões:', err.message);
@@ -1723,7 +1755,8 @@ app.get('/api/plantoes', async (req, res) => {
 });
 
 app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
-    const { usuarioId } = req.params;
+    // Sempre o próprio usuário do JWT — ignora o parâmetro da URL.
+    const usuarioId = req.usuario.id;
     try {
         const userRes = await pool.query('SELECT funcionario_id FROM usuarios_perfil WHERE usuario_id = $1', [usuarioId]);
         const funcionarioId = userRes.rows[0]?.funcionario_id;
@@ -1749,7 +1782,13 @@ app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
 
 // ─── Rota: Abrir Ticket de Suporte no IXC ────────────────────────────────────
 app.post('/api/ixc/su-ticket', async (req, res) => {
-    const { mensagem, colaborador_id, tecnico_id, nome_solicitante, email_solicitante } = req.body;
+    // `tecnico_id` é só o técnico escolhido para atender (roteamento, não
+    // identidade) e pode vir do corpo. A identidade de quem abre o chamado
+    // (colaborador_id/nome/email) NUNCA vem do corpo — só do JWT verificado,
+    // resolvido mais abaixo via `usuarios_perfil` — do contrário qualquer
+    // usuário logado poderia abrir um chamado real no IXC em nome de outro
+    // colaborador só trocando esses campos na requisição.
+    const { mensagem, tecnico_id } = req.body;
 
     if (!mensagem) {
         return res.status(400).json({ sucesso: false, erro: 'A descrição da situação é obrigatória.' });
@@ -1763,55 +1802,121 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
         Authorization: authHead
     };
 
-    // Tenta buscar informações do contrato do colaborador se disponível
-    let ixcIds = {
-        id_cliente: '681',
-        id_login: '1',
-        id_contrato: '18426'
+    const log = (msg) => {
+        const line = `[${new Date().toISOString()}] ${msg}\n`;
+        console.log(msg);
+        fs.appendFileSync('ixc_debug.log', line);
     };
 
-    try {
-        // Se temos colaborador_id, tentamos buscar no banco local se há algo vinculado
-        // Mas como não temos na tabela local, vamos usar os padrões por enquanto
-        // O usuário pediu para ser dinâmico no plano, mas a tabela não tem.
-        // Vou manter fixo por enquanto para não quebrar, mas garantir o protocolo.
-    } catch (dbErr) {
-        console.warn("Aviso ao buscar dados do colaborador no banco:", dbErr.message);
-    }
+    // ─── Resolver login/contrato vigentes do cliente placeholder de TI ─────────
+    // Cliente 681 ("escritório Prestek") é o titular de todo chamado interno de TI, mas
+    // NÃO tem um login só — tem 40 (uma unidade/filial da Prestek por login, todas sob o
+    // mesmo cliente). O login usado para chamados internos é um específico, identificado
+    // pelo nome de usuário `escritorio.prestek` (estável — é um nome atribuído manualmente,
+    // ao contrário do contrato vinculado a ele, que muda por fora via renovação/migração na
+    // IXC e já quebrou silenciosamente a criação de OS uma vez — ver
+    // openspec/changes/fix-ixc-os-contrato-desatualizado). Por isso resolve o contrato
+    // vigente a cada chamada, sem cache, buscando por esse nome — nunca assumindo que o
+    // cliente só tem um login.
+    const ID_CLIENTE_PLACEHOLDER_TI = '681';
+    const LOGIN_PLACEHOLDER_TI = 'escritorio.prestek';
+    const resolverIxcIdsPlaceholder = async () => {
+        try {
+            const urlLogin = `https://${host}/webservice/v1/radusuarios`;
+            const resp = await fetch(urlLogin, {
+                method: 'POST',
+                headers: { ...headers, ixcsoft: 'listar' },
+                body: JSON.stringify({
+                    qtype: 'radusuarios.login',
+                    query: LOGIN_PLACEHOLDER_TI,
+                    oper: '=',
+                    page: '1',
+                    rp: '5'
+                })
+            });
+            const data = await resp.json();
+            const registros = data.registros || [];
+            const login = registros.find(r => r.id_cliente === ID_CLIENTE_PLACEHOLDER_TI && r.ativo === 'S');
+            if (!login) {
+                return {
+                    sucesso: false,
+                    erro: `Login '${LOGIN_PLACEHOLDER_TI}' não encontrado ativo para o cliente ${ID_CLIENTE_PLACEHOLDER_TI} (${registros.length} registro(s) retornado(s) pela busca por nome).`
+                };
+            }
+            return {
+                sucesso: true,
+                ixcIds: { id_cliente: ID_CLIENTE_PLACEHOLDER_TI, id_login: login.id, id_contrato: login.id_contrato }
+            };
+        } catch (err) {
+            return { sucesso: false, erro: `Erro ao consultar radusuarios: ${err.message}` };
+        }
+    };
 
-    // ─── RESOLVER SOLICITANTE DO TICKET ─────────────────────────────────────
+    // O assunto usado no ticket (id_assunto '1154', "SOLICITAR ATENDIMENTO AO SETOR DE
+    // T.I.") tem contrato_obrigatorio = 'S' (confirmado em su_oss_assunto) — su_ticket
+    // recusa a criação sem um id_contrato válido, mesmo não validando se esse contrato
+    // está vinculado ao login (login_obrigatorio = 'N' nesse assunto, e por isso o ticket
+    // nunca falhou por causa do login/contrato desatualizados, só a OS). Por isso, quando a
+    // resolução estrita (login → contrato) falha, ainda buscamos QUALQUER contrato ativo do
+    // cliente placeholder só para não quebrar a criação do ticket — a OS continua bloqueada,
+    // já que essa depende do vínculo exato login/contrato que a resolução estrita garante.
+    const resolverContratoAtivoFallback = async () => {
+        try {
+            const urlContrato = `https://${host}/webservice/v1/cliente_contrato`;
+            const resp = await fetch(urlContrato, {
+                method: 'POST',
+                headers: { ...headers, ixcsoft: 'listar' },
+                body: JSON.stringify({
+                    qtype: 'cliente_contrato.id_cliente',
+                    query: ID_CLIENTE_PLACEHOLDER_TI,
+                    oper: '=',
+                    page: '1',
+                    rp: '1'
+                })
+            });
+            const data = await resp.json();
+            const contrato = (data.registros || [])[0];
+            return contrato ? contrato.id : '';
+        } catch (err) {
+            log(`[RESOLVER IDS] Erro no fallback de contrato para o ticket: ${err.message}`);
+            return '';
+        }
+    };
+
+    const resolucaoIxcIds = await resolverIxcIdsPlaceholder();
+    let ixcIds;
+    if (resolucaoIxcIds.sucesso) {
+        log(`[RESOLVER IDS] Login/contrato do placeholder resolvidos: id_login=${resolucaoIxcIds.ixcIds.id_login}, id_contrato=${resolucaoIxcIds.ixcIds.id_contrato}`);
+        ixcIds = resolucaoIxcIds.ixcIds;
+    } else {
+        log(`[RESOLVER IDS] Falha ao resolver login/contrato do placeholder (cliente ${ID_CLIENTE_PLACEHOLDER_TI}): ${resolucaoIxcIds.erro}`);
+        const contratoFallback = await resolverContratoAtivoFallback();
+        log(`[RESOLVER IDS] Fallback de contrato para o ticket (assunto exige contrato): ${contratoFallback || '(nenhum encontrado)'}`);
+        ixcIds = { id_cliente: ID_CLIENTE_PLACEHOLDER_TI, id_login: '', id_contrato: contratoFallback };
+    }
+    // Quando a resolução estrita falha, o ticket ainda pode ser criado com o fallback de
+    // contrato acima — só o fluxo de OS (mais abaixo) é abortado antes do PASSO 1, porque
+    // esse fallback não garante o vínculo exato login/contrato que a OS exige.
+    const ixcIdsResolvidos = resolucaoIxcIds.sucesso;
+
+    // ─── RESOLVER SOLICITANTE DO TICKET (sempre a partir do JWT) ────────────
     let ixc_usuario_id = '0';
     let ixc_func_id = null;
-    if (colaborador_id || email_solicitante) {
-        try {
-            let queryStr = 'SELECT usuario_id, funcionario_id FROM usuarios_perfil WHERE ';
-            let params = [];
-            if (colaborador_id) {
-                queryStr += 'funcionario_id = $1 OR usuario_id = $1';
-                params.push(String(colaborador_id));
-                if (email_solicitante) {
-                    queryStr += ' OR funcionario_email = $2 OR usuario_email = $2';
-                    params.push(email_solicitante);
-                }
-            } else {
-                queryStr += 'funcionario_email = $1 OR usuario_email = $1';
-                params.push(email_solicitante);
-            }
-            queryStr += ' LIMIT 1';
-
-            const dbRes = await pool.query(queryStr, params);
-            if (dbRes.rows.length > 0) {
-                if (dbRes.rows[0].usuario_id) {
-                    ixc_usuario_id = dbRes.rows[0].usuario_id;
-                }
-                if (dbRes.rows[0].funcionario_id) {
-                    ixc_func_id = dbRes.rows[0].funcionario_id;
-                }
-                console.log(`[RESOLVE SOLICITANTE TICKET] Resolvido via Banco Local: usuario_id=${ixc_usuario_id}, funcionario_id=${ixc_func_id || 'N/A'}. Tecnico da OS: ${tecnico_id || 'N/A'}`);
-            }
-        } catch (dbErr) {
-            console.error(`[RESOLVE SOLICITANTE TICKET] Erro ao consultar banco local:`, dbErr.message);
+    let nome_solicitante = null;
+    try {
+        const dbRes = await pool.query(
+            'SELECT usuario_id, funcionario_id, funcionario_nome, usuario_nome FROM usuarios_perfil WHERE usuario_id = $1 LIMIT 1',
+            [String(req.usuario.id)]
+        );
+        if (dbRes.rows.length > 0) {
+            const row = dbRes.rows[0];
+            if (row.usuario_id) ixc_usuario_id = row.usuario_id;
+            if (row.funcionario_id) ixc_func_id = row.funcionario_id;
+            nome_solicitante = row.funcionario_nome || row.usuario_nome || req.usuario.nome || null;
+            console.log(`[RESOLVE SOLICITANTE TICKET] Resolvido via JWT: usuario_id=${ixc_usuario_id}, funcionario_id=${ixc_func_id || 'N/A'}. Tecnico da OS: ${tecnico_id || 'N/A'}`);
         }
+    } catch (dbErr) {
+        console.error(`[RESOLVE SOLICITANTE TICKET] Erro ao consultar banco local:`, dbErr.message);
     }
 
     // Formata a mensagem com o nome do solicitante
@@ -1859,11 +1964,6 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
 
     try {
         const urlTicket = `https://${host}/webservice/v1/su_ticket`;
-        const log = (msg) => {
-            const line = `[${new Date().toISOString()}] ${msg}\n`;
-            console.log(msg);
-            fs.appendFileSync('ixc_debug.log', line);
-        };
         log(`== INICIANDO ABERTURA TICK: Tecnico ${tecnico_id} ==`);
 
         const resposta = await fetch(urlTicket, {
@@ -2005,8 +2105,16 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
             }
         };
 
+        // Só true quando a IXC recusa a criação por já existir uma OS do workflow pro
+        // ticket ("Esse ticket já possui uma O.S. vinculada... utilize PROCESSO!") — o
+        // único motivo em que deletar essa OS é esperado destravar a recriação. Qualquer
+        // outro motivo de falha (ex.: login/contrato inválido) não deleta nada: já sabemos,
+        // pela resolução dinâmica acima, que login/contrato estão corretos, então um erro
+        // diferente não vai ser resolvido apagando a OS do workflow.
+        let osBloqueadaPorWorkflow = false;
+
         // ─── PASSO 1: Tentar criar OS manual imediatamente ────────────────────
-        if (tecnico_id) {
+        if (tecnico_id && ixcIdsResolvidos) {
             try {
                 log(`[PASSO 1] Tentando criar OS manual agendada para ticket ${ticketId}`);
                 const tentativa = await criarOSManual(ticketId, tecnico_id);
@@ -2015,17 +2123,22 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
                     osManualCriada = true;
                     log(`[PASSO 1] OS manual criada com sucesso. ID: ${osIdFinal}`);
                 } else {
-                    log(`[PASSO 1] Falha ao criar OS manual: ${tentativa.erro}`);
+                    osBloqueadaPorWorkflow = /já possui uma O\.S\. vinculada/i.test(tentativa.erro || '');
+                    log(`[PASSO 1] Falha ao criar OS manual (bloqueio por OS de workflow: ${osBloqueadaPorWorkflow}): ${tentativa.erro}`);
                 }
             } catch (err) {
                 log(`[PASSO 1] Erro no TRY CATCH: ${err.message}`);
             }
+        } else if (tecnico_id && !ixcIdsResolvidos) {
+            log(`[PASSO 1] Pulado: login/contrato do cliente placeholder não foram resolvidos, não é seguro tentar criar OS.`);
         }
 
-        // ─── PASSO 2: Se falhou, buscar OS do workflow, deletar e recriar manualmente
-        if (!osIdFinal && tecnico_id) {
+        // ─── PASSO 2: Se bloqueada pela OS do workflow, localizar, deletar e recriar
+        // manualmente. Só entra aqui quando o PASSO 1 confirma que o único obstáculo é a
+        // OS do workflow existir (não um problema de dados que apagar não resolveria).
+        if (!osIdFinal && tecnico_id && osBloqueadaPorWorkflow) {
             log(`[PASSO 2] Buscando OS gerada pelo workflow para ticket ${ticketId}`);
-            
+
             for (let i = 0; i < 6; i++) {
                 await sleep(3000);
                 let ticketInfo = await fetchTicket();
@@ -2084,22 +2197,31 @@ app.post('/api/ixc/su-ticket', async (req, res) => {
                 
                 log(`[PASSO 2] Tentativa ${i + 1} sem OS ainda...`);
             }
+        } else if (!osIdFinal && tecnico_id && ixcIdsResolvidos && !osBloqueadaPorWorkflow) {
+            log(`[PASSO 2] Pulado: a falha do PASSO 1 não foi por bloqueio de OS existente, então apagar a OS do workflow não resolveria nada.`);
         }
 
-        // ─── PASSO 3: Verificar OS final ──────────────────────────────────────
+        // ─── PASSO 3: Verificar OS final e montar resposta honesta ─────────────
+        let osCriada = false;
+        let avisoOS = null;
         if (osIdFinal && osManualCriada) {
+            osCriada = true;
             log(`[FINAL] OS agendada manualmente. ID: ${osIdFinal}, Tecnico: ${tecnico_id}, Protocolo retornado: ${protocoloFinal || '(vazio)'}`);
-        } else if (osIdFinal && osRecord) {
-            log(`[FINAL] Nao foi possivel substituir a OS do workflow. OS atual: ${osIdFinal}`);
+        } else if (!ixcIdsResolvidos) {
+            avisoOS = 'O chamado foi registrado, mas nenhuma OS foi criada: não foi possível resolver o login/contrato do cliente interno de TI na IXC. Avise o setor de TI diretamente.';
+            log(`[FINAL] Nenhuma OS processada (login/contrato do placeholder não resolvidos). osIdFinal: ${osIdFinal}, tecnicoId: ${tecnico_id}`);
         } else {
-            log(`[FINAL] Nenhuma OS processada. osIdFinal: ${osIdFinal}, tecnicoId: ${tecnico_id}`);
+            avisoOS = 'O chamado foi registrado, mas nenhuma OS ficou vinculada a ele. Avise o setor de TI diretamente.';
+            log(`[FINAL] Nenhuma OS processada. osIdFinal: ${osIdFinal}, tecnicoId: ${tecnico_id}, osBloqueadaPorWorkflow: ${osBloqueadaPorWorkflow}`);
         }
 
-        log(`FIM. Retornando protocolo ${protocoloFinal}`);
-        return res.json({  
-            sucesso: true, 
-            ticket: resultado, 
-            protocolo: protocoloFinal 
+        log(`FIM. Retornando protocolo ${protocoloFinal} | os_criada=${osCriada}`);
+        return res.json({
+            sucesso: true,
+            ticket: resultado,
+            protocolo: protocoloFinal,
+            os_criada: osCriada,
+            aviso: avisoOS
         });
     } catch (e) {
         console.error("Erro rota su-ticket:", e);
@@ -2173,7 +2295,7 @@ app.get('/api/debug/setor/:setorId', async (req, res) => {
         })) });
     } catch (e) {
         console.error('Erro debug:', e);
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -2202,7 +2324,7 @@ app.get('/api/grupos', async (req, res) => {
         return res.json({ sucesso: true, grupos });
     } catch (e) {
         console.error('Erro rota /api/grupos:', e);
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -2213,11 +2335,12 @@ app.get('/api/admin/grupos-nomes', async (req, res) => {
         const result = await pool.query('SELECT id_grupo, nome FROM grupos_nomes ORDER BY id_grupo::int');
         return res.json({ sucesso: true, grupos: result.rows });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
-app.post('/api/admin/grupos-nomes', async (req, res) => {
+app.post('/api/admin/grupos-nomes', adminAuth, async (req, res) => {
     const { id_grupo, nome, acao } = req.body; // acao: 'salvar' | 'remover'
     if (!id_grupo || !acao) return res.status(400).json({ sucesso: false, erro: 'id_grupo e acao são obrigatórios' });
     try {
@@ -2233,7 +2356,8 @@ app.post('/api/admin/grupos-nomes', async (req, res) => {
         const result = await pool.query('SELECT id_grupo, nome FROM grupos_nomes ORDER BY id_grupo::int');
         return res.json({ sucesso: true, grupos: result.rows });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -2245,12 +2369,13 @@ app.get('/api/admin/grupos-supervisores', async (req, res) => {
         const result = await pool.query('SELECT id_grupo FROM grupos_supervisores ORDER BY id_grupo::int');
         return res.json({ sucesso: true, ids: result.rows.map(r => r.id_grupo) });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
 // POST: adiciona ou remove um id_grupo da lista de supervisores
-app.post('/api/admin/grupos-supervisores', async (req, res) => {
+app.post('/api/admin/grupos-supervisores', adminAuth, async (req, res) => {
     const { id_grupo, acao } = req.body; // acao: 'adicionar' | 'remover'
     if (!id_grupo || !acao) return res.status(400).json({ sucesso: false, erro: 'id_grupo e acao são obrigatórios' });
     try {
@@ -2264,7 +2389,8 @@ app.post('/api/admin/grupos-supervisores', async (req, res) => {
         const result = await pool.query('SELECT id_grupo FROM grupos_supervisores ORDER BY id_grupo::int');
         return res.json({ sucesso: true, ids: result.rows.map(r => r.id_grupo) });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -2274,11 +2400,12 @@ app.get('/api/admin/responsaveis-manuais', async (req, res) => {
         const result = await pool.query('SELECT * FROM responsaveis_manuais');
         return res.json({ sucesso: true, responsaveis: result.rows });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
-app.post('/api/admin/responsaveis-manuais', async (req, res) => {
+app.post('/api/admin/responsaveis-manuais', adminAuth, async (req, res) => {
     const { id_setor, id_funcionario, nome, acao } = req.body; // acao: 'definir' | 'limpar'
     if (!id_setor || !acao) return res.status(400).json({ sucesso: false, erro: 'id_setor e acao são obrigatórios' });
     
@@ -2300,30 +2427,34 @@ app.post('/api/admin/responsaveis-manuais', async (req, res) => {
         const result = await pool.query('SELECT * FROM responsaveis_manuais');
         return res.json({ sucesso: true, responsaveis: result.rows });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
 // ─── Rotas: Admin — Gerenciar Descrições de Setores ────────────────────────
-app.post('/api/admin/setores-descricoes', async (req, res) => {
-    const { id_setor, descricao, atualizado_por } = req.body;
+app.post('/api/admin/setores-descricoes', adminAuth, async (req, res) => {
+    const { id_setor, descricao } = req.body;
     if (!id_setor) return res.status(400).json({ sucesso: false, erro: 'id_setor é obrigatório' });
+    // Autoria vem do JWT verificado, nunca do corpo da requisição.
+    const atualizado_por = req.usuario.email;
 
     try {
         if (!descricao || descricao.trim() === '') {
             await pool.query('DELETE FROM setores_descricoes WHERE id_setor = $1', [String(id_setor)]);
         } else {
             const query = `
-                INSERT INTO setores_descricoes (id_setor, descricao, atualizado_por, atualizado_em) 
+                INSERT INTO setores_descricoes (id_setor, descricao, atualizado_por, atualizado_em)
                 VALUES ($1, $2, $3, NOW())
-                ON CONFLICT (id_setor) DO UPDATE 
+                ON CONFLICT (id_setor) DO UPDATE
                 SET descricao = EXCLUDED.descricao, atualizado_por = EXCLUDED.atualizado_por, atualizado_em = NOW();
             `;
-            await pool.query(query, [String(id_setor), descricao, atualizado_por || 'Sistema']);
+            await pool.query(query, [String(id_setor), descricao, atualizado_por]);
         }
         return res.json({ sucesso: true });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -2356,7 +2487,8 @@ app.get('/api/debug/grupos-membros', async (req, res) => {
 
         return res.json({ sucesso: true, total_grupos: resultado.length, grupos: resultado });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -2385,7 +2517,7 @@ app.get('/api/usuarios-grupo', async (req, res) => {
         return res.json({ sucesso: true, usuarios });
     } catch (e) {
         console.error('Erro rota /api/usuarios-grupo:', e);
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -2677,7 +2809,7 @@ app.get('/api/setores', async (req, res) => {
         return res.json({ sucesso: true, setores, resumo, cacheStatus: 'MISS' });
     } catch (e) {
         console.error('Erro rota /api/setores:', e);
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3625,7 +3757,7 @@ app.get('/api/cobertura-ixc', async (req, res) => {
         return res.json({ ...result, cacheStatus: 'MISS' });
     } catch (e) {
         console.error('Erro em /api/cobertura-ixc:', e.message);
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3657,7 +3789,7 @@ app.get('/api/geocodificar', async (req, res) => {
         return res.json(null);
     } catch (e) {
         console.error('Erro geocodificar:', e.message);
-        return res.status(500).json({ erro: e.message });
+        return res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3799,7 +3931,7 @@ app.get('/api/cobertura-ixc/contratos-bairro', async (req, res) => {
         });
     } catch (e) {
         console.error('Erro em /api/cobertura-ixc/contratos-bairro:', e.message);
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3855,7 +3987,7 @@ app.get('/api/escritorios', async (req, res) => {
         res.json(rows);
     } catch (e) {
         console.error('GET /api/escritorios:', e.message);
-        res.status(500).json({ erro: e.message });
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3870,7 +4002,7 @@ app.post('/api/escritorios', async (req, res) => {
         res.status(201).json(rows[0]);
     } catch (e) {
         console.error('POST /api/escritorios:', e.message);
-        res.status(500).json({ erro: e.message });
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3887,7 +4019,7 @@ app.put('/api/escritorios/:id', async (req, res) => {
         res.json(rows[0]);
     } catch (e) {
         console.error('PUT /api/escritorios/:id:', e.message);
-        res.status(500).json({ erro: e.message });
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3899,7 +4031,7 @@ app.delete('/api/escritorios/:id', async (req, res) => {
         res.json({ ok: true });
     } catch (e) {
         console.error('DELETE /api/escritorios/:id:', e.message);
-        res.status(500).json({ erro: e.message });
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3913,7 +4045,7 @@ app.get('/api/categorias-processos', async (req, res) => {
         res.json(rows);
     } catch (e) {
         console.error('GET /api/categorias-processos:', e.message);
-        res.status(500).json({ erro: e.message });
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3928,7 +4060,7 @@ app.post('/api/categorias-processos', adminAuth, async (req, res) => {
         res.status(201).json(rows[0]);
     } catch (e) {
         console.error('POST /api/categorias-processos:', e.message);
-        res.status(500).json({ erro: e.message });
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3944,7 +4076,7 @@ app.put('/api/categorias-processos/:id', adminAuth, async (req, res) => {
         res.json(rows[0]);
     } catch (e) {
         console.error('PUT /api/categorias-processos/:id:', e.message);
-        res.status(500).json({ erro: e.message });
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -3956,7 +4088,7 @@ app.delete('/api/categorias-processos/:id', adminAuth, async (req, res) => {
         res.json({ ok: true });
     } catch (e) {
         console.error('DELETE /api/categorias-processos/:id:', e.message);
-        res.status(500).json({ erro: e.message });
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -4025,7 +4157,8 @@ app.get('/api/admin/dashboard-stats', adminAuth, async (_req, res) => {
             }
         });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -4045,7 +4178,8 @@ app.get('/api/admin/usuarios', adminAuth, async (req, res) => {
         const { rows } = await pool.query(query, params);
         return res.json({ sucesso: true, usuarios: rows });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -4070,7 +4204,8 @@ app.put('/api/admin/usuarios/:id/privilegios', adminAuth, async (req, res) => {
 
         return res.json({ sucesso: true, usuario: rows[0] });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -4094,7 +4229,8 @@ app.get('/api/admin/auditoria', adminAuth, async (req, res) => {
         const countRes = await pool.query(`SELECT COUNT(*) FROM auditoria_logs ${where}`, params.slice(0, -2));
         return res.json({ sucesso: true, logs: rows, total: parseInt(countRes.rows[0].count) });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -4104,7 +4240,8 @@ app.get('/api/admin/configuracoes', adminAuth, async (_req, res) => {
         const { rows } = await pool.query('SELECT * FROM configuracoes_globais ORDER BY chave');
         return res.json({ sucesso: true, configuracoes: rows });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -4123,7 +4260,8 @@ app.put('/api/admin/configuracoes/:chave', adminAuth, async (req, res) => {
         await registrarAuditoria(adminEmail, 'update_config', 'configuracao', chave, `Alterou "${chave}" para "${valor}"`);
         return res.json({ sucesso: true, configuracao: rows[0] });
     } catch (e) {
-        return res.status(500).json({ sucesso: false, erro: e.message });
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
     }
 });
 
@@ -4132,10 +4270,8 @@ app.put('/api/admin/configuracoes/:chave', adminAuth, async (req, res) => {
 // GET /api/user/dashboard-layout?userId=<id>
 // Retorna o layout JSONB salvo para o usuário ou array vazio (sem layout salvo)
 app.get('/api/user/dashboard-layout', async (req, res) => {
-    const { userId } = req.query;
-    if (!userId) {
-        return res.status(400).json({ sucesso: false, erro: 'userId é obrigatório.' });
-    }
+    // Sempre o próprio usuário do JWT — ignora o parâmetro da query.
+    const userId = req.usuario.id;
     try {
         const { rows } = await pool.query(
             'SELECT layout FROM user_dashboard_layouts WHERE user_id = $1',
@@ -4154,9 +4290,11 @@ app.get('/api/user/dashboard-layout', async (req, res) => {
 // Salva ou sobrescreve o layout do usuário (upsert).
 // Aceita tanto o formato legado (array único) quanto o novo formato com layouts por breakpoint.
 app.post('/api/user/dashboard-layout', async (req, res) => {
-    const { userId, layout } = req.body;
-    if (!userId || (!Array.isArray(layout) && (typeof layout !== 'object' || layout === null))) {
-        return res.status(400).json({ sucesso: false, erro: 'userId e layout (array ou objeto por breakpoint) são obrigatórios.' });
+    // Sempre o próprio usuário do JWT — ignora o userId do corpo.
+    const userId = req.usuario.id;
+    const { layout } = req.body;
+    if (!Array.isArray(layout) && (typeof layout !== 'object' || layout === null)) {
+        return res.status(400).json({ sucesso: false, erro: 'layout (array ou objeto por breakpoint) é obrigatório.' });
     }
     try {
         await pool.query(
@@ -4228,7 +4366,7 @@ app.get('/api/ti/colaborador/taxonomias', adminAuth, async (_req, res) => {
         return res.json({ sucesso: true, ...payload });
     } catch (e) {
         console.error('[ti/taxonomias] Erro:', e.message);
-        return res.status(502).json({ sucesso: false, erro: `Falha ao carregar taxonomias do IXC: ${e.message}` });
+        return res.status(502).json({ sucesso: false, erro: 'Falha ao carregar taxonomias do IXC.' });
     }
 });
 
@@ -4300,7 +4438,7 @@ app.get('/api/ti/colaborador/cidades', adminAuth, async (req, res) => {
         });
     } catch (e) {
         console.error('[ti/cidades] Erro:', e.message);
-        return res.status(502).json({ sucesso: false, erro: `Falha ao consultar cidades no IXC: ${e.message}` });
+        return res.status(502).json({ sucesso: false, erro: 'Falha ao consultar cidades no IXC.' });
     }
 });
 
@@ -4348,7 +4486,7 @@ app.post(
             const status = e.status || 502;
             return res.status(status).json({
                 sucesso: false,
-                erro: status === 400 ? e.message : `Falha ao processar PDF: ${e.message}`,
+                erro: status === 400 ? e.message : 'Falha ao processar PDF.',
             });
         }
     }
@@ -4369,7 +4507,7 @@ app.get('/api/ti/colaborador/duplicado', adminAuth, async (req, res) => {
         return res.json({ sucesso: true, duplicados });
     } catch (e) {
         console.error('[ti/duplicado] Erro:', e.message);
-        return res.status(502).json({ sucesso: false, erro: `Falha ao consultar duplicidade no IXC: ${e.message}` });
+        return res.status(502).json({ sucesso: false, erro: 'Falha ao consultar duplicidade no IXC.' });
     }
 });
 
@@ -4427,7 +4565,7 @@ app.post('/api/ti/colaborador/dry-run', adminAuth, async (req, res) => {
         });
     } catch (e) {
         console.error('[ti/dry-run] Erro:', e.message);
-        return res.status(502).json({ sucesso: false, erro: `Falha ao montar o dry-run: ${e.message}` });
+        return res.status(502).json({ sucesso: false, erro: 'Falha ao montar o dry-run.' });
     }
 });
 
@@ -4495,7 +4633,7 @@ app.use((err, req, res, next) => {
     const status = err.status || err.statusCode || 500;
     res.status(status).json({
         sucesso: false,
-        erro: status === 413 ? 'Arquivo excede o limite permitido.' : (err.message || 'Erro interno do servidor.'),
+        erro: status === 413 ? 'Arquivo excede o limite permitido.' : 'Erro interno do servidor.',
     });
 });
 

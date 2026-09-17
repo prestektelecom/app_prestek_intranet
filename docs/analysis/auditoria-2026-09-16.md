@@ -14,6 +14,11 @@ IXC/produção. Delegada a 3 subagentes em paralelo:
 Este documento consolida os três relatórios num backlog único, priorizado por severidade,
 para aprovação antes de qualquer correção — nada aqui foi corrigido ainda.
 
+**Atualização 2026-09-17**: Felix aprovou o primeiro lote (P0+P1, itens 1-12). Todos os 12
+implementados e verificados com `node --check` (sintaxe) — não testados ao vivo contra
+produção nesta sessão. Ver marcação `[FEITO]` em cada item abaixo e a entrada correspondente
+em `MEMORIA.md` → Decisões (Segurança).
+
 Ponto de partida corrigido: um documento externo analisando `/root/prestek_intranet` no
 commit `235d0de2` (produção, ainda não lançada) apontava `adminAuth` confiando em header
 `x-admin-email` e CORS refletindo qualquer origem — **ambos já corrigidos neste repositório
@@ -24,7 +29,7 @@ está desatualizada; produção ainda não foi lançada, então não há deploy 
 
 ## P0 — Crítico
 
-### 1. Segunda credencial IXC real hardcoded, nunca antes catalogada
+### 1. Segunda credencial IXC real hardcoded, nunca antes catalogada `[FEITO 2026-09-17]`
 - **Arquivo**: `backend/debug_clients.js:13`
 - **Evidência**: header `Authorization: Basic <base64>` hardcoded, decodifica para `72:<token>` — formato `IXC_USER_ID:IXC_TOKEN_SECRET` real, contra `sistema.prestek.com.br`. É um usuário IXC (**id 72**) diferente do já conhecido e com rotação adiada (**id 222**, conta do Felix — ver Pendências em `MEMORIA.md`).
 - **Impacto**: credencial viva de um segundo usuário IXC exposta em arquivo rastreado no git. Escopo de permissão do usuário 72 no IXC não verificado (pode ter escrita).
@@ -35,7 +40,7 @@ está desatualizada; produção ainda não foi lançada, então não há deploy 
 - **Rollback**: reverter o commit único.
 - **Decisão pendente do Felix**: identificar a quem pertence o usuário IXC 72 e se precisa ser revogado/rotacionado no próprio IXC (fora do escopo de código).
 
-### 2. Quatro rotas `/api/admin/*` de escrita sem `adminAuth`
+### 2. Quatro rotas `/api/admin/*` de escrita sem `adminAuth` `[FEITO 2026-09-17]`
 - **Arquivos/linhas**: `backend/server.js:2220` (`POST /api/admin/grupos-nomes`), `:2253` (`POST /api/admin/grupos-supervisores`), `:2281` (`POST /api/admin/responsaveis-manuais`), `:2308` (`POST /api/admin/setores-descricoes`).
 - **Evidência**: só têm o `requireAuth` global (login válido); rotas irmãs corretas (`:4033`, `:4052`, `:4078` etc.) usam `adminAuth`. Confirmado por leitura direta do código.
 - **Impacto**: qualquer funcionário autenticado pode reatribuir supervisores de grupo, responsáveis manuais do organograma e descrições de setor via chamada direta à API, sem passar pela UI admin.
@@ -45,7 +50,7 @@ está desatualizada; produção ainda não foi lançada, então não há deploy 
 - **Teste de aceitação**: chamar cada rota com um JWT de usuário não-admin retorna 403; com admin, continua funcionando como hoje.
 - **Rollback**: reverter o commit único.
 
-### 3. CRUD de Comunicados sem `adminAuth` + autoria forjável
+### 3. CRUD de Comunicados sem `adminAuth` + autoria forjável `[FEITO 2026-09-17]`
 - **Arquivo/linhas**: `backend/server.js:320` (`POST`), `:341` (`PUT`), `:360` (`DELETE`) `/api/comunicados`.
 - **Evidência**: só `requireAuth`. `criado_por` (linha 321) vem cru do corpo da requisição, sem cruzar com `req.usuario.email`.
 - **Impacto**: qualquer funcionário logado pode criar, editar ou excluir qualquer comunicado da empresa inteira, e forjar quem "criou" o comunicado. `AdminComunicados.jsx` assume proteção que o backend não impõe.
@@ -55,7 +60,7 @@ está desatualizada; produção ainda não foi lançada, então não há deploy 
 - **Teste de aceitação**: as 3 operações falham com 403 para não-admin; `criado_por` gravado sempre bate com o usuário do JWT, mesmo se o body mandar outro valor.
 - **Rollback**: reverter o commit único.
 
-### 4. `backend/ixc_debug.log` rastreado no git com PII real, ainda sendo escrito em produção
+### 4. `backend/ixc_debug.log` rastreado no git com PII real, ainda sendo escrito em produção `[FEITO 2026-09-17]`
 - **Arquivo**: `backend/ixc_debug.log` (rastreado, `git show HEAD:backend/ixc_debug.log` retorna 2022 linhas); escrita contínua em `backend/server.js:1865` (`fs.appendFileSync`, sem rotação/limite).
 - **Evidência**: conteúdo real inspecionado localmente — nomes completos de colaboradores, mensagens de chamados internos, IDs de cliente/contrato/ticket/OS reais. Já está no `.gitignore` (linha 32), mas isso não remove o arquivo já commitado nem impede que `git commit -a` o reintroduza atualizado.
 - **Impacto**: PII real exposta no histórico do git (repositório privado, mas ainda uma exposição desnecessária); arquivo cresce sem limite no disco de produção.
@@ -69,50 +74,50 @@ está desatualizada; produção ainda não foi lançada, então não há deploy 
 
 ## P1 — Alto
 
-### 5. `/api/plantoes` (criar/excluir) sem `adminAuth`
+### 5. `/api/plantoes` (criar/excluir) sem `adminAuth` `[FEITO 2026-09-17]`
 - **Arquivo/linhas**: `backend/server.js:1333` (`DELETE`), `:1390` (`POST`).
 - **Impacto**: qualquer funcionário logado cria ou apaga a escala de plantão de qualquer data.
 - **Esforço**: baixo. **Risco**: baixo, mas confirmar se supervisores não-admin precisam continuar podendo criar plantão (pode exigir um nível de permissão intermediário, não só `adminAuth` binário).
 - **Teste de aceitação**: 403 para usuário comum; supervisor/admin continua funcionando.
 
-### 6. Vazamento sistêmico de `error.message` cru (~34 rotas + middleware global)
+### 6. Vazamento sistêmico de `error.message` cru (~34 rotas + middleware global) `[FEITO 2026-09-17]`
 - **Arquivos/linhas**: 34 ocorrências do padrão `erro: e.message`/`err.message`, incluindo as 4 rotas do item 2, rotas admin (`4048`, `4073`, `4126`), rotas de TI (`4231`–`4430`), rotas de cobertura/escritórios (`3660`–`3959`). Middleware de erro global: `backend/server.js:4492-4500` devolve `err.message` cru para qualquer status ≠ 413.
 - **Impacto**: mensagens de erro do driver `pg` tipicamente incluem nome de tabela/coluna/trecho de query — mapeamento de schema para qualquer usuário autenticado que force um erro.
 - **Esforço**: médio — padronizar uma função `respostaErro(res, status, mensagemPublica, erroReal)` que loga `erroReal` no servidor e nunca o devolve ao cliente; aplicar nas ~34 rotas + middleware global.
 - **Teste de aceitação**: forçar um erro (ex. ID inválido) em 5 rotas amostradas não retorna nada parecido com SQL/stack trace.
 
-### 7. IDOR — nenhuma rota cruza `:id`/`userId` com `req.usuario` do JWT
+### 7. IDOR — nenhuma rota cruza `:id`/`userId` com `req.usuario` do JWT `[FEITO 2026-09-17]`
 - **Arquivos/linhas**: `backend/server.js:1123` (`GET /api/configuracoes/:usuarioId`), `:1240` (`POST` mesmo path, sem whitelist de `chave`), `:1139`/`:1153` (`POST /api/presenca/:usuarioId(/logout)`), `:4134`/`:4156` (`GET`/`POST /api/user/dashboard-layout`).
 - **Impacto**: qualquer usuário logado lê/grava preferências, avatar, status de presença ou layout de dashboard de outro usuário. Impacto moderado (não é dado financeiro), mas padrão repetido em 5+ rotas.
 - **Esforço**: médio — checar `req.usuario.id === :usuarioId` (ou `req.usuario.id === userId` do body/query) em cada uma; para `/configuracoes`, também adicionar whitelist de `chave` gravável.
 - **Teste de aceitação**: usuário A não consegue ler/gravar dado de usuário B via essas rotas; continua funcionando para o próprio usuário.
 
-### 8. `PUT /api/funcionario/:usuarioId` escreve no IXC sem checar posse
+### 8. `PUT /api/funcionario/:usuarioId` escreve no IXC sem checar posse `[FEITO 2026-09-17]`
 - **Arquivo/linha**: `backend/server.js:894-982` (escrita real em `funcionarios/:id` no IXC em `:954`).
 - **Impacto**: só `requireAuth`; nenhuma verificação de que `usuarioId` é o próprio usuário do token — dado real de funcionário no ERP pode ser editado por qualquer um logado.
 - **Esforço**: baixo — mesma checagem do item 7.
 - **Teste de aceitação**: usuário A recebe 403 ao tentar `PUT /api/funcionario/<id-de-B>`.
 
-### 9. `POST /api/ixc/su-ticket` permite abrir chamado em nome de outro colaborador
+### 9. `POST /api/ixc/su-ticket` permite abrir chamado em nome de outro colaborador `[FEITO 2026-09-17]`
 - **Arquivo/linha**: `backend/server.js:1751`.
 - **Impacto**: `colaborador_id`, `nome_solicitante`, `email_solicitante` vêm do corpo sem cruzar com `req.usuario` — chamado real no IXC pode ser aberto com identidade forjada.
 - **Esforço**: baixo/médio — derivar solicitante de `req.usuario` no servidor em vez de confiar no body (ou validar que `colaborador_id` corresponde ao usuário logado).
 - **Teste de aceitação**: ticket criado sempre registra o solicitante real do JWT, mesmo se o body mandar outro.
 
-### 10. N+1 em 4 rotas de plantão (até ~1200 queries extras por requisição)
+### 10. N+1 em 4 rotas de plantão (até ~1200 queries extras por requisição) `[FEITO 2026-09-17]`
 - **Arquivos/linhas**: `backend/server.js:1677-1723` (`GET /api/plantoes`, 3 queries por linha), `:1459-1547` (`historico`, 6 queries por linha × até 200 linhas), `:1549-1631` (`historico/export`, mesmo padrão sem paginação nenhuma), `:1633-1675` (`historico/:data`, mesmo padrão, capado em `LIMIT 10`, impacto baixo).
 - **Evidência de padrão correto já existente no repo**: `/api/top-vendedores` (`:3112-3130`) já resolveu o mesmo problema com `Promise.all`; `/api/setores` (`:2522`) já cacheia.
 - **Impacto**: latência crescente com o volume de dados; pior caso ~1200 queries numa única requisição HTTP.
 - **Esforço**: médio — coletar todos os IDs únicos da página numa passada, um único `SELECT ... WHERE funcionario_id = ANY($1)`, montar `Map`, mapear em memória. Consolidar também a função `resolverNomes()` duplicada 3x (`:1517`, `:1578`, `:1645`) nesse processo.
 - **Teste de aceitação**: `GET /api/plantoes/historico` com 200 linhas gera 1 query extra, não 1200 (medir via log/contador de queries); resposta idêntica em conteúdo.
 
-### 11. `/api/eficiencia/:funcionarioId` — loop minuto-a-minuto sem cache (CPU)
+### 11. `/api/eficiencia/:funcionarioId` — loop minuto-a-minuto sem cache (CPU) `[PARCIAL 2026-09-17: cache aplicado; reescrita analítica do loop, não feita]`
 - **Arquivo/linhas**: `backend/server.js:656-891`, `calcHorasUteis` (`:778-793`, até 43.200 iterações), chamada 9x por requisição (`:846-866`).
 - **Impacto**: bloqueia o event loop do Node a cada carregamento de Dashboard, para cada usuário; sem cache apesar de `TTL` já existir declarado e não usado (`cache.js:64`, `TTL.OS_CHAMADOS`).
 - **Esforço**: baixo para cache (conectar o TTL já existente); médio-alto para reescrever o cálculo de forma analítica (sem loop minuto a minuto).
 - **Teste de aceitação**: 2ª chamada dentro do TTL não recalcula (medir tempo de resposta); resultado idêntico ao cálculo atual num caso de teste conhecido.
 
-### 12. Scripts com capacidade de escrita real no IXC de produção, sem proteção
+### 12. Scripts com capacidade de escrita real no IXC de produção, sem proteção `[FEITO 2026-09-17: guarda CONFIRMAR_ESCRITA_IXC em 8/9; test_validacao_estados.js só toca o backend local, não IXC — não guardado]`
 - **Arquivos**: `backend/test_put_all_fields.js`, `test_put_correct.js`, `test_put_full_os.js`, `test_put_full_ticket.js`, `test_put_os.js`, `test_put_ticket.js`, `test_minimal_put.js`, `test_final_fix.js`, `test_validacao_estados.js` (~9 arquivos, credenciais via `.env`, não hardcoded).
 - **Impacto**: execução acidental (`node backend/test_put_full_os.js`) grava/altera dado real no ERP de produção; sem checagem de ambiente nem confirmação.
 - **Esforço**: baixo — mover para uma subpasta `backend/scripts/diagnostico-manual/` fora do caminho comum, e/ou adicionar uma guarda simples (`if (!process.env.CONFIRMAR_ESCRITA_IXC) { console.error(...); process.exit(1) }`) no topo de cada um.
@@ -176,7 +181,15 @@ não errados** — o repositório cresceu depois. Valores atuais: 1.492 arquivos
 
 ## Próximos passos sugeridos
 
-1. Felix decide o destino da credencial do usuário IXC 72 (item 1) — ação no próprio sistema IXC, fora do código.
-2. Aprovar quais itens P0/P1 entram no primeiro lote de correção (sugestão: itens 1-9, todos de esforço baixo/médio e risco baixo de regressão).
-3. Correção em lotes pequenos, com diff revisável por lote, como já é praática no projeto (ver `MEMORIA.md`, Decisões).
+1. Felix decide o destino da credencial do usuário IXC 72 (item 1) — ação no próprio sistema IXC, fora do código. **Ainda pendente** mesmo com o código corrigido.
+2. ~~Aprovar quais itens P0/P1 entram no primeiro lote de correção~~ — **aprovado por Felix em 2026-09-17: todos os 12 (P0+P1)**, implementados na mesma sessão (ver `[FEITO]` em cada item e a entrada em `MEMORIA.md` → Decisões (Segurança) de 2026-09-17).
+3. Correção em lotes pequenos, com diff revisável por lote, como já é praática no projeto (ver `MEMORIA.md`, Decisões). **Feito nesta sessão como um lote único** (12 itens relacionados, verificados com `node --check`); teste ao vivo contra produção real ainda pendente — recomendado antes de dar como definitivamente encerrado.
 4. P2/P3 ficam para uma rodada seguinte, priorizados por impacto real observado.
+
+## Notas de implementação (2026-09-17)
+
+- Itens 7 e 8 (IDOR) foram corrigidos ignorando o parâmetro de identidade vindo da URL/body e usando sempre `req.usuario.id` (do JWT) — mais forte que só comparar os dois valores, e evita depender de uma suposição não verificada sobre se `usuario.id` e `funcionario.id` (dois espaços de ID distintos no IXC) coincidem para o usuário logado.
+- Item 9 (`su-ticket`) foi editado COM CUIDADO por tocar a mesma rota que a change `fix-ixc-os-contrato-desatualizado` (sessão anterior, 2026-09-17, ainda não commitada) acabou de corrigir ao vivo em produção — só o bloco de resolução do SOLICITANTE foi alterado (agora via `usuarios_perfil` pelo `usuario_id` do JWT, não mais por `colaborador_id`/`email_solicitante` do corpo); a lógica de resolução de login/contrato do cliente placeholder 681, e a criação da OS, não foram tocadas.
+- Item 10 (N+1) introduziu 3 funções compartilhadas (`buscarMapaFuncionarios`, `nomesDoMapa`, `pessoasDoMapa`) logo antes das rotas de Plantão em `server.js`, substituindo 3 cópias verbatim de `resolverNomes()` + o `getPessoas()` de `GET /api/plantoes`.
+- Item 6 usou uma mensagem genérica única ("Erro interno do servidor.") para todas as ~35 rotas afetadas, em vez de uma mensagem customizada por rota — troca deliberada de esforço por cobertura completa; o detalhe real do erro continua no `console.error` do servidor.
+- Nenhuma correção foi testada contra o backend rodando de verdade (não iniciado nesta sessão, para não arriscar conexão com Postgres/IXC de produção sem supervisão). Recomendado rodar `npm run dev` localmente e testar ao vivo antes do próximo deploy — especialmente os itens 7-10, que reescrevem lógica de negócio, não só adicionam uma guarda.
