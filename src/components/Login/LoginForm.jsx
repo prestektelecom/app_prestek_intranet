@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { useBentoTheme, isDarkActive } from '../../hooks/useBentoTheme'
-import { useTheme } from '../../hooks/useTheme'
+import { useBentoTheme } from '../../hooks/useBentoTheme'
 import { UserIcon, LockIcon, EyeIcon, EyeOffIcon, ArrowIcon } from './Icons'
-import logo from '../../image/logos/Logo_480.webp'
 
 // Formulário de entrada. Toda cor vem de `C` (useBentoTheme), como no resto
 // do portal; o anel de foco é o global do index.css. Campos nomeados para o
@@ -69,8 +67,6 @@ export default function LoginForm({
     mostrarLogo = false,
 }) {
     const C = useBentoTheme()
-    const { theme } = useTheme()
-    const escuro = isDarkActive(theme)
     const emailRef = useRef(null)
     const senhaRef = useRef(null)
 
@@ -90,20 +86,22 @@ export default function LoginForm({
 
     return (
         <div className="flex flex-col justify-center p-6 md:p-10 lg:p-14 lg:min-h-[600px]" style={{ background: C.surface, fontFamily: FONT }}>
-            {/* Abaixo de `lg` o painel da marca não monta; o logo vem para cá,
+            {/* Abaixo de `lg` o painel da marca não monta; o ícone vem para cá,
                 senão a porta do celular não tem nenhum sinal da Prestek. */}
             {mostrarLogo && (
-                <img
-                    src={logo}
-                    alt="Prestek Telecom"
-                    style={{ height: 32, width: 'auto', alignSelf: 'flex-start', marginBottom: 20, filter: escuro ? 'brightness(0) invert(1)' : 'none' }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                    <svg viewBox="0 0 120 120" width="28" height="28" fill="none" stroke={C.ink} strokeLinecap="round">
+                        <path d="M38 96 V34 h22 a18 18 0 0 1 0 36 H38" strokeWidth="8" />
+                        <path d="M74 30 a26 26 0 0 1 0 40" strokeWidth="7" />
+                    </svg>
+                    <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: C.ink }}>PRESTEK</span>
+                </div>
             )}
             <h1 className="font-display text-2xl md:text-3xl font-extrabold tracking-tight leading-tight" style={{ color: C.ink, margin: 0 }}>
                 Entrar na Intranet
             </h1>
             <p style={{ fontSize: 14, color: C.ink2, marginTop: 8, marginBottom: 24, lineHeight: 1.5 }}>
-                Use o mesmo usuário e senha do IXC.
+                Use suas credenciais corporativas.
             </p>
 
             <div role="alert" id="login-erro" aria-live="assertive">
@@ -147,7 +145,7 @@ export default function LoginForm({
                     C={C}
                     id="email"
                     name="username"
-                    label="E-mail do IXC"
+                    label="E-mail corporativo"
                     icon={<UserIcon />}
                     type="email"
                     autoComplete="username"
@@ -169,7 +167,7 @@ export default function LoginForm({
                     icon={<LockIcon />}
                     type={mostrarSenha ? 'text' : 'password'}
                     autoComplete="current-password"
-                    placeholder="Sua senha do IXC"
+                    placeholder="Sua senha"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                     disabled={carregando}
@@ -218,9 +216,12 @@ export default function LoginForm({
                                 </svg>
                             )}
                         </span>
-                        <span style={{ fontSize: 14, color: C.ink }}>Manter conectado por 7 dias</span>
+                        <span style={{ fontSize: 14, color: C.ink }}>Manter conectado</span>
                     </label>
-                    <span style={{ fontSize: 13, color: C.ink2 }}>Fale com a TI para recuperar o acesso.</span>
+                    {/* Texto puro, não link: sem contato oficial de TI cadastrado ainda,
+                        um link sem destino seria pior do que nenhum. Cor de destaque
+                        (não `ink2`) porque visualmente é a chamada de ajuda da tela. */}
+                    <span style={{ fontSize: 13, fontWeight: 600, color: C.accentDark }}>Precisa de ajuda? Fale com a TI.</span>
                 </div>
 
                 {/* Botão sólido no accent com `onAccent`: branco sobre o laranja dava
@@ -250,7 +251,7 @@ export default function LoginForm({
                         </>
                     ) : (
                         <>
-                            Entrar
+                            Entrar na Intranet
                             <ArrowIcon />
                         </>
                     )}

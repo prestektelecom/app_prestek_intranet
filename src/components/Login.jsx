@@ -33,8 +33,8 @@ export default function Login({ onLogin }) {
         >
             <main className="flex-1 flex items-center justify-center px-4 py-8 md:py-12">
                 <div
-                    className="w-full max-w-[980px] grid grid-cols-1 lg:grid-cols-2 overflow-hidden"
-                    style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 24, boxShadow: 'var(--shadow-sm)' }}
+                    className="w-full max-w-[1040px] grid grid-cols-1 lg:grid-cols-[420px_1fr] overflow-hidden"
+                    style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 18, boxShadow: 'var(--shadow-sm)' }}
                 >
                     {painel && <LoginBrandPanel />}
                     <LoginForm {...loginProps} mostrarLogo={!painel} />
