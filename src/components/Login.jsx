@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useLogin } from '../hooks/useLogin'
+import { useTheme } from '../hooks/useTheme'
+import { isDarkTheme } from '../contexts/ThemeContext'
 
-// Tela de entrada "Neural Access": cena única em preto com blobs de mercúrio
-// (filtro SVG "goo" + blur), sempre escura — é identidade, não superfície de
-// conteúdo, então não reage ao tema claro/escuro do resto do site (mesmo
-// raciocínio que já valia para o antigo painel de marca em navy fixo). Toda a
-// lógica de autenticação é a mesma de antes (`useLogin`); só o visual mudou.
+// Tela de entrada "Neural Access": cena única com blobs de mercúrio (filtro
+// SVG "goo" + blur). Reage de verdade ao tema (claro/4 escuros) via
+// `ThemeContext` — as variáveis `--n-*` do CSS só redirecionam pros tokens
+// globais (`--background`/`--ink`/`--accent`/...), então claro vira fundo
+// #F5F9FF com texto escuro igual ao resto do app, não um preto fixo. O botão
+// no canto grava a escolha ali mesmo, antes do login. Toda a lógica de
+// autenticação é a mesma de antes (`useLogin`); só o visual mudou.
 
 const FONT = '"Plus Jakarta Sans", system-ui, sans-serif'
 
@@ -34,6 +38,21 @@ function EyeOffIcon() {
             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" strokeLinecap="round" />
             <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" strokeLinecap="round" />
             <path d="M1 1l22 22" strokeLinecap="round" />
+        </svg>
+    )
+}
+function SunIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.5" />
+            <path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8" strokeLinecap="round" />
+        </svg>
+    )
+}
+function MoonIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" strokeLinejoin="round" />
         </svg>
     )
 }
@@ -78,6 +97,8 @@ export default function Login({ onLogin }) {
         tentarAgora,
         handleSubmit,
     } = useLogin(onLogin)
+    const { theme, setTheme } = useTheme()
+    const escuro = isDarkTheme(theme)
 
     const emailRef = useRef(null)
     const senhaRef = useRef(null)
@@ -112,6 +133,16 @@ export default function Login({ onLogin }) {
 
     return (
         <div className="neural-wrapper" style={{ fontFamily: FONT }}>
+            <button
+                type="button"
+                className="neural-theme-toggle"
+                onClick={() => setTheme(escuro ? 'light' : 'dark')}
+                aria-label={escuro ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+                title={escuro ? 'Tema claro' : 'Tema escuro'}
+            >
+                {escuro ? <SunIcon /> : <MoonIcon />}
+            </button>
+
             <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
                 <defs>
                     <filter id="neural-gooey">
@@ -217,7 +248,7 @@ export default function Login({ onLogin }) {
                         <span aria-hidden="true" className="neural-remember-box" style={{ background: lembrar ? 'var(--n-mercury)' : 'transparent' }}>
                             {lembrar && (
                                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                                    <path d="M2 6.5 5 9.5 10 3" stroke="#000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M2 6.5 5 9.5 10 3" style={{ stroke: 'var(--on-accent)' }} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             )}
                         </span>
@@ -229,12 +260,12 @@ export default function Login({ onLogin }) {
                         <button type="submit" className="neural-btn" disabled={!podeEnviar} aria-busy={carregando || undefined}>
                             {servidorFora ? (
                                 <>
-                                    <span className="animate-spin" aria-hidden="true" style={{ width: 14, height: 14, borderRadius: 7, border: '2px solid #000', borderTopColor: 'transparent', opacity: 0.7 }} />
+                                    <span className="animate-spin" aria-hidden="true" style={{ width: 14, height: 14, borderRadius: 7, border: '2px solid var(--on-accent)', borderTopColor: 'transparent', opacity: 0.7 }} />
                                     Aguardando servidor
                                 </>
                             ) : carregando ? (
                                 <>
-                                    <span className="animate-spin" aria-hidden="true" style={{ width: 14, height: 14, borderRadius: 7, border: '2px solid #000', borderTopColor: 'transparent', opacity: 0.7 }} />
+                                    <span className="animate-spin" aria-hidden="true" style={{ width: 14, height: 14, borderRadius: 7, border: '2px solid var(--on-accent)', borderTopColor: 'transparent', opacity: 0.7 }} />
                                     Entrando
                                 </>
                             ) : 'Entrar na Intranet'}
