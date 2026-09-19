@@ -26,6 +26,12 @@
         ],
         "createdAt": "2026-09-06T15:42:49.008Z",
         "reason": "Dense list rows (birthday feed, comunicados feed), not standalone cards. This instance (L1008) is a binary on/off highlight (imminent birthday, 2px, single color or transparent) not multi-category coding -- different from the standalone ComunicadoCard/AdminComunicados card pattern already fixed with a top-stripe. Converting to a top-stripe would visually segment a compact scrolling list into many horizontal bands. Same reasoning already applied to this file's TAG_STYLES chip left-borders in the earlier color audit."
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+        "createdAt": "2026-09-18T23:55:22.985Z",
+        "reason": "user confirmed: réplica pedida do efeito 'mercury-drop' (squish líquido do botão) do componente Neural Access/Mercury enviado pelo usuário — overshoot é a identidade visual do efeito, não um easing padrão esquecido"
       }
     ]
   }

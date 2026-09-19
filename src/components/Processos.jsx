@@ -144,7 +144,7 @@ function CampoSecao({ titulo, children }) {
     return (
         <div>
             <h3 className="text-[11px] font-extrabold text-[var(--accent-dark)] uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                <span className="w-1 h-3 rounded-full bg-gradient-to-b from-[#9A3412] to-[#EC7D23]" />
+                <span className="w-1 h-3 rounded-full bg-gradient-to-b from-[#7C2D12] to-[#C2410C]" />
                 {titulo}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -298,7 +298,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                 {/* Header do modal */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-surface-raised">
                     <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-br from-[#9A3412] to-[#EC7D23] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30">
+                        <div className="bg-gradient-to-br from-[#7C2D12] to-[#C2410C] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30">
                             <span className="material-symbols-outlined text-white text-2xl" aria-hidden="true">
                                 {isEdicao ? 'edit' : 'add_circle'}
                             </span>
@@ -470,7 +470,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                     <button
                         type="submit"
                         form={formId}
-                        className="h-11 px-5 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 active:scale-[0.98]"
+                        className="h-11 px-5 text-sm font-bold bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 active:scale-[0.98]"
                     >
                         <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{isEdicao ? 'save' : 'add'}</span>
                         {isEdicao ? 'Salvar Alterações' : 'Criar Processo'}
@@ -707,7 +707,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
             <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="categorias-admin-titulo" className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col border border-border">
                 <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-surface-raised">
                     <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-br from-[#9A3412] to-[#EC7D23] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30">
+                        <div className="bg-gradient-to-br from-[#7C2D12] to-[#C2410C] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30">
                             <span className="material-symbols-outlined text-white text-2xl" aria-hidden="true">tune</span>
                         </div>
                         <div>
@@ -800,7 +800,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                                     Cancelar edição
                                 </button>
                             )}
-                            <button type="submit" disabled={salvando} className="h-10 px-4 text-sm font-bold bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors disabled:opacity-60 flex items-center gap-2">
+                            <button type="submit" disabled={salvando} className="h-10 px-4 text-sm font-bold bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors disabled:opacity-60 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{editandoId ? 'save' : 'add'}</span>
                                 {editandoId ? 'Salvar Alterações' : 'Adicionar Categoria'}
                             </button>
@@ -833,7 +833,7 @@ function EmptyState({ onAdd, isAdmin }) {
             {isAdmin && (
                 <button
                     onClick={onAdd}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] hover:brightness-110 text-white text-sm font-bold shadow-md shadow-[#EC7D23]/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white text-sm font-bold shadow-md shadow-[#EC7D23]/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
                 >
                     <span className="material-symbols-outlined text-[18px]">add</span>
                     Cadastrar Primeiro Processo
@@ -1020,7 +1020,7 @@ export default function Processos({ user, setCurrentView }) {
                                     aria-pressed={categoriaAtiva === cat.id}
                                     className={`snap-start shrink-0 lg:shrink flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 ${
                                         categoriaAtiva === cat.id
-                                            ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-md shadow-[#EC7D23]/20'
+                                            ? 'bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white shadow-md shadow-[#EC7D23]/20'
                                             : 'bg-surface-raised border border-border text-faint hover:border-[#EC7D23] hover:text-[var(--accent-dark)]'
                                     }`}
                                 >
@@ -1252,7 +1252,7 @@ export default function Processos({ user, setCurrentView }) {
                                 {total === 0 ? 'Nenhum processo cadastrado' : `${total} processo${total !== 1 ? 's' : ''} cadastrado${total !== 1 ? 's' : ''}`}
                             </p>
                             <div className="mt-4 w-full bg-surface-raised rounded-full h-1.5">
-                                <div className="bg-gradient-to-r from-[#9A3412] to-[#EC7D23] h-1.5 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                <div className="bg-gradient-to-r from-[#7C2D12] to-[#C2410C] h-1.5 rounded-full transition-all" style={{ width: `${pct}%` }} />
                             </div>
                             <p className="text-xs text-faint mt-2 text-right">{pct}% Ativos</p>
                         </button>

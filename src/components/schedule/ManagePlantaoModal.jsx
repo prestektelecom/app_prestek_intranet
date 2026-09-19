@@ -291,7 +291,7 @@ export default function ManagePlantaoModal({
                         <button
                             type="submit"
                             disabled={salvando || deletando}
-                            className="flex-1 px-3 py-2.5 bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent)] text-white font-extrabold rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[var(--accent)]/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="flex-1 px-3 py-2.5 bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white font-extrabold rounded-xl hover:brightness-110 transition-colors shadow-md shadow-[var(--accent)]/30 flex items-center justify-center gap-1.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             <span className="material-symbols-outlined text-[18px]">save</span>
                             <span>{salvando ? 'Salvando...' : 'Salvar'}</span>

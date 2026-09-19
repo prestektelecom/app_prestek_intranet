@@ -432,7 +432,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                                     className="relative after:absolute after:-inset-[10px] after:content-['']"
                                     style={{ position: 'absolute', bottom: 2, right: 2, width: 28, height: 28, borderRadius: '50%', background: C.accent, border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 2px 8px ${tone(C.accentDeep, 0.3)}` }}
                                     title="Alterar Foto" aria-label="Alterar foto de perfil">
-                                    <span className="material-symbols-outlined" style={{ fontSize: 15, color: 'white' }}>photo_camera</span>
+                                    <span className="material-symbols-outlined" style={{ fontSize: 15, color: C.onAccent }}>photo_camera</span>
                                 </button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/png, image/jpeg, image/webp" style={{ display: 'none' }} />
 
