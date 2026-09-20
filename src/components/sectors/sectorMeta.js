@@ -47,23 +47,42 @@ export function getDescricaoForSetor(nome) {
     return 'Setor responsável por suas atividades específicas dentro da organização Prestek.';
 }
 
+// Remove acentos e pontuação antes de comparar, para que uma variação de
+// grafia do nome do setor (ex.: "T.I" sem acento/com ponto, "GERENCIA" sem
+// o acento de "gerência") ainda bata com a palavra-chave — sem isso, "T.I"
+// nunca batia com a chave 'ti' (o ponto quebra o `.includes`) e "GERENCIA"
+// nunca batia com 'gerência' (acento divergente), caindo os dois no ícone
+// genérico apesar de terem uma categoria óbvia.
+function normalizar(txt) {
+    return (txt || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '');
+}
+
 // Mapa de ícones por palavra-chave no nome do departamento
 export const ICON_MAP = [
     { keys: ['ti', 'tecnologia', 'infra', 'infrastructure', 'tech', 'sistema'], icon: 'dns' },
     { keys: ['comercial', 'venda', 'marketing', 'mkt', 'negocio'], icon: 'storefront' },
     { keys: ['rh', 'recursos humanos', 'gente', 'people', 'gestão de pessoas'], icon: 'groups' },
-    { keys: ['financeiro', 'financ', 'jurídico', 'juridico', 'contabil', 'fiscal'], icon: 'account_balance' },
-    { keys: ['suporte', 'atendimento', 'helpdesk', 'cliente'], icon: 'support_agent' },
-    { keys: ['operação', 'operacoes', 'operações', 'logistica', 'operacional'], icon: 'precision_manufacturing' },
-    { keys: ['admin', 'administrativo', 'diretoria', 'gestão', 'gerência'], icon: 'business_center' },
+    { keys: ['financeiro', 'financ', 'jurídico', 'juridico', 'contabil', 'fiscal', 'cobranca', 'cobrança'], icon: 'account_balance' },
+    { keys: ['suporte', 'atendimento', 'helpdesk', 'cliente', 'relacionamento'], icon: 'support_agent' },
+    { keys: ['operação', 'operacoes', 'operações', 'logistica', 'operacional', 'servico', 'serviço'], icon: 'precision_manufacturing' },
+    { keys: ['admin', 'administrativo', 'diretoria', 'gestão', 'gerência', 'gerencia'], icon: 'business_center' },
     { keys: ['projetos', 'project'], icon: 'folder_managed' },
-    { keys: ['campo', 'técnico', 'tecnico', 'instalação', 'instalacao'], icon: 'construction' },
+    { keys: ['campo', 'técnico', 'tecnico', 'técnica', 'tecnica', 'instalação', 'instalacao'], icon: 'construction' },
+    { keys: ['auditoria', 'cancelamento'], icon: 'fact_check' },
+    { keys: ['estoque', 'patrimonio', 'patrimônio', 'devolução', 'devolucao', 'equipamento'], icon: 'inventory_2' },
+    { keys: ['frota', 'veiculo', 'veículo'], icon: 'local_shipping' },
+    { keys: ['seguranca', 'segurança', 'monitoramento', 'noc'], icon: 'security' },
+    { keys: ['feedback', 'nps'], icon: 'reviews' },
 ];
 
 export function getIconForSetor(nome) {
-    const nomeLower = (nome || '').toLowerCase();
+    const nomeNormalizado = normalizar(nome);
     for (const entry of ICON_MAP) {
-        if (entry.keys.some(k => nomeLower.includes(k))) return entry.icon;
+        if (entry.keys.some(k => nomeNormalizado.includes(normalizar(k)))) return entry.icon;
     }
     return 'corporate_fare';
 }

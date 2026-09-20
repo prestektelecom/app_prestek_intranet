@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { PROCESSOS, STATUS_CONFIG } from '../data/processosData';
+import { STATUS_CONFIG } from '../data/processosData';
 import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
+import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
 
@@ -25,21 +26,29 @@ function percentualAtivosPorCategoria(lista) {
     return Object.fromEntries(Object.keys(total).map(c => [c, Math.round(((ativos[c] || 0) / total[c]) * 100)]));
 }
 
-function gerarId(categoria, lista, categorias) {
-    const cat = categorias.find(c => c.id === categoria);
-    const prefixo = cat?.prefixo || 'OP';
-    const existentes = lista.filter(p => p.id.startsWith(prefixo + '-')).map(p => parseInt(p.id.split('-')[1], 10)).filter(n => !isNaN(n));
-    const proximo = existentes.length ? Math.max(...existentes) + 1 : 1;
-    return `${prefixo}-${String(proximo).padStart(3, '0')}`;
-}
-
 // ─── Componentes auxiliares ──────────────────────────────────────────────────
 
+// Cores por token do tema (útil `C`), não classes Tailwind cruas com `dark:`
+// manual — aquele padrão só distinguia claro/escuro, ignorando as 3
+// variantes escuras (Cyber/Aurora/AMOLED) que o resto do produto respeita.
+// Mesmo par "soft bg + texto saturado" já usado no StatusBadge de
+// TicketsList.jsx (`C.successSoft`/`C.success` etc.), não o par "Fill"
+// (`dangerFill`/`onDanger`) — este badge é informativo, não uma contagem.
 function StatusBadge({ status }) {
-    const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.rascunho;
+    const C = useBentoTheme();
+    const label = STATUS_CONFIG[status]?.label || STATUS_CONFIG.rascunho.label;
+    const cor = {
+        ativo: { bg: C.successSoft, texto: C.success },
+        revisao: { bg: C.warningSoft, texto: C.warning },
+        rascunho: { bg: C.lineSoft, texto: C.ink2 },
+        arquivado: { bg: C.dangerSoft, texto: C.danger },
+    }[status] || { bg: C.lineSoft, texto: C.ink2 };
     return (
-        <span className={`px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-extrabold uppercase tracking-wider rounded-full ${cfg.bg} ${cfg.text}`}>
-            {cfg.label}
+        <span
+            className="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-extrabold uppercase tracking-wider rounded-full"
+            style={{ backgroundColor: cor.bg, color: cor.texto }}
+        >
+            {label}
         </span>
     );
 }
@@ -154,7 +163,7 @@ function CampoSecao({ titulo, children }) {
     );
 }
 
-function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
+function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, erroSalvar }) {
     const isEdicao = Boolean(processo?.id);
     const [form, setForm] = useState(() => {
         // Categoria padrão vem da lista carregada, não de um id fixo no código
@@ -463,18 +472,29 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                 </form>
 
                 {/* Footer */}
-                <div className="px-6 py-5 border-t border-border bg-surface flex justify-end gap-3 shadow-[0_-4px_12px_rgba(11,27,46,0.05)]">
-                    <button type="button" onClick={tentarFechar} className="h-11 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]">
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        form={formId}
-                        className="h-11 px-5 text-sm font-bold bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 active:scale-[0.98]"
-                    >
-                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{isEdicao ? 'save' : 'add'}</span>
-                        {isEdicao ? 'Salvar Alterações' : 'Criar Processo'}
-                    </button>
+                <div className="px-6 py-5 border-t border-border bg-surface flex flex-col gap-2 shadow-[0_-4px_12px_rgba(11,27,46,0.05)]">
+                    {erroSalvar && (
+                        <p role="alert" className="text-xs font-semibold text-[#E84545] flex items-center gap-1">
+                            <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
+                            {erroSalvar}
+                        </p>
+                    )}
+                    <div className="flex justify-end gap-3">
+                        <button type="button" onClick={tentarFechar} disabled={salvando} className="h-11 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98] disabled:opacity-60">
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            form={formId}
+                            disabled={salvando}
+                            className="h-11 px-5 text-sm font-bold bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            <span className={`material-symbols-outlined text-[18px] ${salvando ? 'animate-spin' : ''}`} aria-hidden="true">
+                                {salvando ? 'autorenew' : isEdicao ? 'save' : 'add'}
+                            </span>
+                            {salvando ? 'Salvando…' : isEdicao ? 'Salvar Alterações' : 'Criar Processo'}
+                        </button>
+                    </div>
                 </div>
                 </div>
 
@@ -513,6 +533,123 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias }) {
                         </div>
                     </div>
                 )}
+            </div>
+        </div>
+    );
+}
+
+// Consulta somente-leitura — não-admin clicando num processo caía num
+// `abrirEditar` que checava `isAdmin` e não fazia NADA (linha/card e o
+// próprio ícone de lápis, ambos sem feedback nenhum de que a ação foi
+// bloqueada). Um modal dedicado, mais simples que reaproveitar o
+// `ProcessoModal` com todo campo virando condicional editável/somente-texto.
+function ProcessoViewModal({ processo, categorias, onFechar }) {
+    const modalRef = useRef(null);
+    useDismissable(modalRef, { open: true, onClose: onFechar, lockScroll: true, closeOnOutside: true });
+    const trapTab = makeTrapTab(modalRef);
+    const tituloId = 'processo-view-titulo';
+    const categoriaLabel = categorias.find(c => c.id === processo.categoria)?.label || processo.categoria;
+    const podeAbrirDoc = processo.status !== 'rascunho' && processo.docUrl;
+
+    return (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
+            <div
+                ref={modalRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={tituloId}
+                onKeyDown={trapTab}
+                className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-border"
+            >
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-surface-raised">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="bg-gradient-to-br from-[#7C2D12] to-[#C2410C] p-2.5 rounded-xl shadow-md shadow-[#EC7D23]/30 shrink-0">
+                            <span className="material-symbols-outlined text-white text-2xl" aria-hidden="true">visibility</span>
+                        </div>
+                        <div className="min-w-0">
+                            <h2 id={tituloId} className="font-display text-foreground font-bold text-xl truncate">{processo.nome}</h2>
+                            <p className="text-xs text-faint mt-0.5">Consulta — somente leitura</p>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-surface border border-border text-[10px] font-mono font-bold text-faint mt-1.5">
+                                {processo.id}
+                            </span>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onFechar}
+                        aria-label="Fechar"
+                        className="text-muted hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98] shrink-0"
+                    >
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div className="overflow-y-auto flex-1 px-6 py-6 space-y-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <StatusBadge status={processo.status} />
+                        <span className="text-xs font-bold text-faint">{categoriaLabel}</span>
+                        <span className="text-xs text-faint" aria-hidden="true">·</span>
+                        <span className="text-xs font-bold text-faint">v{processo.versao}</span>
+                    </div>
+
+                    <div>
+                        <h3 className="text-[11px] font-extrabold text-[var(--accent-dark)] uppercase tracking-widest mb-1.5">Descrição</h3>
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{processo.descricao}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <h3 className="text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1">Responsável</h3>
+                            <p className="text-sm text-foreground">{processo.responsavel?.nome || 'Não informado'}</p>
+                            <p className="text-xs text-faint">{processo.responsavel?.setor || categoriaLabel}</p>
+                        </div>
+                        <div>
+                            <h3 className="text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1">Tempo Estimado</h3>
+                            <p className="text-sm text-foreground">{processo.tempoEstimado || '—'}</p>
+                        </div>
+                        {processo.etapas != null && (
+                            <div>
+                                <h3 className="text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1">Nº de Etapas</h3>
+                                <p className="text-sm text-foreground">{processo.etapas}</p>
+                            </div>
+                        )}
+                        <div>
+                            <h3 className="text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1">Última Atualização</h3>
+                            <p className="text-sm text-foreground">{processo.ultimaAtualizacao || '—'}</p>
+                        </div>
+                    </div>
+
+                    {processo.tags?.length > 0 && (
+                        <div>
+                            <h3 className="text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1.5">Tags</h3>
+                            <div className="flex flex-wrap gap-1.5">
+                                {processo.tags.map(t => (
+                                    <span key={t} className="px-2.5 py-1 rounded-full bg-surface-raised border border-border text-xs font-semibold text-faint">{t}</span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="px-6 py-5 border-t border-border bg-surface flex justify-end gap-3">
+                    {podeAbrirDoc && (
+                        <a
+                            href={processo.docUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="h-11 px-4 inline-flex items-center gap-1.5 text-sm font-bold text-[var(--accent-dark)] border border-border rounded-lg hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                            Abrir POP
+                        </a>
+                    )}
+                    <button
+                        onClick={onFechar}
+                        className="h-11 px-5 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]"
+                    >
+                        Fechar
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -850,7 +987,7 @@ const ROWS_PER_PAGE = 10;
 export default function Processos({ user, setCurrentView }) {
     const C = useBentoTheme();
     const isAdmin = Boolean(user?.is_admin);
-    const [lista, setLista] = useState(PROCESSOS);
+    const [lista, setLista] = useState([]);
     const [busca, setBusca] = useState('');
     const [categoriaAtiva, setCategoriaAtiva] = useState('todos');
     const [pagina, setPagina] = useState(1);
@@ -858,6 +995,9 @@ export default function Processos({ user, setCurrentView }) {
     const [categorias, setCategorias] = useState([]);
     const [categoriasErro, setCategoriasErro] = useState(false);
     const [categoriasAbertas, setCategoriasAbertas] = useState(false);
+    const [processosErro, setProcessosErro] = useState(false);
+    const [salvandoProcesso, setSalvandoProcesso] = useState(false);
+    const [erroSalvarProcesso, setErroSalvarProcesso] = useState('');
 
     useEffect(() => {
         fetch('/api/categorias-processos')
@@ -872,6 +1012,22 @@ export default function Processos({ user, setCurrentView }) {
             .catch(err => {
                 console.error('Erro ao buscar categorias de processos:', err);
                 setCategoriasErro(true);
+            });
+    }, []);
+
+    useEffect(() => {
+        fetch('/api/processos')
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(dados => {
+                if (!Array.isArray(dados)) throw new Error('Resposta inesperada da API de processos.');
+                setLista(dados);
+            })
+            .catch(err => {
+                console.error('Erro ao buscar processos:', err);
+                setProcessosErro(true);
             });
     }, []);
 
@@ -899,11 +1055,15 @@ export default function Processos({ user, setCurrentView }) {
     function handleCategoria(id) { setCategoriaAtiva(id); setPagina(1); }
     function handleBusca(e) { setBusca(e.target.value); setPagina(1); }
 
-    function abrirNovo() { setModal({ modo: 'novo' }); }
+    function abrirNovo() { setErroSalvarProcesso(''); setModal({ modo: 'novo' }); }
     // Só admin pode editar — antes qualquer usuário autenticado abria o
     // formulário completo de edição de qualquer processo, sem nenhuma guarda
     // (ao contrário de "Gerenciar Categorias", que já era admin-only).
-    function abrirEditar(p) { if (!isAdmin) return; setModal({ modo: 'editar', processo: p }); }
+    function abrirEditar(p) { if (!isAdmin) return; setErroSalvarProcesso(''); setModal({ modo: 'editar', processo: p }); }
+    // Ponto de entrada único do clique na linha/card: admin edita, quem só
+    // quer consultar abre o mesmo processo em modo leitura — antes o clique
+    // (e o próprio ícone de lápis) simplesmente não faziam nada pra não-admin.
+    function abrirDetalhe(p) { if (isAdmin) abrirEditar(p); else setModal({ modo: 'visualizar', processo: p }); }
     function fecharModal() { setModal(null); }
 
     function exportarCSV() {
@@ -927,14 +1087,30 @@ export default function Processos({ user, setCurrentView }) {
         URL.revokeObjectURL(url);
     }
 
-    function salvarProcesso(payload) {
-        if (modal.modo === 'novo') {
-            const novoId = gerarId(payload.categoria, lista, categorias);
-            setLista(prev => [{ ...payload, id: novoId }, ...prev]);
-        } else {
-            setLista(prev => prev.map(p => p.id === payload.id ? payload : p));
+    async function salvarProcesso(payload) {
+        const isEdicao = modal.modo === 'editar';
+        setSalvandoProcesso(true);
+        setErroSalvarProcesso('');
+        try {
+            const res = await fetch(isEdicao ? `/api/processos/${payload.id}` : '/api/processos', {
+                method: isEdicao ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const dados = await res.json().catch(() => null);
+            if (!res.ok) throw new Error(dados?.erro || `Erro ao salvar processo (HTTP ${res.status}).`);
+            if (isEdicao) {
+                setLista(prev => prev.map(p => p.id === dados.id ? dados : p));
+            } else {
+                setLista(prev => [dados, ...prev]);
+            }
+            setModal(null);
+        } catch (err) {
+            console.error('Erro ao salvar processo:', err);
+            setErroSalvarProcesso(err.message || 'Não foi possível salvar o processo. Tente novamente.');
+        } finally {
+            setSalvandoProcesso(false);
         }
-        setModal(null);
     }
 
     const totalAtivos = lista.filter(p => p.status === 'ativo').length;
@@ -942,12 +1118,21 @@ export default function Processos({ user, setCurrentView }) {
 
     return (
         <>
-        {modal && (
+        {modal && (modal.modo === 'novo' || modal.modo === 'editar') && (
             <ProcessoModal
                 processo={modal.modo === 'editar' ? modal.processo : null}
                 onSalvar={salvarProcesso}
                 onFechar={fecharModal}
                 categorias={categorias}
+                salvando={salvandoProcesso}
+                erroSalvar={erroSalvarProcesso}
+            />
+        )}
+        {modal?.modo === 'visualizar' && (
+            <ProcessoViewModal
+                processo={modal.processo}
+                categorias={categorias}
+                onFechar={fecharModal}
             />
         )}
         {categoriasAbertas && (
@@ -971,14 +1156,12 @@ export default function Processos({ user, setCurrentView }) {
             />
 
             <div className="mt-8 flex flex-col gap-8">
-            {/* Este CRUD ainda não tem persistência real (PROCESSOS é um array
-                estático, sem rota de backend) — criar/editar dava feedback de
-                sucesso completo mas desaparecia ao recarregar, sem nenhum
-                aviso. Enquanto isso não muda, a tela é honesta sobre isso. */}
-            <div className="flex items-center gap-2 rounded-xl border border-border px-4 py-3 text-[13px] font-semibold" style={{ background: 'var(--warning-soft)', color: 'var(--warning-bento)' }}>
-                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">science</span>
-                Esta tela usa dados de demonstração — processos criados ou editados aqui não são salvos permanentemente e desaparecem ao recarregar a página.
-            </div>
+            {processosErro && (
+                <div className="flex items-center gap-2 rounded-xl border border-border px-4 py-3 text-[13px] font-semibold" style={{ background: 'var(--danger-soft)', color: 'var(--danger-bento)' }}>
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">error</span>
+                    Não foi possível carregar os processos agora. Tente recarregar a página.
+                </div>
+            )}
 
             {/* Ações secundárias — só faz sentido com processos cadastrados */}
             {lista.length > 0 && (
@@ -1066,7 +1249,7 @@ export default function Processos({ user, setCurrentView }) {
                     return (
                         <div
                             key={p.id}
-                            onClick={() => abrirEditar(p)}
+                            onClick={() => abrirDetalhe(p)}
                             className="p-4 border-b border-border last:border-b-0 cursor-pointer hover:bg-surface-raised transition-colors"
                         >
                             <div className="flex justify-between items-start mb-1">
@@ -1077,14 +1260,16 @@ export default function Processos({ user, setCurrentView }) {
                             <p className="text-xs text-faint mb-1">{p.responsavel.setor} · v{p.versao}</p>
                             <p className="text-sm text-faint line-clamp-2 mb-3">{p.descricao}</p>
                             <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                                <button
-                                    onClick={() => abrirEditar(p)}
-                                    aria-label={`Editar ${p.nome}`}
-                                    title="Editar processo"
-                                    className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
-                                >
-                                    <span className="material-symbols-outlined text-[20px]">edit</span>
-                                </button>
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => abrirEditar(p)}
+                                        aria-label={`Editar ${p.nome}`}
+                                        title="Editar processo"
+                                        className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                                    </button>
+                                )}
                                 {podeAbrirDoc ? (
                                     <a
                                         href={p.docUrl}
@@ -1143,12 +1328,19 @@ export default function Processos({ user, setCurrentView }) {
                                 return (
                                     <tr
                                         key={p.id}
-                                        onClick={() => abrirEditar(p)}
+                                        onClick={() => abrirDetalhe(p)}
                                         className="hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-[var(--accent-dark)]">{p.id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-bold text-foreground">{p.nome}</div>
+                                        <td className="px-6 py-4">
+                                            {/* Nome é texto livre do admin, sem limite de tamanho no
+                                                formulário — sem truncar, um nome comprido alargava a
+                                                tabela inteira (sem `table-layout: fixed`, o `w-1/4` do
+                                                cabeçalho é só uma sugestão, o layout automático ignora
+                                                e dimensiona pelo conteúdo). Latente até a Fase 12
+                                                (`PROCESSOS` era um array vazio); virou real com a
+                                                persistência de 2026-09-19. */}
+                                            <div className="text-sm font-bold text-foreground truncate max-w-[280px]" title={p.nome}>{p.nome}</div>
                                             <div className="text-xs text-faint mt-0.5">{p.responsavel.setor}</div>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-faint max-w-xs">
@@ -1162,14 +1354,16 @@ export default function Processos({ user, setCurrentView }) {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right" onClick={e => e.stopPropagation()}>
                                             <div className="flex items-center justify-end gap-1">
-                                                <button
-                                                    onClick={() => abrirEditar(p)}
-                                                    aria-label={`Editar ${p.nome}`}
-                                                    title="Editar processo"
-                                                    className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
-                                                >
-                                                    <span className="material-symbols-outlined text-[20px]">edit</span>
-                                                </button>
+                                                {isAdmin && (
+                                                    <button
+                                                        onClick={() => abrirEditar(p)}
+                                                        aria-label={`Editar ${p.nome}`}
+                                                        title="Editar processo"
+                                                        className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                    </button>
+                                                )}
                                                 {podeAbrirDoc ? (
                                                     <a
                                                         href={p.docUrl}
@@ -1242,7 +1436,7 @@ export default function Processos({ user, setCurrentView }) {
                             className="bg-surface p-6 rounded-[20px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
                         >
                             <div className="flex items-start justify-between mb-4">
-                                <div className="bg-[var(--accent-soft)] p-3 rounded-[14px] text-[var(--accent-dark)] group-hover:bg-gradient-to-br group-hover:from-[#9A3412] group-hover:to-[#EC7D23] group-hover:text-white transition-all">
+                                <div className="bg-[var(--accent-soft)] p-3 rounded-[14px] text-[var(--accent-dark)] group-hover:bg-gradient-to-br group-hover:from-[#7C2D12] group-hover:to-[#C2410C] group-hover:text-white transition-all">
                                     <span className="material-symbols-outlined text-3xl">{cat.icon}</span>
                                 </div>
                                 <span className="text-3xl font-extrabold text-foreground">{total}</span>

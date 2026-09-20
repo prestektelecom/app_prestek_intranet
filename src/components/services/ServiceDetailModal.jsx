@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Clock, CreditCard, BarChart2, Star, ArrowLeftRight, Check, Pencil } from 'lucide-react';
+import { X, Clock, CreditCard, BarChart2, Star, Pencil } from 'lucide-react';
 import {
     CATEGORIA,
     classificarPlano,
@@ -91,7 +91,7 @@ function derivarApresentacao(data, type, maxVendas, formatCurrency) {
     };
 }
 
-export default function ServiceDetailModal({ isOpen, onClose, data, type, formatCurrency, onToggleCompare, isComparing, isAdmin, onEditClick, maxVendas = 0 }) {
+export default function ServiceDetailModal({ isOpen, onClose, data, type, formatCurrency, isAdmin, onEditClick, maxVendas = 0 }) {
     const C = useBentoTheme();
     const tituloId = useId();
     const fecharRef = useRef(null);
@@ -243,23 +243,6 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                                     )}
                                 </div>
                             </div>
-
-                            {isPlan && onToggleCompare && (
-                                <button
-                                    type="button"
-                                    onClick={() => onToggleCompare(data.id)}
-                                    aria-pressed={isComparing}
-                                    title={isComparing ? 'Remover da comparação' : 'Adicionar à comparação'}
-                                    className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                                        isComparing
-                                            ? 'bg-[var(--accent-soft)] text-[var(--accent)] ring-1 ring-[var(--accent)]'
-                                            : 'border border-border bg-surface text-faint hover:bg-surface-raised'
-                                    }`}
-                                >
-                                    {isComparing ? <Check className="h-3.5 w-3.5" /> : <ArrowLeftRight className="h-3.5 w-3.5" />}
-                                    {isComparing ? 'Comparando' : 'Comparar'}
-                                </button>
-                            )}
                         </div>
 
                         {/* Especificações */}
@@ -333,7 +316,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                                     onClose();
                                     onEditClick(data);
                                 }}
-                                className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#9A3412] to-[#EC7D23] px-5 py-3 text-sm font-bold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                                className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#7C2D12] to-[#C2410C] px-5 py-3 text-sm font-bold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                             >
                                 <Pencil className="h-4 w-4" />
                                 Editar

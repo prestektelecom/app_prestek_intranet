@@ -244,8 +244,19 @@ export const CAMPOS = [
 
 export const OBRIGATORIOS = CAMPOS.filter(c => c.obrigatorio).map(c => c.nome);
 
+// Sim/Não obrigatórios sem uma escolha segura óbvia (diferente de
+// `criar_usuario`, onde "Não" é o default operacional razoável — a maioria
+// dos colaboradores novos não precisa de acesso ao sistema no primeiro dia).
+// Pré-marcar esses 3 como 'N' fazia o operador NUNCA interagir com eles e
+// ainda assim contar como "preenchido" (mesmo antipadrão do
+// `OverrideModal.jsx`, Fase 9) — ficam vazios até o operador escolher de
+// verdade; `Segmentado` já trata valor vazio como "nenhuma opção ativa".
+const SEM_PADRAO_SN = ['envia_email_os', 'envia_sms_os', 'ferias_colaborador'];
+
 export const VALOR_INICIAL = CAMPOS.reduce((acc, campo) => {
-    acc[campo.nome] = campo.tipo === 'segmentado' ? 'N' : (campo.nome === 'nacionalidade' ? 'Brasileira' : '');
+    acc[campo.nome] = campo.tipo === 'segmentado'
+        ? (SEM_PADRAO_SN.includes(campo.nome) ? '' : 'N')
+        : (campo.nome === 'nacionalidade' ? 'Brasileira' : '');
     return acc;
 }, { criar_usuario: 'N', nacionalidade: 'Brasileira', possui_deficiencia: 'N' });
 

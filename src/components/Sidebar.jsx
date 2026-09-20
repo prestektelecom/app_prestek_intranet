@@ -149,9 +149,9 @@ export default function Sidebar({ currentView, setCurrentView, user, profile, se
   }, [isSidebarCollapsed]);
 
   const nav = visibleNav(user);
-  const inicio = nav.filter((i) => i.group === 'inicio');
-  const menu = nav.filter((i) => i.group === 'menu');
-  const sistema = nav.filter((i) => i.group === 'sistema');
+  const diaADia = nav.filter((i) => i.group === 'dia-a-dia');
+  const empresa = nav.filter((i) => i.group === 'empresa');
+  const administracao = nav.filter((i) => i.group === 'administracao');
   const badgeFor = (item) => (item.badge === 'comunicados' ? naoLidos : undefined);
 
   const renderRow = (item) => (
@@ -260,11 +260,12 @@ export default function Sidebar({ currentView, setCurrentView, user, profile, se
 
       {/* Navegação (rola sozinha em telas baixas) */}
       <nav aria-label="Navegação principal" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', gap: 2, margin: '0 -2px', padding: '0 2px' }}>
-        {inicio.map(renderRow)}
-        <GroupLabel C={C} collapsed={isSidebarCollapsed} showSeparator={false}>Menu</GroupLabel>
-        {menu.map(renderRow)}
-        <GroupLabel C={C} collapsed={isSidebarCollapsed}>Sistema</GroupLabel>
-        {sistema.map(renderRow)}
+        <GroupLabel C={C} collapsed={isSidebarCollapsed} showSeparator={false}>Dia a dia</GroupLabel>
+        {diaADia.map(renderRow)}
+        <GroupLabel C={C} collapsed={isSidebarCollapsed}>Empresa</GroupLabel>
+        {empresa.map(renderRow)}
+        <GroupLabel C={C} collapsed={isSidebarCollapsed}>Administração</GroupLabel>
+        {administracao.map(renderRow)}
       </nav>
 
       {/* Perfil */}

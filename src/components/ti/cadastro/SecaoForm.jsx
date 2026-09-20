@@ -10,7 +10,7 @@ export default function SecaoForm({ secao, children }) {
         <section className={CARD}>
             <div className={FAIXA} />
             <header className="flex items-center gap-2.5 border-b border-border px-6 py-4">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent-dark)]">
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                         {secao.icone}
                     </span>

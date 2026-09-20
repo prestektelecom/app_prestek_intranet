@@ -1,9 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { iconeParaAcao } from './iconeAcao';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+// `AdminAuditoria.jsx` era o único painel deste hub estilizado via classes
+// Tailwind com variáveis CSS (`text-faint`, `bg-card`...) enquanto os
+// irmãos (`AdminDashboard.jsx`, `AdminUsuarios.jsx`, `AdminComunicados.jsx`)
+// usam `useBentoTheme()` — os dois sistemas apontavam pros mesmos hex na
+// maioria dos temas, então não era um bug visual, só duas convenções
+// coexistindo no mesmo hub (Fase 15, P2/P3). Convertido em 2026-09-20.
+const tone = (hex, a) => {
+    const h = hex.replace('#', '');
+    const x = h.length === 3 ? h.replace(/./g, c => c + c) : h;
+    return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a})`;
+};
+
 export default function AdminAuditoria({ adminEmail }) {
+    const C = useBentoTheme();
     const [logs, setLogs] = useState([]);
     const [total, setTotal] = useState(0);
     const [carregando, setCarregando] = useState(true);
@@ -39,33 +53,48 @@ export default function AdminAuditoria({ adminEmail }) {
 
     const totalPaginas = Math.ceil(total / LIMITE);
 
+    const sInput = {
+        border: `1px solid ${C.line}`, borderRadius: 8, padding: '8px 12px', fontSize: 13,
+        background: C.bg, color: C.ink,
+    };
+
     return (
         <div className="flex flex-col gap-6">
             <div>
-                <h1 className="text-foreground font-display text-3xl font-extrabold tracking-tight">Logs de Auditoria</h1>
-                <p className="text-faint text-sm mt-1">Histórico de ações administrativas realizadas na intranet.</p>
+                <h1 className="font-display text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Logs de Auditoria</h1>
+                <p className="mt-1 text-sm" style={{ color: C.ink2 }}>Histórico de ações administrativas realizadas na intranet.</p>
             </div>
 
             {/* Filtros */}
-            <form onSubmit={aplicarFiltros} className="bg-card border border-border rounded-xl p-4 shadow-sm flex flex-wrap gap-3 items-end card-elevated">
+            <form
+                onSubmit={aplicarFiltros}
+                className="flex flex-wrap items-end gap-3 rounded-xl border p-4 shadow-sm"
+                style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
+            >
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="auditoria-filtro-email" className="text-xs font-bold text-faint uppercase">E-mail do Admin</label>
+                    <label htmlFor="auditoria-filtro-email" className="text-xs font-bold uppercase" style={{ color: C.ink2 }}>E-mail do Admin</label>
                     <input
                         id="auditoria-filtro-email"
                         type="text"
                         placeholder="filtrar por email..."
                         value={filtroEmail}
                         onChange={e => setFiltroEmail(e.target.value)}
-                        className="border border-border rounded-lg px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
+                        className="w-56 text-sm"
+                        style={sInput}
+                        onFocus={e => { e.target.style.borderColor = C.accent; e.target.style.boxShadow = `0 0 0 3px ${tone(C.accent, 0.15)}`; }}
+                        onBlur={e => { e.target.style.borderColor = C.line; e.target.style.boxShadow = 'none'; }}
                     />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="auditoria-filtro-acao" className="text-xs font-bold text-faint uppercase">Tipo de Ação</label>
+                    <label htmlFor="auditoria-filtro-acao" className="text-xs font-bold uppercase" style={{ color: C.ink2 }}>Tipo de Ação</label>
                     <select
                         id="auditoria-filtro-acao"
                         value={filtroAcao}
                         onChange={e => setFiltroAcao(e.target.value)}
-                        className="border border-border rounded-lg px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        className="text-sm"
+                        style={sInput}
+                        onFocus={e => { e.target.style.borderColor = C.accent; e.target.style.boxShadow = `0 0 0 3px ${tone(C.accent, 0.15)}`; }}
+                        onBlur={e => { e.target.style.borderColor = C.line; e.target.style.boxShadow = 'none'; }}
                     >
                         <option value="">Todas as ações</option>
                         <option value="grant_admin">Conceder Admin</option>
@@ -77,49 +106,76 @@ export default function AdminAuditoria({ adminEmail }) {
                     </select>
                 </div>
                 <div className="flex gap-2">
-                    <button type="submit" className="min-h-[44px] px-4 py-2 bg-[var(--accent)] text-[var(--on-accent)] rounded-lg text-sm font-medium hover:bg-[var(--accent-dark)] transition-colors">
+                    <button
+                        type="submit"
+                        className="min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                        style={{ background: C.accent, color: C.onAccent }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.accentDark; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = C.accent; }}
+                    >
                         Filtrar
                     </button>
                     {(filtroEmail || filtroAcao) && (
-                        <button type="button" onClick={limparFiltros} className="min-h-[44px] px-3 py-2 border border-border rounded-lg text-sm hover:bg-surface-raised transition-colors">
+                        <button
+                            type="button"
+                            onClick={limparFiltros}
+                            className="min-h-[44px] rounded-lg border px-3 py-2 text-sm transition-colors"
+                            style={{ borderColor: C.line, color: C.ink }}
+                            onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                        >
                             Limpar
                         </button>
                     )}
                 </div>
-                <div className="ml-auto text-xs text-faint self-center">{total} registro(s)</div>
+                <div className="ml-auto self-center text-xs" style={{ color: C.ink2 }}>{total} registro(s)</div>
             </form>
 
             {erro && (
                 <div
                     title={erro}
-                    className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-300 text-sm"
+                    role="alert"
+                    className="rounded-lg border p-4 text-sm"
+                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.danger }}
                 >
                     Não foi possível carregar o histórico de auditoria.
                 </div>
             )}
 
-            <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden card-elevated">
+            <div
+                className="overflow-hidden rounded-xl border shadow-sm"
+                style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
+            >
                 {carregando ? (
-                    <div className="text-center py-16 text-faint">Carregando...</div>
+                    <div className="py-16 text-center" style={{ color: C.ink2 }}>Carregando...</div>
                 ) : logs.length === 0 ? (
-                    <div className="text-center py-16 text-faint">Nenhum registro encontrado.</div>
+                    <div className="py-16 text-center" style={{ color: C.ink2 }}>Nenhum registro encontrado.</div>
                 ) : (
-                    <div className="flex flex-col divide-y divide-border/60">
-                        {logs.map(log => {
+                    <div className="flex flex-col">
+                        {logs.map((log, i) => {
                             const { icon, cor } = iconeParaAcao(log.acao);
                             return (
-                                <div key={log.id} className="flex gap-4 px-5 py-4 hover:bg-surface-raised transition-colors">
-                                    <div className={`mt-0.5 h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${cor}`}>
+                                <div
+                                    key={log.id}
+                                    className="flex gap-4 px-5 py-4 transition-colors"
+                                    style={{ borderTop: i === 0 ? 'none' : `1px solid ${tone(C.line, 0.6)}` }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                                >
+                                    <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cor}`}>
                                         <span className="material-symbols-outlined text-sm">{icon}</span>
                                     </div>
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <p className="text-sm text-foreground">{log.descricao}</p>
-                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-                                            <span className="text-xs text-faint">{log.admin_nome || log.admin_email}</span>
-                                            <span className="text-xs text-faint">{new Date(log.criado_em).toLocaleString('pt-BR')}</span>
+                                    <div className="flex min-w-0 flex-1 flex-col">
+                                        <p className="text-sm" style={{ color: C.ink }}>{log.descricao}</p>
+                                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                                            <span className="text-xs" style={{ color: C.ink2 }}>{log.admin_nome || log.admin_email}</span>
+                                            <span className="text-xs" style={{ color: C.ink2 }}>{new Date(log.criado_em).toLocaleString('pt-BR')}</span>
                                         </div>
                                     </div>
-                                    <span className="text-xs bg-surface-raised text-faint px-2 py-0.5 rounded-full self-start shrink-0">
+                                    <span
+                                        className="shrink-0 self-start rounded-full px-2 py-0.5 text-xs"
+                                        style={{ background: C.surfaceSoft, color: C.ink2 }}
+                                    >
                                         {log.acao}
                                     </span>
                                 </div>
@@ -129,12 +185,26 @@ export default function AdminAuditoria({ adminEmail }) {
                 )}
 
                 {totalPaginas > 1 && (
-                    <div className="flex items-center justify-between px-5 py-3 border-t border-border">
-                        <button disabled={pagina === 1} onClick={() => setPagina(p => p - 1)} className="min-h-[44px] px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-raised transition-colors disabled:opacity-40">
+                    <div className="flex items-center justify-between px-5 py-3" style={{ borderTop: `1px solid ${C.line}` }}>
+                        <button
+                            disabled={pagina === 1}
+                            onClick={() => setPagina(p => p - 1)}
+                            className="min-h-[44px] rounded-lg border px-3 py-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                            style={{ borderColor: C.line, color: C.ink }}
+                            onMouseEnter={e => { if (pagina !== 1) e.currentTarget.style.background = C.surfaceSoft; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                        >
                             Anterior
                         </button>
-                        <span className="text-xs text-faint">Página {pagina} de {totalPaginas}</span>
-                        <button disabled={pagina === totalPaginas} onClick={() => setPagina(p => p + 1)} className="min-h-[44px] px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-raised transition-colors disabled:opacity-40">
+                        <span className="text-xs" style={{ color: C.ink2 }}>Página {pagina} de {totalPaginas}</span>
+                        <button
+                            disabled={pagina === totalPaginas}
+                            onClick={() => setPagina(p => p + 1)}
+                            className="min-h-[44px] rounded-lg border px-3 py-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                            style={{ borderColor: C.line, color: C.ink }}
+                            onMouseEnter={e => { if (pagina !== totalPaginas) e.currentTarget.style.background = C.surfaceSoft; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                        >
                             Próxima
                         </button>
                     </div>

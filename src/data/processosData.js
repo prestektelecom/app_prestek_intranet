@@ -62,11 +62,15 @@ export const CATEGORIAS = [
 ];
 
 // Status válidos: ativo | revisao | rascunho | arquivado
+// Só o rótulo — a cor vem do sistema de tokens do tema (`StatusBadge` em
+// Processos.jsx), não daqui. `bg`/`text` com classes Tailwind cruas saíram
+// porque só distinguiam claro/escuro via `dark:`, ignorando as variantes
+// Cyber/Aurora/AMOLED que o token do tema já resolve sozinho.
 export const STATUS_CONFIG = {
-    ativo: { label: 'Ativo', bg: 'bg-green-100 dark:bg-green-900/40', text: 'text-green-800 dark:text-green-300' },
-    revisao: { label: 'Em Revisão', bg: 'bg-yellow-100 dark:bg-yellow-900/40', text: 'text-yellow-800 dark:text-yellow-300' },
-    rascunho: { label: 'Rascunho', bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-300' },
-    arquivado: { label: 'Arquivado', bg: 'bg-red-100 dark:bg-red-900/40', text: 'text-red-700 dark:text-red-300' },
+    ativo: { label: 'Ativo' },
+    revisao: { label: 'Em Revisão' },
+    rascunho: { label: 'Rascunho' },
+    arquivado: { label: 'Arquivado' },
 };
 
 export const PROCESSOS = [];

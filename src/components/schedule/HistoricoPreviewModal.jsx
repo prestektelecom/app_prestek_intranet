@@ -85,7 +85,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => handleExportarHistoricoCSV(filterMonth, filterYear, showToast, adminEmail)}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white font-bold text-sm hover:brightness-110 transition-colors shadow-md shadow-[#EC7D23]/20"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white font-bold text-sm hover:brightness-110 transition-colors shadow-md shadow-[#EC7D23]/20"
                         >
                             <span className="material-symbols-outlined text-[16px]">download</span>
                             Exportar CSV
@@ -223,7 +223,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                                             <button
                                                 key={p}
                                                 onClick={() => goToPage(p)}
-                                                className={`w-7 h-7 rounded-lg text-xs font-bold transition-colors ${p === page ? 'bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-sm' : 'hover:bg-[#FFF7ED] text-[#475467]'}`}
+                                                className={`w-7 h-7 rounded-lg text-xs font-bold transition-colors ${p === page ? 'bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white shadow-sm' : 'hover:bg-[#FFF7ED] text-[#475467]'}`}
                                             >
                                                 {p}
                                             </button>

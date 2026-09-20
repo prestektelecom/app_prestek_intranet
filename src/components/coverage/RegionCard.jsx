@@ -39,7 +39,7 @@ export default function RegionCard({ row, selecionada, onSelecionar, onConfigura
                         <p className="truncate text-[13px] font-bold leading-tight text-foreground">
                             {row.bairro || row.cidade}
                         </p>
-                        <p className="truncate text-[11.5px] text-faint">
+                        <p className="truncate text-[11px] text-faint">
                             {row.bairro ? row.cidade : 'Sede do município'}
                         </p>
                     </div>

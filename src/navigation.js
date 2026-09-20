@@ -8,21 +8,29 @@
 // `mobileSlot` define quem ocupa a barra inferior (0..3, o 5º slot é "Mais"),
 // ordenada por frequência de uso diário (PRODUCT.md: plantão e comunicados
 // são o uso nº 1). Quem não tem slot vai para o sheet "Mais".
+//
+// `group` é usado só pela Sidebar (desktop) pra separar em 3 seções por
+// frequência — decisão de arquitetura em aberto desde a Fase 1 do chrome,
+// endereçada em 2026-09-20. Os 4 itens de `dia-a-dia` são exatamente os que
+// já tinham `mobileSlot` (o sinal de frequência que já existia no código,
+// não um critério novo inventado agora); `administracao` reúne TI/Painel
+// Admin (já eram admin-only) e Configurações (pessoal, mas também "conta e
+// sistema" — nunca teve grupo próprio, e não é uso diário do trabalho).
 
 export const NAV_ITEMS = [
-  { id: 'dashboard',     icon: 'Dashboard', label: 'Início',        group: 'inicio',  mobileSlot: 0 },
-  { id: 'services',      icon: 'Tools',     label: 'Serviços',      group: 'menu' },
-  { id: 'coverage',      icon: 'Shield',    label: 'Cobertura',     group: 'menu' },
-  { id: 'directory',     icon: 'People',    label: 'Colaboradores', group: 'menu' },
-  { id: 'sectors',       icon: 'Pie',       label: 'Setores',       group: 'menu' },
-  { id: 'schedule',      icon: 'Clock',     label: 'Plantão',       group: 'menu',    mobileSlot: 1 },
-  { id: 'offices',       icon: 'Building',  label: 'Escritórios',   group: 'menu' },
-  { id: 'processes',     icon: 'Doc',       label: 'Processos',     group: 'menu' },
-  { id: 'tickets',       icon: 'Ticket',    label: 'Meus chamados', group: 'menu',    mobileSlot: 3, mobileLabel: 'Chamados' },
-  { id: 'ti',            icon: 'Chip',      label: 'TI',            group: 'menu',    somenteAdmin: true },
-  { id: 'announcements', icon: 'Megaphone', label: 'Comunicados',   group: 'sistema', mobileSlot: 2, badge: 'comunicados' },
-  { id: 'settings',      icon: 'Settings',  label: 'Configurações', group: 'sistema' },
-  { id: 'admin',         icon: 'Admin',     label: 'Painel Admin',  group: 'sistema', somenteAdmin: true },
+  { id: 'dashboard',     icon: 'Dashboard', label: 'Início',        group: 'dia-a-dia',    mobileSlot: 0 },
+  { id: 'schedule',      icon: 'Clock',     label: 'Plantão',       group: 'dia-a-dia',    mobileSlot: 1 },
+  { id: 'announcements', icon: 'Megaphone', label: 'Comunicados',   group: 'dia-a-dia',    mobileSlot: 2, badge: 'comunicados' },
+  { id: 'tickets',       icon: 'Ticket',    label: 'Meus chamados', group: 'dia-a-dia',    mobileSlot: 3, mobileLabel: 'Chamados' },
+  { id: 'services',      icon: 'Tools',     label: 'Serviços',      group: 'empresa' },
+  { id: 'coverage',      icon: 'Shield',    label: 'Cobertura',     group: 'empresa' },
+  { id: 'directory',     icon: 'People',    label: 'Colaboradores', group: 'empresa' },
+  { id: 'sectors',       icon: 'Pie',       label: 'Setores',       group: 'empresa' },
+  { id: 'offices',       icon: 'Building',  label: 'Escritórios',   group: 'empresa' },
+  { id: 'processes',     icon: 'Doc',       label: 'Processos',     group: 'empresa' },
+  { id: 'ti',            icon: 'Chip',      label: 'TI',            group: 'administracao', somenteAdmin: true },
+  { id: 'settings',      icon: 'Settings',  label: 'Configurações', group: 'administracao' },
+  { id: 'admin',         icon: 'Admin',     label: 'Painel Admin',  group: 'administracao', somenteAdmin: true },
 ];
 
 // Views que só admin abre. `App.jsx` faz o gate de rota; as listas acima só

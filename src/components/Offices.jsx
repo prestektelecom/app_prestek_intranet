@@ -5,6 +5,16 @@ import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
 import { fundoHero } from './ui/heroGradiente';
 
+// Quando `tipo === 'Matriz'` a lista já mostra um badge "Matriz" dedicado ao
+// lado do nome — mas o campo `nome` (texto livre, editável pelo admin) às
+// vezes já traz "(MATRIZ)" embutido (ex.: "PENEDO/AL (MATRIZ)"), duplicando a
+// mesma informação duas vezes lado a lado. Só remove o sufixo redundante
+// quando o badge vai aparecer de qualquer forma; em qualquer outro lugar
+// (popup do mapa, formulário de edição) o nome continua intacto.
+function nomeSemMatrizRedundante(nome) {
+    return String(nome || '').replace(/\s*\(\s*matriz\s*\)\s*$/i, '').trim();
+}
+
 // ─── Helpers de mapa ────────────────────────────────────────────────────────
 
 function criarIcone(L, cor, selecionado, isMatriz) {
@@ -20,6 +30,36 @@ function criarIcone(L, cor, selecionado, isMatriz) {
     return L.icon({ iconUrl: url, iconSize: [w, h], iconAnchor: [w / 2, h], popupAnchor: [0, -h] });
 }
 
+// CSS do popup injetado uma vez (mesmo padrão já usado em CoverageMap.jsx,
+// `.noc-popup`) — sem isso o wrapper do Leaflet fica branco fixo (CSS padrão
+// da lib) enquanto o texto interno é escuro fixo: legível, mas sempre no
+// "modo claro" mesmo com o resto do produto em tema escuro. Cor do badge e
+// dos botões (Street View/Ver no Maps) seguem hardcoded de propósito — batem
+// com a cor do marcador no mapa e são pares fundo+texto autocontidos, não
+// dependem do tema da página.
+if (typeof document !== 'undefined' && !document.getElementById('of-popup-styles')) {
+    const s = document.createElement('style');
+    s.id = 'of-popup-styles';
+    s.textContent = `
+        .of-popup .leaflet-popup-content-wrapper {
+            background: var(--surface, #ffffff);
+            color: var(--foreground, #0B1B2E);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            border: 1px solid var(--border, #e2e8f0);
+        }
+        .of-popup .leaflet-popup-tip {
+            background: var(--surface, #ffffff);
+            border: 1px solid var(--border, #e2e8f0);
+        }
+        .of-popup .leaflet-popup-close-button { color: var(--foreground-muted, #64748b) !important; }
+        .of-popup .of-titulo { color: var(--foreground, #0B1B2E); }
+        .of-popup .of-endereco { color: var(--foreground-muted, #475467); }
+        .of-popup .of-cidade { color: var(--foreground-faint, #8896A8); }
+    `;
+    document.head.appendChild(s);
+}
+
 function popupHTML(office) {
     const badgeColor = office.tipo === 'Matriz' ? '#F97316' : (office.estado === 'AL' ? '#3B82F6' : '#10B981');
     const streetViewUrl = `https://www.google.com/maps?q=&layer=c&cbll=${office.lat},${office.lng}`;
@@ -27,15 +67,15 @@ function popupHTML(office) {
     return `
         <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:180px;max-width:220px">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-                <strong style="font-size:13px;color:#0B1B2E">${office.nome}</strong>
+                <strong class="of-titulo" style="font-size:13px">${office.tipo === 'Matriz' ? nomeSemMatrizRedundante(office.nome) : office.nome}</strong>
             </div>
             <span style="display:inline-block;background:${badgeColor};color:white;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;margin-bottom:6px">
                 ${office.tipo.toUpperCase()}
             </span>
-            <div style="font-size:11px;color:#475467;line-height:1.5">
+            <div class="of-endereco" style="font-size:11px;line-height:1.5">
                 <div>📍 ${office.endereco}</div>
                 ${office.cep ? `<div style="color:#9A3412;font-weight:600">CEP: ${office.cep}</div>` : ''}
-                <div style="margin-top:2px;color:#8896A8">${office.cidade} — ${office.estado}</div>
+                <div class="of-cidade" style="margin-top:2px">${office.cidade} — ${office.estado}</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:10px">
                 <a href="${streetViewUrl}" target="_blank" rel="noopener noreferrer"
@@ -174,11 +214,26 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
     const [linkMaps, setLinkMaps] = useState('');
     const [extraindo, setExtraindo] = useState(false);
     const [erroLink, setErroLink] = useState('');
+    // "Extrair" sobrescrevia lat/lng sem avisar — editando um escritório já
+    // cadastrado, um clique acidental (ou só testar outro link) perdia a
+    // coordenada boa sem o admin perceber antes de salvar. Só pede confirmação
+    // quando já existe alguma coordenada pra perder; num escritório novo
+    // (lat/lng vazios) extrai direto, sem fricção.
+    const [confirmarSobrescrita, setConfirmarSobrescrita] = useState(false);
 
-    function set(campo, valor) { setForm(f => ({ ...f, [campo]: valor })); setErro(''); }
+    function set(campo, valor) {
+        setForm(f => ({ ...f, [campo]: valor }));
+        setErro('');
+        if (campo === 'lat' || campo === 'lng') setConfirmarSobrescrita(false);
+    }
 
     async function extrairCoordenadas() {
         if (!linkMaps.trim()) return;
+        if (form.lat && form.lng && !confirmarSobrescrita) {
+            setConfirmarSobrescrita(true);
+            return;
+        }
+        setConfirmarSobrescrita(false);
         setExtraindo(true);
         setErroLink('');
         try {
@@ -316,7 +371,7 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                                     className={`${inputCls} flex-1`}
                                     style={inputStyle}
                                     value={linkMaps}
-                                    onChange={e => { setLinkMaps(e.target.value); setErroLink(''); }}
+                                    onChange={e => { setLinkMaps(e.target.value); setErroLink(''); setConfirmarSobrescrita(false); }}
                                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), extrairCoordenadas())}
                                     placeholder="https://maps.app.goo.gl/..."
                                 />
@@ -324,22 +379,28 @@ function EscritorioModal({ escritorio, onSalvar, onFechar }) {
                                     type="button"
                                     onClick={extrairCoordenadas}
                                     disabled={!linkMaps.trim() || extraindo}
-                                    title="Extrair latitude e longitude do link"
+                                    title={confirmarSobrescrita ? 'Clique de novo para confirmar a substituição' : 'Extrair latitude e longitude do link'}
                                     className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold whitespace-nowrap transition-colors hover:brightness-110 disabled:opacity-50"
-                                    style={ctaGradient}
+                                    style={confirmarSobrescrita ? { background: C.dangerFill, color: C.onAccent } : ctaGradient}
                                 >
                                     <span className="material-symbols-outlined text-[18px]">
-                                        {extraindo ? 'sync' : 'my_location'}
+                                        {extraindo ? 'sync' : confirmarSobrescrita ? 'warning' : 'my_location'}
                                     </span>
-                                    {extraindo ? 'Extraindo…' : 'Extrair'}
+                                    {extraindo ? 'Extraindo…' : confirmarSobrescrita ? 'Confirmar substituição' : 'Extrair'}
                                 </button>
                             </div>
+                            {confirmarSobrescrita && (
+                                <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: C.dangerFill }}>
+                                    <span className="material-symbols-outlined text-sm">warning</span>
+                                    Isso vai substituir a latitude/longitude já preenchida. Clique em "Confirmar substituição" pra continuar.
+                                </p>
+                            )}
                             {erroLink && (
                                 <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: C.dangerFill }}>
                                     <span className="material-symbols-outlined text-sm">error</span>{erroLink}
                                 </p>
                             )}
-                            {!erroLink && form.lat && form.lng && (
+                            {!confirmarSobrescrita && !erroLink && form.lat && form.lng && (
                                 <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: C.successStrong }}>
                                     <span className="material-symbols-outlined text-sm">check_circle</span>
                                     Coordenadas preenchidas automaticamente
@@ -443,6 +504,30 @@ export default function Offices({ user, setCurrentView }) {
         window.addEventListener('touchend', onUp);
     }
 
+    // Padrão ARIA APG de separator redimensionável: o `role="separator"` já
+    // existia, mas sem tabIndex/onKeyDown/aria-value* era só decorativo — dava
+    // pra arrastar com mouse/toque, nunca com teclado.
+    function resizeMinPct() {
+        const rect = corpoRef.current?.getBoundingClientRect();
+        return rect ? (LIST_MIN_PX / rect.width) * 100 : 10;
+    }
+
+    function handleResizeKeyDown(e) {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+        e.preventDefault();
+        const minPct = resizeMinPct();
+        const passo = e.shiftKey ? 10 : 2;
+        setListWidth(prev => {
+            let next = prev;
+            if (e.key === 'ArrowLeft') next = prev - passo;
+            else if (e.key === 'ArrowRight') next = prev + passo;
+            else if (e.key === 'Home') next = minPct;
+            else if (e.key === 'End') next = LIST_MAX_PCT;
+            return Math.min(LIST_MAX_PCT, Math.max(minPct, next));
+        });
+        setTimeout(() => mapRef.current?.map?.invalidateSize(), 50);
+    }
+
     // Busca os escritórios da API
     async function carregarEscritorios() {
         setCarregando(true);
@@ -522,7 +607,7 @@ export default function Offices({ user, setCurrentView }) {
             } else {
                 const marker = L.marker([office.lat, office.lng], { icon: criarIcone(L, office.cor, false, isMatriz) })
                     .addTo(map)
-                    .bindPopup(popupHTML(office), { autoPan: false });
+                    .bindPopup(popupHTML(office), { autoPan: false, className: 'of-popup' });
                 marker.on('click', () => setSelecionado(office.id));
                 marker._office = office;
                 markersRef.current[office.id] = marker;
@@ -765,7 +850,7 @@ export default function Offices({ user, setCurrentView }) {
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className="flex-shrink-0 w-3 h-3 rounded-full mt-0.5" style={{ background: office.cor }} />
                                                 <span className="text-xs font-bold truncate leading-tight" style={{ color: C.ink }}>
-                                                    {office.nome}
+                                                    {office.tipo === 'Matriz' ? nomeSemMatrizRedundante(office.nome) : office.nome}
                                                 </span>
                                             </div>
                                             {office.tipo === 'Matriz' && (
@@ -838,10 +923,16 @@ export default function Offices({ user, setCurrentView }) {
                 <div
                     onMouseDown={startResize}
                     onTouchStart={startResize}
-                    title="Arrastar para redimensionar"
+                    onKeyDown={handleResizeKeyDown}
+                    title="Arrastar para redimensionar (ou use as setas ← →)"
                     role="separator"
                     aria-orientation="vertical"
-                    className="group relative hidden w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-150 md:flex"
+                    aria-label="Redimensionar largura da lista de escritórios"
+                    aria-valuenow={Math.round(listWidth)}
+                    aria-valuemin={Math.round(resizeMinPct())}
+                    aria-valuemax={LIST_MAX_PCT}
+                    tabIndex={0}
+                    className="group relative hidden w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:flex"
                     style={{ background: C.line }}
                 >
                     <div className="h-8 w-0.5 rounded-full transition-all duration-150 group-hover:h-12" style={{ background: tone(C.ink2, 0.5) }} />

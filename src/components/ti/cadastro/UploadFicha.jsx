@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CARD, BTN_SECUNDARIO, AVISO_AMBAR, AVISO_ERRO, AVISO_INFO } from './estilos';
 
 const ESTADOS = {
@@ -18,8 +18,21 @@ const ESTADOS = {
 export default function UploadFicha({ user, onCamposExtraidos, onLog }) {
     const [estado, setEstado] = useState('vazio');
     const [mensagem, setMensagem] = useState('');
-    const [progressoOCR, setProgressoOCR] = useState(null);
     const inputRef = useRef(null);
+
+    // Soltar um PDF fora desta zona (em qualquer outro ponto da página) é o
+    // comportamento padrão do navegador de ABRIR o arquivo, navegando pra
+    // fora da SPA e perdendo o formulário inteiro. A zona de drop já trata
+    // seu próprio dragover/drop; esta guarda cobre o resto da página.
+    useEffect(() => {
+        const bloquear = (e) => e.preventDefault();
+        window.addEventListener('dragover', bloquear);
+        window.addEventListener('drop', bloquear);
+        return () => {
+            window.removeEventListener('dragover', bloquear);
+            window.removeEventListener('drop', bloquear);
+        };
+    }, []);
 
     const processar = useCallback(async (arquivo) => {
         if (!arquivo) return;
@@ -31,7 +44,6 @@ export default function UploadFicha({ user, onCamposExtraidos, onLog }) {
 
         setEstado('lendo');
         setMensagem(arquivo.name);
-        setProgressoOCR(null);
         onLog?.(`Iniciando leitura da ficha "${arquivo.name}"…`, 'info');
 
         try {
@@ -109,11 +121,6 @@ export default function UploadFicha({ user, onCamposExtraidos, onLog }) {
                 <p className="text-xs text-faint">
                     PDF digital, exportado do Word ou escaneado. O arquivo é descartado após a leitura.
                 </p>
-                {progressoOCR && (
-                    <p className="text-xs text-faint">
-                        Página {progressoOCR.pagina} · {Math.round(progressoOCR.progresso * 100)}%
-                    </p>
-                )}
                 {mensagem && (
                     <p className="text-xs text-faint max-w-md truncate">{mensagem}</p>
                 )}
@@ -130,7 +137,14 @@ export default function UploadFicha({ user, onCamposExtraidos, onLog }) {
                     type="file"
                     accept="application/pdf"
                     className="hidden"
-                    onChange={e => processar(e.target.files?.[0])}
+                    onChange={e => {
+                        const arquivo = e.target.files?.[0];
+                        // Sem isso, escolher o MESMO arquivo de novo depois de uma
+                        // falha não dispara onChange (o navegador só dispara quando
+                        // o valor muda) — reselecionar a mesma ficha não fazia nada.
+                        e.target.value = '';
+                        processar(arquivo);
+                    }}
                 />
             </div>
 

@@ -28,7 +28,7 @@ export default function PainelLateral({ form, erros, onSimular, simulando, onRec
                         Obrigatórios preenchidos: <b className="text-foreground">{preenchidos} de {OBRIGATORIOS.length}</b>
                     </p>
                     <p className="text-xs text-faint">
-                        Erros de validação: <b className={errosVisiveis.length ? 'text-red-600' : 'text-foreground'}>{errosVisiveis.length}</b>
+                        Erros de validação nos campos: <b className={errosVisiveis.length ? 'text-red-600' : 'text-foreground'}>{errosVisiveis.length}</b>
                     </p>
                     <button
                         type="button"

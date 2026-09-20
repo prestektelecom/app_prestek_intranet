@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { corDoStatus, chaveRegiao } from './coverage/constants';
 
 // Fix ícones padrão do Leaflet com Vite
@@ -37,6 +40,20 @@ if (!document.getElementById('noc-popup-styles')) {
         }
         .noc-popup .noc-titulo { color: var(--foreground, #0f172a); }
         .noc-popup .noc-sub    { color: var(--foreground-muted, #475569); }
+
+        /* Badge de cluster — substitui o verde/amarelo/laranja padrão do
+           plugin (que não existe na paleta do produto) pela marca, com anel
+           na cor de superfície do tema para separar do mapa por trás. */
+        .noc-cluster {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: var(--accent, #EC7D23);
+            color: var(--on-accent, #ffffff);
+            font-family: inherit; font-weight: 800;
+            border: 3px solid var(--surface, #ffffff);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
     `;
     document.head.appendChild(s);
 }
@@ -96,6 +113,17 @@ function criarIconeBairro(cor, selecionado) {
         iconSize:    [tam, tam],
         iconAnchor:  [tam / 2, tam / 2],
         popupAnchor: [0, -(tam / 2 + 4)],
+    });
+}
+
+// ─── Ícone de cluster (badge com contagem) ────────────────────────
+function criarIconeCluster(cluster) {
+    const n = cluster.getChildCount();
+    const tam = n < 10 ? 32 : n < 50 ? 38 : 44;
+    return L.divIcon({
+        html: `<div class="noc-cluster" style="font-size:${n < 100 ? 12 : 11}px;">${n}</div>`,
+        className: '',
+        iconSize: [tam, tam],
     });
 }
 
@@ -166,6 +194,9 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
     const mapRef        = useRef(null);
     const marcCidadeRef = useRef({});
     const marcBairroRef = useRef({});
+    // Só os marcadores de BAIRRO agrupam em cluster — são ~290-320, um por
+    // região; os de cidade já são poucas dezenas e não poluem o mapa sozinhos.
+    const clusterBairroRef = useRef(null);
     const [mapPronto, setMapPronto]   = useState(false);
     const [geocodando, setGeocodando] = useState(false);
 
@@ -191,6 +222,17 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+        const clusterBairro = L.markerClusterGroup({
+            iconCreateFunction: criarIconeCluster,
+            // Some antes de virar 1 marcador de novo — clusterizar até o
+            // último zoom escondia o pino sozinho de quem já tinha
+            // "chegado" na região certa.
+            disableClusteringAtZoom: 15,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+        }).addTo(map);
+        clusterBairroRef.current = clusterBairro;
+
         mapRef.current = { map };
         setMapPronto(true);
 
@@ -211,6 +253,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             mapRef.current = null;
             marcCidadeRef.current = {};
             marcBairroRef.current = {};
+            clusterBairroRef.current = null;
         };
     }, []);
 
@@ -234,8 +277,8 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             }
 
             const marker = L.marker([d.latitude, d.longitude], { icon: criarIconeBairro(cor, false) })
-                .addTo(map)
                 .bindPopup(popupBairroHtml(d.cidade, d.bairro, cor, d.status), { className: 'noc-popup', maxWidth: 240 });
+            clusterBairroRef.current?.addLayer(marker);
             marker.on('click', () => onCidadeClick(chave));
             marker._cidadeId  = d.cidade_ixc_id;
             marker._cor       = cor;
@@ -318,8 +361,16 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             marker.setIcon(criarIconeBairro(marker._cor, sel));
 
             if (clicouNoBairro) {
-                map.flyTo([marker._coords.lat, marker._coords.lng], 14, { duration: 0.9 });
-                marker.openPopup();
+                // zoomToShowLayer (não flyTo direto): o marcador pode estar
+                // escondido dentro de um cluster agora — este método do plugin
+                // dá o zoom mínimo pra ele aparecer sozinho antes de abrir o
+                // popup, senão o popup abria "no nada" com o pino ainda oculto.
+                if (clusterBairroRef.current) {
+                    clusterBairroRef.current.zoomToShowLayer(marker, () => marker.openPopup());
+                } else {
+                    map.flyTo([marker._coords.lat, marker._coords.lng], 14, { duration: 0.9 });
+                    marker.openPopup();
+                }
             }
         });
     }, [cidadeSelecionada]);
@@ -329,7 +380,7 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
             {/* Indicador de geocodificação — encostado à esquerda para não
                 disputar o canto com a legenda nem com o zoom do Leaflet. */}
             {geocodando && (
-                <div className="absolute left-3 top-3 z-[1000] flex items-center gap-1.5 rounded-full border border-border bg-surface/95 px-3 py-1.5 text-[12px] font-semibold text-foreground shadow-md backdrop-blur-sm">
+                <div className="absolute left-3 top-3 z-[1000] flex items-center gap-1.5 rounded-full border border-border bg-surface/95 px-3 py-1.5 text-[13px] font-semibold text-foreground shadow-md backdrop-blur-sm">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--accent)]" />
                     Localizando cidades…
                 </div>

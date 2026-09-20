@@ -14,7 +14,7 @@ function GridSkeleton() {
     );
 }
 
-export default function PlansGrid({ plans, isLoading, hasSearch, comparingIds = [], ...cardProps }) {
+export default function PlansGrid({ plans, isLoading, hasSearch, ...cardProps }) {
     if (isLoading) return <GridSkeleton />;
 
     if (plans.length === 0) {
@@ -36,7 +36,6 @@ export default function PlansGrid({ plans, isLoading, hasSearch, comparingIds = 
                 <PlanoBentoCard
                     key={plan.id}
                     plan={plan}
-                    isComparing={comparingIds.includes(plan.id)}
                     {...cardProps}
                 />
             ))}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import RankingPodium from './RankingPodium';
 import { getDeterministicAvatar } from '../../utils/avatarPngs';
 
@@ -36,15 +36,44 @@ function VendorIdentity({ vendor, isGold, rc }) {
 export default function RankingsSection({ topPlans, topVendors, topTicket, loadingPlans, loadingRanking, formatCurrency }) {
     const [activeSlide, setActiveSlide] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    const [isTouched, setIsTouched] = useState(false);
+    const touchTimeoutRef = useRef(null);
+    // Pausa no hover, no foco (teclado/leitor de tela) E no toque — só o mouse
+    // deixava o carousel girando sob quem navega por teclado ou usa touch
+    // (achado da Fase 10, WCAG 2.2.2); mesmo padrão já usado no ComunicadoBanner
+    // do Dashboard. Toque não tem um "sair" natural como mouseleave, então fica
+    // pausado por alguns segundos após o último toque, não pra sempre.
+    const pausado = isHovered || isFocused || isTouched;
 
     useEffect(() => {
-        if (isHovered) return;
+        if (pausado) return;
         const interval = setInterval(() => setActiveSlide(prev => (prev === 2 ? 0 : prev + 1)), 3000);
         return () => clearInterval(interval);
-    }, [isHovered]);
+    }, [pausado]);
+
+    useEffect(() => () => clearTimeout(touchTimeoutRef.current), []);
+
+    const handleTouchStart = () => {
+        clearTimeout(touchTimeoutRef.current);
+        setIsTouched(true);
+    };
+    const handleTouchEnd = () => {
+        clearTimeout(touchTimeoutRef.current);
+        touchTimeoutRef.current = setTimeout(() => setIsTouched(false), 4000);
+    };
 
     return (
-        <div className="mt-8" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div
+            className="mt-8"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+        >
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 className="flex items-center gap-2 text-lg font-bold text-foreground sm:text-xl">
@@ -62,7 +91,7 @@ export default function RankingsSection({ topPlans, topVendors, topTicket, loadi
                             aria-pressed={activeSlide === idx}
                             className={`inline-flex min-h-[44px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-xs font-medium transition-all duration-300 sm:px-4 sm:text-sm ${
                                 activeSlide === idx
-                                    ? 'scale-[1.02] bg-gradient-to-r from-[#9A3412] to-[#EC7D23] text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)]'
+                                    ? 'scale-[1.02] bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)]'
                                     : 'bg-[var(--accent-soft)] text-[var(--accent-dark)] hover:opacity-80'
                             }`}
                         >

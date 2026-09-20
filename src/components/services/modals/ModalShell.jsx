@@ -73,7 +73,7 @@ export default function ModalShell({ title, onClose, onSave, isSaving = false, s
                         type="button"
                         onClick={onSave}
                         disabled={isSaving}
-                        className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#9A3412] to-[#EC7D23] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+                        className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#7C2D12] to-[#C2410C] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
                     >
                         {isSaving ? (
                             <><span className="material-symbols-outlined animate-spin text-sm">autorenew</span> Salvando...</>

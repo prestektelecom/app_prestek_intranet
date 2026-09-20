@@ -40,7 +40,7 @@ export default function CoverageHero({
         // publicam as mesmas contagens, e lá elas são clicáveis. Duplicar a
         // informação custava uma fileira inteira do hero — ~74px de altura fixa
         // roubados do mapa, numa página de altura travada.
-        return { cidades, contratos, comConfig, mapeadas, coberturaMedia };
+        return { cidades, contratos, comConfig, mapeadas, coberturaMedia, totalConfiguradas: configuradas.length };
     }, [dados]);
 
     const mostraCuradoria = isAdmin && !isLoading && dados.length > 0;
@@ -122,8 +122,8 @@ export default function CoverageHero({
                                 aria-live="polite"
                                 className={
                                     poucoMapeado
-                                        ? 'flex items-center gap-1 font-mono text-[10px] font-bold text-amber-200'
-                                        : 'font-mono text-[10px] text-white/75'
+                                        ? 'flex items-center gap-1 font-mono text-[11px] font-bold text-amber-200'
+                                        : 'font-mono text-[11px] text-white/75'
                                 }
                             >
                                 {poucoMapeado && (
@@ -169,7 +169,13 @@ export default function CoverageHero({
                                 <HeroKpiTile
                                     label="Cobertura méd."
                                     valor={stats.coberturaMedia != null ? `${stats.coberturaMedia}%` : '—'}
-                                    sub={stats.coberturaMedia != null ? 'das regiões com dados' : 'sem dados'}
+                                    // A conta é só das regiões com % configurado manualmente — hoje uma
+                                    // fração pequena do total (achado da auditoria da Fase 9). Sem dizer
+                                    // "N de M regiões" aqui, o número lia como se cobrisse o sistema
+                                    // inteiro, quando às vezes é a média de 3 regiões só.
+                                    sub={stats.coberturaMedia != null
+                                        ? `${nf(stats.totalConfiguradas)} de ${nf(dados.length)} regiões`
+                                        : 'nenhuma região configurada'}
                                 />
                                 {/* Curadoria só interessa a quem edita os overrides. */}
                                 {mostraCuradoria && (

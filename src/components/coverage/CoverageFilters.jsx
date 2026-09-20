@@ -45,13 +45,28 @@ export default function CoverageFilters({
     const contaTec = (t) => dados.filter(d => d.tecnologia === t).length;
     const contaStatus = (s) => dados.filter(d => d.status === s).length;
 
+    // Os chips já mostram a contagem de cada categoria, mas uma classificação
+    // hoje residual (a maioria das regiões nunca recebeu tecnologia/status
+    // manual) passa despercebida sem dizer isso explicitamente — o usuário só
+    // descobre clicando em cada chip um por um. Mesmo piso (50%) já usado pelo
+    // aviso "poucoMapeado" do CoverageHero.
+    const classificadas = dados.filter(d => d.tecnologia || d.status).length;
+    const poucoClassificado = dados.length > 0 && classificadas / dados.length < 0.5;
+
     return (
         // Os dois grupos só ficam lado a lado em 2xl. Somados eles pedem ~960px,
         // e o espaço real aqui dentro é a viewport menos a sidebar (248px) e o
         // px-10 do main: em xl isso dá 952px — falta por 8px, e qualquer contagem
         // de dois dígitos nos chips quebrava a linha de forma imprevisível. Só a
         // partir de 2xl o conteúdo bate no teto de 1200px e sobra folga.
-        <div className="flex shrink-0 flex-col gap-2 2xl:flex-row 2xl:items-center 2xl:gap-6">
+        <div className="flex shrink-0 flex-col gap-2">
+            {poucoClassificado && (
+                <p className="m-0 flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                    <span className="material-symbols-outlined text-[14px]" aria-hidden="true">warning</span>
+                    Só {classificadas} de {dados.length} regiões têm tecnologia ou status classificados — os filtros abaixo cobrem só essa fração.
+                </p>
+            )}
+            <div className="flex flex-col gap-2 2xl:flex-row 2xl:items-center 2xl:gap-6">
             <Grupo titulo="Tecnologia">
                 <ChipButton
                     label="Todas"
@@ -102,6 +117,7 @@ export default function CoverageFilters({
                     Limpar filtros
                 </button>
             )}
+            </div>
         </div>
     );
 }
