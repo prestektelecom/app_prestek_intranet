@@ -7,11 +7,18 @@ import { useBentoTheme } from '../../hooks/useBentoTheme';
  * - < md: cards
  *
  * Props:
- *  - columns: [{ key, header, render?, priority? }]
+ *  - columns: [{ key, header, render?, priority?, asTitle? }]
  *  - rows: array de objetos
  *  - keyExtractor: (row) => string|number
  *  - cardTitle: (row) => string (usado no modo mobile)
  *  - actions: (row) => ReactNode
+ *
+ * No card mobile, a coluna usada como título some da lista de detalhes
+ * abaixo (evita repetir o mesmo valor duas vezes). Por padrão é a coluna[0]
+ * — mas se nenhuma coluna representa de fato o título (ex.: a 1ª coluna é
+ * um ID e `cardTitle` busca outro campo, como em TicketsList), marque a
+ * coluna certa com `asTitle: true` para não perder ela silenciosamente da
+ * versão mobile nem duplicar o mesmo conteúdo no título e na grade.
  */
 export default function ResponsiveTable({
   columns,
@@ -24,6 +31,7 @@ export default function ResponsiveTable({
   const C = useBentoTheme();
 
   const visibleColumns = columns.filter((c) => c.priority !== false);
+  const titleColumn = visibleColumns.find((c) => c.asTitle) || visibleColumns[0];
 
   return (
     <div className="w-full">
@@ -105,7 +113,7 @@ export default function ResponsiveTable({
                 className="font-semibold text-sm truncate"
                 style={{ color: C.ink }}
               >
-                {cardTitle ? cardTitle(row) : visibleColumns[0] && (visibleColumns[0].render ? visibleColumns[0].render(row[visibleColumns[0].key], row) : row[visibleColumns[0].key])}
+                {cardTitle ? cardTitle(row) : titleColumn && (titleColumn.render ? titleColumn.render(row[titleColumn.key], row) : row[titleColumn.key])}
               </div>
               {actions && (
                 <div className="flex items-center gap-2 shrink-0">
@@ -115,7 +123,7 @@ export default function ResponsiveTable({
             </div>
 
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
-              {visibleColumns.slice(1).map((col) => (
+              {visibleColumns.filter((col) => col !== titleColumn).map((col) => (
                 <div key={col.key} className={col.fullWidth ? 'col-span-2' : ''}>
                   <dt className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: C.ink2 }}>
                     {col.header}

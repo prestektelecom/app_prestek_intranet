@@ -151,7 +151,7 @@ export default function PlantaoHistorico({ setCurrentView, user }) {
                     <div className="flex gap-2 items-end">
                         <button
                             type="submit"
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[var(--accent-deep)] to-[var(--accent)] text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-[var(--accent)]/20"
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white font-bold hover:brightness-110 transition-colors shadow-lg shadow-[var(--accent)]/20"
                         >
                             <span className="material-symbols-outlined text-[18px]">filter_alt</span>
                             Filtrar

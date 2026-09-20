@@ -52,6 +52,10 @@ export default function Configuracoes({ user, setCurrentView }) {
     const [deptosEmpresaList, setDeptosEmpresaList] = useState([]);
     const [filiaisList, setFiliaisList] = useState([]);
     const [funcoesList, setFuncoesList] = useState([]);
+    // Enquanto essas listas não chegam, `deptoName`/`cargoName` não têm como
+    // resolver o ID cru (`displayDepto`/`id_funcao`) num nome — sem essa flag,
+    // o fallback mostrava o ID numérico ("54") por até ~1s antes de resolver.
+    const [listasProntas, setListasProntas] = useState(false);
 
     // Carrega perfil do banco (usuarios_perfil) e preferências (usuarios_preferencias)
     useEffect(() => {
@@ -162,6 +166,8 @@ export default function Configuracoes({ user, setCurrentView }) {
                 }
             } catch (err) {
                 console.error("Erro ao buscar listas do IXC", err);
+            } finally {
+                setListasProntas(true);
             }
         };
         fetchListas();
@@ -322,11 +328,18 @@ export default function Configuracoes({ user, setCurrentView }) {
     const displayFilial = pb.filial_id || func.filial_id || '';
 
     // Mapeamento visual: ID -> Nome
-    // Setor (id_departamento) busca na API departamento (organizacional), empresa_setor (cargosList) e su_ticket_setor
-    const deptoName = deptosEmpresaList.find(d => String(d.id).trim() === String(displayDepto).trim())?.departamento
+    // Setor (id_departamento) busca na API departamento (organizacional), empresa_setor (cargosList) e su_ticket_setor.
+    // Enquanto `listasProntas` é false, os 3 `.find()` abaixo sempre voltam
+    // undefined (listas ainda vazias) — sem a guarda, isso caía direto no
+    // fallback `displayDepto` (o ID numérico cru, ex. "54"), visível por até
+    // ~1s antes das listas chegarem. Com a guarda, mostra vazio enquanto
+    // carrega em vez do ID sem sentido.
+    const deptoName = !listasProntas ? '' : (
+        deptosEmpresaList.find(d => String(d.id).trim() === String(displayDepto).trim())?.departamento
         || departamentosList.find(d => String(d.id).trim() === String(displayDepto).trim())?.setor
         || cargosList.find(c => String(c.id).trim() === String(displayDepto).trim())?.setor
-        || displayDepto || 'N/D';
+        || displayDepto || 'N/D'
+    );
     const filialName = filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.fantasia
         || filiaisList.find(f => String(f.id).trim() === String(displayFilial).trim())?.razao
         || (displayFilial ? `Filial ${displayFilial}` : 'N/D');
@@ -432,7 +445,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                                     className="relative after:absolute after:-inset-[10px] after:content-['']"
                                     style={{ position: 'absolute', bottom: 2, right: 2, width: 28, height: 28, borderRadius: '50%', background: C.accent, border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 2px 8px ${tone(C.accentDeep, 0.3)}` }}
                                     title="Alterar Foto" aria-label="Alterar foto de perfil">
-                                    <span className="material-symbols-outlined" style={{ fontSize: 15, color: 'white' }}>photo_camera</span>
+                                    <span className="material-symbols-outlined" style={{ fontSize: 15, color: C.onAccent }}>photo_camera</span>
                                 </button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/png, image/jpeg, image/webp" style={{ display: 'none' }} />
 
@@ -447,12 +460,17 @@ export default function Configuracoes({ user, setCurrentView }) {
                                         <div style={{ padding: 12, maxHeight: 320, overflowY: 'auto' }}>
                                             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.ink2, textAlign: 'center', marginBottom: 10, fontFamily: '"JetBrains Mono", monospace' }}>Avatares 3D</p>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                                                {PREDEFINED_PNG_AVATARS.map((url, idx) => (
-                                                    <button key={idx} onClick={() => handleChangeAvatar(url)}
-                                                        style={{ aspectRatio: '1', borderRadius: 8, border: `1.5px solid ${C.line}`, overflow: 'hidden', cursor: 'pointer', padding: 0, background: C.surfaceSoft, transition: 'border-color .15s' }}>
-                                                        <img src={url} alt={`Avatar ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                    </button>
-                                                ))}
+                                                {PREDEFINED_PNG_AVATARS.map((url, idx) => {
+                                                    const selecionado = url === avatarUrl;
+                                                    return (
+                                                        <button key={idx} onClick={() => handleChangeAvatar(url)}
+                                                            aria-pressed={selecionado}
+                                                            aria-label={selecionado ? `Avatar ${idx + 1}, selecionado` : `Avatar ${idx + 1}`}
+                                                            style={{ aspectRatio: '1', borderRadius: 8, border: selecionado ? `2px solid ${C.accent}` : `1.5px solid ${C.line}`, boxShadow: selecionado ? `0 0 0 2px ${tone(C.accent, 0.25)}` : 'none', overflow: 'hidden', cursor: 'pointer', padding: 0, background: C.surfaceSoft, transition: 'border-color .15s, box-shadow .15s' }}>
+                                                            <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
 

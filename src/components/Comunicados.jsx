@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
+import { useComunicados } from '../hooks/useComunicados';
+import { relativeTimeShort } from '../utils/relativeTime';
 import { fundoHero } from './ui/heroGradiente';
 import HeroSearchInput from './ui/HeroSearchInput';
 
@@ -20,24 +22,6 @@ function hexToRgb(hex) {
 
 function tone(hex, a) {
   return `rgba(${hexToRgb(hex)}, ${a})`;
-}
-
-function relativeTime(dataStr) {
-  if (!dataStr) return '';
-  const now = new Date();
-  const date = new Date(dataStr);
-  const diffMs = now - date;
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHr = Math.floor(diffMin / 60);
-  const diffDays = Math.floor(diffHr / 24);
-
-  if (diffSec < 60) return 'agora';
-  if (diffMin < 60) return `há ${diffMin}min`;
-  if (diffHr < 24) return `há ${diffHr}h`;
-  if (diffDays < 7) return `há ${diffDays}d`;
-  
-  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').replace(' de ', ' ');
 }
 
 function formatFullDate(dateStr) {
@@ -89,9 +73,8 @@ const getTypeMeta = (C) => ({
 
 export default function Comunicados({ user, setCurrentView }) {
     const C = useBentoTheme();
-    const [comunicados, setComunicados] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [erro, setErro] = useState(false);
+    const { comunicados, loaded, erro, recarregar } = useComunicados();
+    const loading = !loaded;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -107,29 +90,6 @@ export default function Comunicados({ user, setCurrentView }) {
         link_opcional: '',
         imagem_url: ''
     });
-
-    const fetchComunicados = async () => {
-        try {
-            setLoading(true);
-            setErro(false);
-            const res = await fetch('/api/comunicados');
-            const data = await res.json();
-            if (data.sucesso) {
-                setComunicados(data.comunicados);
-            } else {
-                setErro(true);
-            }
-        } catch (error) {
-            console.error("Erro ao carregar comunicados:", error);
-            setErro(true);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchComunicados();
-    }, []);
 
     const handleOpenModal = (item = null) => {
         if (item) {
@@ -167,7 +127,7 @@ export default function Comunicados({ user, setCurrentView }) {
             const res = await fetch(`/api/comunicados/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.sucesso) {
-                fetchComunicados();
+                recarregar();
             } else {
                 alert('Erro ao excluir: ' + data.erro);
             }
@@ -197,7 +157,7 @@ export default function Comunicados({ user, setCurrentView }) {
             const data = await res.json();
             if (data.sucesso) {
                 handleCloseModal();
-                fetchComunicados();
+                recarregar();
             } else {
                 alert('Erro ao salvar: ' + data.erro);
             }
@@ -318,7 +278,7 @@ export default function Comunicados({ user, setCurrentView }) {
                                 background: C.surface,
                                 border: `1px solid ${C.line}`,
                                 borderRadius: 10,
-                                fontSize: 13.5,
+                                fontSize: 14,
                                 color: C.ink,
                                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                                 cursor: 'pointer',
@@ -349,7 +309,7 @@ export default function Comunicados({ user, setCurrentView }) {
                         {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
                     </div>
                 ) : erro ? (
-                    <ErrorState onRetry={fetchComunicados} />
+                    <ErrorState onRetry={recarregar} />
                 ) : comunicadosFiltrados.length === 0 ? (
                     <EmptyState busca={busca} filtro={filtro} onClear={() => { setBusca(''); setFiltro('Todas'); }} />
                 ) : (
@@ -580,7 +540,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                             borderRadius: 999,
                             background: meta.soft,
                             color: meta.textColor,
-                            fontSize: 10.5,
+                            fontSize: 11,
                             fontWeight: 700,
                             fontFamily: '"JetBrains Mono", monospace',
                             letterSpacing: '0.06em',
@@ -593,7 +553,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                         <span 
                             title={formatFullDate(item.criado_em)}
                             style={{
-                                fontSize: 11.5,
+                                fontSize: 11,
                                 color: C.muted,
                                 fontFamily: '"JetBrains Mono", monospace',
                                 display: 'inline-flex',
@@ -603,7 +563,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                             }}
                         >
                             <span className="material-symbols-outlined" style={{ fontSize: 13 }}>calendar_today</span>
-                            {relativeTime(item.criado_em)}
+                            {relativeTimeShort(item.criado_em)}
                         </span>
                     </div>
 
@@ -660,7 +620,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                     próximo nível real da página, sem h2 nenhum entre eles. */}
                 <h2 style={{
                     margin: '0 0 10px 0',
-                    fontSize: 17,
+                    fontSize: 18,
                     fontWeight: 800,
                     color: C.ink,
                     letterSpacing: '-0.015em',
@@ -720,7 +680,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                     flexWrap: 'wrap'
                 }}>
                     <span style={{
-                        fontSize: 11.5,
+                        fontSize: 11,
                         fontWeight: 700,
                         color: C.muted,
                         fontFamily: '"JetBrains Mono", monospace',
@@ -813,8 +773,8 @@ function ErrorState({ onRetry }) {
                 <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 36, color: C.danger, lineHeight: 1 }}>cloud_off</span>
             </div>
             <div>
-                <p style={{ margin: '0 0 6px 0', fontSize: 17, fontWeight: 700, color: C.ink }}>Não foi possível carregar os comunicados</p>
-                <p style={{ margin: 0, fontSize: 13.5, color: C.ink2, maxWidth: 360, lineHeight: 1.5 }}>
+                <p style={{ margin: '0 0 6px 0', fontSize: 18, fontWeight: 700, color: C.ink }}>Não foi possível carregar os comunicados</p>
+                <p style={{ margin: 0, fontSize: 14, color: C.ink2, maxWidth: 360, lineHeight: 1.5 }}>
                     O servidor não respondeu. Isso costuma ser temporário — nada foi perdido.
                 </p>
             </div>
@@ -828,7 +788,7 @@ function ErrorState({ onRetry }) {
                     color: 'white',
                     fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                     fontWeight: 700,
-                    fontSize: 13.5,
+                    fontSize: 13,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -869,8 +829,8 @@ function EmptyState({ busca, filtro, onClear }) {
                 <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 36, color: C.accent, lineHeight: 1 }}>search_off</span>
             </div>
             <div>
-                <p style={{ margin: '0 0 6px 0', fontSize: 17, fontWeight: 700, color: C.ink }}>Nenhum comunicado encontrado</p>
-                <p style={{ margin: 0, fontSize: 13.5, color: C.ink2, maxWidth: 360, lineHeight: 1.5 }}>
+                <p style={{ margin: '0 0 6px 0', fontSize: 18, fontWeight: 700, color: C.ink }}>Nenhum comunicado encontrado</p>
+                <p style={{ margin: 0, fontSize: 14, color: C.ink2, maxWidth: 360, lineHeight: 1.5 }}>
                     {busca ? `Nenhum aviso corresponde à busca "${busca}".` : 'Nenhum aviso corresponde ao tipo selecionado.'}
                 </p>
             </div>
@@ -885,7 +845,7 @@ function EmptyState({ busca, filtro, onClear }) {
                         color: C.ink2,
                         fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                         fontWeight: 600,
-                        fontSize: 13.5,
+                        fontSize: 13,
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -1006,7 +966,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                 {/* Form do Modal */}
                 <form onSubmit={onSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Título do Aviso *
                         </label>
                         <input
@@ -1023,7 +983,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
 
                     <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 16 }}>
                         <div>
-                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Tipo *
                             </label>
                             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -1055,7 +1015,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                             </div>
                         </div>
                         <div>
-                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Depto. Autor *
                             </label>
                             <input
@@ -1072,7 +1032,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Mensagem/Descrição *
                         </label>
                         <textarea
@@ -1092,7 +1052,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             URL da Imagem de Capa (Opcional)
                         </label>
                         <input
@@ -1107,7 +1067,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11.5, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Link Adicional (Opcional)
                         </label>
                         <input
@@ -1141,7 +1101,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                                 color: C.ink2,
                                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                                 fontWeight: 700,
-                                fontSize: 13.5,
+                                fontSize: 13,
                                 cursor: 'pointer',
                                 transition: 'all 0.15s',
                                 outline: 'none'
@@ -1162,7 +1122,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                                 color: 'white',
                                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                                 fontWeight: 700,
-                                fontSize: 13.5,
+                                fontSize: 13,
                                 cursor: 'pointer',
                                 transition: 'all 0.15s',
                                 opacity: isSubmitting ? 0.7 : 1,
@@ -1286,7 +1246,7 @@ function DeleteModal({ onClose, onConfirm }) {
                             color: C.ink2,
                             fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                             fontWeight: 700,
-                            fontSize: 13.5,
+                            fontSize: 13,
                             cursor: 'pointer',
                             transition: 'all 0.15s',
                             outline: 'none'
@@ -1306,7 +1266,7 @@ function DeleteModal({ onClose, onConfirm }) {
                             color: 'white',
                             fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                             fontWeight: 700,
-                            fontSize: 13.5,
+                            fontSize: 13,
                             cursor: 'pointer',
                             transition: 'all 0.15s',
                             outline: 'none',

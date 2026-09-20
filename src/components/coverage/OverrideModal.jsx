@@ -23,7 +23,7 @@ function Segmentado({ opcoes, valor, onChange, metaPorValor }) {
                         type="button"
                         onClick={() => onChange(op)}
                         aria-pressed={ativo}
-                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg px-2 py-1.5 text-[12px] font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg px-2 py-1.5 text-[13px] font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                         style={ativo
                             ? { background: tone(meta.cor, 0.14), color: meta.cor, boxShadow: `inset 0 0 0 1px ${tone(meta.cor, 0.5)}` }
                             : { color: 'var(--foreground-muted)' }}
@@ -133,8 +133,8 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
             >
                 <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
                     <div className="min-w-0">
-                        <h3 className="text-[15px] font-bold text-foreground">Configurar cobertura</h3>
-                        <p className="mt-0.5 truncate text-[12px] text-faint">
+                        <h3 className="text-[18px] font-bold text-foreground">Configurar cobertura</h3>
+                        <p className="mt-0.5 truncate text-[14px] text-faint">
                             {registro.cidade} — {registro.bairro}
                         </p>
                     </div>
@@ -151,7 +151,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-5 py-4">
                     <div className="flex items-start gap-2.5 rounded-xl border border-border bg-background px-3.5 py-2.5">
                         <span className="material-symbols-outlined mt-px text-[18px] text-[var(--accent)]">info</span>
-                        <div className="min-w-0 text-[12px] leading-relaxed">
+                        <div className="min-w-0 text-[14px] leading-relaxed">
                             <p className="text-faint">Cidade e bairro vêm do IXC e não são editáveis aqui.</p>
                             <p className="font-semibold text-foreground">
                                 {registro.total_contratos} contrato(s) ativo(s) neste bairro
@@ -245,7 +245,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                                 escura); não existe token --success no tema. */}
                             {coordsValidas && (
                                 <span
-                                    className="ml-1 inline-flex items-center gap-0.5 text-[11.5px] font-semibold"
+                                    className="ml-1 inline-flex items-center gap-0.5 text-[11px] font-semibold"
                                     style={{ color: STATUS_META['Ativo'].cor }}
                                 >
                                     <span className="material-symbols-outlined text-[14px]">check_circle</span>
@@ -277,7 +277,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
 
                         {mapaAberto && (
                             <div className="mt-3 overflow-hidden rounded-xl border border-border">
-                                <p className="flex items-center gap-1.5 border-b border-border bg-background px-3 py-2 text-[11.5px] text-faint">
+                                <p className="flex items-center gap-1.5 border-b border-border bg-background px-3 py-2 text-[11px] text-faint">
                                     <span className="material-symbols-outlined text-[15px]">touch_app</span>
                                     Clique no mapa para definir a posição exata do bairro
                                 </p>
@@ -291,7 +291,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                     </div>
 
                     {erro && (
-                        <p role="alert" className="flex items-center gap-2 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-[12.5px] font-semibold text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
+                        <p role="alert" className="flex items-center gap-2 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-[13px] font-semibold text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
                             <span className="material-symbols-outlined text-[16px]">error</span>
                             {erro}
                         </p>
@@ -308,7 +308,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                         <button
                             type="submit"
                             disabled={salvando}
-                            className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#9A3412] to-[#EC7D23] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] active:scale-[0.98] disabled:opacity-60"
+                            className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#7C2D12] to-[#C2410C] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] active:scale-[0.98] disabled:opacity-60"
                         >
                             {salvando && <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>}
                             {salvando ? 'Salvando...' : 'Salvar configuração'}

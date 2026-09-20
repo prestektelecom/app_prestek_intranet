@@ -33,6 +33,12 @@ export default function ResponsaveisManual() {
     const [busca, setBusca] = useState('');
     const [setorAberto, setSetorAberto] = useState(null);
     const [buscaFunc, setBuscaFunc] = useState('');
+    // Clicar num nome gravava na hora, sem confirmação — mesma classe do
+    // achado de conceder admin (Fase 15, P0), um degrau abaixo em
+    // consequência (aqui sempre reversível com 1 clique em "Resetar", lá não
+    // havia undo nenhum). Por ser reversível e a lista ser curta, uma
+    // confirmação inline (não um modal) já cobre o risco.
+    const [candidato, setCandidato] = useState(null);
 
     const carregarDados = useCallback(async () => {
         setCarregando(true);
@@ -62,6 +68,13 @@ export default function ResponsaveisManual() {
     }, []);
 
     useEffect(() => { carregarDados(); }, [carregarDados]);
+
+    const confirmarResponsavel = async () => {
+        if (!candidato) return;
+        const { id_setor, funcionario } = candidato;
+        setCandidato(null);
+        await definirResponsavel(id_setor, funcionario);
+    };
 
     const definirResponsavel = async (id_setor, funcionario) => {
         setSalvando(id_setor);
@@ -341,6 +354,7 @@ export default function ResponsaveisManual() {
                                         onClick={() => {
                                             setSetorAberto(isAberto ? null : setor.id);
                                             setBuscaFunc('');
+                                            setCandidato(null);
                                         }}
                                         disabled={isSalvando}
                                         className="flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
@@ -355,7 +369,42 @@ export default function ResponsaveisManual() {
                             </div>
 
                             {/* Dropdown de seleção de funcionário */}
-                            {isAberto && (
+                            {isAberto && candidato?.id_setor === setor.id && (
+                                <div className="px-4 pb-4">
+                                    <div
+                                        role="alertdialog"
+                                        aria-label="Confirmar responsável"
+                                        className="flex flex-col gap-3 rounded-xl border p-4"
+                                        style={{ background: C.accentSoft, borderColor: C.accent }}
+                                    >
+                                        <p className="text-sm" style={{ color: C.ink }}>
+                                            Definir <strong>{candidato.funcionario.funcionario_nome || candidato.funcionario.nome}</strong> como
+                                            responsável por <strong>{setor.nome}</strong>?
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setCandidato(null)}
+                                                className="min-h-[40px] flex-1 rounded-lg px-3 text-sm font-bold transition-colors"
+                                                style={{ background: C.surface, color: C.ink, border: `1px solid ${C.line}` }}
+                                            >
+                                                Cancelar
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={confirmarResponsavel}
+                                                disabled={salvando === setor.id}
+                                                className="min-h-[40px] flex-1 rounded-lg px-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                                style={{ background: C.accent, color: C.onAccent }}
+                                            >
+                                                {salvando === setor.id ? 'Salvando…' : 'Confirmar'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {isAberto && !candidato && (
                                 <div className="px-4 pb-4">
                                     <div
                                         className="overflow-hidden rounded-xl border"
@@ -389,7 +438,7 @@ export default function ResponsaveisManual() {
                                                 return (
                                                     <button
                                                         key={func.funcionario_id || func.id}
-                                                        onClick={() => definirResponsavel(setor.id, func)}
+                                                        onClick={() => setCandidato({ id_setor: setor.id, funcionario: func })}
                                                         className="flex w-full items-center gap-3 border-b px-3 py-2.5 text-left transition-colors last:border-0"
                                                         style={{ borderColor: C.lineSoft }}
                                                         onMouseEnter={(e) => { e.currentTarget.style.background = C.accentSoft; }}

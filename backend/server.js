@@ -1269,8 +1269,10 @@ app.get('/api/colaboradores/online', async (req, res) => {
 app.post('/api/configuracoes/:usuarioId', async (req, res) => {
     // Sempre o próprio usuário do JWT — ignora o parâmetro da URL, para
     // impedir que um usuário logado sobrescreva a preferência de outro.
+    // `usuario_email` também vem sempre do JWT, nunca do corpo, pelo mesmo motivo:
+    // um `email` arbitrário no body gravaria um valor incoerente com o dono real da linha.
     const usuarioId = req.usuario.id;
-    const { email, chave, valor } = req.body;
+    const { chave, valor } = req.body;
 
     if (!chave) {
         return res.status(400).json({ sucesso: false, erro: 'Chave é obrigatória.' });
@@ -1280,10 +1282,10 @@ app.post('/api/configuracoes/:usuarioId', async (req, res) => {
         const query = `
             INSERT INTO usuarios_preferencias (usuario_id, usuario_email, chave, valor, atualizado_em)
             VALUES ($1, $2, $3, $4, NOW())
-            ON CONFLICT (usuario_id, chave) 
+            ON CONFLICT (usuario_id, chave)
             DO UPDATE SET valor = EXCLUDED.valor, atualizado_em = NOW();
         `;
-        await pool.query(query, [String(usuarioId), email || 'desconhecido', chave, valor]);
+        await pool.query(query, [String(usuarioId), req.usuario.email || 'desconhecido', chave, valor]);
         return res.json({ sucesso: true });
     } catch (err) {
         console.error('Erro ao salvar configuração no banco:', err.message);
@@ -3461,6 +3463,12 @@ function coordValida(lat, lng) {
     return [la, ln];
 }
 
+function medianaDe(numeros) {
+    const s = [...numeros].sort((a, b) => a - b);
+    const meio = Math.floor(s.length / 2);
+    return s.length % 2 ? s[meio] : (s[meio - 1] + s[meio]) / 2;
+}
+
 // Índice id → endereço do cliente. Existe porque o IXC NÃO materializa o
 // endereço no contrato quando endereco_padrao_cliente = 'S' (o default): as
 // colunas cidade/bairro vêm vazias e o endereço real só existe no cadastro do
@@ -3663,10 +3671,17 @@ async function buildCoberturaCache() {
 
         let latitude  = local.latitude  != null ? parseFloat(local.latitude)  : null;
         let longitude = local.longitude != null ? parseFloat(local.longitude) : null;
+        // Mediana por eixo, não média: medido em produção (2026-09-19, 21.562
+        // contratos) que a média diverge da mediana em 1.788m em média (82% das
+        // regiões com mais de 100m de diferença) — puxada por uma única coordenada
+        // com erro grave em casos extremos (POXIM, 164km de diferença só com 11
+        // pontos), mas também em regiões grandes e bem amostradas (DOM CONSTANTINO,
+        // a maior do sistema com 1.349 contratos, ainda diverge quase 4km). Mediana
+        // por eixo é uma aproximação (não é o centroide geométrico exato), mas
+        // barata e muito mais resistente a esse tipo de outlier que a média.
         if ((latitude == null || longitude == null) && grupo.pontos.length > 0) {
-            const n = grupo.pontos.length;
-            latitude  = grupo.pontos.reduce((s, p) => s + p[0], 0) / n;
-            longitude = grupo.pontos.reduce((s, p) => s + p[1], 0) / n;
+            latitude  = medianaDe(grupo.pontos.map(p => p[0]));
+            longitude = medianaDe(grupo.pontos.map(p => p[1]));
         }
 
         return {
@@ -4092,6 +4107,131 @@ app.delete('/api/categorias-processos/:id', adminAuth, async (req, res) => {
     }
 });
 
+// ─── Processos (CRUD) ─────────────────────────────────────────────
+// Mesmo padrão de categorias_processos acima: leitura pública, escrita
+// admin-only via adminAuth. `PROCESSOS` era um array estático vazio em
+// src/data/processosData.js — criar/editar só existia em estado React local
+// e sumia ao recarregar a página; esta rota é a persistência real.
+function shapeProcesso(row) {
+    return {
+        id: row.id,
+        nome: row.nome,
+        descricao: row.descricao,
+        categoria: row.categoria,
+        status: row.status,
+        versao: row.versao,
+        docUrl: row.doc_url,
+        responsavel: {
+            nome: row.responsavel_nome,
+            setor: row.responsavel_setor,
+            funcionario_id: row.responsavel_funcionario_id,
+        },
+        etapas: row.etapas,
+        tempoEstimado: row.tempo_estimado,
+        tags: row.tags || [],
+        ultimaAtualizacao: row.ultima_atualizacao
+            ? new Date(row.ultima_atualizacao).toISOString().split('T')[0]
+            : null,
+    };
+}
+
+app.get('/api/processos', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM processos ORDER BY criado_em DESC');
+        res.json(rows.map(shapeProcesso));
+    } catch (e) {
+        console.error('GET /api/processos:', e.message);
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
+    }
+});
+
+// Gera o próximo id sequencial dentro do prefixo da categoria (ex.: "AT-001",
+// "AT-002"...) — mesmo esquema que o front já calculava sozinho
+// (gerarId em Processos.jsx) quando a lista só vivia em estado local. Fazer
+// isso no servidor (não confiar num id vindo do body) evita colisão entre
+// duas criações concorrentes e é a única fonte de verdade agora que a lista
+// é compartilhada entre todos os usuários, não mais por aba do navegador.
+async function proximoIdProcesso(categoriaId) {
+    const catRes = await pool.query('SELECT prefixo FROM categorias_processos WHERE id=$1', [categoriaId]);
+    const prefixo = catRes.rows[0]?.prefixo || 'OP';
+    const { rows } = await pool.query(
+        `SELECT id FROM processos WHERE id LIKE $1`,
+        [`${prefixo}-%`]
+    );
+    const proximo = rows.reduce((max, r) => {
+        const n = parseInt(String(r.id).split('-')[1], 10);
+        return Number.isNaN(n) ? max : Math.max(max, n);
+    }, 0) + 1;
+    return `${prefixo}-${String(proximo).padStart(3, '0')}`;
+}
+
+app.post('/api/processos', adminAuth, async (req, res) => {
+    const { nome, descricao, categoria, status, versao, docUrl, responsavel, etapas, tempoEstimado, tags, ultimaAtualizacao } = req.body;
+    if (!nome || !descricao || !categoria) {
+        return res.status(400).json({ erro: 'Nome, descrição e categoria são obrigatórios.' });
+    }
+    try {
+        const id = await proximoIdProcesso(categoria);
+        const { rows } = await pool.query(
+            `INSERT INTO processos
+                (id, nome, descricao, categoria, status, versao, doc_url,
+                 responsavel_nome, responsavel_setor, responsavel_funcionario_id,
+                 etapas, tempo_estimado, tags, ultima_atualizacao)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+             RETURNING *`,
+            [
+                id, nome, descricao, categoria, status || 'ativo', versao || '1.0', docUrl || null,
+                responsavel?.nome || null, responsavel?.setor || null, responsavel?.funcionario_id || null,
+                etapas ?? null, tempoEstimado || null, tags || [], ultimaAtualizacao || null,
+            ]
+        );
+        res.status(201).json(shapeProcesso(rows[0]));
+    } catch (e) {
+        console.error('POST /api/processos:', e.message);
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
+    }
+});
+
+app.put('/api/processos/:id', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    const { nome, descricao, categoria, status, versao, docUrl, responsavel, etapas, tempoEstimado, tags, ultimaAtualizacao } = req.body;
+    if (!nome || !descricao || !categoria) {
+        return res.status(400).json({ erro: 'Nome, descrição e categoria são obrigatórios.' });
+    }
+    try {
+        const { rows } = await pool.query(
+            `UPDATE processos SET
+                nome=$1, descricao=$2, categoria=$3, status=$4, versao=$5, doc_url=$6,
+                responsavel_nome=$7, responsavel_setor=$8, responsavel_funcionario_id=$9,
+                etapas=$10, tempo_estimado=$11, tags=$12, ultima_atualizacao=$13
+             WHERE id=$14 RETURNING *`,
+            [
+                nome, descricao, categoria, status || 'ativo', versao || '1.0', docUrl || null,
+                responsavel?.nome || null, responsavel?.setor || null, responsavel?.funcionario_id || null,
+                etapas ?? null, tempoEstimado || null, tags || [], ultimaAtualizacao || null,
+                id,
+            ]
+        );
+        if (!rows.length) return res.status(404).json({ erro: 'Processo não encontrado.' });
+        res.json(shapeProcesso(rows[0]));
+    } catch (e) {
+        console.error('PUT /api/processos/:id:', e.message);
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
+    }
+});
+
+app.delete('/api/processos/:id', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rowCount } = await pool.query('DELETE FROM processos WHERE id=$1', [id]);
+        if (!rowCount) return res.status(404).json({ erro: 'Processo não encontrado.' });
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('DELETE /api/processos/:id:', e.message);
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
+    }
+});
+
 // ═══════════════════════════════════════════════════════════════════
 // ─── Middleware de autenticação administrativa ───────────────────
 // Verifica se o solicitante é um admin consultando o banco pelo email.
@@ -4141,7 +4281,7 @@ async function registrarAuditoria(adminEmail, acao, entidade, entidadeId, descri
 }
 
 // ─── Rotas: Admin — Dashboard Stats ─────────────────────────────────
-app.get('/api/admin/dashboard-stats', adminAuth, async (_req, res) => {
+app.get('/api/admin/dashboard-stats', adminAuth, async (req, res) => {
     try {
         const [usuarios, comunicados, logs] = await Promise.all([
             pool.query('SELECT COUNT(*) FROM usuarios_perfil WHERE ativo = $1', ['S']),
@@ -4235,7 +4375,7 @@ app.get('/api/admin/auditoria', adminAuth, async (req, res) => {
 });
 
 // ─── Rotas: Admin — Configurações Globais ───────────────────────────
-app.get('/api/admin/configuracoes', adminAuth, async (_req, res) => {
+app.get('/api/admin/configuracoes', adminAuth, async (req, res) => {
     try {
         const { rows } = await pool.query('SELECT * FROM configuracoes_globais ORDER BY chave');
         return res.json({ sucesso: true, configuracoes: rows });
@@ -4484,9 +4624,14 @@ app.post(
         } catch (e) {
             console.error('[ti/extrair-pdf] Erro:', e);
             const status = e.status || 502;
+            // Nunca ecoa `e.message` cru ao cliente (mesmo padrão "mensagem genérica
+            // única" já aplicado no resto do backend, item 7 da auditoria de 2026-09-17)
+            // — o detalhe real fica só no console.error acima.
             return res.status(status).json({
                 sucesso: false,
-                erro: status === 400 ? e.message : 'Falha ao processar PDF.',
+                erro: status === 400
+                    ? 'Não foi possível processar o arquivo enviado. Confirme que é um PDF válido.'
+                    : 'Falha ao processar PDF.',
             });
         }
     }

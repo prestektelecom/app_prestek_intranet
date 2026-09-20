@@ -89,6 +89,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
     const [stats, setStats] = useState(null);
     const [logsRecentes, setLogsRecentes] = useState([]);
     const [carregandoStats, setCarregandoStats] = useState(true);
+    const [erroStats, setErroStats] = useState(false);
 
     const adminEmail = user?.email || '';
     const adminName = user?.nome || 'Administrador';
@@ -96,6 +97,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
     const carregarStats = useCallback(async () => {
         if (!adminEmail) return;
         setCarregandoStats(true);
+        setErroStats(false);
         try {
             const [resStats, resLogs] = await Promise.all([
                 fetch(`${API}/api/admin/dashboard-stats`),
@@ -105,8 +107,13 @@ export default function AdminDashboard({ setCurrentView, user }) {
             const dataLogs = await resLogs.json();
             if (dataStats.sucesso) setStats(dataStats.stats);
             if (dataLogs.sucesso) setLogsRecentes(dataLogs.logs || []);
+            if (!dataStats.sucesso && !dataLogs.sucesso) setErroStats(true);
         } catch (e) {
+            // Antes só logava e deixava a lista vazia — o feed então afirmava
+            // "Nenhuma atividade registrada ainda", indistinguível de zero
+            // atividade de verdade. Agora sinaliza a falha explicitamente.
             console.warn('AdminDashboard: falha ao carregar stats:', e.message);
+            setErroStats(true);
         } finally {
             setCarregandoStats(false);
         }
@@ -312,7 +319,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                     style={{ background: C.surface, borderColor: C.line, boxShadow: `0 1px 3px ${tone(C.accentDeep, 0.05)}` }}
                                 >
                                     <div className="mb-6 flex items-center justify-between">
-                                        <h3 className="text-base font-bold" style={{ color: C.ink }}>Atividades Recentes</h3>
+                                        <h2 className="text-base font-bold" style={{ color: C.ink }}>Atividades Recentes</h2>
                                         <button
                                             onClick={() => setAbaAtiva('auditoria')}
                                             className="flex min-h-[44px] items-center text-sm font-bold transition-opacity hover:opacity-70"
@@ -323,6 +330,8 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                     </div>
                                     {carregandoStats ? (
                                         <p className="text-sm" style={{ color: C.ink2 }}>Carregando...</p>
+                                    ) : erroStats ? (
+                                        <p className="text-sm" style={{ color: C.danger }}>Não foi possível carregar as atividades recentes.</p>
                                     ) : logsRecentes.length === 0 ? (
                                         <p className="text-sm" style={{ color: C.ink2 }}>Nenhuma atividade registrada ainda.</p>
                                     ) : (
@@ -366,7 +375,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
                                                 <span className="material-symbols-outlined">group</span>
                                             </div>
-                                            <h3 className="mb-1 text-lg font-bold">Gerenciar Usuários</h3>
+                                            <h2 className="mb-1 text-lg font-bold">Gerenciar Usuários</h2>
                                             <p className="text-sm text-white/90">Conceder ou revogar permissões de administrador.</p>
                                         </div>
                                     </button>
@@ -383,7 +392,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                         <div style={sIconBox(C.accent, C.accentSoft)} className="mb-4">
                                             <span className="material-symbols-outlined">campaign</span>
                                         </div>
-                                        <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Comunicados</h3>
+                                        <h2 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Comunicados</h2>
                                         <p className="text-sm" style={{ color: C.ink2 }}>Criar, editar e excluir comunicados da intranet.</p>
                                     </button>
 
@@ -399,7 +408,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                         <div style={sIconBox(C.violet, tone(C.violet, 0.15))} className="mb-4">
                                             <span className="material-symbols-outlined">description</span>
                                         </div>
-                                        <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Logs de Auditoria</h3>
+                                        <h2 className="mb-1 text-lg font-bold transition-colors group-hover:text-[#C2410C]" style={{ color: C.ink }}>Logs de Auditoria</h2>
                                         <p className="text-sm" style={{ color: C.ink2 }}>Histórico completo de ações administrativas.</p>
                                     </button>
                                 </div>

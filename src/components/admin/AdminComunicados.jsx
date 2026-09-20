@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useBentoTheme } from '../../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../../hooks/useDismissable';
+import { useComunicados } from '../../hooks/useComunicados';
+import { relativeTimeShort } from '../../utils/relativeTime';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const FORM_VAZIO = { titulo: '', descricao: '', tipo: 'Geral', departamento_autor: '', link_opcional: '' };
@@ -32,24 +34,10 @@ const getTypeMeta = (C) => ({
     Geral: { color: C.success, soft: C.successSoft, icon: 'article', label: 'GERAL' }
 });
 
-function relativeTime(d) {
-    if (!d) return '';
-    const diff = (new Date() - new Date(d)) / 1000;
-    if (diff < 60) return 'agora';
-    if (diff < 3600) return `há ${Math.floor(diff / 60)}min`;
-    if (diff < 86400) return `há ${Math.floor(diff / 3600)}h`;
-    if (diff < 604800) return `há ${Math.floor(diff / 86400)}d`;
-    // Mesmo tratamento de Comunicados.jsx (a versão pública), para as duas
-    // telas mostrarem a mesma data no mesmo formato — achado de inconsistência
-    // de copy (Fase 5).
-    return new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').replace(' de ', ' ');
-}
-
 export default function AdminComunicados({ adminEmail }) {
     const C = useBentoTheme();
-    const [comunicados, setComunicados] = useState([]);
-    const [carregando, setCarregando] = useState(true);
-    const [erro, setErro] = useState(null);
+    const { comunicados, loaded, erro, recarregar } = useComunicados();
+    const carregando = !loaded;
     const [modalAberto, setModalAberto] = useState(false);
     const [editando, setEditando] = useState(null);
     const [form, setForm] = useState(FORM_VAZIO);
@@ -70,18 +58,6 @@ export default function AdminComunicados({ adminEmail }) {
     useDismissable(modalRef, { open: modalAberto, onClose: () => setModalAberto(false), lockScroll: true, closeOnOutside: true });
 
     const trapTab = makeTrapTab(modalRef);
-
-    const carregar = useCallback(async () => {
-        setCarregando(true); setErro(null);
-        try {
-            const res = await fetch(`${API}/api/comunicados`);
-            const data = await res.json();
-            if (!data.sucesso) throw new Error(data.erro || 'Erro ao carregar');
-            setComunicados(data.comunicados || []);
-        } catch (e) { setErro(e.message); } finally { setCarregando(false); }
-    }, []);
-
-    useEffect(() => { carregar(); }, [carregar]);
 
     const abrirNovo = () => { setEditando(null); setForm(FORM_VAZIO); setErroModal(''); setModalAberto(true); };
     const abrirEditar = (c) => {
@@ -105,7 +81,7 @@ export default function AdminComunicados({ adminEmail }) {
             });
             const data = await res.json();
             if (!data.sucesso && !data.comunicado) throw new Error(data.erro || 'Erro ao salvar');
-            setModalAberto(false); await carregar();
+            setModalAberto(false); await recarregar();
         } catch (e) { setErroModal(e.message); } finally { setSalvando(false); }
     };
 
@@ -119,7 +95,7 @@ export default function AdminComunicados({ adminEmail }) {
             const res = await fetch(`${API}/api/comunicados/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (!data.sucesso && !data.ok) throw new Error(data.erro || 'Erro ao excluir');
-            setComunicados(prev => prev.filter(c => c.id !== id));
+            await recarregar();
             setConfirmExcluirId(null);
         } catch (e) {
             // Mantém o card em modo de confirmação para o erro aparecer ali,
@@ -205,7 +181,7 @@ export default function AdminComunicados({ adminEmail }) {
                     className="rounded-xl border p-4 text-sm"
                     style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.danger }}
                 >
-                    {erro}
+                    {erro.message || 'Erro ao carregar comunicados.'}
                 </div>
             )}
 
@@ -297,7 +273,7 @@ export default function AdminComunicados({ adminEmail }) {
                                                 <span className="material-symbols-outlined text-xs">{meta.icon}</span>
                                                 {meta.label}
                                             </span>
-                                            <span className="text-[11px] font-medium" style={{ color: C.ink2, fontFamily: '"JetBrains Mono", monospace' }}>{relativeTime(c.criado_em)}</span>
+                                            <span className="text-[11px] font-medium" style={{ color: C.ink2, fontFamily: '"JetBrains Mono", monospace' }}>{relativeTimeShort(c.criado_em)}</span>
                                         </div>
                                         {confirmExcluirId === c.id ? (
                                             <div className="flex items-center gap-2">

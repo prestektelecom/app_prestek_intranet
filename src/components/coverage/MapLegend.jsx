@@ -30,7 +30,7 @@ export default function MapLegend() {
             {aberta && (
                 <div className="flex flex-col gap-1.5 border-t border-border px-3 py-2.5">
                     {Object.entries(STATUS_META).map(([nome, meta]) => (
-                        <span key={nome} className="flex items-center gap-2 text-[11.5px] text-foreground">
+                        <span key={nome} className="flex items-center gap-2 text-[11px] text-foreground">
                             <span className="size-2.5 shrink-0 rounded-full" style={{ background: meta.cor }} />
                             <span className="material-symbols-outlined text-[13px] leading-none" style={{ color: meta.cor }}>
                                 {meta.icon}

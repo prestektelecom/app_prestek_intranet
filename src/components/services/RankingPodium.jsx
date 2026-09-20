@@ -6,7 +6,7 @@ import React from 'react';
 const RANK_STYLES = {
     1: { border: 'border border-[#EC7D23]/50', label: '1º Lugar', bg: 'bg-gradient-to-br from-[#9A3412] via-[#C2410C] to-[#EC7D23]', glow: 'shadow-2xl shadow-[#EC7D23]/30 animate-glow-gold', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/70', numBg: 'bg-white text-[#9A3412]', badgeColor: 'bg-white/20 text-white' },
     2: { border: 'border border-[#9A3412]/30', label: '2º Lugar', bg: 'bg-gradient-to-br from-[#9A3412] to-[#C2410C]', glow: 'shadow-lg shadow-[#9A3412]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#9A3412]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
-    3: { border: 'border border-[#C2410C]/30', label: '3º Lugar', bg: 'bg-gradient-to-br from-[#C2410C] to-[#EC7D23]', glow: 'shadow-lg shadow-[#EC7D23]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#C2410C]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
+    3: { border: 'border border-[#C2410C]/30', label: '3º Lugar', bg: 'bg-gradient-to-br from-[#C2410C] to-[#EC7D23]', glow: 'shadow-lg shadow-[#EC7D23]/15', titleColor: 'text-white', subColor: 'text-[#E4ECF5]/60', numBg: 'bg-[#E4ECF5] text-[#7C2D12]', badgeColor: 'bg-white/15 text-[#E4ECF5]' },
 };
 
 // O pódio abaixo é um cartão opaco com gradiente laranja fixo — identidade de

@@ -12,7 +12,7 @@ import {
 
 const MAX_STREAMING_CHIPS = 3;
 
-export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurrency, maxVendas, isComparing = false, onToggleCompare, onSelect }) {
+export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurrency, maxVendas, onSelect }) {
     const vendas = plan.vendas_mes || 0;
     const vendasRatio = calcVendasRatio(vendas, maxVendas);
     const isTopSeller = calcTopSeller(vendas, maxVendas);
@@ -59,7 +59,6 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
             ctaText="Ver detalhes"
             illustrationType={illustrationType}
             onClick={() => onSelect && onSelect(plan, 'plan')}
-            className={`transition-all duration-300 ${isComparing ? 'ring-2 ring-[var(--accent)] shadow-lg' : ''}`}
             topRightContent={
                 <div className="flex items-center gap-1.5">
                     {isTopSeller && (
@@ -87,25 +86,6 @@ export default function PlanoBentoCard({ plan, isAdmin, onEditClick, formatCurre
                     )}
                 </div>
             }
-            // Sem handler, o botão de comparar não aparece — mesma convenção do
-            // ServiceDetailModal. É assim que a flag COMPARADOR_PLANOS_ATIVO
-            // chega até aqui sem o card precisar conhecê-la.
-            footerRight={!onToggleCompare ? undefined : (
-                <button
-                    type="button"
-                    onClick={() => onToggleCompare(plan.id)}
-                    aria-pressed={isComparing}
-                    title={isComparing ? 'Remover da comparação' : 'Adicionar à comparação'}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md transition-colors cursor-pointer ${
-                        isComparing ? 'bg-current/20 ring-1 ring-current/40' : 'bg-black/10 dark:bg-white/10 hover:bg-black/20'
-                    }`}
-                >
-                    <span className="material-symbols-outlined text-[14px] font-bold">
-                        {isComparing ? 'check' : 'compare_arrows'}
-                    </span>
-                    {isComparing ? 'Comparando' : 'Comparar'}
-                </button>
-            )}
         >
             <div className="flex flex-col gap-2">
                 {streamingsVisiveis.length > 0 && (

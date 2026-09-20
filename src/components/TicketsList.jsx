@@ -57,13 +57,14 @@ function parseTicketMessage(texto) {
   return truncateText(normalized, 150);
 }
 
-function formatTicketDate(row) {
-  // Campo de data de agendamento da OS
+// Mesma fonte de data usada pra exibir E pra ordenar — tinham lógicas
+// separadas (ordenação só olhava `data_agenda`, a exibição também caía pro
+// protocolo) e um chamado sem `data_agenda` mas com protocolo aparecia fora
+// de ordem: exibia uma data real, mas ordenava como se não tivesse nenhuma.
+function getTicketTimestamp(row) {
   if (row.data_agenda) {
     const date = new Date(row.data_agenda);
-    if (!isNaN(date.getTime())) {
-      return date.toLocaleDateString('pt-BR');
-    }
+    if (!isNaN(date.getTime())) return date.getTime();
   }
 
   // Fallback: extrair data do protocolo quando no formato YYYYMMDD...
@@ -72,10 +73,16 @@ function formatTicketDate(row) {
     const y = p.slice(0, 4);
     const m = p.slice(4, 6);
     const d = p.slice(6, 8);
-    return `${d}/${m}/${y}`;
+    const date = new Date(`${y}-${m}-${d}`);
+    if (!isNaN(date.getTime())) return date.getTime();
   }
 
-  return '—';
+  return 0;
+}
+
+function formatTicketDate(row) {
+  const ts = getTicketTimestamp(row);
+  return ts ? new Date(ts).toLocaleDateString('pt-BR') : '—';
 }
 
 const OPEN_STATUSES = ['AG', 'A', 'AS', 'EN', 'AN', 'EX'];
@@ -97,6 +104,13 @@ const STATUS_FILTERS = [
 ];
 
 const LABEL_MONO = 'font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75';
+
+const ITENS_POR_PAGINA = 20;
+
+const SORT_OPTIONS = [
+  { key: 'recentes', label: 'Mais recentes primeiro' },
+  { key: 'antigos', label: 'Mais antigos primeiro' },
+];
 
 function KpiTile({ label, value, icon }) {
   return (
@@ -144,7 +158,7 @@ function TicketsHero({ total, abertos, finalizados, pendentes }) {
               Meus Chamados
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-white/85 sm:text-[15px]">
-              Acompanhe o status de todos os seus chamados de suporte abertos no sistema.
+              Acompanhe o status das ordens de serviço atribuídas a você para atendimento.
             </p>
           </div>
         </div>
@@ -194,6 +208,9 @@ export default function TicketsList({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('aberto');
+  const [busca, setBusca] = useState('');
+  const [ordenacao, setOrdenacao] = useState('recentes');
+  const [pagina, setPagina] = useState(1);
 
   const fetchTickets = async () => {
     setLoading(true);
@@ -240,6 +257,37 @@ export default function TicketsList({ user }) {
     if (activeFilter === 'todos') return tickets;
     return tickets.filter(t => getStatusCategory(t.status) === activeFilter);
   }, [tickets, activeFilter]);
+
+  const searchedTickets = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+    if (!termo) return filteredTickets;
+    return filteredTickets.filter(t => {
+      const assunto = parseTicketMessage(t.mensagem).toLowerCase();
+      const protocolo = String(t.protocolo || '').toLowerCase();
+      const id = String(t.id || '').toLowerCase();
+      return assunto.includes(termo) || protocolo.includes(termo) || id.includes(termo);
+    });
+  }, [filteredTickets, busca]);
+
+  const sortedTickets = useMemo(() => {
+    return [...searchedTickets].sort((a, b) =>
+      ordenacao === 'antigos'
+        ? getTicketTimestamp(a) - getTicketTimestamp(b)
+        : getTicketTimestamp(b) - getTicketTimestamp(a)
+    );
+  }, [searchedTickets, ordenacao]);
+
+  // Volta pra 1ª página sempre que filtro/busca/ordenação mudam — sem isso,
+  // uma busca que reduz o resultado podia deixar a página atual vazia.
+  useEffect(() => {
+    setPagina(1);
+  }, [activeFilter, busca, ordenacao]);
+
+  const totalPaginas = Math.max(1, Math.ceil(sortedTickets.length / ITENS_POR_PAGINA));
+  const paginaAtualTickets = useMemo(() => {
+    const inicio = (pagina - 1) * ITENS_POR_PAGINA;
+    return sortedTickets.slice(inicio, inicio + ITENS_POR_PAGINA);
+  }, [sortedTickets, pagina]);
 
   return (
     <main
@@ -291,7 +339,7 @@ export default function TicketsList({ user }) {
               <span className="material-symbols-outlined text-6xl" style={{ color: C.muted }}>confirmation_number</span>
               <div className="space-y-1">
                 <p className="font-extrabold text-lg" style={{ color: C.ink }}>Nenhum chamado encontrado.</p>
-                <p style={{ color: C.ink2 }}>Você ainda não abriu nenhum chamado de suporte.</p>
+                <p style={{ color: C.ink2 }}>Nenhuma ordem de serviço está atribuída a você no momento.</p>
               </div>
             </div>
           ) : (
@@ -327,44 +375,117 @@ export default function TicketsList({ user }) {
                     })}
                   </FilterBar>
                 </div>
+
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div
+                    className="flex flex-1 items-center gap-2 rounded-xl border px-3"
+                    style={{ background: C.surface, borderColor: C.line, minHeight: 44 }}
+                  >
+                    <span className="material-symbols-outlined" style={{ color: C.muted, fontSize: 20 }} aria-hidden="true">search</span>
+                    <input
+                      type="text"
+                      value={busca}
+                      onChange={(e) => setBusca(e.target.value)}
+                      placeholder="Buscar por assunto, protocolo ou ID..."
+                      aria-label="Buscar por assunto, protocolo ou ID"
+                      className="w-full bg-transparent text-sm outline-none"
+                      style={{ color: C.ink }}
+                    />
+                    {busca && (
+                      <button
+                        type="button"
+                        onClick={() => setBusca('')}
+                        aria-label="Limpar busca"
+                        className="shrink-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                        style={{ color: C.muted }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <select
+                    value={ordenacao}
+                    onChange={(e) => setOrdenacao(e.target.value)}
+                    aria-label="Ordenar chamados"
+                    className="rounded-xl border px-3 text-sm"
+                    style={{ background: C.surface, borderColor: C.line, color: C.ink, minHeight: 44 }}
+                  >
+                    {SORT_OPTIONS.map(opt => (
+                      <option key={opt.key} value={opt.key}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              {filteredTickets.length === 0 ? (
+              {sortedTickets.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-16 gap-4 text-center">
-                  <span className="material-symbols-outlined text-5xl" style={{ color: C.muted }}>filter_list</span>
+                  <span className="material-symbols-outlined text-5xl" style={{ color: C.muted }}>{busca ? 'search_off' : 'filter_list'}</span>
                   <div className="space-y-1">
-                    <p className="font-extrabold text-lg" style={{ color: C.ink }}>Nenhum chamado neste filtro.</p>
-                    <p style={{ color: C.ink2 }}>Tente outro status ou visualize todos.</p>
+                    <p className="font-extrabold text-lg" style={{ color: C.ink }}>
+                      {busca ? `Nenhum chamado corresponde a "${busca}".` : 'Nenhum chamado neste filtro.'}
+                    </p>
+                    <p style={{ color: C.ink2 }}>Tente outro termo, outro status ou visualize todos.</p>
                   </div>
                   <button
-                    onClick={() => setActiveFilter('todos')}
+                    onClick={() => { setActiveFilter('todos'); setBusca(''); }}
                     className="px-4 py-2 text-sm font-bold rounded-lg transition-all"
                     style={{
                       background: C.accentSoft,
                       color: isDark ? C.accentDark : C.accentDeep,
                     }}
                   >
-                    Ver todos
+                    Limpar filtros
                   </button>
                 </div>
               ) : (
-                <div className="p-2 md:p-4">
-                  <ResponsiveTable
-                    columns={[
-                      { key: 'id', header: 'ID', render: (v, row) => <span className="font-extrabold" style={{ color: C.accent }}>#{v || row.id}</span> },
-                      { key: 'mensagem', header: 'Assunto', fullWidth: true, render: (v) => (
-                        <span className="font-bold text-xs line-clamp-2" style={{ color: C.ink2 }}>{parseTicketMessage(v) || 'Suporte de TI'}</span>
-                      )},
-                      { key: 'status', header: 'Status', render: (v) => <StatusBadge status={v} /> },
-                      { key: 'data_agenda', header: 'Data', render: (_v, row) => (
-                        <span className="text-sm whitespace-nowrap" style={{ color: C.ink2 }}>{formatTicketDate(row)}</span>
-                      )},
-                    ]}
-                    rows={filteredTickets}
-                    keyExtractor={(row) => row.id}
-                    cardTitle={(row) => parseTicketMessage(row.mensagem) || 'Suporte de TI'}
-                  />
-                </div>
+                <>
+                  <div className="p-2 md:p-4">
+                    <ResponsiveTable
+                      columns={[
+                        { key: 'id', header: 'ID', render: (v, row) => <span className="font-extrabold" style={{ color: C.accent }}>#{v || row.id}</span> },
+                        { key: 'mensagem', header: 'Assunto', fullWidth: true, asTitle: true, render: (v) => (
+                          <span className="font-bold text-xs line-clamp-2" style={{ color: C.ink2 }}>{parseTicketMessage(v) || 'Suporte de TI'}</span>
+                        )},
+                        { key: 'status', header: 'Status', render: (v) => <StatusBadge status={v} /> },
+                        { key: 'data_agenda', header: 'Data', render: (_v, row) => (
+                          <span className="text-sm whitespace-nowrap" style={{ color: C.ink2 }}>{formatTicketDate(row)}</span>
+                        )},
+                      ]}
+                      rows={paginaAtualTickets}
+                      keyExtractor={(row) => row.id}
+                      cardTitle={(row) => parseTicketMessage(row.mensagem) || 'Suporte de TI'}
+                    />
+                  </div>
+
+                  {totalPaginas > 1 && (
+                    <div className="flex items-center justify-between gap-3 border-t px-4 py-3 md:px-6" style={{ borderColor: C.line }}>
+                      <button
+                        type="button"
+                        disabled={pagina === 1}
+                        onClick={() => setPagina(p => p - 1)}
+                        className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border px-4 text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{ borderColor: C.line, color: C.ink2 }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_left</span>
+                        Anterior
+                      </button>
+                      <span className="text-xs font-bold" style={{ color: C.ink2 }}>
+                        Página {pagina} de {totalPaginas} · {sortedTickets.length} chamado{sortedTickets.length === 1 ? '' : 's'}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={pagina === totalPaginas}
+                        onClick={() => setPagina(p => p + 1)}
+                        className="inline-flex min-h-[44px] items-center gap-1 rounded-lg border px-4 text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{ borderColor: C.line, color: C.ink2 }}
+                      >
+                        Próxima
+                        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_right</span>
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

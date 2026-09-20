@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import { resolveNomeSetor } from '../utils/resolveSetor'
+import { useComunicados } from '../hooks/useComunicados'
+import { relativeTimeShort } from '../utils/relativeTime'
 import Sparkline from './common/Sparkline'
 import { Icons } from './common/Icons'
 import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs'
@@ -388,9 +390,12 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
 const AUTOPLAY_MS = 6000;
 
 function ComunicadoBanner({ setCurrentView, onActiveChange }) {
-  const [comunicados, setComunicados] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState(false);
+  const { comunicados: comunicadosBrutos, loaded, erro, recarregar } = useComunicados();
+  const loading = !loaded;
+  const comunicados = useMemo(
+    () => comunicadosBrutos.slice().sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)),
+    [comunicadosBrutos]
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -400,24 +405,6 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
   // vez de zerá-lo, e a barra no dot ativo (animation-play-state) congela junto.
   const restanteRef = useRef(AUTOPLAY_MS);
   const inicioRef = useRef(0);
-
-  const carregarComunicados = useCallback(() => {
-    setLoading(true);
-    setErro(false);
-    fetch('/api/comunicados')
-      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-      .then(d => {
-        if (d.sucesso && d.comunicados) {
-          setComunicados(d.comunicados.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)));
-        } else {
-          setErro(true);
-        }
-      })
-      .catch(() => setErro(true))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { carregarComunicados(); }, [carregarComunicados]);
 
   // Seleciona até 3 comunicados de alta prioridade (Urgente > Importante > recentes)
   const slides = useMemo(() => {
@@ -477,18 +464,6 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
 
   const TAG_DEFAULT = { chip: 'bg-primary text-white', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-slate-900 via-slate-800 to-stone-900' };
 
-  function relativeTime(dateStr) {
-    try {
-      const diff = Date.now() - new Date(dateStr).getTime();
-      const h = Math.floor(diff / 3600000);
-      if (h < 1) return 'agora';
-      if (h < 24) return `há ${h}h`;
-      const d = Math.floor(h / 24);
-      if (d < 7) return `${d}d`;
-      return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(dateStr));
-    } catch (_) { return ''; }
-  }
-
   function stripMarkdown(text) {
     if (!text) return '';
     return text
@@ -513,7 +488,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
         </p>
         <button
           type="button"
-          onClick={carregarComunicados}
+          onClick={recarregar}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-background"
         >
           <Icons.Refresh />
@@ -598,7 +573,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
               </span>
               {activeSlide.criado_em && (
                 <span className="font-mono text-[11px] font-semibold text-white/70 backdrop-blur-sm bg-black/30 px-2.5 py-1 rounded-full border border-white/10">
-                  {relativeTime(activeSlide.criado_em)}
+                  {relativeTimeShort(activeSlide.criado_em)}
                 </span>
               )}
             </motion.div>
@@ -674,24 +649,12 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
 
 function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
   const isTouchOnly = useTouchOnly();
-  const [comunicados, setComunicados] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState(false);
-
-  const carregarComunicados = useCallback(() => {
-    setLoading(true);
-    setErro(false);
-    fetch('/api/comunicados')
-      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-      .then(d => {
-        if (d.sucesso) setComunicados(d.comunicados.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)));
-        else setErro(true);
-      })
-      .catch(() => setErro(true))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { carregarComunicados(); }, [carregarComunicados]);
+  const { comunicados: comunicadosBrutos, loaded, erro, recarregar } = useComunicados();
+  const loading = !loaded;
+  const comunicados = useMemo(
+    () => comunicadosBrutos.slice().sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)),
+    [comunicadosBrutos]
+  );
 
   const TAG_STYLES = {
     Urgente:    { chip: 'bg-[var(--danger-soft)] text-[var(--danger-bento)]',   border: 'border-l-[var(--danger-bento)]' },
@@ -705,18 +668,6 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
 
   function tagFor(tipo) { return TAG_STYLES[tipo] || TAG_FALLBACK; }
   function tagLabel(tipo) { return TAG_LABELS[tipo] || (tipo || 'OK').toUpperCase(); }
-
-  function relativeTime(dateStr) {
-    try {
-      const diff = Date.now() - new Date(dateStr).getTime();
-      const h = Math.floor(diff / 3600000);
-      if (h < 1) return 'agora';
-      if (h < 24) return `há ${h}h`;
-      const d = Math.floor(h / 24);
-      if (d < 7) return `${d}d`;
-      return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(dateStr));
-    } catch (_) { return ''; }
-  }
 
   function formatFullDate(dateStr) {
     if (!dateStr) return '';
@@ -779,7 +730,7 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
               <p className="m-0 text-[13px] text-faint">Não foi possível carregar os comunicados.</p>
               <button
                 type="button"
-                onClick={carregarComunicados}
+                onClick={recarregar}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
               >
                 <Icons.Refresh />
@@ -824,7 +775,7 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
                 </div>
                 <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[140px]">
                   <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[10.5px] text-faint">
-                    {relativeTime(it.criado_em)}
+                    {relativeTimeShort(it.criado_em)}
                   </div>
                   <div title={it.departamento_autor || ''} className="truncate max-w-[140px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
                 </div>

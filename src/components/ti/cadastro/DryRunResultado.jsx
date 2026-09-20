@@ -42,6 +42,7 @@ function ListaProblemas({ titulo, itens, cor }) {
  */
 export default function DryRunResultado({ resultado }) {
     const [copiado, setCopiado] = useState(false);
+    const [erroCopia, setErroCopia] = useState(false);
     const [senhaRevelada, setSenhaRevelada] = useState(false);
 
     if (!resultado) return null;
@@ -53,7 +54,10 @@ export default function DryRunResultado({ resultado }) {
             setCopiado(true);
             setTimeout(() => setCopiado(false), 2000);
         } catch {
-            // Clipboard indisponível (ex.: contexto não-seguro) — sem crash, sem feedback.
+            // Clipboard indisponível (ex.: contexto não-seguro, sem HTTPS) — antes
+            // falhava calado; agora avisa em vez de fingir que copiou.
+            setErroCopia(true);
+            setTimeout(() => setErroCopia(false), 3000);
         }
     };
 
@@ -71,7 +75,7 @@ export default function DryRunResultado({ resultado }) {
                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     {valido ? 'check_circle' : 'error'}
                 </span>
-                {valido ? 'Simulação: nenhum erro encontrado' : `Simulação: ${erros.length} erro(s) encontrado(s)`}
+                {valido ? 'Simulação no IXC: nenhum erro encontrado' : `Simulação no IXC: ${erros.length} erro(s) encontrado(s)`}
             </header>
 
             <ListaProblemas titulo="Erros" itens={erros} cor="text-red-600 dark:text-red-400" />
@@ -109,7 +113,7 @@ export default function DryRunResultado({ resultado }) {
                     </div>
                     <button type="button" onClick={copiarJson} className={`${BTN_SECUNDARIO} mt-2 w-full`}>
                         <span className="material-symbols-outlined text-[16px]" aria-hidden="true">content_copy</span>
-                        {copiado ? 'Copiado!' : 'Copiar JSON do plano'}
+                        {copiado ? 'Copiado!' : erroCopia ? 'Não foi possível copiar' : 'Copiar JSON do plano'}
                     </button>
                 </div>
             )}

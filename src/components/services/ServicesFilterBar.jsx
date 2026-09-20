@@ -11,13 +11,23 @@ const CATEGORIAS = [
     { value: 'Streaming', label: 'Streamings', icon: 'play_circle' },
 ];
 
-const ORDENACOES = [
+// Planos tem campos próprios (vendas, valor mensal, velocidade); Serviços
+// Técnicos e Streaming não têm nenhum desses — cada aba passa seu próprio
+// conjunto de opções via prop `ordenacoes`, em vez de um único conjunto fixo
+// que só fazia sentido pra Planos (por isso a ordenação nem existia nas
+// outras duas abas antes).
+export const ORDENACOES_PLANOS = [
     { key: 'vendas_mes', label: 'Vendas', icon: 'trending_up' },
     { key: 'valor_mensal', label: 'Preço', icon: 'payments' },
     { key: 'velocidade', label: 'Velocidade', icon: 'speed' },
 ];
 
-export default function ServicesFilterBar({ filter, onFilterChange, counts, sortConfig, onSort, showSort }) {
+export const ORDENACOES_SERVICO = [
+    { key: 'service', label: 'Nome', icon: 'sort_by_alpha' },
+    { key: 'value', label: 'Preço', icon: 'payments' },
+];
+
+export default function ServicesFilterBar({ filter, onFilterChange, counts, sortConfig, onSort, showSort, ordenacoes = ORDENACOES_PLANOS }) {
     const C = useBentoTheme();
 
     // O segmento ativo era `bg-[var(--accent)] text-white`: no Cyber isso é branco
@@ -49,7 +59,7 @@ export default function ServicesFilterBar({ filter, onFilterChange, counts, sort
                 <div className="flex items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-hide">
                     <span className="mr-1 hidden text-sm font-medium text-faint sm:block">Ordenar por:</span>
                     <div className="inline-flex items-center gap-1 rounded-2xl bg-surface-raised p-1">
-                        {ORDENACOES.map(opt => {
+                        {ordenacoes.map(opt => {
                             const active = sortConfig.key === opt.key;
                             return (
                                 <button

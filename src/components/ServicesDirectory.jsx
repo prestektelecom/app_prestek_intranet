@@ -2,10 +2,9 @@ import React, { useState, useEffect, useMemo, useId, useRef } from 'react';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import TechBentoCard from './services/TechBentoCard';
 import StreamingBentoCard from './services/StreamingBentoCard';
-import PlanoComparador from './services/PlanoComparador';
 import ServiceDetailModal from './services/ServiceDetailModal';
 import ServicesHero from './services/ServicesHero';
-import ServicesFilterBar from './services/ServicesFilterBar';
+import ServicesFilterBar, { ORDENACOES_SERVICO } from './services/ServicesFilterBar';
 import PlansGrid from './services/PlansGrid';
 import RankingsSection from './services/RankingsSection';
 import PlanEditModal from './services/modals/PlanEditModal';
@@ -13,18 +12,30 @@ import TechServiceModal from './services/modals/TechServiceModal';
 import StreamingServiceModal from './services/modals/StreamingServiceModal';
 import { FALLBACK_TECH_SERVICES, FALLBACK_STREAMING_PACKAGES } from './services/seedData';
 import { CATEGORIA, classificarPlano, parseVelocidade } from '../utils/planTaxonomy';
-import { COMPARADOR_PLANOS_ATIVO } from '../config/features';
 
 const GRID = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
 
 // Serviços técnicos e streaming não são planos — as abas deles trocam o grid inteiro.
 const isAbaDeServico = (filter) => filter === 'Technical' || filter === 'Streaming';
 
-function AvisoDadosLocais() {
+// Antes só aparecia quando o fetch falhava de verdade (`errors.tech`) — mas o
+// state de tech/streaming já nasce com o seed local (`FALLBACK_TECH_SERVICES`)
+// e o grid renderiza ele sem esperar a resposta real, então durante toda a
+// janela normal de carregamento (e no caso raro do servidor responder OK com
+// lista vazia) o usuário via dado de mentira com a MESMA confiança visual do
+// dado real, sem aviso nenhum. `estado` cobre os 3 casos honestamente — nunca
+// mais afirma "falha" quando na verdade só está carregando.
+function AvisoDadosLocais({ estado }) {
+    const COPY = {
+        carregando: { icon: 'autorenew', girar: true, texto: 'Carregando dados atualizados do servidor — exibindo valores de referência por enquanto.' },
+        erro:       { icon: 'warning',   girar: false, texto: 'Exibindo dados locais; falha ao carregar do servidor.' },
+        vazio:      { icon: 'info',      girar: false, texto: 'O servidor não retornou nenhum item cadastrado; exibindo valores de referência.' },
+    };
+    const c = COPY[estado] || COPY.erro;
     return (
         <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-[var(--warning-soft)] px-4 py-3 text-[13px] font-semibold text-[var(--warning-bento)]">
-            <span className="material-symbols-outlined text-[18px]">warning</span>
-            Exibindo dados locais; falha ao carregar do servidor.
+            <span className={`material-symbols-outlined text-[18px] ${c.girar ? 'animate-spin' : ''}`}>{c.icon}</span>
+            {c.texto}
         </div>
     );
 }
@@ -38,7 +49,6 @@ export default function ServicesDirectory({ user, searchQuery }) {
     const [detailModal, setDetailModal] = useState({ isOpen: false, data: null, type: 'plan' });
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [plans, setPlans] = useState([]);
-    const [comparingIds, setComparingIds] = useState([]);
     const [statusCounts, setStatusCounts] = useState({});
     const [vendasPorDiaRaw, setVendasPorDiaRaw] = useState({});
     const [filter, setFilter] = useState('All');
@@ -164,17 +174,6 @@ export default function ServicesDirectory({ user, searchQuery }) {
     const showToast = (message, type = 'success') => {
         setToast({ show: true, message, type });
         setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
-    };
-
-    const handleToggleCompare = (id) => {
-        setComparingIds(prev => {
-            if (prev.includes(id)) return prev.filter(item => item !== id);
-            if (prev.length >= 3) {
-                showToast('Máximo de 3 planos para comparação', 'error');
-                return prev;
-            }
-            return [...prev, id];
-        });
     };
 
     const handleEditClick = (plan) => {
@@ -391,18 +390,40 @@ export default function ServicesDirectory({ user, searchQuery }) {
         });
     }, [plans, filter, termoBusca, sortConfig]);
 
-    // Comparação segue a lista completa, não a filtrada: um plano marcado não
-    // some do comparador só porque a busca mudou.
-    const comparingPlans = plans.filter(p => comparingIds.includes(p.id));
-
     const filtrarServicos = (lista, campos) => {
         if (!termoBusca) return lista;
         const t = termoBusca.toLowerCase().trim();
         return lista.filter(s => campos.some(c => String(s[c] ?? '').toLowerCase().includes(t)));
     };
 
-    const techFiltrados = filtrarServicos(techServices, ['service', 'value', 'deadline', 'payment']);
-    const streamingFiltrados = filtrarServicos(streamingServices, ['service', 'value', 'deadline']);
+    // `value` de Serviço Técnico/Streaming é texto livre ("R$ 50,00", "Custo de
+    // material", "Consulte o NOC") — extrai o primeiro número reconhecível;
+    // sem número nenhum vira 0, mesmo fallback já usado no sort de Planos logo
+    // acima, não um comportamento novo.
+    const parseValorServico = (v) => {
+        const m = String(v ?? '').match(/[\d.,]+/);
+        return m ? parseFloat(m[0].replace(/\./g, '').replace(',', '.')) || 0 : 0;
+    };
+
+    // Ordenação de Técnico/Streaming reaproveita o mesmo `sortConfig` de
+    // Planos, mas só reage às 2 chaves que essas abas de fato têm — enquanto
+    // `sortConfig.key` ainda for de Planos (ex.: 'vendas_mes'), a lista segue
+    // na ordem filtrada, sem erro nem sort incorreto.
+    const ordenarServicos = (lista) => {
+        if (sortConfig.key !== 'service' && sortConfig.key !== 'value') return lista;
+        const dir = sortConfig.direction === 'ascending' ? 1 : -1;
+        return [...lista].sort((a, b) => {
+            const [av, bv] = sortConfig.key === 'value'
+                ? [parseValorServico(a.value), parseValorServico(b.value)]
+                : [String(a.service ?? '').toLowerCase(), String(b.service ?? '').toLowerCase()];
+            if (av < bv) return -dir;
+            if (av > bv) return dir;
+            return 0;
+        });
+    };
+
+    const techFiltrados = ordenarServicos(filtrarServicos(techServices, ['service', 'value', 'deadline', 'payment']));
+    const streamingFiltrados = ordenarServicos(filtrarServicos(streamingServices, ['service', 'value', 'deadline']));
 
     const topPlans = useMemo(
         () => [...plans].sort((a, b) => (b.vendas_mes || 0) - (a.vendas_mes || 0)).slice(0, 3),
@@ -491,7 +512,8 @@ export default function ServicesDirectory({ user, searchQuery }) {
                     counts={planCounts}
                     sortConfig={sortConfig}
                     onSort={handleSort}
-                    showSort={!isAbaDeServico(filter)}
+                    showSort
+                    ordenacoes={isAbaDeServico(filter) ? ORDENACOES_SERVICO : undefined}
                 />
 
                 {!isAbaDeServico(filter) && (
@@ -504,9 +526,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
                             onEditClick={handleEditClick}
                             formatCurrency={formatCurrency}
                             maxVendas={maxVendas}
-                            onToggleCompare={COMPARADOR_PLANOS_ATIVO ? handleToggleCompare : undefined}
                             onSelect={(item, type) => setDetailModal({ isOpen: true, data: item, type })}
-                            comparingIds={comparingIds}
                         />
                     </div>
                 )}
@@ -525,14 +545,16 @@ export default function ServicesDirectory({ user, searchQuery }) {
                                         setEditingTechService({ id: null });
                                         setEditTechForm({ service: '', value: '', deadline: '', payment: '', icon: 'build' });
                                     }}
-                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#9A3412] to-[#EC7D23] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90"
+                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#7C2D12] to-[#C2410C] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">add</span>
                                     Novo Serviço
                                 </button>
                             )}
                         </div>
-                        {errors.tech && <AvisoDadosLocais />}
+                        {techServices === FALLBACK_TECH_SERVICES && (
+                            <AvisoDadosLocais estado={loading.tech ? 'carregando' : errors.tech ? 'erro' : 'vazio'} />
+                        )}
                         <div className={GRID}>
                             {techFiltrados.map(service => (
                                 <TechBentoCard
@@ -562,14 +584,16 @@ export default function ServicesDirectory({ user, searchQuery }) {
                                         setEditingStreamingService({ id: null });
                                         setEditStreamingForm({ service: '', value: '', deadline: 'Mensal', icon: 'play_circle' });
                                     }}
-                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#9A3412] to-[#EC7D23] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90"
+                                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#7C2D12] to-[#C2410C] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">add</span>
                                     Novo Pacote
                                 </button>
                             )}
                         </div>
-                        {errors.streaming && <AvisoDadosLocais />}
+                        {streamingServices === FALLBACK_STREAMING_PACKAGES && (
+                            <AvisoDadosLocais estado={loading.streaming ? 'carregando' : errors.streaming ? 'erro' : 'vazio'} />
+                        )}
                         <div className={GRID}>
                             {streamingFiltrados.map(service => (
                                 <StreamingBentoCard
@@ -668,16 +692,6 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 </div>
             )}
 
-            {COMPARADOR_PLANOS_ATIVO && (
-                <PlanoComparador
-                    plans={comparingPlans}
-                    isOpen={comparingIds.length >= 2 && !isAbaDeServico(filter)}
-                    onClear={() => setComparingIds([])}
-                    formatCurrency={formatCurrency}
-                    streamingServices={streamingServices}
-                />
-            )}
-
             {toast.show && (
                 <div className="fixed right-4 top-4 z-[9999] duration-300 animate-in fade-in slide-in-from-top-4 sm:right-8 sm:top-8">
                     <div className={`flex items-center gap-3 rounded-2xl border px-6 py-4 shadow-2xl backdrop-blur-md ${
@@ -699,8 +713,6 @@ export default function ServicesDirectory({ user, searchQuery }) {
                 data={detailModal.data}
                 type={detailModal.type}
                 formatCurrency={formatCurrency}
-                onToggleCompare={COMPARADOR_PLANOS_ATIVO ? handleToggleCompare : undefined}
-                isComparing={detailModal.data ? comparingIds.includes(detailModal.data.id) : false}
                 isAdmin={isAdmin}
                 maxVendas={maxVendas}
                 onEditClick={(item) => {

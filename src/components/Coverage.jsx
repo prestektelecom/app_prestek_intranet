@@ -254,7 +254,7 @@ export default function Coverage({ user }) {
                         ) : (
                             <>
                                 <CoverageMap
-                                    dados={dados}
+                                    dados={regioes}
                                     cidadeSelecionada={regiaoSelecionada}
                                     onCidadeClick={setRegiaoSelecionada}
                                 />
