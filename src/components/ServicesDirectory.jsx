@@ -535,8 +535,8 @@ export default function ServicesDirectory({ user, searchQuery }) {
                     <div>
                         <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
-                                <h2 className="font-display text-xl font-bold text-foreground">Serviços Técnicos</h2>
-                                <p className="mt-0.5 text-xs text-faint sm:text-sm">Valores, prazos e formas de pagamento</p>
+                                <h2 className="sr-only">Serviços Técnicos</h2>
+                                <p className="text-sm text-faint">Valores, prazos e formas de pagamento</p>
                             </div>
                             {isAdmin && (
                                 <button
@@ -574,8 +574,8 @@ export default function ServicesDirectory({ user, searchQuery }) {
                     <div>
                         <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
-                                <h2 className="font-display text-xl font-bold text-foreground">Pacotes de Streaming</h2>
-                                <p className="mt-0.5 text-xs text-faint sm:text-sm">Combos de entretenimento e valores mensais</p>
+                                <h2 className="sr-only">Pacotes de Streaming</h2>
+                                <p className="text-sm text-faint">Combos de entretenimento e valores mensais</p>
                             </div>
                             {isAdmin && (
                                 <button

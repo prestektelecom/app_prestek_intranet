@@ -1,0 +1,6 @@
+schema: spec-driven
+status: draft
+created: 2026-09-22
+title: Efeito de hover/focus nos ícones da Sidebar
+description: Ícones de navegação da Sidebar ganham transform+peso de traço no hover e no foco por teclado; hoje só a cor muda e o foco por Tab não aciona nada.
+specs: []

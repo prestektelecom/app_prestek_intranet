@@ -3808,8 +3808,26 @@ app.get('/api/geocodificar', async (req, res) => {
     }
 });
 
+// Reflete um salvar/remover de override no resultado já em cache, sem esperar o TTL
+// de 10 min nem bloquear o próximo request num rebuild completo (21 mil contratos).
+// O item é atualizado no lugar e o cache é marcado como expirado-mas-servível
+// (TTL 0 + janela SWR): o próximo GET devolve já o dado corrigido e dispara o rebuild
+// em background, que reconcilia o que só o rebuild sabe (ex.: voltar ao centroide
+// dos contratos quando um override de coordenada é removido).
+function aplicarOverrideNoCacheCobertura(cidadeIxcId, bairro, patch) {
+    const cached = cacheGet(CACHE_KEY_COB);
+    if (!cached.hit) return;
+    const alvo = normalizarBairro(bairro);
+    const dados = cached.data.dados.map(item =>
+        String(item.cidade_ixc_id) === String(cidadeIxcId) && normalizarBairro(item.bairro) === alvo
+            ? { ...item, ...patch }
+            : item
+    );
+    cacheSet(CACHE_KEY_COB, { ...cached.data, dados }, 0, TTL.COBERTURA_SWR_WINDOW);
+}
+
 // POST /api/cobertura-ixc/override — salva ou atualiza os campos manuais de uma entrada IXC
-app.post('/api/cobertura-ixc/override', async (req, res) => {
+app.post('/api/cobertura-ixc/override', adminAuth, async (req, res) => {
     const { cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, latitude, longitude } = req.body;
     if (!cidade_ixc_id || !bairro) {
         return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
@@ -3847,10 +3865,53 @@ app.post('/api/cobertura-ixc/override', async (req, res) => {
             status || 'Ativo', percentual_cobertura ?? 100,
             lat, lng
         ]);
-        return res.json({ sucesso: true, dado: result.rows[0] });
+        const salvo = result.rows[0];
+        aplicarOverrideNoCacheCobertura(cidade_ixc_id, bairro, {
+            id_local: salvo.id,
+            tecnologia: salvo.tecnologia,
+            velocidade_maxima: salvo.velocidade_maxima,
+            status: salvo.status,
+            percentual_cobertura: salvo.percentual_cobertura,
+            ...(salvo.latitude != null && salvo.longitude != null
+                ? { latitude: parseFloat(salvo.latitude), longitude: parseFloat(salvo.longitude) }
+                : {}),
+            tem_override: true,
+        });
+        return res.json({ sucesso: true, dado: salvo });
     } catch (err) {
         console.error('Erro ao salvar override:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro ao salvar configuração.' });
+    }
+});
+
+// DELETE /api/cobertura-ixc/override?cidade_ixc_id=…&bairro=… — remove a configuração manual
+// de uma região. Cidade/bairro/contratos vêm do IXC e não são tocados: a região continua
+// existindo, só volta ao estado "ainda não definida".
+app.delete('/api/cobertura-ixc/override', adminAuth, async (req, res) => {
+    const { cidade_ixc_id, bairro } = req.query;
+    if (!cidade_ixc_id || !bairro) {
+        return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
+    }
+    try {
+        const result = await pool.query(
+            'DELETE FROM cobertura_cidades WHERE cidade_ixc_id = $1 AND bairro = $2 RETURNING id',
+            [String(cidade_ixc_id), bairro]
+        );
+        if (result.rowCount === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Esta região não tem configuração manual.' });
+        }
+        aplicarOverrideNoCacheCobertura(cidade_ixc_id, bairro, {
+            id_local: null,
+            tecnologia: null,
+            velocidade_maxima: null,
+            status: null,
+            percentual_cobertura: null,
+            tem_override: false,
+        });
+        return res.json({ sucesso: true });
+    } catch (err) {
+        console.error('Erro ao remover override:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao remover configuração.' });
     }
 });
 

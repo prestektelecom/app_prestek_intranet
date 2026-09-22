@@ -48,6 +48,12 @@ function GroupLabel({ C, collapsed, children, showSeparator = true }) {
 
 function NavRow({ C, collapsed, id, icon, label, active, badge, badgeCores, onClick }) {
   const [hover, setHover] = useState(false);
+  const [focused, setFocused] = useState(false);
+  // Unifica hover de mouse e foco de teclado: sem isso, Tab só ganhava o
+  // anel :focus-visible global (chrome-keyboard-access), nunca o mesmo
+  // tratamento de fundo/cor/ícone que o mouse já tinha — ver design.md da
+  // change efeito-de-hover-focus-nos-icones-da-sidebar.
+  const emphasized = hover || focused;
   const IconComponent = Icons[icon];
   const badgeLabel = badge > 9 ? '9+' : badge;
   // Item ativo: badge no accent com `onAccent` (branco sobre laranja dá 2,8:1
@@ -62,6 +68,8 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, badgeCores, onCl
       onClick={() => onClick(id)}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       aria-current={active ? 'page' : undefined}
       title={collapsed ? label : undefined}
       style={{
@@ -70,14 +78,18 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, badgeCores, onCl
         padding: '9px 12px', borderRadius: 8, cursor: 'pointer', width: '100%', textAlign: 'left',
         // Item ativo como o DESIGN.md documenta (nav-item-active): fundo
         // Laranja Suave, texto no laranja de texto, ícone no accent.
-        background: active ? C.accentSoft : (hover ? C.surface : 'transparent'),
-        color: active ? C.accentDark : (hover ? C.ink : C.ink2),
+        background: active ? C.accentSoft : (emphasized ? C.surface : 'transparent'),
+        color: active ? C.accentDark : (emphasized ? C.ink : C.ink2),
         border: 'none',
         fontWeight: active ? 700 : 500, fontSize: 13, fontFamily: FONT,
         transition: 'background .12s, color .12s',
       }}
     >
-      <span style={{ display: 'flex', color: active || hover ? C.accent : C.ink2 }} aria-hidden="true">
+      <span
+        className={`navrow-icon${emphasized ? ' is-boosted' : ''}`}
+        style={{ display: 'flex', color: active || emphasized ? C.accent : C.ink2 }}
+        aria-hidden="true"
+      >
         {IconComponent && <IconComponent />}
       </span>
       {/* No colapsado o rótulo e a contagem continuam no nome acessível. */}
@@ -333,6 +345,19 @@ export default function Sidebar({ currentView, setCurrentView, user, profile, se
         @keyframes popup-in {
           from { opacity: 0; transform: scale(0.95) translateY(4px); }
           to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        /* Ícone de cada item da Sidebar: escala + peso do traço no hover/foco.
+           Alvo é o <svg> em si (transform-box: fill-box centra a escala nele,
+           não no viewport da Sidebar) — só transform + atributo de traço,
+           nunca width/height, para não deslocar layout dos itens vizinhos. */
+        .navrow-icon svg {
+          transition: transform 160ms ease-out, stroke-width 160ms ease-out;
+          transform-box: fill-box;
+          transform-origin: center;
+        }
+        .navrow-icon.is-boosted svg {
+          transform: scale(1.1);
+          stroke-width: 2;
         }
       `}</style>
     </aside>
