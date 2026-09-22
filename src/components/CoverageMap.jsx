@@ -5,6 +5,7 @@ import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { corDoStatus, chaveRegiao } from './coverage/constants';
+import { adicionarCamadaBase } from './map/baseLayer';
 
 // Fix ícones padrão do Leaflet com Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -212,13 +213,13 @@ export default function CoverageMap({ dados, cidadeSelecionada, onCidadeClick })
 
         const map = L.map(containerRef.current, {
             center: [-10.5, -36.5], zoom: 8,
+            // A camada vetorial (MapLibre) não informa maxZoom ao Leaflet, e o
+            // markercluster lança "Map has no maxZoom specified" sem isso.
+            maxZoom: 19,
             zoomControl: false, scrollWheelZoom: true,
         });
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-            maxZoom: 19,
-        }).addTo(map);
+        adicionarCamadaBase(map);
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 

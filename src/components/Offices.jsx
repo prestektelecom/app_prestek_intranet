@@ -561,13 +561,12 @@ export default function Offices({ user, setCurrentView }) {
     // Inicializa o mapa uma única vez
     useEffect(() => {
         if (!containerRef.current || mapRef.current || offices.length === 0) return;
-        import('leaflet').then(({ default: L }) => {
+        Promise.all([import('leaflet'), import('./map/baseLayer')]).then(([{ default: L }, { adicionarCamadaBase }]) => {
+            if (!containerRef.current || mapRef.current) return;
             const bounds = L.latLngBounds(offices.map(o => [o.lat, o.lng]));
-            const map = L.map(containerRef.current, { zoomControl: true, scrollWheelZoom: true, preferCanvas: true });
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                maxZoom: 18,
-            }).addTo(map);
+            // maxZoom no próprio mapa: a camada vetorial (MapLibre) não o informa ao Leaflet.
+            const map = L.map(containerRef.current, { zoomControl: true, scrollWheelZoom: true, preferCanvas: true, maxZoom: 18 });
+            adicionarCamadaBase(map);
             mapRef.current = { map, L };
             requestAnimationFrame(() => {
                 map.invalidateSize();

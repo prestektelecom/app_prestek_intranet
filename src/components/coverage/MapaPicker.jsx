@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { adicionarCamadaBase } from '../map/baseLayer';
 
 // Mini-mapa de seleção de coordenadas. Extraído de Coverage.jsx sem mudança de
 // comportamento — só saiu do arquivo de 740 linhas.
@@ -15,11 +16,8 @@ export default function MapaPicker({ lat, lng, onChange, altura = 240 }) {
 
         const center = (lat && lng) ? [lat, lng] : [-10.5, -36.5];
         const zoom = (lat && lng) ? 14 : 9;
-        const map = L.map(containerRef.current, { center, zoom, zoomControl: true });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-            maxZoom: 19,
-        }).addTo(map);
+        const map = L.map(containerRef.current, { center, zoom, zoomControl: true, maxZoom: 19 });
+        adicionarCamadaBase(map);
 
         let marker = null;
         const prender = (m) => {
