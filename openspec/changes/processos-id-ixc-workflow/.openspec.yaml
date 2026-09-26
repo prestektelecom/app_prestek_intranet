@@ -1,0 +1,7 @@
+schema: spec-driven
+status: draft
+created: 2026-09-25
+title: Processos ID IXC Workflow
+description: ID do processo na listagem passa a vir do assunto IXC resolvido via wfl_tarefa/wfl_parametro_oss
+specs:
+  - processos-vinculo-ixc-workflow
