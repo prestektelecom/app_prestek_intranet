@@ -61,16 +61,52 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState('');
     const [mapaAberto, setMapaAberto] = useState(!!(registro.latitude && registro.longitude));
+    const [confirmandoRemocao, setConfirmandoRemocao] = useState(false);
+    const [removendo, setRemovendo] = useState(false);
     const dialogRef = useRef(null);
+    const cancelarRemocaoRef = useRef(null);
+    // Só existe algo a remover se a região já tem configuração manual salva.
+    const podeRemover = !!registro.tem_override;
 
     // Esc fecha: antes só o X e o Cancelar fechavam, o que reprova em
-    // "navegação por teclado" da WCAG 2.1 AA para diálogos.
+    // "navegação por teclado" da WCAG 2.1 AA para diálogos. Com a confirmação
+    // de remoção aberta, Esc desfaz só a confirmação — nunca o modal inteiro.
     useEffect(() => {
-        const onKey = (e) => { if (e.key === 'Escape') onFechar(); };
+        const onKey = (e) => {
+            if (e.key !== 'Escape') return;
+            if (confirmandoRemocao) { if (!removendo) setConfirmandoRemocao(false); return; }
+            onFechar();
+        };
         document.addEventListener('keydown', onKey);
-        dialogRef.current?.focus();
         return () => document.removeEventListener('keydown', onKey);
-    }, [onFechar]);
+    }, [onFechar, confirmandoRemocao, removendo]);
+
+    useEffect(() => { dialogRef.current?.focus(); }, []);
+
+    // Foco na opção não-destrutiva ao abrir a confirmação.
+    useEffect(() => {
+        if (confirmandoRemocao) cancelarRemocaoRef.current?.focus();
+    }, [confirmandoRemocao]);
+
+    const handleRemover = async () => {
+        setRemovendo(true);
+        setErro('');
+        try {
+            const params = new URLSearchParams({
+                cidade_ixc_id: String(registro.cidade_ixc_id),
+                bairro: registro.bairro,
+            });
+            const resp = await fetch(`/api/cobertura-ixc/override?${params}`, { method: 'DELETE' });
+            const dados = await resp.json();
+            if (!dados.sucesso) throw new Error(dados.erro || 'Erro desconhecido');
+            onSalvar();
+        } catch (e) {
+            setErro(e.message);
+            setConfirmandoRemocao(false);
+        } finally {
+            setRemovendo(false);
+        }
+    };
 
     const handleChange = (campo, valor) => {
         setForm(f => ({ ...f, [campo]: valor }));
@@ -297,23 +333,78 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                         </p>
                     )}
 
-                    <div className="-mx-5 -mb-4 flex justify-end gap-3 border-t border-border bg-background px-5 py-4">
-                        <button
-                            type="button"
-                            onClick={onFechar}
-                            className="cursor-pointer rounded-xl border border-border bg-surface px-4 py-2.5 text-[13px] font-semibold text-faint transition-all hover:bg-surface-raised active:scale-[0.98]"
+                    {confirmandoRemocao ? (
+                        <div
+                            role="alertdialog"
+                            aria-labelledby="ov-remover-titulo"
+                            aria-describedby="ov-remover-desc"
+                            className="-mx-5 -mb-4 flex flex-col gap-3 border-t border-border bg-[var(--danger-soft)] px-5 py-4"
                         >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={salvando}
-                            className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#7C2D12] to-[#C2410C] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] active:scale-[0.98] disabled:opacity-60"
-                        >
-                            {salvando && <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>}
-                            {salvando ? 'Salvando...' : 'Salvar configuração'}
-                        </button>
-                    </div>
+                            <div className="flex items-start gap-2.5">
+                                <span className="material-symbols-outlined mt-px text-[20px] text-[var(--danger-strong)]">delete</span>
+                                <div className="min-w-0">
+                                    <p id="ov-remover-titulo" className="text-[14px] font-bold text-[var(--danger-strong)]">
+                                        Remover a configuração de {registro.bairro}?
+                                    </p>
+                                    <p id="ov-remover-desc" className="mt-0.5 text-[13px] leading-relaxed text-foreground">
+                                        Tecnologia, status, percentual e a localização definida à mão serão apagados.
+                                        Os {registro.total_contratos} contrato(s) do IXC não são afetados.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    ref={cancelarRemocaoRef}
+                                    type="button"
+                                    onClick={() => setConfirmandoRemocao(false)}
+                                    disabled={removendo}
+                                    className="min-h-[44px] cursor-pointer rounded-xl border border-border bg-surface px-4 text-[13px] font-semibold text-foreground transition-all hover:bg-surface-raised focus:outline-none focus:ring-2 focus:ring-[var(--accent)] active:scale-[0.98] disabled:opacity-60"
+                                >
+                                    Manter
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleRemover}
+                                    disabled={removendo}
+                                    className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl bg-[var(--danger-fill)] px-5 text-[13px] font-semibold text-[var(--on-danger)] transition-all hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] active:scale-[0.98] disabled:opacity-60"
+                                >
+                                    {removendo && <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>}
+                                    {removendo ? 'Removendo...' : 'Remover configuração'}
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="-mx-5 -mb-4 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background px-5 py-4">
+                            {podeRemover ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setConfirmandoRemocao(true)}
+                                    disabled={salvando}
+                                    className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold text-[var(--danger-strong)] transition-all hover:bg-[var(--danger-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-60"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                    Remover
+                                </button>
+                            ) : <span />}
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={onFechar}
+                                    className="cursor-pointer rounded-xl border border-border bg-surface px-4 py-2.5 text-[13px] font-semibold text-faint transition-all hover:bg-surface-raised active:scale-[0.98]"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={salvando}
+                                    className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-[#7C2D12] to-[#C2410C] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(236,125,35,0.25)] transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] active:scale-[0.98] disabled:opacity-60"
+                                >
+                                    {salvando && <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>}
+                                    {salvando ? 'Salvando...' : 'Salvar configuração'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </form>
             </div>
         </div>

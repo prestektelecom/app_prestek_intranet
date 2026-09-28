@@ -22,7 +22,11 @@ CREATE TABLE IF NOT EXISTS pacotes_streaming (
 );
 
 -- Dados iniciais - Serviços Técnicos
-INSERT INTO servicos_tecnicos (servico, valor, prazo, pagamento, icon, is_free, is_special) VALUES
+-- Só semeia com a tabela vazia: `run.js` reexecuta todas as migrations a cada rodada e estas
+-- tabelas não têm chave única além do `id` identity, então `ON CONFLICT DO NOTHING`
+-- nunca dispara e cada rodada duplicava as linhas.
+INSERT INTO servicos_tecnicos (servico, valor, prazo, pagamento, icon, is_free, is_special)
+SELECT * FROM (VALUES
 ('Instalação de roteador', 'R$ 50,00', 'Até 5 dias úteis', 'À vista ou 2x Boleto', 'router', false, false),
 ('Mudar roteador de local', 'R$ 30,00 + custo material', 'Até 5 dias úteis', 'À vista ou 2x Boleto', 'swap_horiz', false, false),
 ('Configurar roteador', 'R$ 50,00', 'Até 5 dias úteis', 'À vista ou 2x Boleto', 'settings', false, false),
@@ -36,10 +40,12 @@ INSERT INTO servicos_tecnicos (servico, valor, prazo, pagamento, icon, is_free, 
 ('Alteração de senha WI-FI', '', 'Até 5 dias', '', 'wifi_lock', true, false),
 ('Trocar Comodato', 'R$ 50,00', 'Até 5 dias', 'À vista ou 2x Boleto', 'swap_vertical_circle', false, false),
 ('Solicitação de Comodato', 'R$ 50,00', 'Até 5 dias', 'À vista ou 2x Boleto', 'add_task', false, false)
-ON CONFLICT DO NOTHING;
+) AS seed(servico, valor, prazo, pagamento, icon, is_free, is_special)
+WHERE NOT EXISTS (SELECT 1 FROM servicos_tecnicos);
 
--- Dados iniciais - Pacotes de Streaming
-INSERT INTO pacotes_streaming (servico, valor, periodicidade, icon) VALUES
+-- Dados iniciais - Pacotes de Streaming (mesma regra: só com a tabela vazia)
+INSERT INTO pacotes_streaming (servico, valor, periodicidade, icon)
+SELECT * FROM (VALUES
 ('LEVEDUCA', 'R$ 6,00', 'Mensal', 'school'),
 ('ITTV SMART MINI 32c', 'R$ 10,00', 'Mensal', 'smart_display'),
 ('ITTV SMART TOTAL 108c', 'R$ 20,00', 'Mensal', 'smart_display'),
@@ -48,7 +54,8 @@ INSERT INTO pacotes_streaming (servico, valor, periodicidade, icon) VALUES
 ('LEVEDUCA+WATCH+PARAMOUNT+MAX', 'R$ 39,90', 'Mensal', 'movie'),
 ('LEVEDUCA+WATCH+PARAMOUNT+MAX+ITTV 108c', 'R$ 66,00', 'Mensal', 'movie'),
 ('LEVEDUCA+WATCH+PARAMOUNT+MAX+PREMIERE+ITTV 102c', 'R$ 126,00', 'Mensal', 'sports_soccer')
-ON CONFLICT DO NOTHING;
+) AS seed(servico, valor, periodicidade, icon)
+WHERE NOT EXISTS (SELECT 1 FROM pacotes_streaming);
 
 -- Índices
 CREATE INDEX IF NOT EXISTS idx_servicos_tecnicos_id ON servicos_tecnicos(id);

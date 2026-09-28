@@ -11,7 +11,7 @@ import fs from 'fs'
 import { cacheGet, cacheSet, cacheInvalidate, TTL } from './cache.js'
 // Cliente IXC — fetchIXC/ixcHeaders/paginarIXC saíram daqui para services/ixc.js
 // sem alteração de comportamento; ixcListar é novo.
-import { fetchIXC, ixcHeaders, paginarIXC, ixcListar } from './services/ixc.js'
+import { fetchIXC, ixcHeaders, paginarIXC, ixcListar, listarWflProcessosAtivos, resolverAssuntoWorkflow } from './services/ixc.js'
 import { carregarTaxonomias } from './services/ixcTaxonomias.js'
 import { extrairTextoPdf } from './services/extrairTextoPdf.js'
 import { extrairCampos } from './services/fichaParser.js'
@@ -3808,8 +3808,26 @@ app.get('/api/geocodificar', async (req, res) => {
     }
 });
 
+// Reflete um salvar/remover de override no resultado já em cache, sem esperar o TTL
+// de 10 min nem bloquear o próximo request num rebuild completo (21 mil contratos).
+// O item é atualizado no lugar e o cache é marcado como expirado-mas-servível
+// (TTL 0 + janela SWR): o próximo GET devolve já o dado corrigido e dispara o rebuild
+// em background, que reconcilia o que só o rebuild sabe (ex.: voltar ao centroide
+// dos contratos quando um override de coordenada é removido).
+function aplicarOverrideNoCacheCobertura(cidadeIxcId, bairro, patch) {
+    const cached = cacheGet(CACHE_KEY_COB);
+    if (!cached.hit) return;
+    const alvo = normalizarBairro(bairro);
+    const dados = cached.data.dados.map(item =>
+        String(item.cidade_ixc_id) === String(cidadeIxcId) && normalizarBairro(item.bairro) === alvo
+            ? { ...item, ...patch }
+            : item
+    );
+    cacheSet(CACHE_KEY_COB, { ...cached.data, dados }, 0, TTL.COBERTURA_SWR_WINDOW);
+}
+
 // POST /api/cobertura-ixc/override — salva ou atualiza os campos manuais de uma entrada IXC
-app.post('/api/cobertura-ixc/override', async (req, res) => {
+app.post('/api/cobertura-ixc/override', adminAuth, async (req, res) => {
     const { cidade_ixc_id, cidade, estado, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura, latitude, longitude } = req.body;
     if (!cidade_ixc_id || !bairro) {
         return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
@@ -3847,10 +3865,53 @@ app.post('/api/cobertura-ixc/override', async (req, res) => {
             status || 'Ativo', percentual_cobertura ?? 100,
             lat, lng
         ]);
-        return res.json({ sucesso: true, dado: result.rows[0] });
+        const salvo = result.rows[0];
+        aplicarOverrideNoCacheCobertura(cidade_ixc_id, bairro, {
+            id_local: salvo.id,
+            tecnologia: salvo.tecnologia,
+            velocidade_maxima: salvo.velocidade_maxima,
+            status: salvo.status,
+            percentual_cobertura: salvo.percentual_cobertura,
+            ...(salvo.latitude != null && salvo.longitude != null
+                ? { latitude: parseFloat(salvo.latitude), longitude: parseFloat(salvo.longitude) }
+                : {}),
+            tem_override: true,
+        });
+        return res.json({ sucesso: true, dado: salvo });
     } catch (err) {
         console.error('Erro ao salvar override:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro ao salvar configuração.' });
+    }
+});
+
+// DELETE /api/cobertura-ixc/override?cidade_ixc_id=…&bairro=… — remove a configuração manual
+// de uma região. Cidade/bairro/contratos vêm do IXC e não são tocados: a região continua
+// existindo, só volta ao estado "ainda não definida".
+app.delete('/api/cobertura-ixc/override', adminAuth, async (req, res) => {
+    const { cidade_ixc_id, bairro } = req.query;
+    if (!cidade_ixc_id || !bairro) {
+        return res.status(400).json({ sucesso: false, erro: 'cidade_ixc_id e bairro são obrigatórios.' });
+    }
+    try {
+        const result = await pool.query(
+            'DELETE FROM cobertura_cidades WHERE cidade_ixc_id = $1 AND bairro = $2 RETURNING id',
+            [String(cidade_ixc_id), bairro]
+        );
+        if (result.rowCount === 0) {
+            return res.status(404).json({ sucesso: false, erro: 'Esta região não tem configuração manual.' });
+        }
+        aplicarOverrideNoCacheCobertura(cidade_ixc_id, bairro, {
+            id_local: null,
+            tecnologia: null,
+            velocidade_maxima: null,
+            status: null,
+            percentual_cobertura: null,
+            tem_override: false,
+        });
+        return res.json({ sucesso: true });
+    } catch (err) {
+        console.error('Erro ao remover override:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro ao remover configuração.' });
     }
 });
 
@@ -4132,6 +4193,15 @@ function shapeProcesso(row) {
         ultimaAtualizacao: row.ultima_atualizacao
             ? new Date(row.ultima_atualizacao).toISOString().split('T')[0]
             : null,
+        // Vínculo opcional com um processo de workflow do IXC (ver
+        // services/ixc.js#resolverAssuntoWorkflow) — todos null quando o
+        // processo nunca foi vinculado. ixcAssuntoId é o que a listagem
+        // exibe no lugar do `id` interno quando presente.
+        ixcWflProcessoId: row.ixc_wfl_processo_id,
+        ixcWflProcessoNome: row.ixc_wfl_processo_nome,
+        ixcAssuntoId: row.ixc_assunto_id,
+        ixcAssuntoNome: row.ixc_assunto_nome,
+        ixcResolvidoEm: row.ixc_resolvido_em ? new Date(row.ixc_resolvido_em).toISOString() : null,
     };
 }
 
@@ -4141,6 +4211,50 @@ app.get('/api/processos', async (req, res) => {
         res.json(rows.map(shapeProcesso));
     } catch (e) {
         console.error('GET /api/processos:', e.message);
+        res.status(500).json({ erro: 'Erro interno do servidor.' });
+    }
+});
+
+// Lista de wfl_processo ativos do IXC, para o seletor "Processo do IXC" no
+// formulário — admin-only porque é uma chamada real ao IXC (mesmo cuidado
+// já aplicado às outras rotas que tocam o IXC direto).
+app.get('/api/processos/ixc/wfl-processos', adminAuth, async (req, res) => {
+    try {
+        const lista = await listarWflProcessosAtivos();
+        res.json(lista);
+    } catch (e) {
+        console.error('GET /api/processos/ixc/wfl-processos:', e.message);
+        res.status(500).json({ erro: 'Não foi possível carregar os processos do IXC agora.' });
+    }
+});
+
+// Reprocessa a resolução do assunto usando o wfl_processo já vinculado —
+// para quando a configuração de workflow mudar do lado do IXC depois do
+// vínculo inicial (ver design.md D2: resolução é sob demanda, nunca ao
+// vivo a cada leitura).
+app.post('/api/processos/:id/ixc/atualizar', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const atualRes = await pool.query('SELECT ixc_wfl_processo_id FROM processos WHERE id=$1', [id]);
+        if (!atualRes.rows.length) return res.status(404).json({ erro: 'Processo não encontrado.' });
+        const idWfl = atualRes.rows[0].ixc_wfl_processo_id;
+        if (!idWfl) {
+            return res.status(400).json({ erro: 'Este processo não está vinculado a um processo do IXC.' });
+        }
+        try {
+            const { idAssunto, nomeAssunto } = await resolverAssuntoWorkflow(idWfl);
+            const { rows } = await pool.query(
+                `UPDATE processos SET ixc_assunto_id=$1, ixc_assunto_nome=$2, ixc_resolvido_em=$3 WHERE id=$4 RETURNING *`,
+                [idAssunto, nomeAssunto, new Date(), id]
+            );
+            res.json(shapeProcesso(rows[0]));
+        } catch (e) {
+            const mensagem = e.curado ? e.message : 'Não foi possível atualizar o vínculo com o IXC agora. Tente novamente.';
+            if (!e.curado) console.error('POST /api/processos/:id/ixc/atualizar (resolverAssuntoWorkflow):', e.message);
+            res.status(502).json({ erro: mensagem });
+        }
+    } catch (e) {
+        console.error('POST /api/processos/:id/ixc/atualizar:', e.message);
         res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 });
@@ -4166,26 +4280,52 @@ async function proximoIdProcesso(categoriaId) {
 }
 
 app.post('/api/processos', adminAuth, async (req, res) => {
-    const { nome, descricao, categoria, status, versao, docUrl, responsavel, etapas, tempoEstimado, tags, ultimaAtualizacao } = req.body;
+    const { nome, descricao, categoria, status, versao, docUrl, responsavel, etapas, tempoEstimado, tags, ultimaAtualizacao, ixcWflProcessoId, ixcWflProcessoNome } = req.body;
     if (!nome || !descricao || !categoria) {
         return res.status(400).json({ erro: 'Nome, descrição e categoria são obrigatórios.' });
     }
     try {
         const id = await proximoIdProcesso(categoria);
+
+        // Resolução do vínculo IXC (ver design.md D2/D3) — feita aqui, uma
+        // vez, no momento do salvamento. Falha na resolução NUNCA impede o
+        // Processo de ser salvo; só fica sem o assunto resolvido, com o
+        // motivo sinalizado separado em `erroVinculo` na resposta (nunca um
+        // `sucesso: true` genérico mascarando a falha parcial).
+        const vinculo = { id: null, nome: null, assuntoId: null, assuntoNome: null, resolvidoEm: null };
+        let erroVinculo = null;
+        if (ixcWflProcessoId) {
+            vinculo.id = Number(ixcWflProcessoId);
+            vinculo.nome = ixcWflProcessoNome || null;
+            try {
+                const { idAssunto, nomeAssunto } = await resolverAssuntoWorkflow(vinculo.id);
+                vinculo.assuntoId = idAssunto;
+                vinculo.assuntoNome = nomeAssunto;
+                vinculo.resolvidoEm = new Date();
+            } catch (e) {
+                erroVinculo = e.curado ? e.message : 'Não foi possível vincular este processo ao IXC agora. Tente novamente.';
+                if (!e.curado) console.error('POST /api/processos (resolverAssuntoWorkflow):', e.message);
+            }
+        }
+
         const { rows } = await pool.query(
             `INSERT INTO processos
                 (id, nome, descricao, categoria, status, versao, doc_url,
                  responsavel_nome, responsavel_setor, responsavel_funcionario_id,
-                 etapas, tempo_estimado, tags, ultima_atualizacao)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+                 etapas, tempo_estimado, tags, ultima_atualizacao,
+                 ixc_wfl_processo_id, ixc_wfl_processo_nome, ixc_assunto_id, ixc_assunto_nome, ixc_resolvido_em)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
              RETURNING *`,
             [
                 id, nome, descricao, categoria, status || 'ativo', versao || '1.0', docUrl || null,
                 responsavel?.nome || null, responsavel?.setor || null, responsavel?.funcionario_id || null,
                 etapas ?? null, tempoEstimado || null, tags || [], ultimaAtualizacao || null,
+                vinculo.id, vinculo.nome, vinculo.assuntoId, vinculo.assuntoNome, vinculo.resolvidoEm,
             ]
         );
-        res.status(201).json(shapeProcesso(rows[0]));
+        const resposta = shapeProcesso(rows[0]);
+        if (erroVinculo) resposta.erroVinculo = erroVinculo;
+        res.status(201).json(resposta);
     } catch (e) {
         console.error('POST /api/processos:', e.message);
         res.status(500).json({ erro: 'Erro interno do servidor.' });
@@ -4194,26 +4334,67 @@ app.post('/api/processos', adminAuth, async (req, res) => {
 
 app.put('/api/processos/:id', adminAuth, async (req, res) => {
     const { id } = req.params;
-    const { nome, descricao, categoria, status, versao, docUrl, responsavel, etapas, tempoEstimado, tags, ultimaAtualizacao } = req.body;
+    const { nome, descricao, categoria, status, versao, docUrl, responsavel, etapas, tempoEstimado, tags, ultimaAtualizacao, ixcWflProcessoId, ixcWflProcessoNome } = req.body;
     if (!nome || !descricao || !categoria) {
         return res.status(400).json({ erro: 'Nome, descrição e categoria são obrigatórios.' });
     }
     try {
+        const atualRes = await pool.query(
+            'SELECT ixc_wfl_processo_id, ixc_assunto_id, ixc_assunto_nome, ixc_resolvido_em FROM processos WHERE id=$1',
+            [id]
+        );
+        if (!atualRes.rows.length) return res.status(404).json({ erro: 'Processo não encontrado.' });
+        const atual = atualRes.rows[0];
+
+        // Mesma lógica de resolução do POST, mas só reprocessa a cadeia de
+        // workflow quando o vínculo de fato mudou — editar qualquer outro
+        // campo do Processo não deveria disparar 3-4 chamadas ao IXC à toa.
+        const novoWflId = ixcWflProcessoId ? Number(ixcWflProcessoId) : null;
+        const vinculo = {
+            id: novoWflId,
+            nome: novoWflId ? (ixcWflProcessoNome || null) : null,
+            assuntoId: novoWflId ? atual.ixc_assunto_id : null,
+            assuntoNome: novoWflId ? atual.ixc_assunto_nome : null,
+            resolvidoEm: novoWflId ? atual.ixc_resolvido_em : null,
+        };
+        let erroVinculo = null;
+        const mudouVinculo = novoWflId !== (atual.ixc_wfl_processo_id ?? null);
+        if (novoWflId && mudouVinculo) {
+            try {
+                const { idAssunto, nomeAssunto } = await resolverAssuntoWorkflow(novoWflId);
+                vinculo.assuntoId = idAssunto;
+                vinculo.assuntoNome = nomeAssunto;
+                vinculo.resolvidoEm = new Date();
+            } catch (e) {
+                erroVinculo = e.curado ? e.message : 'Não foi possível vincular este processo ao IXC agora. Tente novamente.';
+                if (!e.curado) console.error('PUT /api/processos/:id (resolverAssuntoWorkflow):', e.message);
+                // Mantém o assunto já resolvido antes (se havia) — a
+                // tentativa de trocar de vínculo falhou, não apaga dado bom.
+                vinculo.assuntoId = atual.ixc_assunto_id;
+                vinculo.assuntoNome = atual.ixc_assunto_nome;
+                vinculo.resolvidoEm = atual.ixc_resolvido_em;
+            }
+        }
+
         const { rows } = await pool.query(
             `UPDATE processos SET
                 nome=$1, descricao=$2, categoria=$3, status=$4, versao=$5, doc_url=$6,
                 responsavel_nome=$7, responsavel_setor=$8, responsavel_funcionario_id=$9,
-                etapas=$10, tempo_estimado=$11, tags=$12, ultima_atualizacao=$13
-             WHERE id=$14 RETURNING *`,
+                etapas=$10, tempo_estimado=$11, tags=$12, ultima_atualizacao=$13,
+                ixc_wfl_processo_id=$14, ixc_wfl_processo_nome=$15, ixc_assunto_id=$16, ixc_assunto_nome=$17, ixc_resolvido_em=$18
+             WHERE id=$19 RETURNING *`,
             [
                 nome, descricao, categoria, status || 'ativo', versao || '1.0', docUrl || null,
                 responsavel?.nome || null, responsavel?.setor || null, responsavel?.funcionario_id || null,
                 etapas ?? null, tempoEstimado || null, tags || [], ultimaAtualizacao || null,
+                vinculo.id, vinculo.nome, vinculo.assuntoId, vinculo.assuntoNome, vinculo.resolvidoEm,
                 id,
             ]
         );
         if (!rows.length) return res.status(404).json({ erro: 'Processo não encontrado.' });
-        res.json(shapeProcesso(rows[0]));
+        const resposta = shapeProcesso(rows[0]);
+        if (erroVinculo) resposta.erroVinculo = erroVinculo;
+        res.json(resposta);
     } catch (e) {
         console.error('PUT /api/processos/:id:', e.message);
         res.status(500).json({ erro: 'Erro interno do servidor.' });

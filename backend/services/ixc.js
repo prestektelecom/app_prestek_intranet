@@ -219,3 +219,131 @@ export async function ixcAtualizar(recurso, id, registroCompleto, { timeoutMs = 
     }
     return dados;
 }
+
+// ─── Motor de workflow (wfl_*) — vínculo Processo ↔ assunto do IXC ──────────
+// Nunca consultado por este projeto antes de 2026-09-25; confirmado ao vivo
+// que os 4 recursos abaixo são listáveis pela mesma API webservice (não
+// precisa de acesso SQL direto ao IXC, que este projeto não tem).
+
+// Lista processos de workflow ativos, para o seletor do formulário de
+// Processo — o admin escolhe por nome, nunca digita um id cru.
+export async function listarWflProcessosAtivos() {
+    const registros = await ixcListar('wfl_processo', {
+        qtype: 'wfl_processo.ativo',
+        query: 'S',
+        oper: '=',
+        rp: '500',
+    });
+    return registros
+        .map(r => ({ id: Number(r.id), descricao: r.descricao }))
+        .sort((a, b) => a.descricao.localeCompare(b.descricao, 'pt-BR'));
+}
+
+// Resolve o id_assunto do IXC a partir da primeira tarefa ATIVA (menor
+// `sequencia`) de um wfl_processo que efetivamente abre OS.
+//
+// Uma tarefa pode ter mais de uma linha em wfl_interacoes — confirmado ao
+// vivo (tarefa real com 2 interações, uma com id_wfl_param_os=0 que NÃO
+// gera OS). Pegar "a primeira" sem filtrar resolveria errado nesse caso;
+// por isso filtramos por id_wfl_param_os != 0 e, se sobrar mais de uma,
+// usamos a de menor id (regra documentada em design.md D3 — nunca
+// observada na prática, mas precisa ser determinística se aparecer).
+//
+// As mensagens de erro lançadas aqui são texto curado nosso (não payload
+// bruto do IXC/driver) — marcadas com `err.curado = true` pra quem chama
+// saber que são seguras de repassar ao cliente HTTP como estão. Qualquer
+// outro erro (rede, IXC fora do ar, resposta inesperada) sobe sem essa
+// marca e deve ser trocado por uma mensagem genérica antes de responder.
+function erroCurado(mensagem) {
+    return Object.assign(new Error(mensagem), { curado: true });
+}
+
+// Duas (ou mais) tarefas podem ter a MESMA `sequencia` — confirmado ao vivo
+// no processo real "CRM VENDAS INTERNAS/EXTERNA (revisado)" (id 235): a
+// sequencia 1 tem uma tarefa órfã ("GERAR TAXA DE CONTRATAÇÃO/REATIVAÇÃO",
+// `id_proxima_tarefa=0`, não encadeia com o resto do fluxo) ao lado da
+// tarefa que de fato abre o processo ("CRM VENDAS INTERNAS/EXTERNAS",
+// `id_proxima_tarefa=2`, segue para a sequência 2) — e as DUAS resolvem
+// para um assunto válido e diferente, então pegar qualquer uma sem critério
+// erra silenciosamente (sem lançar erro nenhum). O mesmo par duplicado
+// aparece até no processo gêmeo inativo (215), reforçando que não é
+// coincidência de um caso isolado.
+//
+// Critério: entre as tarefas empatadas na menor sequência, preferir as que
+// efetivamente continuam o fluxo (`id_proxima_tarefa != 0`) — uma tarefa
+// com `id_proxima_tarefa = 0` é um fim de linha, não um começo. Se restar
+// exatamente uma, é essa. Se a ambiguidade persistir (nenhuma ou mais de
+// uma conectada), não adivinha: erro curado explícito, pra não repetir o
+// mesmo tipo de acerto-por-sorte que este caso expôs.
+function escolherPrimeiraTarefa(tarefasAtivas) {
+    if (tarefasAtivas.length === 0) return null;
+    const menorSequencia = Math.min(...tarefasAtivas.map(t => Number(t.sequencia)));
+    const candidatas = tarefasAtivas.filter(t => Number(t.sequencia) === menorSequencia);
+    if (candidatas.length === 1) return candidatas[0];
+
+    const conectadas = candidatas.filter(t => Number(t.id_proxima_tarefa) !== 0);
+    if (conectadas.length === 1) return conectadas[0];
+
+    return null;
+}
+
+export async function resolverAssuntoWorkflow(idWflProcesso) {
+    const idProcessoStr = String(idWflProcesso);
+
+    const tarefas = await ixcListar('wfl_tarefa', {
+        qtype: 'wfl_tarefa.id_processo',
+        query: idProcessoStr,
+        oper: '=',
+        rp: '200',
+    });
+    const tarefasAtivas = tarefas.filter(t => t.ativo === 'S');
+    if (tarefasAtivas.length === 0) {
+        throw erroCurado('Este processo do IXC não tem nenhuma tarefa configurada.');
+    }
+    const primeiraTarefa = escolherPrimeiraTarefa(tarefasAtivas);
+    if (!primeiraTarefa) {
+        throw erroCurado('Este processo do IXC tem mais de uma tarefa inicial configurada (sequência duplicada) e não foi possível determinar automaticamente qual delas abre a Ordem de Serviço. Avise a TI para revisar o fluxo no IXC.');
+    }
+
+    const interacoes = await ixcListar('wfl_interacoes', {
+        qtype: 'wfl_interacoes.id_tarefa',
+        query: String(primeiraTarefa.id),
+        oper: '=',
+        rp: '50',
+    });
+    const interacoesValidas = interacoes
+        .filter(i => i.ativo === 'S' && Number(i.id_wfl_param_os) !== 0)
+        .sort((a, b) => Number(a.id) - Number(b.id));
+    const interacaoEscolhida = interacoesValidas[0];
+    if (!interacaoEscolhida) {
+        throw erroCurado('A tarefa inicial deste processo não abre Ordem de Serviço.');
+    }
+
+    const parametrosOss = await ixcListar('wfl_parametro_oss', {
+        qtype: 'wfl_parametro_oss.id',
+        query: String(interacaoEscolhida.id_wfl_param_os),
+        oper: '=',
+        rp: '5',
+    });
+    const idAssunto = Number(parametrosOss[0]?.id_assunto);
+    if (!idAssunto) {
+        throw erroCurado('Não foi possível determinar o assunto do IXC para este processo.');
+    }
+
+    // Nome do assunto é só para exibição (tooltip) — não deve derrubar a
+    // resolução se essa chamada específica falhar ou não achar nada.
+    let nomeAssunto = null;
+    try {
+        const assuntos = await ixcListar('su_oss_assunto', {
+            qtype: 'su_oss_assunto.id',
+            query: String(idAssunto),
+            oper: '=',
+            rp: '5',
+        });
+        nomeAssunto = assuntos[0]?.assunto || null;
+    } catch (err) {
+        console.warn(`[resolverAssuntoWorkflow] Falha ao buscar nome do assunto ${idAssunto}: ${err.message}`);
+    }
+
+    return { idAssunto, nomeAssunto };
+}
