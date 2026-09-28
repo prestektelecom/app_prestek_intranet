@@ -15,12 +15,17 @@ CREATE TABLE IF NOT EXISTS cobertura_cidades (
 );
 
 -- Dados iniciais de exemplo
-INSERT INTO cobertura_cidades (estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura) VALUES
+-- Só semeia com a tabela vazia: `run.js` reexecuta todas as migrations a cada rodada e esta
+-- tabela não tem chave única além do `id` identity, então `ON CONFLICT DO NOTHING` nunca
+-- dispara e cada rodada duplicava as linhas (mesmo problema já corrigido na 009).
+INSERT INTO cobertura_cidades (estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura)
+SELECT * FROM (VALUES
 ('AL', 'Delmiro Gouveia', 'Centro',         'FTTH',   '500 MEGA', 'Ativo',   98),
 ('AL', 'Batalha',         'Zona Rural',     'Rádio',  '20 MEGA',  'Ativo',   85),
 ('AL', 'Penedo',          'Santa Luzia',    'UTP',    '100 MEGA', 'Ativo',   92),
 ('AL', 'Delmiro Gouveia', 'Novo Horizonte', 'FTTH',   '300 MEGA', 'Expansão',45)
-ON CONFLICT DO NOTHING;
+) AS seed(estado, cidade, bairro, tecnologia, velocidade_maxima, status, percentual_cobertura)
+WHERE NOT EXISTS (SELECT 1 FROM cobertura_cidades);
 
 -- Índice para buscas por cidade
 CREATE INDEX IF NOT EXISTS idx_cobertura_cidades_cidade ON cobertura_cidades(cidade);
