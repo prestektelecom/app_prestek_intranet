@@ -59,6 +59,6 @@
 
 - [x] 4.1 `npx vite build` limpo — confirmado, nenhum erro/aviso novo (só o warning
       pré-existente do chunk de mapas, já aceito por decisão registrada no `MEMORIA.md`).
-- [ ] 4.2 Ao arquivar: sincronizar a spec `chrome-keyboard-access` com o requisito de paridade
+- [x] 4.2 Ao arquivar: sincronizar a spec `chrome-keyboard-access` com o requisito de paridade
       hover/foco descrito no proposal.md (seguindo o padrão já usado nas changes anteriores —
       delta escrito manualmente no arquivamento, não neste momento de proposta).

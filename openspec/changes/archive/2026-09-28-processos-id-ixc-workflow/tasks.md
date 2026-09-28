@@ -45,7 +45,16 @@
 - [x] 6.5 Testado desvinculando o mesmo Processo (`ixcWflProcessoId: null`) — `ixcAssuntoId` voltou a `null`, confirmando que a listagem cairia no fallback do ID interno (`p.ixcAssuntoId ?? p.id`). Processo de teste apagado ao final (`DELETE`), nenhum resíduo em produção.
 - [x] 6.6 `/impeccable audit` rodado em `src/components/Processos.jsx`, focado nos pontos tocados. Detector (`impeccable detect`): **0 anti-patterns** antes e depois dos ajustes. 16 notas advisory de tipografia (fonte fora da rampa) — 15 pré-existentes, 1 minha (label do bloco de vínculo, `text-[10px]`) mas é exatamente o mesmo padrão já usado em TODO outro label deste formulário (`labelCls`, usado por Categoria/Status/Versão/etc.) — não é uma inconsistência nova, então não virou fix isolado (mesma lição já registrada no `MEMORIA.md`: corrigir só a cópia nova criaria uma DIVERGÊNCIA, não uma correção). 2 achados reais, corrigidos nesta sessão antes de fechar: botão "Atualizar vínculo agora" com `h-9` (36px, abaixo do mínimo de 44px de toque) → `h-11`, igual aos outros botões do mesmo modal; label duplicando a string de classes do `labelCls` compartilhado em vez de reusá-lo → trocado para `className={labelCls}`. Zero P0/P1 restantes. `npx vite build` limpo após os ajustes.
 
+- [x] 6.7 `/impeccable audit` completo (com nota) em `Processos.jsx`, focado no vínculo IXC (2026-09-28). Detector sem advisory: 0 achados. Leitura de código; sem verificação ao vivo no navegador (sem credencial neste ambiente). **16/20 (Bom)**: A11y 3, Performance 4, Theming 3, Responsivo 3, Integridade 3. Zero P0/P1. Achados, nenhum bloqueante:
+      - **[P2] Assunto do IXC só por `title`** (linhas ~1400 e ~1483): o tooltip não aparece em toque nem por teclado, e o ID do IXC (`1113`) e o interno (`OP-001`) têm o mesmo estilo, então no mobile não dá para saber qual dos dois se está vendo.
+      - **[P2] Erro de vínculo some em 6s** (`avisoVinculo`, `role="alert"`): é o único aviso de que a resolução falhou, e depois disso a lista só mostra o ID interno, sem pista (WCAG 2.2.1).
+      - **[P2] Select "Processo do IXC" não distingue carregando de falha**: `wflProcessos` nasce `[]` e o `catch` só faz `console.error`, então o select fica desabilitado com "Nenhum processo do IXC disponível" durante o carregamento e também no erro. É o mesmo antipadrão já registrado nas Fases 13 e 15.
+      - **[P3] `<select>` com ~42px de altura** (`inputCls`, `py-2.5`), abaixo de 44px; compartilhado por todos os campos do formulário, então fica para uma correção transversal.
+      - **[P3] Rótulos de 10px e hex fixos (`#E84545`, `#EC7D23`)** fora da rampa/tokens: padrão pré-existente do arquivo, não introduzido por esta change.
+
 ## 7. Registro
 
 - [x] 7.1 Atualizar `MEMORIA.md` (Pendências/Decisões) com o resultado, achados reais da verificação ao vivo, e o resultado do audit Impeccable
-- [ ] 7.2 Ao concluir, seguir `/opsx:archive` para sincronizar a spec `processos-vinculo-ixc-workflow` em `openspec/specs/`
+- [x] 7.2 Ao concluir, seguir `/opsx:archive` para sincronizar a spec `processos-vinculo-ixc-workflow` em `openspec/specs/`
+
+> Follow-up 2026-09-28: os 3 P2 do audit 6.7 foram corrigidos em `Processos.jsx` antes do PR (rótulo "Assunto IXC" visível na listagem, aviso de erro persistente com botão de dispensar, estado carregando/erro no select). Detector 0, build limpo.

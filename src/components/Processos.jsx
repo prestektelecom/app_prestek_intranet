@@ -166,7 +166,7 @@ function CampoSecao({ titulo, children }) {
     );
 }
 
-function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, erroSalvar, wflProcessos, onAtualizarVinculo, atualizandoVinculo }) {
+function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, erroSalvar, wflProcessos, wflEstado, onAtualizarVinculo, atualizandoVinculo }) {
     const isEdicao = Boolean(processo?.id);
     const [form, setForm] = useState(() => {
         // Categoria padrão vem da lista carregada, não de um id fixo no código
@@ -493,18 +493,29 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
                                     onChange={e => set('ixcWflProcessoId', e.target.value)}
                                     disabled={wflProcessos.length === 0}
                                     aria-describedby="processo-ixc-wfl-dica"
+                                    aria-busy={wflEstado === 'carregando'}
                                 >
-                                    <option value="">Nenhum — sem vínculo</option>
+                                    <option value="">
+                                        {wflEstado === 'carregando' ? 'Carregando processos do IXC…' : 'Nenhum — sem vínculo'}
+                                    </option>
                                     {wflProcessos.map(w => (
                                         <option key={w.id} value={w.id}>{w.descricao}</option>
                                     ))}
                                 </select>
                                 <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-muted text-[18px] pointer-events-none" aria-hidden="true">expand_more</span>
                             </div>
-                            <p id="processo-ixc-wfl-dica" className="text-[11px] text-faint mt-1">
-                                {wflProcessos.length === 0
-                                    ? 'Nenhum processo do IXC disponível no momento — o Processo pode ser salvo normalmente sem vínculo.'
-                                    : 'Quando vinculado, o ID exibido na listagem passa a ser o assunto do IXC resolvido a partir da primeira tarefa deste fluxo.'}
+                            <p
+                                id="processo-ixc-wfl-dica"
+                                className="text-[11px] text-faint mt-1"
+                                role={wflEstado === 'erro' ? 'alert' : undefined}
+                            >
+                                {wflEstado === 'carregando'
+                                    ? 'Buscando a lista de processos do IXC…'
+                                    : wflEstado === 'erro'
+                                        ? 'Não foi possível carregar a lista do IXC agora. Feche e reabra o formulário para tentar de novo — o Processo pode ser salvo sem vínculo.'
+                                        : wflProcessos.length === 0
+                                            ? 'Nenhum processo ativo no IXC — o Processo pode ser salvo normalmente sem vínculo.'
+                                            : 'Quando vinculado, o ID exibido na listagem passa a ser o assunto do IXC resolvido a partir da primeira tarefa deste fluxo.'}
                             </p>
 
                             {isEdicao && processo.ixcAssuntoId && (
@@ -1062,6 +1073,7 @@ export default function Processos({ user, setCurrentView }) {
     const [salvandoProcesso, setSalvandoProcesso] = useState(false);
     const [erroSalvarProcesso, setErroSalvarProcesso] = useState('');
     const [wflProcessos, setWflProcessos] = useState([]);
+    const [wflEstado, setWflEstado] = useState('carregando'); // 'carregando' | 'pronto' | 'erro'
     const [atualizandoVinculoId, setAtualizandoVinculoId] = useState(null);
     // Aviso transitório de vínculo com o IXC (sucesso ou erro da resolução) —
     // não é o mesmo erro de salvar o Processo em si (esse já fecha o modal
@@ -1069,7 +1081,9 @@ export default function Processos({ user, setCurrentView }) {
     const [avisoVinculo, setAvisoVinculo] = useState(null); // { tipo: 'sucesso'|'erro', texto } | null
 
     useEffect(() => {
-        if (!avisoVinculo) return;
+        // Só o aviso de sucesso some sozinho; o de erro fica até ser dispensado,
+        // já que é o único sinal de que o vínculo não foi resolvido (WCAG 2.2.1).
+        if (!avisoVinculo || avisoVinculo.tipo === 'erro') return;
         const t = setTimeout(() => setAvisoVinculo(null), 6000);
         return () => clearTimeout(t);
     }, [avisoVinculo]);
@@ -1117,8 +1131,14 @@ export default function Processos({ user, setCurrentView }) {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
             })
-            .then(dados => setWflProcessos(Array.isArray(dados) ? dados : []))
-            .catch(err => console.error('Erro ao buscar processos de workflow do IXC:', err));
+            .then(dados => {
+                setWflProcessos(Array.isArray(dados) ? dados : []);
+                setWflEstado('pronto');
+            })
+            .catch(err => {
+                console.error('Erro ao buscar processos de workflow do IXC:', err);
+                setWflEstado('erro');
+            });
     }, [isAdmin]);
 
     const contagem = useMemo(() => contarPorCategoria(lista), [lista]);
@@ -1253,6 +1273,7 @@ export default function Processos({ user, setCurrentView }) {
                 erroSalvar={erroSalvarProcesso}
                 wflProcessos={wflProcessos}
                 onAtualizarVinculo={atualizarVinculoIxc}
+                wflEstado={wflEstado}
                 atualizandoVinculo={modal.modo === 'editar' && atualizandoVinculoId === modal.processo?.id}
             />
         )}
@@ -1301,7 +1322,17 @@ export default function Processos({ user, setCurrentView }) {
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                         {avisoVinculo.tipo === 'erro' ? 'error' : 'check_circle'}
                     </span>
-                    {avisoVinculo.texto}
+                    <span className="flex-1">{avisoVinculo.texto}</span>
+                    {avisoVinculo.tipo === 'erro' && (
+                        <button
+                            type="button"
+                            onClick={() => setAvisoVinculo(null)}
+                            aria-label="Dispensar aviso"
+                            className="shrink-0 -my-2 -mr-2 w-11 h-11 inline-flex items-center justify-center rounded-lg hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                        >
+                            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -1400,6 +1431,11 @@ export default function Processos({ user, setCurrentView }) {
                                     title={p.ixcAssuntoId ? `Assunto do IXC: ${p.ixcAssuntoId}${p.ixcAssuntoNome ? ` — ${p.ixcAssuntoNome}` : ''}` : undefined}
                                 >
                                     {p.ixcAssuntoId ?? p.id}
+                                    {p.ixcAssuntoId && (
+                                        <span className="block font-sans text-[11px] font-semibold text-faint tracking-wide truncate max-w-[220px]">
+                                            Assunto IXC{p.ixcAssuntoNome ? ` · ${p.ixcAssuntoNome}` : ''}
+                                        </span>
+                                    )}
                                 </span>
                                 <StatusBadge status={p.status} />
                             </div>
@@ -1483,6 +1519,9 @@ export default function Processos({ user, setCurrentView }) {
                                             title={p.ixcAssuntoId ? `Assunto do IXC: ${p.ixcAssuntoId}${p.ixcAssuntoNome ? ` — ${p.ixcAssuntoNome}` : ''}` : undefined}
                                         >
                                             {p.ixcAssuntoId ?? p.id}
+                                            {p.ixcAssuntoId && (
+                                                <span className="block font-sans text-[11px] font-semibold text-faint tracking-wide">Assunto IXC</span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
                                             {/* Nome é texto livre do admin, sem limite de tamanho no
