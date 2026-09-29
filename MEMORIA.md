@@ -263,6 +263,8 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 
 ## Histórico de sessões
 
+- 2026-09-29: melhorias do Login (`docs/DOCS_login_melhorias_com_marca.md`, Fases 1-4 do plano) em `Login.jsx`/`index.css`: heading com hierarquia, ícones de e-mail/cadeado nos campos, campo preenchido, hover do botão sem `letter-spacing`, tema/checkbox/footer/placeholder mais legíveis, foco visível no checkbox, alvos de 44px (mostrar senha, "Tentar agora"), padding e blobs responsivos. `/impeccable audit` só por leitura de código: **15/20 (Bom)**, 0 P0/P1, detector 0, `npx vite build` limpo, **sem verificação visual no navegador**. Deliberadamente NÃO feito: logo (o SVG é um "P" próprio, não o arquivo oficial do manual) e alinhar `#EC7D23` a `#D97738` — decisão do Felix; `aria-label` na senha (duplicaria o `<label>`); `opacity` no footer (derrubaria contraste). Pendente: testes E2E da Fase 5 do plano.
+
 - 2026-09-17: **corrigido bug real de produção**: abrir chamado de TI para o Everton "abria e
   fechava" — o ticket era criado normalmente, mas a Ordem de Serviço (OS) nunca sobrevivia.
   Investigado em modo explore (consultas read-only à IXC), formalizado em change OpenSpec

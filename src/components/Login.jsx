@@ -57,29 +57,50 @@ function MoonIcon() {
     )
 }
 
-function Field({ id, name, label, type = 'text', placeholder, value, onChange, trailing, disabled, invalid, describedBy, inputRef, autoComplete, inputMode, autoFocus }) {
+// Ícones decorativos dos campos (aria-hidden): o rótulo já nomeia o campo.
+function MailIcon() {
+    return (
+        <svg className="neural-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="3" />
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" strokeLinecap="round" />
+        </svg>
+    )
+}
+function LockIcon() {
+    return (
+        <svg className="neural-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <rect x="4" y="11" width="16" height="10" rx="2.5" />
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" strokeLinecap="round" />
+        </svg>
+    )
+}
+
+function Field({ id, name, label, type = 'text', placeholder, value, onChange, icon, trailing, disabled, invalid, describedBy, inputRef, autoComplete, inputMode, autoFocus }) {
     return (
         <div className="neural-field">
             <label htmlFor={id}>{label}</label>
-            <input
-                ref={inputRef}
-                id={id}
-                name={name}
-                type={type}
-                autoComplete={autoComplete}
-                inputMode={inputMode}
-                autoFocus={autoFocus}
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                disabled={disabled}
-                aria-invalid={invalid || undefined}
-                aria-describedby={invalid ? describedBy : undefined}
-                className="neural-input"
-                style={trailing ? { paddingRight: 36 } : undefined}
-            />
-            <div className="neural-input-glow" />
-            {trailing}
+            <div className="neural-input-wrap">
+                {icon}
+                <input
+                    ref={inputRef}
+                    id={id}
+                    name={name}
+                    type={type}
+                    autoComplete={autoComplete}
+                    inputMode={inputMode}
+                    autoFocus={autoFocus}
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={onChange}
+                    disabled={disabled}
+                    aria-invalid={invalid || undefined}
+                    aria-describedby={invalid ? describedBy : undefined}
+                    className="neural-input"
+                    style={trailing ? { paddingRight: 36 } : undefined}
+                />
+                <div className="neural-input-glow" />
+                {trailing}
+            </div>
         </div>
     )
 }
@@ -176,7 +197,10 @@ export default function Login({ onLogin }) {
                         </svg>
                         Prestek Telecom
                     </div>
-                    <h1 className="neural-heading">Entrar<br />Intranet</h1>
+                    <h1 className="neural-heading">
+                        Entrar{' '}
+                        <span className="neural-heading-secondary">Intranet</span>
+                    </h1>
                 </header>
 
                 <div role="alert" id="login-erro" aria-live="assertive">
@@ -208,7 +232,8 @@ export default function Login({ onLogin }) {
                         autoComplete="username"
                         inputMode="email"
                         autoFocus
-                        placeholder="nome@prestek.com.br"
+                        icon={<MailIcon />}
+                        placeholder="seu@prestek.com.br"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={carregando}
@@ -222,6 +247,7 @@ export default function Login({ onLogin }) {
                         label="Senha"
                         type={mostrarSenha ? 'text' : 'password'}
                         autoComplete="current-password"
+                        icon={<LockIcon />}
                         placeholder="••••••••"
                         value={senha}
                         onChange={(e) => setSenha(e.target.value)}

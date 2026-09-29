@@ -868,9 +868,10 @@ label:has(> input.sr-only:focus-visible) {
      no foco é a affordance real) só tomam emprestado a opacidade de `--ink`,
      que já inverte por tema sozinho via `color-mix`. */
   --n-line: color-mix(in srgb, var(--ink) 15%, transparent);
-  --n-placeholder: color-mix(in srgb, var(--ink) 35%, transparent);
+  --n-placeholder: color-mix(in srgb, var(--ink) 45%, transparent);
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   overflow: hidden;
   background: var(--n-bg);
@@ -920,13 +921,18 @@ label:has(> input.sr-only:focus-visible) {
 @media (prefers-reduced-motion: reduce) {
   .neural-blob { animation: none; }
 }
+/* Telas estreitas: os blobs grandes (160-300px) passariam por trás do
+   formulário inteiro — ficam mais suaves pra não competir com o texto. */
+@media (max-width: 380px) {
+  .neural-stage { opacity: 0.3; }
+}
 
 .neural-auth {
   position: relative;
   z-index: 10;
   width: 100%;
-  max-width: 440px;
-  padding: 40px 24px;
+  max-width: min(440px, 92vw);
+  padding: clamp(24px, 8vh, 40px) 24px;
 }
 
 .neural-brand-id {
@@ -947,6 +953,12 @@ label:has(> input.sr-only:focus-visible) {
   letter-spacing: -0.02em;
   margin: 0 0 44px;
 }
+/* Mesma fonte/tamanho da marca de texto; só peso e opacidade diferenciam. */
+.neural-heading-secondary {
+  display: block;
+  font-weight: 600;
+  opacity: 0.65;
+}
 
 .neural-field {
   position: relative;
@@ -965,13 +977,32 @@ label:has(> input.sr-only:focus-visible) {
   color: var(--n-text-dim);
   margin-bottom: 10px;
 }
+.neural-input-wrap {
+  position: relative;
+}
+/* Ícone fixo à esquerda; no foco vira `accent-dark` (inverte por tema, passa
+   3:1 de ícone — o `accent` cru não passa no claro). */
+.neural-input-icon {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  color: var(--n-text-dim);
+  pointer-events: none;
+  transition: color 0.3s;
+}
+.neural-input-wrap:focus-within .neural-input-icon {
+  color: var(--accent-dark);
+}
 .neural-input {
   width: 100%;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--n-line);
   color: var(--n-text);
-  padding: 10px 36px 10px 0;
+  padding: 10px 36px 10px 32px;
   font-size: 17px;
   font-family: inherit;
   outline: none;
@@ -979,6 +1010,10 @@ label:has(> input.sr-only:focus-visible) {
 }
 .neural-input::placeholder {
   color: var(--n-placeholder);
+}
+/* Campo preenchido: linha mais firme que a do campo vazio. */
+.neural-input:not(:placeholder-shown) {
+  border-bottom-color: color-mix(in srgb, var(--ink) 30%, transparent);
 }
 .neural-input[aria-invalid="true"] {
   border-bottom-color: var(--n-danger);
@@ -1007,10 +1042,10 @@ label:has(> input.sr-only:focus-visible) {
 }
 .neural-field-toggle {
   position: absolute;
-  right: 0;
-  bottom: 6px;
-  width: 28px;
-  height: 28px;
+  right: -8px;
+  bottom: -3px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1045,14 +1080,16 @@ label:has(> input.sr-only:focus-visible) {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: letter-spacing 0.3s, opacity .2s;
+  transition: filter 0.3s, opacity .2s;
 }
 .neural-btn:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
+/* Sem mexer em letter-spacing (empurrava o texto de lado). O brilho é o
+   mesmo da gota (`.neural-drop`) pra não aparecer emenda dentro do goo. */
 .neural-btn:not(:disabled):hover {
-  letter-spacing: 0.22em;
+  filter: brightness(1.15);
 }
 .neural-drop {
   position: absolute;
@@ -1085,14 +1122,23 @@ label:has(> input.sr-only:focus-visible) {
   color: var(--n-text-dim);
 }
 .neural-remember-box {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 4px;
   border: 1.5px solid var(--n-text-dim);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+.neural-remember:hover .neural-remember-box {
+  border-color: var(--n-text);
+}
+/* O checkbox real é sr-only: sem isto, o foco por teclado ficava invisível. */
+.neural-remember:has(input:focus-visible) .neural-remember-box {
+  outline: 2px solid var(--accent-dark);
+  outline-offset: 2px;
 }
 
 .neural-alert {
@@ -1129,7 +1175,8 @@ label:has(> input.sr-only:focus-visible) {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border-radius: 4px;
-  padding: 6px 10px;
+  padding: 6px 14px;
+  min-height: 44px;
   cursor: pointer;
 }
 
@@ -1140,7 +1187,7 @@ label:has(> input.sr-only:focus-visible) {
   gap: 12px;
   flex-wrap: wrap;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.05em;
   color: var(--n-text-dim);
 }
@@ -1158,8 +1205,8 @@ label:has(> input.sr-only:focus-visible) {
   height: 44px;
   border-radius: 9999px;
   border: 1px solid var(--n-line);
-  background: color-mix(in srgb, var(--ink) 3%, transparent);
-  color: var(--n-text-dim);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--n-text);
   display: flex;
   align-items: center;
   justify-content: center;
