@@ -1011,6 +1011,17 @@ label:has(> input.sr-only:focus-visible) {
 .neural-input::placeholder {
   color: var(--n-placeholder);
 }
+/* Autofill do Chrome pinta o fundo de azul-claro por cima do tema. Não dá pra
+   sobrescrever `background`; a saída é cobrir com `box-shadow` inset na cor do
+   fundo da tela e adiar a transição do fundo original. */
+.neural-input:-webkit-autofill,
+.neural-input:-webkit-autofill:hover,
+.neural-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--n-bg) inset;
+  -webkit-text-fill-color: var(--n-text);
+  caret-color: var(--n-text);
+  transition: background-color 9999s ease-out 0s, border-color 0.3s;
+}
 /* Campo preenchido: linha mais firme que a do campo vazio. */
 .neural-input:not(:placeholder-shown) {
   border-bottom-color: color-mix(in srgb, var(--ink) 30%, transparent);
