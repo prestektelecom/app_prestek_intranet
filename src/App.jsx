@@ -9,6 +9,7 @@ import { useProfileDisplay } from './hooks/useProfileDisplay'
 import { HeaderActionsProvider } from './contexts/HeaderActionsContext'
 import MobileBottomNav from './components/MobileBottomNav'
 import MobileMoreSheet from './components/MobileMoreSheet'
+import { normalizarUsuario } from './constants/permissoes'
 
 // As 13 telas do switch abaixo, mais AdminDashboard e NotFound, só uma por vez
 // está de fato na tela — eram 100% do bundle principal (1,6MB) mesmo assim.
@@ -47,7 +48,7 @@ export default function App() {
     const [user, setUser] = useState(() => {
         const sessionUser = sessionStorage.getItem('@Stitch:user')
         if (sessionUser) {
-            try { return JSON.parse(sessionUser) } catch (e) { return null }
+            try { return normalizarUsuario(JSON.parse(sessionUser)) } catch (e) { return null }
         }
 
         const savedUserStr = localStorage.getItem('@Stitch:user')
@@ -58,7 +59,7 @@ export default function App() {
                     localStorage.removeItem('@Stitch:user')
                     return null
                 }
-                return savedUser.data || savedUser
+                return normalizarUsuario(savedUser.data || savedUser)
             } catch (e) { return null }
         }
         return null
@@ -167,12 +168,12 @@ export default function App() {
 
     if (currentView === 'login') {
         return <Login onLogin={(resultado) => {
-            const userData = {
+            const userData = normalizarUsuario({
                 ...resultado.usuario,
                 funcionario: resultado.funcionario,
                 nome_grupo: resultado.nome_grupo || null,
                 is_admin: resultado.usuario?.is_admin || false
-            }
+            })
             setUser(userData)
 
             if (resultado.lembrar) {

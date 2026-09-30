@@ -99,6 +99,8 @@ export default function AdminAuditoria({ adminEmail }) {
                         <option value="">Todas as ações</option>
                         <option value="grant_admin">Conceder Admin</option>
                         <option value="revoke_admin">Revogar Admin</option>
+                        <option value="grant_permissao">Conceder permissão</option>
+                        <option value="revoke_permissao">Retirar permissão</option>
                         <option value="update_comunicado">Editar Comunicado</option>
                         <option value="create_comunicado">Criar Comunicado</option>
                         <option value="delete_comunicado">Excluir Comunicado</option>

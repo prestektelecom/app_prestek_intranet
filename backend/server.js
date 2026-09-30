@@ -17,6 +17,13 @@ import { extrairTextoPdf } from './services/extrairTextoPdf.js'
 import { extrairCampos } from './services/fichaParser.js'
 import { validar as validarColaborador, montarPlano, buscarDuplicados } from './services/ixcColaborador.js'
 import { requireAuth, assinarToken } from './middleware/auth.js'
+import { CAPACIDADES, carregarAcesso, requerPermissao } from './middleware/permissoes.js'
+
+// Gates de rota. `adminAuth` = só is_admin; `gate('x')` = is_admin OU a
+// capacidade x (ver openspec/changes/permissoes-por-capacidade/design.md).
+// São `const` no topo porque as rotas os leem na hora de registrar.
+const adminAuth = requerPermissao(pool)
+const gate = (capacidade) => requerPermissao(pool, capacidade)
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -225,6 +232,16 @@ app.post('/api/login', loginLimiter, async (req, res) => {
             console.warn('Aviso: falha ao sincronizar perfil:', errSync.message);
         }
 
+        // Permissões por capacidade: só informativas para a interface — o acesso
+        // real é decidido de novo, no banco, a cada requisição. Falha aqui não
+        // derruba o login; vira lista vazia.
+        let permissoes = [];
+        try {
+            permissoes = (await carregarAcesso(pool, usuario.id)).permissoes;
+        } catch (errPerm) {
+            console.warn('Aviso: falha ao carregar permissões:', errPerm.message);
+        }
+
         // Retorna dados combinados de usuarios + funcionarios
         console.log(`Login bem-sucedido: ${usuario.nome} (${usuario.email}) | id_grupo=${usuario.id_grupo} | nome_grupo=${nomeGrupo}`)
         return res.json({
@@ -235,7 +252,8 @@ app.post('/api/login', loginLimiter, async (req, res) => {
                 nome: usuario.nome,
                 email: usuario.email,
                 acesso_token: usuario.acesso_token,
-                is_admin: isAdmin
+                is_admin: isAdmin,
+                permissoes
             },
             funcionario,
             nome_grupo: nomeGrupo,
@@ -317,7 +335,7 @@ app.get('/api/comunicados', async (req, res) => {
     }
 });
 
-app.post('/api/comunicados', adminAuth, async (req, res) => {
+app.post('/api/comunicados', gate('comunicados'), async (req, res) => {
     const { titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url } = req.body;
     // Autoria vem sempre do JWT verificado, nunca do corpo da requisição —
     // do contrário qualquer chamada direta à API poderia forjar quem "criou".
@@ -341,7 +359,7 @@ app.post('/api/comunicados', adminAuth, async (req, res) => {
     }
 });
 
-app.put('/api/comunicados/:id', adminAuth, async (req, res) => {
+app.put('/api/comunicados/:id', gate('comunicados'), async (req, res) => {
     const { id } = req.params;
     const { titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url } = req.body;
 
@@ -360,7 +378,7 @@ app.put('/api/comunicados/:id', adminAuth, async (req, res) => {
     }
 });
 
-app.delete('/api/comunicados/:id', adminAuth, async (req, res) => {
+app.delete('/api/comunicados/:id', gate('comunicados'), async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query('DELETE FROM comunicados WHERE id = $1 RETURNING *;', [id]);
@@ -1400,7 +1418,7 @@ app.get('/api/funcionarios', async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar funcionários.' });
     }
 });
-app.delete('/api/plantoes', adminAuth, async (req, res) => {
+app.delete('/api/plantoes', gate('plantao'), async (req, res) => {
     const { data, admin_usuario_id } = req.body;
     if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
 
@@ -1457,7 +1475,7 @@ app.delete('/api/plantoes', adminAuth, async (req, res) => {
     }
 });
 
-app.post('/api/plantoes', adminAuth, async (req, res) => {
+app.post('/api/plantoes', gate('plantao'), async (req, res) => {
     const { data, n1_ids, n2_ids, gerente_ids, admin_usuario_id } = req.body;
     if (!data) return res.status(400).json({ sucesso: false, erro: 'Data é obrigatória' });
     
@@ -1608,7 +1626,7 @@ app.get('/api/plantoes/historico', async (req, res) => {
     }
 });
 
-app.get('/api/plantoes/historico/export', adminAuth, async (req, res) => {
+app.get('/api/plantoes/historico/export', gate('plantao'), async (req, res) => {
     const { data_inicio, data_fim, admin_nome } = req.query;
     try {
         const conditions = [];
@@ -2342,7 +2360,7 @@ app.get('/api/admin/grupos-nomes', async (req, res) => {
     }
 });
 
-app.post('/api/admin/grupos-nomes', adminAuth, async (req, res) => {
+app.post('/api/admin/grupos-nomes', gate('usuarios'), async (req, res) => {
     const { id_grupo, nome, acao } = req.body; // acao: 'salvar' | 'remover'
     if (!id_grupo || !acao) return res.status(400).json({ sucesso: false, erro: 'id_grupo e acao são obrigatórios' });
     try {
@@ -2377,7 +2395,7 @@ app.get('/api/admin/grupos-supervisores', async (req, res) => {
 });
 
 // POST: adiciona ou remove um id_grupo da lista de supervisores
-app.post('/api/admin/grupos-supervisores', adminAuth, async (req, res) => {
+app.post('/api/admin/grupos-supervisores', gate('usuarios'), async (req, res) => {
     const { id_grupo, acao } = req.body; // acao: 'adicionar' | 'remover'
     if (!id_grupo || !acao) return res.status(400).json({ sucesso: false, erro: 'id_grupo e acao são obrigatórios' });
     try {
@@ -2407,7 +2425,7 @@ app.get('/api/admin/responsaveis-manuais', async (req, res) => {
     }
 });
 
-app.post('/api/admin/responsaveis-manuais', adminAuth, async (req, res) => {
+app.post('/api/admin/responsaveis-manuais', gate('usuarios'), async (req, res) => {
     const { id_setor, id_funcionario, nome, acao } = req.body; // acao: 'definir' | 'limpar'
     if (!id_setor || !acao) return res.status(400).json({ sucesso: false, erro: 'id_setor e acao são obrigatórios' });
     
@@ -2435,7 +2453,7 @@ app.post('/api/admin/responsaveis-manuais', adminAuth, async (req, res) => {
 });
 
 // ─── Rotas: Admin — Gerenciar Descrições de Setores ────────────────────────
-app.post('/api/admin/setores-descricoes', adminAuth, async (req, res) => {
+app.post('/api/admin/setores-descricoes', gate('usuarios'), async (req, res) => {
     const { id_setor, descricao } = req.body;
     if (!id_setor) return res.status(400).json({ sucesso: false, erro: 'id_setor é obrigatório' });
     // Autoria vem do JWT verificado, nunca do corpo da requisição.
@@ -4414,33 +4432,12 @@ app.delete('/api/processos/:id', adminAuth, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// ─── Middleware de autenticação administrativa ───────────────────
-// Verifica se o solicitante é um admin consultando o banco pelo email.
-// Todas as rotas /api/admin/* (exceto as já existentes antes deste bloco)
-// devem passar por este middleware.
+// ─── Autenticação administrativa ─────────────────────────────────
+// `adminAuth` e `gate(capacidade)` são definidos no topo do arquivo, a partir
+// de middleware/permissoes.js. A identidade vem do JWT verificado por
+// requireAuth (req.usuario), nunca de header do cliente — ver G5 em
+// GUIA-CORRECAO.md — e o acesso é lido do banco a cada requisição.
 // ═══════════════════════════════════════════════════════════════════
-async function adminAuth(req, res, next) {
-    // A identidade vem do token verificado por requireAuth (req.usuario), nunca
-    // de um header enviado pelo cliente — ver G5 em GUIA-CORRECAO.md.
-    const adminEmail = String(req.usuario?.email || '').trim();
-    if (!adminEmail) {
-        return res.status(401).json({ sucesso: false, erro: 'Acesso não autorizado.' });
-    }
-    try {
-        const { rows } = await pool.query(
-            'SELECT is_admin FROM usuarios_perfil WHERE LOWER(usuario_email) = LOWER($1)',
-            [adminEmail]
-        );
-        if (!rows.length || !rows[0].is_admin) {
-            return res.status(403).json({ sucesso: false, erro: 'Permissão negada.' });
-        }
-        next();
-    } catch (e) {
-        // Loga o erro real no terminal para facilitar diagnóstico, sem expor ao cliente
-        console.error('[adminAuth] Falha ao consultar banco:', e.message);
-        return res.status(503).json({ sucesso: false, erro: 'Serviço de autenticação temporariamente indisponível. Tente novamente.' });
-    }
-}
 
 
 // ─── Helper: registrar auditoria ────────────────────────────────────
@@ -4484,11 +4481,14 @@ app.get('/api/admin/dashboard-stats', adminAuth, async (req, res) => {
 });
 
 // ─── Rotas: Admin — Gerenciar Usuários ──────────────────────────────
-app.get('/api/admin/usuarios', adminAuth, async (req, res) => {
+app.get('/api/admin/usuarios', gate('usuarios'), async (req, res) => {
     const { busca } = req.query;
     try {
         let query = `SELECT usuario_id, usuario_nome, usuario_email, funcionario_nome,
-                            id_departamento, filial_id, ativo, is_admin, ultima_atividade
+                            id_departamento, filial_id, ativo, is_admin, ultima_atividade,
+                            COALESCE((SELECT array_agg(up.permissao ORDER BY up.permissao)
+                                      FROM usuarios_permissoes up
+                                      WHERE up.usuario_id = usuarios_perfil.usuario_id), '{}') AS permissoes
                      FROM usuarios_perfil`;
         const params = [];
         if (busca) {
@@ -4530,8 +4530,90 @@ app.put('/api/admin/usuarios/:id/privilegios', adminAuth, async (req, res) => {
     }
 });
 
+// Atribui o conjunto de permissões por capacidade de um usuário. Só is_admin:
+// quem tem apenas a capacidade `usuarios` não consegue se promover. Substitui o
+// conjunto; só o que mudou é gravado e auditado.
+app.put('/api/admin/usuarios/:id/permissoes', adminAuth, async (req, res) => {
+    const { id } = req.params;
+    const adminEmail = req.usuario.email;
+    const { permissoes } = req.body || {};
+
+    if (!Array.isArray(permissoes) || permissoes.some((p) => typeof p !== 'string')) {
+        return res.status(400).json({ sucesso: false, erro: 'Campo permissoes deve ser uma lista de textos.' });
+    }
+    const desejadas = [...new Set(permissoes)];
+    if (desejadas.some((p) => !CAPACIDADES.includes(p))) {
+        return res.status(400).json({ sucesso: false, erro: 'Permissão desconhecida.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const alvo = await client.query(
+            'SELECT usuario_nome, usuario_email FROM usuarios_perfil WHERE usuario_id = $1',
+            [String(id)]
+        );
+        if (!alvo.rows.length) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ sucesso: false, erro: 'Usuário não encontrado.' });
+        }
+        const atuais = (await client.query(
+            'SELECT permissao FROM usuarios_permissoes WHERE usuario_id = $1',
+            [String(id)]
+        )).rows.map((r) => r.permissao);
+
+        const concedidas = desejadas.filter((p) => !atuais.includes(p));
+        const revogadas = atuais.filter((p) => !desejadas.includes(p));
+
+        if (revogadas.length) {
+            await client.query(
+                'DELETE FROM usuarios_permissoes WHERE usuario_id = $1 AND permissao = ANY($2::text[])',
+                [String(id), revogadas]
+            );
+        }
+        for (const p of concedidas) {
+            await client.query(
+                `INSERT INTO usuarios_permissoes (usuario_id, permissao, concedido_por)
+                 VALUES ($1, $2, $3) ON CONFLICT (usuario_id, permissao) DO NOTHING`,
+                [String(id), p, adminEmail]
+            );
+        }
+        await client.query('COMMIT');
+
+        const { usuario_nome, usuario_email } = alvo.rows[0];
+        for (const p of concedidas) {
+            await registrarAuditoria(adminEmail, 'grant_permissao', 'usuario', id,
+                `Concedeu a permissão '${p}' para ${usuario_nome} (${usuario_email})`);
+        }
+        for (const p of revogadas) {
+            await registrarAuditoria(adminEmail, 'revoke_permissao', 'usuario', id,
+                `Revogou a permissão '${p}' de ${usuario_nome} (${usuario_email})`);
+        }
+
+        return res.json({ sucesso: true, permissoes: [...desejadas].sort() });
+    } catch (e) {
+        await client.query('ROLLBACK').catch(() => {});
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
+    } finally {
+        client.release();
+    }
+});
+
+// Revalida as permissões do PRÓPRIO usuário (do JWT) sem novo login. Nenhum
+// identificador vem da URL, do corpo ou da query — o cliente não escolhe de quem.
+app.get('/api/permissoes/minhas', async (req, res) => {
+    try {
+        const acesso = await carregarAcesso(pool, req.usuario.id);
+        return res.json({ sucesso: true, is_admin: acesso.isAdmin, permissoes: acesso.permissoes });
+    } catch (e) {
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
+    }
+});
+
 // ─── Rotas: Admin — Logs de Auditoria ───────────────────────────────
-app.get('/api/admin/auditoria', adminAuth, async (req, res) => {
+app.get('/api/admin/auditoria', gate('auditoria'), async (req, res) => {
     const { pagina = 1, limite = 50, acao: filtroAcao, admin_email } = req.query;
     const offset = (parseInt(pagina) - 1) * parseInt(limite);
     try {
@@ -4636,7 +4718,7 @@ app.post('/api/user/dashboard-layout', async (req, res) => {
 // ─── Setor de TI — Cadastro de Colaborador ──────────────────────────
 // Ver openspec/changes/ti-hub-cadastro-colaborador/
 //
-// Todas as rotas exigem adminAuth: criar pessoa no ERP não é ação para
+// Todas as rotas exigem a capacidade 'ti' (ou is_admin): criar pessoa no ERP não é ação para
 // qualquer usuário logado.
 // ═══════════════════════════════════════════════════════════════════
 
@@ -4681,7 +4763,7 @@ app.get('/api/funcoes', async (_req, res) => {
 // estão em services/ixcTaxonomias.js — resumo: três dos cinco FKs obrigatórios
 // não têm recurso próprio acessível nesta instalação, e são derivados do uso
 // real em `funcionarios`/`usuarios`.
-app.get('/api/ti/colaborador/taxonomias', adminAuth, async (_req, res) => {
+app.get('/api/ti/colaborador/taxonomias', gate('ti'), async (_req, res) => {
     try {
         const payload = await carregarTaxonomias(pool);
         return res.json({ sucesso: true, ...payload });
@@ -4730,7 +4812,7 @@ async function carregarCidadesIXC() {
     return registros;
 }
 
-app.get('/api/ti/colaborador/cidades', adminAuth, async (req, res) => {
+app.get('/api/ti/colaborador/cidades', gate('ti'), async (req, res) => {
     const termo = semAcento(req.query.q);
     const uf = String(req.query.uf || '').trim();
     const limite = Math.min(parseInt(req.query.limite) || 20, 100);
@@ -4774,7 +4856,7 @@ app.post(
     // tipo não bloqueia o uso real; ele existe para o corpo não-PDF cair
     // fora do parser em vez de virar um buffer aceito por acidente.
     express.raw({ type: 'application/pdf', limit: '15mb' }),
-    adminAuth,
+    gate('ti'),
     async (req, res) => {
         const adminEmail = req.usuario.email;
         try {
@@ -4822,7 +4904,7 @@ app.post(
 // cpf_cnpj é armazenado COM máscara no IXC (Achado 4 em design.md) — a busca
 // tenta mascarado primeiro. O dry-run já roda isto internamente (não depende
 // de a UI ter chamado esta rota antes).
-app.get('/api/ti/colaborador/duplicado', adminAuth, async (req, res) => {
+app.get('/api/ti/colaborador/duplicado', gate('ti'), async (req, res) => {
     const cpf = String(req.query.cpf || '').trim();
     const email = String(req.query.email || '').trim();
     if (!cpf && !email) {
@@ -4841,7 +4923,7 @@ app.get('/api/ti/colaborador/duplicado', adminAuth, async (req, res) => {
 // Monta e valida os payloads de criação SEM enviar nada ao IXC — ver Decisão 2
 // em design.md. A senha em texto puro nunca sai desta função: só o hash
 // SHA-256 (idêntico ao formato que /api/login valida) entra no plano.
-app.post('/api/ti/colaborador/dry-run', adminAuth, async (req, res) => {
+app.post('/api/ti/colaborador/dry-run', gate('ti'), async (req, res) => {
     const adminEmail = req.usuario.email;
     try {
         const dados = req.body?.dados || {};
@@ -4928,7 +5010,7 @@ app.post('/api/ti/colaborador/dry-run', adminAuth, async (req, res) => {
 //      idFuncionario, ...)` com o resultado final (sucesso pleno, parcial
 //      com id órfão, ou falha no passo 2).
 //   6. Responder { sucesso, idFuncionario, idUsuario, passos_executados }.
-app.post('/api/ti/colaborador/criar', adminAuth, async (_req, res) => {
+app.post('/api/ti/colaborador/criar', gate('ti'), async (_req, res) => {
     return res.status(501).json({
         sucesso: false,
         erro: 'Gravação real ainda não implementada — use /api/ti/colaborador/dry-run para simular. Ver o comentário acima desta rota em server.js para o algoritmo planejado.',

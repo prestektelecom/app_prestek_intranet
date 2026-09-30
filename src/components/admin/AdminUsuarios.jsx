@@ -3,6 +3,8 @@ import BentoAvatar from '../common/Avatar';
 import { useBentoTheme, BENTO_LIGHT } from '../../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../../hooks/useDismissable';
 import ResponsiveTable from '../responsive/ResponsiveTable';
+import ModalPermissoes from './ModalPermissoes';
+import { rotuloCapacidade } from '../../constants/permissoes';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -101,6 +103,9 @@ export default function AdminUsuarios({ adminEmail }) {
     const [salvando, setSalvando] = useState(null);
     const [confirmando, setConfirmando] = useState(null);
     const [erroConfirmacao, setErroConfirmacao] = useState(null);
+    const [editandoPermissoes, setEditandoPermissoes] = useState(null);
+    const [salvandoPermissoes, setSalvandoPermissoes] = useState(false);
+    const [erroPermissoes, setErroPermissoes] = useState(null);
 
     const carregar = useCallback(async (q = '') => {
         setCarregando(true);
@@ -148,6 +153,42 @@ export default function AdminUsuarios({ adminEmail }) {
         if (salvando) return;
         setConfirmando(null);
         setErroConfirmacao(null);
+    };
+
+    const salvarPermissoes = async (lista) => {
+        const usuario = editandoPermissoes;
+        if (!usuario) return;
+        setSalvandoPermissoes(true);
+        setErroPermissoes(null);
+        try {
+            const res = await fetch(`${API}/api/admin/usuarios/${usuario.usuario_id}/permissoes`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ permissoes: lista }),
+            });
+            const data = await res.json();
+            if (!data.sucesso) throw new Error(data.erro);
+            setUsuarios(prev => prev.map(u =>
+                u.usuario_id === usuario.usuario_id ? { ...u, permissoes: data.permissoes } : u
+            ));
+            setEditandoPermissoes(null);
+        } catch (e) {
+            // O estado exibido continua o anterior: só atualiza no sucesso.
+            setErroPermissoes(`Não foi possível salvar: ${e.message}`);
+        } finally {
+            setSalvandoPermissoes(false);
+        }
+    };
+
+    const abrirPermissoes = (usuario) => {
+        setErroPermissoes(null);
+        setEditandoPermissoes(usuario);
+    };
+
+    const fecharPermissoes = () => {
+        if (salvandoPermissoes) return;
+        setEditandoPermissoes(null);
+        setErroPermissoes(null);
     };
 
     const handleBusca = (e) => { e.preventDefault(); carregar(busca); };
@@ -272,11 +313,33 @@ export default function AdminUsuarios({ adminEmail }) {
                             { key: 'usuario_email', header: 'E-mail', priority: false },
                             { key: 'ultima_atividade', header: 'Última Atividade', priority: false, render: (v) => v ? new Date(v).toLocaleString('pt-BR') : '—' },
                             { key: 'perfil', header: 'Perfil', render: (_, u) => u.is_admin ? 'Admin' : 'Usuário' },
+                            {
+                                key: 'permissoes',
+                                header: 'Gestão',
+                                render: (_, u) => {
+                                    if (u.is_admin) return 'Todas (administrador)';
+                                    const lista = u.permissoes ?? [];
+                                    return lista.length ? lista.map(rotuloCapacidade).join(', ') : 'Nenhuma';
+                                },
+                            },
                         ]}
                         rows={usuarios}
                         keyExtractor={(u) => u.usuario_id}
                         cardTitle={(u) => u.funcionario_nome || u.usuario_nome || '—'}
                         actions={(u) => (
+                            <>
+                            {!u.is_admin && (
+                                <button
+                                    type="button"
+                                    onClick={() => abrirPermissoes(u)}
+                                    aria-label={`Editar permissões de gestão de ${u.funcionario_nome || u.usuario_nome || u.usuario_email}`}
+                                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-bold transition-colors"
+                                    style={{ borderColor: C.line, background: C.surface, color: C.ink2 }}
+                                >
+                                    <span className="material-symbols-outlined text-base" aria-hidden="true">key</span>
+                                    Permissões
+                                </button>
+                            )}
                             <button
                                 onClick={() => setConfirmando(u)}
                                 disabled={salvando === u.usuario_id}
@@ -293,6 +356,7 @@ export default function AdminUsuarios({ adminEmail }) {
                                 </span>
                                 {u.is_admin ? 'Revogar' : 'Conceder'}
                             </button>
+                            </>
                         )}
                         emptyMessage={(
                             <div className="flex flex-col items-center gap-2">
@@ -316,6 +380,17 @@ export default function AdminUsuarios({ adminEmail }) {
                     </div>
                 )}
             </div>
+
+            {editandoPermissoes && (
+                <ModalPermissoes
+                    usuario={editandoPermissoes}
+                    salvando={salvandoPermissoes}
+                    erro={erroPermissoes}
+                    onCancelar={fecharPermissoes}
+                    onSalvar={salvarPermissoes}
+                    C={C}
+                />
+            )}
 
             {confirmando && (
                 <ModalConfirmarPrivilegio

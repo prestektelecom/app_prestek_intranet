@@ -5,6 +5,8 @@
 export const ICONE_ACAO = {
     grant_admin: { icon: 'verified_user', cor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' },
     revoke_admin: { icon: 'person_off', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
+    grant_permissao: { icon: 'key', cor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' },
+    revoke_permissao: { icon: 'key_off', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
     update_comunicado: { icon: 'edit_document', cor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' },
     create_comunicado: { icon: 'add_circle', cor: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' },
     delete_comunicado: { icon: 'delete', cor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' },
