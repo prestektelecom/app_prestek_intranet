@@ -71,6 +71,11 @@ export default function SectorRow({ setor, setCurrentView }) {
 
             <span className="w-[86px] shrink-0 text-right font-mono text-[13px] tabular-nums" style={{ color: C.ink2 }}>
                 {setor.totalMembros} {Number(setor.totalMembros) === 1 ? 'pessoa' : 'pessoas'}
+                {setor.ajustado && (
+                    <span className="block font-sans text-[11px] font-semibold leading-tight" title="Equipe ajustada na intranet: o cadastro do IXC não foi alterado">
+                        ajustada<span className="sr-only"> na intranet</span>
+                    </span>
+                )}
             </span>
 
             <div className="ml-auto flex shrink-0 items-center gap-1">

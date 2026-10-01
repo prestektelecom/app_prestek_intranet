@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const PALETTE = [
   ['#EC7D23', '#fff'],
   ['#FFB259', '#5C3A12'],
@@ -15,7 +17,8 @@ function hashName(name) {
   return Math.abs(h);
 }
 
-export default function BentoAvatar({ name = '?', size = 32, color }) {
+export default function BentoAvatar({ name = '?', size = 32, color, src }) {
+  const [fotoFalhou, setFotoFalhou] = useState(false);
   const initials = name
     .split(' ')
     .slice(0, 2)
@@ -24,6 +27,18 @@ export default function BentoAvatar({ name = '?', size = 32, color }) {
     .toUpperCase();
 
   const pair = color || PALETTE[hashName(name) % PALETTE.length];
+
+  if (src && !fotoFalhou) {
+    // Decorativa: o nome já aparece em texto ao lado.
+    return (
+      <img
+        src={src}
+        alt=""
+        onError={() => setFotoFalhou(true)}
+        style={{ width: size, height: size, borderRadius: size / 2, objectFit: 'cover', flexShrink: 0, display: 'block' }}
+      />
+    );
+  }
 
   return (
     <div

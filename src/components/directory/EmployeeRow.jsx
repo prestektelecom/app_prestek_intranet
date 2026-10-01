@@ -19,7 +19,7 @@ import { coresSituacao } from './EmployeeCard';
  * Ações aqui são sempre visíveis: numa linha não há área de hover grande o
  * bastante para o padrão de revelar fazer sentido.
  */
-export default function EmployeeRow({ colab, departamentoNome, situacao: situacaoProp }) {
+export default function EmployeeRow({ colab, departamentoNome, tambemEm, situacao: situacaoProp }) {
     const C = useBentoTheme();
     const corDe = useDeptColor();
     const { tinta, marca } = corDe(departamentoNome);
@@ -74,6 +74,16 @@ export default function EmployeeRow({ colab, departamentoNome, situacao: situaca
             >
                 {departamentoNome}
             </span>
+            {tambemEm?.length > 0 && (
+                <span
+                    className="hidden shrink-0 text-[13px] md:inline"
+                    style={{ color: C.ink2 }}
+                    title={`Também em: ${tambemEm.join(', ')} (definido na intranet)`}
+                >
+                    +{tambemEm.length} {tambemEm.length === 1 ? 'setor' : 'setores'}
+                    <span className="sr-only"> (também em: {tambemEm.join(', ')})</span>
+                </span>
+            )}
 
             <span className="w-[92px] shrink-0 font-mono text-[13px] tabular-nums tracking-[0.05em]" style={{ color: ramal ? C.ink2 : C.muted }}>
                 {ramal ? `R. ${ramal}` : '—'}

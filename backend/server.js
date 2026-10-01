@@ -18,6 +18,7 @@ import { extrairCampos } from './services/fichaParser.js'
 import { validar as validarColaborador, montarPlano, buscarDuplicados } from './services/ixcColaborador.js'
 import { requireAuth, assinarToken } from './middleware/auth.js'
 import { CAPACIDADES, carregarAcesso, requerPermissao } from './middleware/permissoes.js'
+import { aplicarAjustes, SETORES_SEM_AJUSTE_PROPRIO } from './services/equipeSetor.js'
 
 // Gates de rota. `adminAuth` = só is_admin; `gate('x')` = is_admin OU a
 // capacidade x (ver openspec/changes/permissoes-por-capacidade/design.md).
@@ -1058,7 +1059,7 @@ app.get('/api/colaboradores', async (req, res) => {
         // Enriquecimentos locais e o grupo IXC, todos em paralelo. O grupo vem de
         // `usuarios` (cacheado, compartilhado com /api/setores) e é OPCIONAL: se a
         // listagem falhar, o diretório carrega sem o eixo de grupo em vez de 500.
-        const [fotosPrefsResult, ramaisQuery, usuarios, nomesGrupo, idsSupervisores] = await Promise.all([
+        const [fotosPrefsResult, ramaisQuery, usuarios, nomesGrupo, idsSupervisores, ajustesRows] = await Promise.all([
             // 1. Fotos salvas via tela de Configurações ficam em usuarios_preferencias como avatarUrl
             pool.query("SELECT usuario_email, valor FROM usuarios_preferencias WHERE chave = 'avatarUrl'"),
             // 2. Ramais editados pelo usuário em Configurações (usuarios_preferencias)
@@ -1074,7 +1075,18 @@ app.get('/api/colaboradores', async (req, res) => {
             }),
             nomesDeGrupo(),
             idsGruposSupervisoresLocais(),
+            // Ajustes de equipe feitos na intranet (só id e ação, sem autor). Tabela
+            // ausente = sem ajustes, o diretório carrega como antes.
+            pool.query('SELECT id_setor, id_funcionario, acao FROM setores_membros_manuais').catch((e) => {
+                console.warn('[colaboradores] setores_membros_manuais indisponível:', e.message);
+                return { rows: [] };
+            }),
         ]);
+
+        const ajustesPorFuncionario = {};
+        ajustesRows.rows.forEach(r => {
+            (ajustesPorFuncionario[String(r.id_funcionario)] ||= []).push({ id_setor: String(r.id_setor), acao: r.acao });
+        });
 
         const mapaFotosPorEmail = fotosPrefsResult.rows.reduce((acc, curr) => {
             if (curr.usuario_email) acc[curr.usuario_email.toLowerCase()] = curr.valor;
@@ -1111,6 +1123,8 @@ app.get('/api/colaboradores', async (req, res) => {
                     funcionario_nome: f.funcionario,
                     usuario_email: f.email,
                     id_departamento: f.id_departamento,
+                    // Setores definidos só na intranet: [{ id_setor, acao: 'incluir'|'excluir' }]
+                    ajustes_setores: ajustesPorFuncionario[String(f.id)] || [],
                     id_grupo: idGrupo,
                     grupo_nome: idGrupo ? rotuloGrupo(idGrupo, nomesGrupo) : null,
                     grupo_supervisor: !!idGrupo && idsSupervisores.has(idGrupo),
@@ -2452,6 +2466,125 @@ app.post('/api/admin/responsaveis-manuais', gate('usuarios'), async (req, res) =
     }
 });
 
+// Ajustes de equipe por setor, só na intranet (change setores-membros-manuais).
+// incluir/excluir = upsert; desfazer = apaga a linha e devolve a pessoa ao IXC.
+// Mesmo gate das outras rotas de "estrutura de pessoas": admin ou capacidade `usuarios`.
+const ACOES_EQUIPE = { incluir: 'setor_membro_incluir', excluir: 'setor_membro_excluir', desfazer: 'setor_membro_desfazer' };
+
+app.post('/api/admin/setores-membros-manuais', gate('usuarios'), async (req, res) => {
+    const { id_setor, id_funcionario, nome, acao } = req.body || {};
+    const idSetor = String(id_setor ?? '').trim();
+    const idFunc = String(id_funcionario ?? '').trim();
+
+    if (!ACOES_EQUIPE[acao] || !/^\d+$/.test(idSetor) || !/^\d+$/.test(idFunc)) {
+        return res.status(400).json({ sucesso: false, erro: 'Informe setor, colaborador e uma ação válida (incluir, excluir ou desfazer).' });
+    }
+    if (SETORES_SEM_AJUSTE_PROPRIO.includes(idSetor)) {
+        return res.status(400).json({ sucesso: false, erro: 'A equipe de Suporte e Relacionamento se ajusta pelo setor ATENDIMENTO.' });
+    }
+    const nomeLimpo = typeof nome === 'string' ? nome.trim().slice(0, 255) : null;
+    const adminEmail = req.usuario.email;
+
+    try {
+        if (acao === 'desfazer') {
+            await pool.query('DELETE FROM setores_membros_manuais WHERE id_setor = $1 AND id_funcionario = $2', [idSetor, idFunc]);
+        } else {
+            await pool.query(
+                `INSERT INTO setores_membros_manuais (id_setor, id_funcionario, acao, nome, atualizado_por, atualizado_em)
+                 VALUES ($1, $2, $3, $4, $5, NOW())
+                 ON CONFLICT (id_setor, id_funcionario) DO UPDATE
+                 SET acao = EXCLUDED.acao, nome = EXCLUDED.nome, atualizado_por = EXCLUDED.atualizado_por, atualizado_em = NOW()`,
+                [idSetor, idFunc, acao, nomeLimpo, adminEmail]
+            );
+        }
+        cacheInvalidate(CACHE_KEY_SETORES);
+
+        await registrarAuditoria(adminEmail, ACOES_EQUIPE[acao], 'setor', idSetor,
+            `${acao === 'incluir' ? 'Incluiu' : acao === 'excluir' ? 'Excluiu' : 'Desfez o ajuste de'} ${nomeLimpo || `colaborador ${idFunc}`} ${acao === 'incluir' ? 'na' : acao === 'excluir' ? 'da' : 'na'} equipe do setor ${idSetor}`);
+
+        const result = await pool.query('SELECT id_setor, id_funcionario, acao FROM setores_membros_manuais');
+        return res.json({ sucesso: true, ajustes: result.rows });
+    } catch (e) {
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
+    }
+});
+
+// Lote: "Remover todos" e "Restaurar equipe do IXC". Uma transação só (tudo ou
+// nada) e uma linha de Auditoria por tipo de ação, em vez de uma por pessoa.
+const MAX_LOTE_EQUIPE = 500;
+const VERBO_LOTE = { incluir: 'Incluiu', excluir: 'Excluiu', desfazer: 'Desfez o ajuste de' };
+
+app.post('/api/admin/setores-membros-manuais/lote', gate('usuarios'), async (req, res) => {
+    const { id_setor, ajustes } = req.body || {};
+    const idSetor = String(id_setor ?? '').trim();
+
+    const valido = /^\d+$/.test(idSetor)
+        && Array.isArray(ajustes)
+        && ajustes.length >= 1 && ajustes.length <= MAX_LOTE_EQUIPE
+        && ajustes.every(a => a && ACOES_EQUIPE[a.acao] && /^\d+$/.test(String(a.id_funcionario ?? '').trim()));
+    if (!valido) {
+        return res.status(400).json({ sucesso: false, erro: `Envie de 1 a ${MAX_LOTE_EQUIPE} ajustes, cada um com colaborador numérico e uma ação válida (incluir, excluir ou desfazer).` });
+    }
+    if (SETORES_SEM_AJUSTE_PROPRIO.includes(idSetor)) {
+        return res.status(400).json({ sucesso: false, erro: 'A equipe de Suporte e Relacionamento se ajusta pelo setor ATENDIMENTO.' });
+    }
+
+    // Uma ação por pessoa: a última do lote vence (o par setor+pessoa é a chave).
+    const porPessoa = new Map();
+    for (const a of ajustes) {
+        porPessoa.set(String(a.id_funcionario).trim(), {
+            acao: a.acao,
+            nome: typeof a.nome === 'string' ? a.nome.trim().slice(0, 255) : null,
+        });
+    }
+    const adminEmail = req.usuario.email;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        for (const [idFunc, { acao, nome }] of porPessoa) {
+            if (acao === 'desfazer') {
+                await client.query('DELETE FROM setores_membros_manuais WHERE id_setor = $1 AND id_funcionario = $2', [idSetor, idFunc]);
+            } else {
+                await client.query(
+                    `INSERT INTO setores_membros_manuais (id_setor, id_funcionario, acao, nome, atualizado_por, atualizado_em)
+                     VALUES ($1, $2, $3, $4, $5, NOW())
+                     ON CONFLICT (id_setor, id_funcionario) DO UPDATE
+                     SET acao = EXCLUDED.acao, nome = EXCLUDED.nome, atualizado_por = EXCLUDED.atualizado_por, atualizado_em = NOW()`,
+                    [idSetor, idFunc, acao, nome, adminEmail]
+                );
+            }
+        }
+        await client.query('COMMIT');
+    } catch (e) {
+        await client.query('ROLLBACK').catch(() => {});
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
+    } finally {
+        client.release();
+    }
+
+    cacheInvalidate(CACHE_KEY_SETORES);
+
+    // Auditoria: uma linha por tipo de ação, com a contagem e até 5 nomes.
+    for (const acao of Object.keys(ACOES_EQUIPE)) {
+        const afetados = [...porPessoa.entries()].filter(([, v]) => v.acao === acao);
+        if (!afetados.length) continue;
+        const nomes = afetados.slice(0, 5).map(([id, v]) => v.nome || `colaborador ${id}`).join(', ');
+        const resto = afetados.length > 5 ? ` e mais ${afetados.length - 5}` : '';
+        await registrarAuditoria(adminEmail, ACOES_EQUIPE[acao], 'setor', idSetor,
+            `${VERBO_LOTE[acao]} ${afetados.length} colaborador(es) na equipe do setor ${idSetor} (em lote): ${nomes}${resto}`);
+    }
+
+    try {
+        const result = await pool.query('SELECT id_setor, id_funcionario, acao FROM setores_membros_manuais');
+        return res.json({ sucesso: true, ajustes: result.rows });
+    } catch (e) {
+        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
+    }
+});
+
 // ─── Rotas: Admin — Gerenciar Descrições de Setores ────────────────────────
 app.post('/api/admin/setores-descricoes', gate('usuarios'), async (req, res) => {
     const { id_setor, descricao } = req.body;
@@ -2670,12 +2803,15 @@ async function buscarIdsGruposSupervisores(host, headers) {
     return idsGruposSupervisoresLocais();
 }
 
+const CACHE_KEY_SETORES = 'setores:lista:v3';
+
 // ─── Rota: Diretório de Setores (empresa_setor + funcionários com SUPERVISOR) ────────
 app.get('/api/setores', async (req, res) => {
     // ── Cache: retorna imediatamente se ainda válido ────────────────────────────
-    // Sufixo v2: a entrada passou de array de setores para { setores, resumo }, e
-    // um processo antigo em memória devolveria a forma anterior.
-    const CACHE_KEY = 'setores:lista:v2';
+    // Sufixo v3: o setor ganhou `ajustado`/`incluidos`/`excluidos` (equipe
+    // efetiva, com os ajustes feitos na intranet), e um processo antigo em
+    // memória devolveria a forma anterior. Invalidada ao gravar um ajuste.
+    const CACHE_KEY = CACHE_KEY_SETORES;
     const cached = cacheGet(CACHE_KEY);
     if (cached.hit) {
         return res.json({ sucesso: true, ...cached.data, cacheStatus: 'HIT' });
@@ -2691,7 +2827,7 @@ app.get('/api/setores', async (req, res) => {
 
     try {
         // Busca setores, funcionários, usuários E supervisores em paralelo (5 em vez de 3+1)
-        const [resSetor, resFunc, usuarios, idsGruposSupervisor, responsaveisManuaisRows, descricoesRows, nomesGrupo] = await Promise.all([
+        const [resSetor, resFunc, usuarios, idsGruposSupervisor, responsaveisManuaisRows, descricoesRows, nomesGrupo, ajustesRows] = await Promise.all([
             fetchIXC(`https://${host}/webservice/v1/empresa_setor`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ qtype: 'empresa_setor.ativo', query: 'S', oper: '=', page: '1', rp: '1000', sortname: 'empresa_setor.setor', sortorder: 'asc' })
@@ -2708,6 +2844,11 @@ app.get('/api/setores', async (req, res) => {
             pool.query('SELECT * FROM responsaveis_manuais').catch(() => ({ rows: [] })),
             pool.query('SELECT * FROM setores_descricoes').catch(() => ({ rows: [] })),
             nomesDeGrupo(),
+            // Ajustes de equipe feitos na intranet. Tabela ausente = sem ajustes.
+            pool.query('SELECT id_setor, id_funcionario, acao FROM setores_membros_manuais').catch((e) => {
+                console.warn('[setores] setores_membros_manuais indisponível:', e.message);
+                return { rows: [] };
+            }),
         ]);
 
         const dataSetor = await resSetor.json();
@@ -2724,6 +2865,14 @@ app.get('/api/setores', async (req, res) => {
             responsaveisManuais[String(r.id_setor)] = r;
         });
 
+        // Ajustes de equipe por setor e os funcionários ATIVOS por id (um ajuste só
+        // vale para quem está ativo no IXC).
+        const ajustesPorSetor = {};
+        ajustesRows.rows.forEach(r => {
+            (ajustesPorSetor[String(r.id_setor)] ||= []).push(r);
+        });
+        const ativosPorId = new Map(funcionarios.map(f => [String(f.id), f]));
+
         const descricoesManuais = {};
         descricoesRows.rows.forEach(r => {
             descricoesManuais[String(r.id_setor)] = r.descricao;
@@ -2737,7 +2886,7 @@ app.get('/api/setores', async (req, res) => {
 
         // Agrupa funcionários ativos por setor e encontra o SUPERVISOR(A)
         const setores = setoresRaw.map(setor => {
-            const membros = funcionarios.filter(f => {
+            const membrosBase = funcionarios.filter(f => {
                 const idDep = String(f.id_departamento).trim();
                 const idSetor = String(setor.id).trim();
                 // Agrupamento para "ATENDIMENTO" (inclui Suporte: 15 e Relacionamento: 68)
@@ -2747,6 +2896,11 @@ app.get('/api/setores', async (req, res) => {
                 
                 return idDep === idSetor;
             });
+
+            // Equipe efetiva: a do IXC (regra acima, intocada) mais os ajustes da intranet.
+            const { membros, incluidos, excluidos } = aplicarAjustes(
+                membrosBase, ajustesPorSetor[String(setor.id)] || [], ativosPorId
+            );
 
             membros.forEach(m => idsUnicos.add(String(m.id)));
 
@@ -2806,6 +2960,10 @@ app.get('/api/setores', async (req, res) => {
                 cor: setor.cor || null,
                 descricao_customizada: descricoesManuais[String(setor.id)] || null,
                 totalMembros: membros.length,
+                // Equipe ajustada à mão na intranet (tem efeito, não só linha na tabela).
+                ajustado: incluidos + excluidos > 0,
+                incluidos,
+                excluidos,
                 grupos,
                 responsavel: responsavel ? {
                     id: responsavel.id,

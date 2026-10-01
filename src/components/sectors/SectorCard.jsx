@@ -219,6 +219,13 @@ export default function SectorCard({ setor, isAdmin, onSaveDescription, setCurre
                 <div className="shrink-0 pl-3 text-right" style={{ borderLeft: `1px solid ${C.line}` }}>
                     <p className="m-0 font-mono text-[13px] font-extrabold uppercase tracking-[0.1em]" style={{ color: C.ink2 }}>Equipe</p>
                     <p className="m-0 mt-0.5 text-[13.5px] font-bold tabular-nums" style={{ color: C.ink }}>{setor.totalMembros}</p>
+                    {/* Equipe ajustada à mão na intranet (incluir/excluir pessoas). O IXC não
+                        muda; a marca é texto para ninguém achar que o cadastro mudou. */}
+                    {setor.ajustado && (
+                        <p className="m-0 mt-0.5 max-w-[76px] text-[11px] font-semibold leading-tight" style={{ color: C.ink2 }} title="Equipe ajustada na intranet: o cadastro do IXC não foi alterado">
+                            ajustada na intranet
+                        </p>
+                    )}
                 </div>
             </div>
 

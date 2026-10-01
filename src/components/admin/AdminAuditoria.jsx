@@ -101,6 +101,9 @@ export default function AdminAuditoria({ adminEmail }) {
                         <option value="revoke_admin">Revogar Admin</option>
                         <option value="grant_permissao">Conceder permissão</option>
                         <option value="revoke_permissao">Retirar permissão</option>
+                        <option value="setor_membro_incluir">Incluir na equipe do setor</option>
+                        <option value="setor_membro_excluir">Excluir da equipe do setor</option>
+                        <option value="setor_membro_desfazer">Desfazer ajuste de equipe</option>
                         <option value="update_comunicado">Editar Comunicado</option>
                         <option value="create_comunicado">Criar Comunicado</option>
                         <option value="delete_comunicado">Excluir Comunicado</option>

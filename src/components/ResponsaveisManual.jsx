@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import BentoAvatar from './common/Avatar';
+import EquipeSetor from './admin/EquipeSetor';
 import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 
 // ── Paleta Bento Blue ─────────────────────────────────────────────────────
@@ -32,6 +33,9 @@ export default function ResponsaveisManual() {
     const [erro, setErro] = useState(null);
     const [busca, setBusca] = useState('');
     const [setorAberto, setSetorAberto] = useState(null);
+    // Painel de equipe do setor (ajustes de membros só na intranet), separado do
+    // seletor de responsável: os dois não ficam abertos ao mesmo tempo.
+    const [equipeAberta, setEquipeAberta] = useState(null);
     const [buscaFunc, setBuscaFunc] = useState('');
     // Clicar num nome gravava na hora, sem confirmação — mesma classe do
     // achado de conceder admin (Fase 15, P0), um degrau abaixo em
@@ -68,6 +72,22 @@ export default function ResponsaveisManual() {
     }, []);
 
     useEffect(() => { carregarDados(); }, [carregarDados]);
+
+    // Depois de um ajuste de equipe: o POST devolve a lista completa de ajustes.
+    // Reaplica nas pessoas já carregadas e recarrega os setores (totais e marca
+    // "equipe ajustada"), já que o cache do backend foi invalidado.
+    const aoAjustarEquipe = useCallback(async (ajustes) => {
+        const porPessoa = {};
+        (ajustes || []).forEach(a => {
+            (porPessoa[String(a.id_funcionario)] ||= []).push({ id_setor: String(a.id_setor), acao: a.acao });
+        });
+        setFuncionarios(prev => prev.map(f => ({ ...f, ajustes_setores: porPessoa[String(f.funcionario_id ?? f.id)] || [] })));
+        try {
+            const res = await fetch('/api/setores');
+            const data = await res.json();
+            if (data.sucesso) setSetores(data.setores || []);
+        } catch { /* a lista de pessoas já está atualizada; os totais voltam no próximo "Atualizar" */ }
+    }, []);
 
     const confirmarResponsavel = async () => {
         if (!candidato) return;
@@ -169,7 +189,7 @@ export default function ResponsaveisManual() {
                 <div>
                     <h1 className="font-display text-3xl font-extrabold tracking-tight" style={{ color: C.ink }}>Responsável por Setor</h1>
                     <p className="mt-1 text-sm" style={{ color: C.ink2 }}>
-                        Defina manualmente o responsável exibido em cada card do Diretório de Setores. Tem prioridade sobre os Grupos de Supervisor.
+                        Defina manualmente o responsável exibido em cada card do Diretório de Setores (tem prioridade sobre os Grupos de Supervisor) e, em "Equipe", quem faz parte de cada setor. Tudo vale só na intranet; o IXC não muda.
                     </p>
                 </div>
                 <button
@@ -300,6 +320,11 @@ export default function ResponsaveisManual() {
                                         <div className="flex flex-wrap items-center gap-2">
                                             <span className="text-sm font-semibold" style={{ color: C.ink }}>{setor.nome}</span>
                                             <span className="text-xs" style={{ color: C.ink2 }}>{setor.totalMembros} membro{setor.totalMembros !== 1 ? 's' : ''}</span>
+                                            {setor.ajustado && (
+                                                <span className="text-xs font-semibold" style={{ color: C.ink2 }}>
+                                                    · equipe ajustada na intranet
+                                                </span>
+                                            )}
                                             {manual && (
                                                 <span
                                                     className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold"
@@ -351,8 +376,24 @@ export default function ResponsaveisManual() {
                                         </button>
                                     )}
                                     <button
+                                        type="button"
+                                        onClick={() => {
+                                            setEquipeAberta(equipeAberta === setor.id ? null : setor.id);
+                                            setSetorAberto(null);
+                                            setCandidato(null);
+                                        }}
+                                        aria-expanded={equipeAberta === setor.id}
+                                        aria-label={`Equipe de ${setor.nome}`}
+                                        className="flex min-h-[44px] items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold transition-colors"
+                                        style={{ background: C.surface, color: C.ink2, borderColor: C.line }}
+                                    >
+                                        <span className="material-symbols-outlined text-sm" aria-hidden="true">groups</span>
+                                        <span className="hidden sm:inline">Equipe</span>
+                                    </button>
+                                    <button
                                         onClick={() => {
                                             setSetorAberto(isAberto ? null : setor.id);
+                                            setEquipeAberta(null);
                                             setBuscaFunc('');
                                             setCandidato(null);
                                         }}
@@ -367,6 +408,10 @@ export default function ResponsaveisManual() {
                                     </button>
                                 </div>
                             </div>
+
+                            {equipeAberta === setor.id && (
+                                <EquipeSetor setor={setor} colaboradores={funcionarios} onAjustes={aoAjustarEquipe} />
+                            )}
 
                             {/* Dropdown de seleção de funcionário */}
                             {isAberto && candidato?.id_setor === setor.id && (

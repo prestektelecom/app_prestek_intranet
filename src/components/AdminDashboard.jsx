@@ -7,6 +7,7 @@ import PlantaoHistorico from './schedule/PlantaoHistorico';
 import BentoAvatar from './common/Avatar';
 import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { iconeParaAcao } from './admin/iconeAcao';
+import { useAvatarUrl } from '../hooks/useProfileDisplay';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -86,6 +87,7 @@ function NavRow({ C, id, icon, label, active, badge, onClick }) {
 export default function AdminDashboard({ setCurrentView, user }) {
     const C = useBentoTheme();
     const isDark = C.bg !== BENTO_LIGHT.bg;
+    const { avatarUrl } = useAvatarUrl(user);
     const [abaAtiva, setAbaAtiva] = useState('painel');
     const [stats, setStats] = useState(null);
     const [logsRecentes, setLogsRecentes] = useState([]);
@@ -190,7 +192,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                     <div className="flex flex-col gap-1 p-4">
                         {/* Avatar Admin Azul Bento */}
                         <div className="mb-5 flex items-center gap-3 rounded-xl p-3" style={{ background: C.surfaceSoft }}>
-                            <BentoAvatar name={adminName} size={48} color={[C.accent, C.onAccent]} />
+                            <BentoAvatar name={adminName} size={48} src={avatarUrl} color={[C.accent, C.onAccent]} />
                             <div className="flex min-w-0 flex-col">
                                 <p className="truncate text-sm font-bold" style={{ color: C.ink }}>{adminName}</p>
                                 <p className="text-xs font-medium" style={{ color: C.ink2 }}>Administrador</p>

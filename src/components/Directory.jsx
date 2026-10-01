@@ -6,6 +6,7 @@ import EmployeeRow from './directory/EmployeeRow';
 import { SkeletonCard, SkeletonRow, EmptyState, ErrorState, AvisoTaxonomia } from './directory/DirectoryStates';
 import GrupoSecao from './directory/GrupoSecao';
 import { situacaoColaborador, semAcento, nomeProprio, SITUACOES_FILTRO } from './directory/statusColaborador';
+import { setoresDaPessoa } from '../utils/setoresDaPessoa';
 
 // Quantidade por lote do scroll infinito. O esqueleto usa o MESMO número —
 // antes eram 8 esqueletos para um primeiro lote de 16, e o grid dobrava de
@@ -14,32 +15,11 @@ const LOTE = 16;
 
 const CHAVE_VISAO = '@Stitch:directoryView';
 
-// O IXC mantém três ids de departamento para o que a empresa trata como um
-// setor só (13 = Atendimento, com 15 e 68 como desdobramentos herdados de
-// migrações antigas). Filtrar por 13 precisa trazer os três — e, desde esta
-// change, o CHIP também precisa contar os três, senão o número no chip
-// contradiz o "Exibindo X de Y" logo abaixo dele.
-const DEPTOS_MESCLADOS = { '13': ['15', '68'] };
-
 // Mesma ordem do chip de situação (statusColaborador.js), transformada num
 // mapa de prioridade: quem está na empresa hoje aparece antes de quem não
 // está mais — a base real tem quase 2/3 de gente afastada/inativa, e a busca
 // dominante desta tela é achar um colega que trabalha aqui.
 const PRIORIDADE_SITUACAO = new Map(SITUACOES_FILTRO.map((rotulo, i) => [rotulo, i]));
-
-/** Ids que o filtro `id` deve aceitar, já com as mesclagens aplicadas. */
-function idsDoFiltro(id) {
-    return [id, ...(DEPTOS_MESCLADOS[id] || [])];
-}
-
-/** Id sob o qual um colaborador deve ser contado nos chips. */
-function idCanonico(id) {
-    const alvo = String(id || '').trim();
-    for (const [canonico, alias] of Object.entries(DEPTOS_MESCLADOS)) {
-        if (alias.includes(alvo)) return canonico;
-    }
-    return alvo;
-}
 
 // Teto de segurança do agrupamento. Hoje o maior setor tem 53 pessoas, então
 // agrupar significa renderizar tudo de uma vez — o que é justamente o que
@@ -157,10 +137,17 @@ export default function Directory({ user }) {
     // cards rotulados com três nomes diferentes, nenhum deles o do chip.
     const enriquecidos = useMemo(() => colaboradores.map(c => {
         const situacao = situacaoColaborador(c.funcionario_nome, c.ativo);
+        // Setores efetivos: o do IXC (principal) + os incluídos na intranet −
+        // os excluídos. Uma pessoa pode estar em mais de um; sem ajuste é só
+        // o setor do IXC, como sempre foi.
+        const setores = setoresDaPessoa(c.id_departamento, c.ajustes_setores);
         return {
             ...c,
             _situacao: situacao,
-            _deptoNome: resolverDepartamento(idCanonico(c.id_departamento)),
+            _setores: setores,
+            _deptoNome: resolverDepartamento(setores[0]),
+            // Os demais setores só existem por ajuste feito na intranet.
+            _tambemEm: setores.slice(1).map(resolverDepartamento),
             // Busca sem acento: "JOSE" tem que achar "José", e vice-versa. Com
             // `toLowerCase().includes()` puro, metade dos nomes da base — que
             // são acentuados — só era encontrável digitando o acento certo.
@@ -177,11 +164,10 @@ export default function Directory({ user }) {
     }, [enriquecidos, busca]);
 
     const colaboradoresFiltrados = useMemo(() => {
-        const aceitos = deptoFiltro ? new Set(idsDoFiltro(deptoFiltro)) : null;
-        const base = (!aceitos && !situacaoFiltro)
+        const base = (!deptoFiltro && !situacaoFiltro)
             ? colaboradoresPorBusca
             : colaboradoresPorBusca.filter(c =>
-                (!aceitos || aceitos.has(String(c.id_departamento).trim()))
+                (!deptoFiltro || c._setores.includes(String(deptoFiltro)))
                 && (!situacaoFiltro || c._situacao.rotulo === situacaoFiltro)
             );
         // Com um chip de situação ativo todo mundo já está na mesma situação —
@@ -196,11 +182,8 @@ export default function Directory({ user }) {
     // chip selecionado mostraria o próprio total e os outros zerariam.
     const contagemSituacao = useMemo(() => {
         const acc = {};
-        // Set criado uma vez, fora do filter — dentro dele seriam 478
-        // alocações a cada mudança de filtro.
-        const aceitos = deptoFiltro ? new Set(idsDoFiltro(deptoFiltro)) : null;
-        const base = aceitos
-            ? colaboradoresPorBusca.filter(c => aceitos.has(String(c.id_departamento).trim()))
+        const base = deptoFiltro
+            ? colaboradoresPorBusca.filter(c => c._setores.includes(String(deptoFiltro)))
             : colaboradoresPorBusca;
         base.forEach(c => { acc[c._situacao.rotulo] = (acc[c._situacao.rotulo] || 0) + 1; });
         return acc;
@@ -212,11 +195,14 @@ export default function Directory({ user }) {
     // contava ids brutos enquanto a faixa de chips filtrava os "(INATIVO)".
     const { chips, kpiDeptos } = useMemo(() => {
         const map = new Map();
+        // Quem está em dois setores conta no chip dos dois (cada chip filtra a
+        // lista, então a contagem tem que bater com ela).
         colaboradoresPorBusca.forEach(c => {
-            const id = idCanonico(c.id_departamento);
-            if (!id) return;
-            if (!map.has(id)) map.set(id, { id, nome: resolverDepartamento(id), count: 0 });
-            map.get(id).count++;
+            c._setores.forEach(id => {
+                if (!id) return;
+                if (!map.has(id)) map.set(id, { id, nome: resolverDepartamento(id), count: 0 });
+                map.get(id).count++;
+            });
         });
         const lista = [...map.values()]
             .filter(d => isAdmin || !d.nome.toUpperCase().includes('(INATIVO)'))
@@ -324,6 +310,7 @@ export default function Directory({ user }) {
                 colab={colab}
                 situacao={colab._situacao}
                 departamentoNome={colab._deptoNome}
+                tambemEm={colab._tambemEm}
                 // Agrupado: o nome fica sob o h2 do GrupoSecao (departamento),
                 // então vira h3. Sem agrupamento não existe esse nível
                 // intermediário — o nome É o próximo nível real depois do h1

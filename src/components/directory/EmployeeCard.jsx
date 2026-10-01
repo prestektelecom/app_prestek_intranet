@@ -46,7 +46,7 @@ export function coresSituacao(tom, C) {
  * O relevo mora em `neumorfismo.js`, que resolve a condição que o efeito exige
  * — face da mesma cor do fundo — nos cinco temas do projeto.
  */
-export default function EmployeeCard({ colab, departamentoNome, situacao: situacaoProp, headingLevel = 2 }) {
+export default function EmployeeCard({ colab, departamentoNome, tambemEm, situacao: situacaoProp, headingLevel = 2 }) {
     const C = useBentoTheme();
     const corDe = useDeptColor();
     const [hover, setHover] = useState(false);
@@ -164,6 +164,14 @@ export default function EmployeeCard({ colab, departamentoNome, situacao: situac
                 <p className="m-0 mt-1 truncate text-sm font-semibold" style={{ color: tinta }}>
                     {departamentoNome}
                 </p>
+                {/* Setores definidos só na intranet (o do IXC fica acima, como
+                    principal). Texto, não só cor: ink2 passa o contraste em
+                    todos os temas, ao contrário de muted. */}
+                {tambemEm?.length > 0 && (
+                    <p className="m-0 mt-0.5 truncate text-[13px]" style={{ color: C.ink2 }} title={`Também em: ${tambemEm.join(', ')} (definido na intranet)`}>
+                        também em: {tambemEm.join(', ')}
+                    </p>
+                )}
 
                 {/* Este é o lugar do "1.240 followers" do original, que lá é
                     text-gray-400 sobre fundo cinza. Aqui é ink2, não muted:
