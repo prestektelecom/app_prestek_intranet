@@ -34,10 +34,11 @@ const sIconBox = (color, bg) => ({
     color,
 });
 
-// Logo azul estilo bento
+// Logo estilo bento. Gira devagar (classe `logo-giratorio`, index.css); é decorativo,
+// o nome do produto ao lado já identifica.
 function BentoLogo({ C, size = 32 }) {
     return (
-        <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className="logo-giratorio" aria-hidden="true" width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="4" y="4" width="14" height="14" rx="4" fill={C.accent} />
             <rect x="4" y="23" width="14" height="21" rx="4" fill={C.accentDark} />
             <rect x="23" y="4" width="21" height="14" rx="4" fill={C.accentSoft} />

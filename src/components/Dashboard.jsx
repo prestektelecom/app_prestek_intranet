@@ -1340,7 +1340,7 @@ export default function Dashboard({ setCurrentView, user }) {
           <div className="flex gap-5">
             <a href="#" className="text-inherit no-underline hover:text-foreground">Política de Privacidade</a>
             <a href="#" className="text-inherit no-underline hover:text-foreground">Diretrizes Internas</a>
-            <span className="text-[var(--success-bento)]">● v1.1.0</span>
+            <span className="text-[var(--success-bento)]">● v1.0.0</span>
           </div>
         </div>
       </div>

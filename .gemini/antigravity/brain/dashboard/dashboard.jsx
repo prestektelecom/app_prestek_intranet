@@ -916,7 +916,7 @@ function Dashboard() {
             <div style={{ display: 'flex', gap: 22 }}>
               <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Política de Privacidade</a>
               <a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Diretrizes Internas</a>
-              <span style={{ color: C.success }}>● v1.1.0</span>
+              <span style={{ color: C.success }}>● v1.0.0</span>
             </div>
           </div>
         </main>

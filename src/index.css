@@ -1229,3 +1229,14 @@ label:has(> input.sr-only:focus-visible) {
   border-color: var(--n-mercury);
   background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
+
+/* Logo do Painel Admin: giro contínuo e lento. Linear de propósito (um giro
+   com ease pararia a cada volta). Com prefers-reduced-motion o bloco global
+   acima reduz a duração para ~0 e a contagem para 1: como o keyframe termina
+   em 360deg, o logo fica na pose original, sem movimento. */
+@keyframes logo-giro {
+  to { transform: rotate(360deg); }
+}
+.logo-giratorio {
+  animation: logo-giro 12s linear infinite;
+}

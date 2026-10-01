@@ -2,7 +2,7 @@
 
 - [x] 1.1 Criar `backend/migrations/023_usuarios_permissoes.sql`: `CREATE TABLE IF NOT EXISTS usuarios_permissoes` (`usuario_id VARCHAR(50)` com FK para `usuarios_perfil(usuario_id) ON DELETE CASCADE`, `permissao VARCHAR(50)`, `concedido_por VARCHAR(255)`, `concedido_em TIMESTAMPTZ DEFAULT NOW()`, PK `(usuario_id, permissao)`), sem seed e sem `CHECK`
 - [x] 1.2 Reexecutar a migration duas vezes contra um banco descartável ou revisar linha a linha para confirmar que é idempotente (sem `INSERT`, só `IF NOT EXISTS`)
-- [ ] 1.3 Aplicar a 023 em produção só com `psql -f` e com autorização do Felix (nunca `run.js` inteiro); conferir com `\d usuarios_permissoes`
+- [x] 1.3 Aplicar a 023 em produção só com `psql -f` e com autorização do Felix (nunca `run.js` inteiro); conferir com `\d usuarios_permissoes`
 
 ## 2. Backend — resolução e middleware
 
@@ -32,17 +32,17 @@
 
 ## 5. Verificação
 
-- [ ] 5.1 Confirmar com o Felix qual conta não-admin usar nos testes (Everton, usuário 467, ou outra) e obter autorização para conceder/revogar permissões nela em produção
-- [ ] 5.2 Com uma instância local (porta 3002) e JWT assinado para a conta de teste: sem permissões, uma rota de cada capacidade responde 403; depois de conceder `comunicados`, `POST /api/comunicados` funciona e `POST /api/plantoes` continua 403; revogar e repetir confirma 403 imediato sem novo login
-- [ ] 5.3 Confirmar que detentor de `usuarios` recebe 403 em `PUT /api/admin/usuarios/:id/privilegios` e em `PUT /api/admin/usuarios/:id/permissoes`
-- [ ] 5.4 Confirmar com token de admin que uma rota de cada grupo (comunicados, plantões, usuários, auditoria, TI, processos) segue 200 depois do refactor do `adminAuth`
-- [ ] 5.5 Confirmar valor inválido (`"root"`) → 400, usuário inexistente → 404, diff vazio → sem novo registro de auditoria, e `GET /api/permissoes/minhas` ignorando um `usuarioId` forjado
-- [ ] 5.6 Restaurar a conta de teste ao estado original (sem permissões), encerrar a instância de teste, apagar arquivos temporários e conferir `git status` sem sobra
-- [ ] 5.7 Na tela: abrir o diálogo, marcar e desmarcar, salvar → confirmação nominal → gravar; cancelar; forçar erro de rede e ver o alerta dentro do diálogo; conferir foco, Escape e Tab nos 5 temas
+- [x] 5.1 Confirmar com o Felix qual conta não-admin usar nos testes (Everton, usuário 467, ou outra) e obter autorização para conceder/revogar permissões nela em produção
+- [x] 5.2 Com uma instância local (porta 3002) e JWT assinado para a conta de teste: sem permissões, uma rota de cada capacidade responde 403; depois de conceder `comunicados`, `POST /api/comunicados` funciona e `POST /api/plantoes` continua 403; revogar e repetir confirma 403 imediato sem novo login
+- [x] 5.3 Confirmar que detentor de `usuarios` recebe 403 em `PUT /api/admin/usuarios/:id/privilegios` e em `PUT /api/admin/usuarios/:id/permissoes`
+- [x] 5.4 Confirmar com token de admin que uma rota de cada grupo (comunicados, plantões, usuários, auditoria, TI, processos) segue 200 depois do refactor do `adminAuth`
+- [x] 5.5 Confirmar valor inválido (`"root"`) → 400, usuário inexistente → 404, diff vazio → sem novo registro de auditoria, e `GET /api/permissoes/minhas` ignorando um `usuarioId` forjado
+- [x] 5.6 Restaurar a conta de teste ao estado original (sem permissões), encerrar a instância de teste, apagar arquivos temporários e conferir `git status` sem sobra
+- [x] 5.7 Na tela: abrir o diálogo, marcar e desmarcar, salvar → confirmação nominal → gravar; cancelar; forçar erro de rede e ver o alerta dentro do diálogo; conferir foco, Escape e Tab nos 5 temas
 
 ## 6. Impeccable e fechamento
 
-- [ ] 6.1 Rodar `/impeccable audit` em `AdminUsuarios.jsx` (acessibilidade, contraste nos 5 temas, alvos de toque de 44px, tipografia); `critique` se a lista/diálogo mudar de forma estrutural; corrigir P0/P1 e registrar nota e achados na change ou no `MEMORIA.md`
+- [x] 6.1 Rodar `/impeccable audit` em `AdminUsuarios.jsx` (acessibilidade, contraste nos 5 temas, alvos de toque de 44px, tipografia); `critique` se a lista/diálogo mudar de forma estrutural; corrigir P0/P1 e registrar nota e achados na change ou no `MEMORIA.md`
 - [x] 6.2 `npx vite build` limpo
-- [ ] 6.3 Registrar em `MEMORIA.md` (relendo o arquivo antes de escrever): decisão do modelo por capacidade, o mapa rota → capacidade, e a observação de que o efeito de UI para não-admins só chega com a `gestao-no-shell`
-- [ ] 6.4 Rodar `openspec validate --strict` na change antes de `/opsx:archive`
+- [x] 6.3 Registrar em `MEMORIA.md` (relendo o arquivo antes de escrever): decisão do modelo por capacidade, o mapa rota → capacidade, e a observação de que o efeito de UI para não-admins só chega com a `gestao-no-shell`
+- [x] 6.4 Rodar `openspec validate --strict` na change antes de `/opsx:archive`

@@ -21,7 +21,7 @@ export async function carregarAcesso(pool, usuarioId) {
          FROM usuarios_perfil p
          LEFT JOIN usuarios_permissoes u ON u.usuario_id = p.usuario_id
          WHERE p.usuario_id = $1
-         GROUP BY p.usuario_id`,
+         GROUP BY p.usuario_id, p.is_admin`,
         [String(usuarioId ?? '')]
     )
     if (!rows.length) return { isAdmin: false, permissoes: [] }

@@ -461,7 +461,7 @@ function VariantC() {
           borderRadius: 2, margin: '12px auto 8px'
         }} />
         <p style={{ fontSize: 14, color: palette.ink2, textAlign: 'center', margin: '0 0 32px' }}>
-          Middle Platform · v1.1.0
+          Middle Platform · v1.0.0
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
