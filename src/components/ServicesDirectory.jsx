@@ -654,7 +654,7 @@ export default function ServicesDirectory({ user, searchQuery }) {
 
             {deleteModal.isOpen && (
                 <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })} />
+                    <div aria-hidden="true" className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })} />
                     <div
                         ref={deleteDialogRef}
                         role="dialog"

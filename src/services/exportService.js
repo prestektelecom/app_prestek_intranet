@@ -120,8 +120,8 @@ export const handleImprimir = (filteredPlantoes, filterMonth, filterYear, filter
     const style = doc.createElement('style');
     style.textContent = `
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0B1B2E; padding: 32px; }
-        h1 { font-size: 22px; margin: 0 0 4px 0; }
+        body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; color: #0B1B2E; padding: 32px; }
+        h1 { font-size: 20px; margin: 0 0 4px 0; }
         .sub { color: #8896A8; font-size: 13px; margin-bottom: 24px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #E4ECF5; }

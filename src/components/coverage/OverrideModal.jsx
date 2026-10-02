@@ -270,7 +270,7 @@ export default function OverrideModal({ registro, onFechar, onSalvar }) {
                             type="button"
                             onClick={() => setMapaAberto(v => !v)}
                             aria-expanded={mapaAberto}
-                            className="mb-2.5 inline-flex cursor-pointer items-center gap-1.5 text-[13px] font-bold text-[var(--accent)] transition-opacity hover:opacity-80"
+                            className="mb-2.5 inline-flex cursor-pointer items-center gap-1.5 text-[13px] font-bold text-[var(--accent-dark)] transition-opacity hover:opacity-80"
                         >
                             <span className="material-symbols-outlined text-[18px]">pin_drop</span>
                             Localização do bairro

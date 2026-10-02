@@ -81,6 +81,8 @@ export default function Comunicados({ user, setCurrentView }) {
     const [filtro, setFiltro] = useState('Todas');
     const [ordenacao, setOrdenacao] = useState('recentes');
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [erroExcluir, setErroExcluir] = useState(null);
+    const [erroSalvar, setErroSalvar] = useState(null);
     const [busca, setBusca] = useState('');
     const [formData, setFormData] = useState({
         titulo: '',
@@ -123,23 +125,25 @@ export default function Comunicados({ user, setCurrentView }) {
         if (!itemToDelete) return;
         const id = itemToDelete;
         setItemToDelete(null);
+        setErroExcluir(null);
         try {
             const res = await fetch(`/api/comunicados/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.sucesso) {
                 recarregar();
             } else {
-                alert('Erro ao excluir: ' + data.erro);
+                setErroExcluir('Não foi possível excluir o comunicado. Tente novamente.');
             }
         } catch (err) {
             console.error(err);
-            alert('Erro ao excluir comunicado.');
+            setErroExcluir('Não foi possível excluir o comunicado. Verifique a conexão e tente novamente.');
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setErroSalvar(null);
         try {
             const body = {
                 ...formData,
@@ -159,10 +163,11 @@ export default function Comunicados({ user, setCurrentView }) {
                 handleCloseModal();
                 recarregar();
             } else {
-                alert('Erro ao salvar: ' + data.erro);
+                setErroSalvar('Não foi possível salvar o comunicado. Confira os campos e tente novamente.');
             }
         } catch (err) {
-            alert('Erro ao salvar comunicado.');
+            console.error(err);
+            setErroSalvar('Não foi possível salvar o comunicado. Verifique a conexão e tente novamente.');
         } finally {
             setIsSubmitting(false);
         }
@@ -303,6 +308,22 @@ export default function Comunicados({ user, setCurrentView }) {
                     </div>
                 </div>
 
+                {erroExcluir && (
+                    <div role="alert" style={{
+                        display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, marginBottom: 16,
+                        background: C.dangerSoft, border: `1px solid ${C.danger}`, color: C.dangerStrong,
+                        fontSize: 14, fontWeight: 600
+                    }}>
+                        <span style={{ flex: 1 }}>{erroExcluir}</span>
+                        <button
+                            type="button"
+                            onClick={() => setErroExcluir(null)}
+                            aria-label="Dispensar aviso"
+                            style={{ minWidth: 44, minHeight: 44, margin: '-8px -10px -8px 0', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontFamily: '"Material Symbols Outlined"', fontSize: 20 }}
+                        >close</button>
+                    </div>
+                )}
+
                 {/* ── Feed de Cards / Loading / Vazio ─────────────────────────── */}
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 24 }}>
@@ -335,7 +356,8 @@ export default function Comunicados({ user, setCurrentView }) {
                     formData={formData}
                     setFormData={setFormData}
                     isSubmitting={isSubmitting}
-                    onClose={handleCloseModal}
+                    erro={erroSalvar}
+                    onClose={() => { setErroSalvar(null); handleCloseModal(); }}
                     onSubmit={handleSubmit}
                 />
             )}
@@ -866,7 +888,7 @@ function EmptyState({ busca, filtro, onClear }) {
 
 const CRUD_MODAL_TITLE_ID = 'crud-comunicado-titulo';
 
-function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, onSubmit }) {
+function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClose, onSubmit }) {
     const C = useBentoTheme();
     const [focusedInput, setFocusedInput] = useState(null);
     const modalRef = useRef(null);
@@ -1081,6 +1103,10 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                         />
                     </div>
 
+                    {erro && (
+                        <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.dangerStrong }}>{erro}</p>
+                    )}
+
                     {/* Botões do Rodapé */}
                     <div style={{
                         marginTop: 8,
@@ -1119,7 +1145,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, onClose, on
                                 borderRadius: 10,
                                 border: 'none',
                                 background: C.accent,
-                                color: 'white',
+                                color: C.onAccent,
                                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                                 fontWeight: 700,
                                 fontSize: 13,

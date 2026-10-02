@@ -296,14 +296,14 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
         onSalvar(payload);
     }
 
-    const inputCls = "w-full px-3 py-2.5 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
-    const inputErroCls = "border-[#E84545] focus:ring-[#E84545]";
+    const inputCls = "w-full px-3 py-2.5 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all";
+    const inputErroCls = "border-[var(--danger-strong)] focus:ring-[var(--danger-strong)]";
     const labelCls = "block text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1.5";
 
     return (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
             {/* z-[1100] fica acima de Header e Sidebar (ambos z-1000). */}
-            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={tentarFechar} />
+            <div aria-hidden="true" className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={tentarFechar} />
             <div
                 ref={modalRef}
                 role="dialog"
@@ -341,7 +341,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
                     <button
                         onClick={tentarFechar}
                         aria-label="Fechar"
-                        className="text-muted hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]"
+                        className="text-muted hover:text-[var(--danger-strong)] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger-strong)] active:scale-[0.98]"
                     >
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -367,7 +367,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
                                 aria-describedby={erros.nome ? 'processo-nome-erro' : undefined}
                             />
                             {erros.nome && (
-                                <p id="processo-nome-erro" role="alert" className="mt-1.5 text-xs text-[#E84545] flex items-center gap-1">
+                                <p id="processo-nome-erro" role="alert" className="mt-1.5 text-xs text-[var(--danger-strong)] flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
                                     {erros.nome}
                                 </p>
@@ -392,7 +392,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
                                 <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-muted text-[18px] pointer-events-none" aria-hidden="true">expand_more</span>
                             </div>
                             {erros.categoria && (
-                                <p id="processo-categoria-erro" role="alert" className="mt-1.5 text-xs text-[#E84545] flex items-center gap-1">
+                                <p id="processo-categoria-erro" role="alert" className="mt-1.5 text-xs text-[var(--danger-strong)] flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
                                     {erros.categoria}
                                 </p>
@@ -429,7 +429,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
                                 aria-describedby={erros.descricao ? 'processo-descricao-erro' : undefined}
                             />
                             {erros.descricao && (
-                                <p id="processo-descricao-erro" role="alert" className="mt-1.5 text-xs text-[#E84545] flex items-center gap-1">
+                                <p id="processo-descricao-erro" role="alert" className="mt-1.5 text-xs text-[var(--danger-strong)] flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
                                     {erros.descricao}
                                 </p>
@@ -535,7 +535,7 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
                                         type="button"
                                         onClick={() => onAtualizarVinculo(processo.id)}
                                         disabled={atualizandoVinculo}
-                                        className="shrink-0 h-11 px-3 text-xs font-bold text-[var(--accent-dark)] border border-[var(--accent-dark)] rounded-lg hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] disabled:opacity-60 disabled:cursor-not-allowed"
+                                        className="shrink-0 h-11 px-3 text-xs font-bold text-[var(--accent-dark)] border border-[var(--accent-dark)] rounded-lg hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         {atualizandoVinculo ? 'Atualizando…' : 'Atualizar vínculo agora'}
                                     </button>
@@ -548,20 +548,20 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
                 {/* Footer */}
                 <div className="px-6 py-5 border-t border-border bg-surface flex flex-col gap-2 shadow-[0_-4px_12px_rgba(11,27,46,0.05)]">
                     {erroSalvar && (
-                        <p role="alert" className="text-xs font-semibold text-[#E84545] flex items-center gap-1">
+                        <p role="alert" className="text-xs font-semibold text-[var(--danger-strong)] flex items-center gap-1">
                             <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
                             {erroSalvar}
                         </p>
                     )}
                     <div className="flex justify-end gap-3">
-                        <button type="button" onClick={tentarFechar} disabled={salvando} className="h-11 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98] disabled:opacity-60">
+                        <button type="button" onClick={tentarFechar} disabled={salvando} className="h-11 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98] disabled:opacity-60">
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             form={formId}
                             disabled={salvando}
-                            className="h-11 px-5 text-sm font-bold bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="h-11 px-5 text-sm font-bold bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white rounded-lg shadow-md shadow-[#EC7D23]/30 transition-colors flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             <span className={`material-symbols-outlined text-[18px] ${salvando ? 'animate-spin' : ''}`} aria-hidden="true">
                                 {salvando ? 'autorenew' : isEdicao ? 'save' : 'add'}
@@ -592,14 +592,14 @@ function ProcessoModal({ processo, onSalvar, onFechar, categorias, salvando, err
                                     ref={continuarEditandoRef}
                                     type="button"
                                     onClick={() => setConfirmDescartar(false)}
-                                    className="h-11 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]"
+                                    className="h-11 px-4 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98]"
                                 >
                                     Continuar editando
                                 </button>
                                 <button
                                     type="button"
                                     onClick={onFechar}
-                                    className="h-11 px-4 text-sm font-bold text-white bg-[#E84545] rounded-lg hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]"
+                                    className="h-11 px-4 text-sm font-bold text-[var(--on-danger)] bg-[var(--danger-fill)] rounded-lg hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger-strong)] active:scale-[0.98]"
                                 >
                                     Descartar
                                 </button>
@@ -627,7 +627,7 @@ function ProcessoViewModal({ processo, categorias, onFechar }) {
 
     return (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
+            <div aria-hidden="true" className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
             <div
                 ref={modalRef}
                 role="dialog"
@@ -652,7 +652,7 @@ function ProcessoViewModal({ processo, categorias, onFechar }) {
                     <button
                         onClick={onFechar}
                         aria-label="Fechar"
-                        className="text-muted hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98] shrink-0"
+                        className="text-muted hover:text-[var(--danger-strong)] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger-strong)] active:scale-[0.98] shrink-0"
                     >
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -711,7 +711,7 @@ function ProcessoViewModal({ processo, categorias, onFechar }) {
                             href={processo.docUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="h-11 px-4 inline-flex items-center gap-1.5 text-sm font-bold text-[var(--accent-dark)] border border-border rounded-lg hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]"
+                            className="h-11 px-4 inline-flex items-center gap-1.5 text-sm font-bold text-[var(--accent-dark)] border border-border rounded-lg hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98]"
                         >
                             <span className="material-symbols-outlined text-[18px]">open_in_new</span>
                             Abrir POP
@@ -719,7 +719,7 @@ function ProcessoViewModal({ processo, categorias, onFechar }) {
                     )}
                     <button
                         onClick={onFechar}
-                        className="h-11 px-5 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]"
+                        className="h-11 px-5 text-sm font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98]"
                     >
                         Fechar
                     </button>
@@ -754,7 +754,7 @@ const ICONES_CATEGORIA = [
 
 function IconePicker({ value, onChange }) {
     const [busca, setBusca] = useState('');
-    const inputCls = "w-full px-3 py-2 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
+    const inputCls = "w-full px-3 py-2 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all";
 
     const termo = busca.trim().toLowerCase();
     const icones = termo ? ICONES_CATEGORIA.filter(i => i.includes(termo)) : ICONES_CATEGORIA;
@@ -786,10 +786,10 @@ function IconePicker({ value, onChange }) {
                         title={nome}
                         aria-label={`Selecionar ícone ${nome}`}
                         aria-pressed={value === nome}
-                        className={`w-11 h-11 rounded-lg flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] ${
+                        className={`w-11 h-11 rounded-lg flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                             value === nome
                                 ? 'bg-gradient-to-br from-[#7C2D12] to-[#C2410C] text-white'
-                                : 'bg-surface border border-border text-muted hover:border-[#EC7D23] hover:text-[var(--accent-dark)]'
+                                : 'bg-surface border border-border text-muted hover:border-[var(--accent)] hover:text-[var(--accent-dark)]'
                         }`}
                     >
                         <span className="material-symbols-outlined text-[18px]">{nome}</span>
@@ -838,7 +838,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [onFechar]);
 
-    const inputCls = "w-full px-3 py-2 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent transition-all";
+    const inputCls = "w-full px-3 py-2 border border-border rounded-lg bg-surface-raised text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-all";
     const labelCls = "block text-[10px] font-extrabold text-faint uppercase tracking-widest mb-1";
 
     function set(campo, valor) {
@@ -914,7 +914,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
 
     return (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
+            <div aria-hidden="true" className="absolute inset-0 bg-[#0B1B2E]/60 backdrop-blur-sm" onClick={onFechar} />
             <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="categorias-admin-titulo" className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col border border-border">
                 <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-surface-raised">
                     <div className="flex items-center gap-3">
@@ -926,7 +926,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                             <p className="text-xs text-faint mt-0.5">Adicione, edite ou remova as categorias de processos.</p>
                         </div>
                     </div>
-                    <button ref={fecharRef} onClick={onFechar} aria-label="Fechar" className="text-muted hover:text-[#E84545] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]">
+                    <button ref={fecharRef} onClick={onFechar} aria-label="Fechar" className="text-muted hover:text-[var(--danger-strong)] p-2.5 rounded-full hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger-strong)] active:scale-[0.98]">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -940,15 +940,15 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                             <div key={cat.id} className="flex items-center gap-3 px-4 py-3 bg-surface">
                                 {confirmExcluirId === cat.id ? (
                                     <>
-                                        <span className="material-symbols-outlined text-[#E84545]" aria-hidden="true">warning</span>
+                                        <span className="material-symbols-outlined text-[var(--danger-strong)]" aria-hidden="true">warning</span>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-bold text-foreground truncate">Excluir "{cat.label}"?</p>
                                             <p className="text-xs text-faint">Processos que já usam essa categoria não serão afetados.</p>
                                         </div>
-                                        <button type="button" onClick={() => setConfirmExcluirId(null)} className="h-9 px-3 text-xs font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] active:scale-[0.98]">
+                                        <button type="button" onClick={() => setConfirmExcluirId(null)} className="h-9 px-3 text-xs font-bold text-foreground border border-border rounded-lg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.98]">
                                             Cancelar
                                         </button>
-                                        <button type="button" onClick={() => excluir(cat)} className="h-9 px-3 text-xs font-bold text-white bg-[#E84545] rounded-lg hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] active:scale-[0.98]">
+                                        <button type="button" onClick={() => excluir(cat)} className="h-9 px-3 text-xs font-bold text-[var(--on-danger)] bg-[var(--danger-fill)] rounded-lg hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger-strong)] active:scale-[0.98]">
                                             Excluir
                                         </button>
                                     </>
@@ -959,10 +959,10 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                                             <p className="text-sm font-bold text-foreground truncate">{cat.label}</p>
                                             <p className="text-xs text-faint font-mono">{cat.id} · {cat.prefixo || '—'}</p>
                                         </div>
-                                        <button type="button" onClick={() => editar(cat)} aria-label={`Editar ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] after:absolute after:-inset-1 after:content-['']">
+                                        <button type="button" onClick={() => editar(cat)} aria-label={`Editar ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] after:absolute after:-inset-1 after:content-['']">
                                             <span className="material-symbols-outlined text-[18px]">edit</span>
                                         </button>
-                                        <button type="button" onClick={() => setConfirmExcluirId(cat.id)} aria-label={`Excluir ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[#E84545] hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E84545] after:absolute after:-inset-1 after:content-['']">
+                                        <button type="button" onClick={() => setConfirmExcluirId(cat.id)} aria-label={`Excluir ${cat.label}`} className="relative p-3 rounded-md text-muted hover:text-[var(--danger-strong)] hover:bg-[var(--danger-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger-strong)] after:absolute after:-inset-1 after:content-['']">
                                             <span className="material-symbols-outlined text-[18px]">delete</span>
                                         </button>
                                     </>
@@ -1000,7 +1000,7 @@ function CategoriasAdminModal({ categorias, onCategoriasChange, onFechar, adminE
                             )}
                         </div>
                         {erro && (
-                            <p role="alert" className="text-xs text-[#E84545] flex items-center gap-1">
+                            <p role="alert" className="text-xs text-[var(--danger-strong)] flex items-center gap-1">
                                 <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
                                 {erro}
                             </p>
@@ -1044,7 +1044,7 @@ function EmptyState({ onAdd, isAdmin }) {
             {isAdmin && (
                 <button
                     onClick={onAdd}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white text-sm font-bold shadow-md shadow-[#EC7D23]/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#7C2D12] to-[#C2410C] hover:brightness-110 text-white text-sm font-bold shadow-md shadow-[#EC7D23]/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
                 >
                     <span className="material-symbols-outlined text-[18px]">add</span>
                     Cadastrar Primeiro Processo
@@ -1328,7 +1328,7 @@ export default function Processos({ user, setCurrentView }) {
                             type="button"
                             onClick={() => setAvisoVinculo(null)}
                             aria-label="Dispensar aviso"
-                            className="shrink-0 -my-2 -mr-2 w-11 h-11 inline-flex items-center justify-center rounded-lg hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                            className="shrink-0 -my-2 -mr-2 w-11 h-11 inline-flex items-center justify-center rounded-lg hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                         >
                             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
                         </button>
@@ -1343,7 +1343,7 @@ export default function Processos({ user, setCurrentView }) {
                     onClick={exportarCSV}
                     disabled={processosFiltrados.length === 0}
                     aria-label="Exportar lista de processos filtrada em CSV"
-                    className="flex items-center gap-2 px-4 h-10 bg-surface border border-border rounded-lg text-foreground text-sm font-bold shadow-sm hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                    className="flex items-center gap-2 px-4 h-10 bg-surface border border-border rounded-lg text-foreground text-sm font-bold shadow-sm hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
                 >
                     <span className="material-symbols-outlined text-[20px]">download</span>
                     <span>Exportar Lista</span>
@@ -1360,7 +1360,7 @@ export default function Processos({ user, setCurrentView }) {
                             <span className="material-symbols-outlined">search</span>
                         </div>
                         <input
-                            className="block w-full pl-10 pr-3 py-2.5 border border-border rounded-lg leading-5 bg-surface-raised text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[#EC7D23] focus:border-transparent sm:text-sm transition-all"
+                            className="block w-full pl-10 pr-3 py-2.5 border border-border rounded-lg leading-5 bg-surface-raised text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent sm:text-sm transition-all"
                             placeholder="Buscar por Nome, ID (ex: TI-001) ou tag..."
                             type="text"
                             value={busca}
@@ -1374,10 +1374,10 @@ export default function Processos({ user, setCurrentView }) {
                                     key={cat.id}
                                     onClick={() => handleCategoria(cat.id)}
                                     aria-pressed={categoriaAtiva === cat.id}
-                                    className={`snap-start shrink-0 lg:shrink flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2 ${
+                                    className={`snap-start shrink-0 lg:shrink flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 ${
                                         categoriaAtiva === cat.id
                                             ? 'bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white shadow-md shadow-[#EC7D23]/20'
-                                            : 'bg-surface-raised border border-border text-faint hover:border-[#EC7D23] hover:text-[var(--accent-dark)]'
+                                            : 'bg-surface-raised border border-border text-faint hover:border-[var(--accent)] hover:text-[var(--accent-dark)]'
                                     }`}
                                 >
                                     <span className={`material-symbols-outlined text-[18px] ${categoriaAtiva === cat.id ? 'text-white' : 'text-muted'}`}>
@@ -1389,7 +1389,7 @@ export default function Processos({ user, setCurrentView }) {
                             {user?.is_admin && (
                                 <button
                                     onClick={() => setCategoriasAbertas(true)}
-                                    className="snap-start shrink-0 lg:shrink flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal border border-dashed border-[var(--accent-dark)] text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                                    className="snap-start shrink-0 lg:shrink flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap lg:whitespace-normal border border-dashed border-[var(--accent-dark)] text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">tune</span>
                                     Gerenciar Categorias
@@ -1397,7 +1397,7 @@ export default function Processos({ user, setCurrentView }) {
                             )}
                         </div>
                         {categoriasErro && (
-                            <p className="mt-2 text-xs text-[#E84545] flex items-center gap-1">
+                            <p className="mt-2 text-xs text-[var(--danger-strong)] flex items-center gap-1">
                                 <span className="material-symbols-outlined text-sm" aria-hidden="true">error</span>
                                 Não foi possível carregar as categorias agora. Tente recarregar a página.
                             </p>
@@ -1448,7 +1448,7 @@ export default function Processos({ user, setCurrentView }) {
                                         onClick={() => abrirEditar(p)}
                                         aria-label={`Editar ${p.nome}`}
                                         title="Editar processo"
-                                        className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                        className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                     </button>
@@ -1460,7 +1460,7 @@ export default function Processos({ user, setCurrentView }) {
                                         rel="noopener noreferrer"
                                         aria-label={`Abrir POP de ${p.nome} no Google Docs`}
                                         title="Abrir POP no Google Docs"
-                                        className="p-3 rounded-md text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                        className="p-3 rounded-md text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                     </a>
@@ -1479,8 +1479,8 @@ export default function Processos({ user, setCurrentView }) {
                         {processosFiltrados.length === 0 ? 0 : inicio + 1}–{Math.min(inicio + ROWS_PER_PAGE, processosFiltrados.length)} de {processosFiltrados.length}
                     </span>
                     <div className="flex gap-2">
-                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-faint hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">Anterior</button>
-                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-foreground hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]">Próximo</button>
+                        <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={paginaSegura === 1} className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-faint hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">Anterior</button>
+                        <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={paginaSegura === totalPaginas} className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-foreground hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">Próximo</button>
                     </div>
                 </div>
             </div>
@@ -1550,7 +1550,7 @@ export default function Processos({ user, setCurrentView }) {
                                                         onClick={() => abrirEditar(p)}
                                                         aria-label={`Editar ${p.nome}`}
                                                         title="Editar processo"
-                                                        className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                                        className="p-3 rounded-md text-muted hover:text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                                     </button>
@@ -1562,7 +1562,7 @@ export default function Processos({ user, setCurrentView }) {
                                                         rel="noopener noreferrer"
                                                         aria-label={`Abrir POP de ${p.nome} no Google Docs`}
                                                         title="Abrir POP no Google Docs"
-                                                        className="p-3 rounded-md text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                                                        className="p-3 rounded-md text-[var(--accent-dark)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">open_in_new</span>
                                                     </a>
@@ -1599,14 +1599,14 @@ export default function Processos({ user, setCurrentView }) {
                         <button
                             onClick={() => setPagina(p => Math.max(1, p - 1))}
                             disabled={paginaSegura === 1}
-                            className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-faint hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                            className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-faint hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                         >
                             Anterior
                         </button>
                         <button
                             onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
                             disabled={paginaSegura === totalPaginas}
-                            className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-foreground hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23]"
+                            className="px-3 py-2 min-h-[44px] border border-border rounded-lg text-sm font-bold text-foreground hover:bg-[var(--accent-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                         >
                             Próximo
                         </button>
@@ -1624,7 +1624,7 @@ export default function Processos({ user, setCurrentView }) {
                             key={cat.id}
                             onClick={() => { handleCategoria(cat.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                             aria-label={`Filtrar por ${cat.label}, ${total} processo${total !== 1 ? 's' : ''}`}
-                            className="bg-surface p-6 rounded-[20px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC7D23] focus-visible:ring-offset-2"
+                            className="bg-surface p-6 rounded-[20px] border border-border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className="bg-[var(--accent-soft)] p-3 rounded-[14px] text-[var(--accent-dark)] group-hover:bg-gradient-to-br group-hover:from-[#7C2D12] group-hover:to-[#C2410C] group-hover:text-white transition-all">

@@ -116,7 +116,7 @@ export default function RegionPanel({
                             <button
                                 type="button"
                                 onClick={() => setVisiveis(v => v + LOTE)}
-                                className="mt-1 w-full cursor-pointer rounded-xl border border-dashed border-border py-2.5 text-[13px] font-bold text-faint transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                                className="mt-1 w-full cursor-pointer rounded-xl border border-dashed border-border py-2.5 text-[13px] font-bold text-faint transition-colors hover:border-[var(--accent)] hover:text-[var(--accent-dark)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                             >
                                 Carregar mais {Math.min(LOTE, restantes)} de {restantes}
                             </button>

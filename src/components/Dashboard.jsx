@@ -715,7 +715,7 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
           <h2 className={CARD_TITLE}>Comunicados</h2>
           <div className="mt-0.5 text-[12.5px] text-faint">Atualizações do setor</div>
         </div>
-        <button onClick={() => setCurrentView('announcements')} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)] hover:underline">
+        <button onClick={() => setCurrentView('announcements')} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent-dark)] hover:underline">
           Ver todos <Icons.ArrowR />
         </button>
       </div>

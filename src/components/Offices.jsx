@@ -74,7 +74,7 @@ function popupHTML(office) {
             </span>
             <div class="of-endereco" style="font-size:11px;line-height:1.5">
                 <div>📍 ${office.endereco}</div>
-                ${office.cep ? `<div style="color:#9A3412;font-weight:600">CEP: ${office.cep}</div>` : ''}
+                ${office.cep ? `<div style="color:var(--accent-dark, #9A3412);font-weight:600">CEP: ${office.cep}</div>` : ''}
                 <div class="of-cidade" style="margin-top:2px">${office.cidade} — ${office.estado}</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:10px">
@@ -697,7 +697,7 @@ export default function Offices({ user, setCurrentView }) {
             {/* Diálogo de confirmação de exclusão */}
             {confirmandoExclusao !== null && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 backdrop-blur-sm" style={{ background: tone(C.ink, 0.6) }} onClick={() => { setConfirmandoExclusao(null); setErroExclusao(''); }} />
+                    <div aria-hidden="true" className="absolute inset-0 backdrop-blur-sm" style={{ background: tone(C.ink, 0.6) }} onClick={() => { setConfirmandoExclusao(null); setErroExclusao(''); }} />
                     <div
                         ref={deleteDialogRef}
                         role="dialog"
