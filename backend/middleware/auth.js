@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+    throw new Error('[auth] JWT_SECRET não está definido. Adicione JWT_SECRET ao arquivo .env antes de iniciar o servidor.')
+}
 const EXPIRA_EM = '12h'
 
 // Rotas que não exigem token — comparadas contra req.originalUrl (sem

@@ -1,0 +1,1656 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP-INTLE-01 — Internet Lenta | Prestek Telecom</title>
+<style>
+  :root {
+    --accent: #384C9C;
+    --accent-dark: #D97738;
+    --accent-light: #EAEEF7;
+    --accent-border: #C2CBE3;
+    --ink: #384C9C;
+    --muted: #475467;
+    --border: #D7DDE3;
+    --bg: #F4F6F8;
+    --paper: #ffffff;
+    --warning-bg: #fef8ec;
+    --warning-border: #f3c267;
+    --warning-text: #8a5300;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 960px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  /* Cabeçalho */
+  .doc-header {
+    background: var(--accent);
+    color: #ffffff;
+    padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--accent-dark);
+  }
+
+  .doc-header .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    opacity: 0.9;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+
+  .doc-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .doc-header .meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .doc-header .badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .doc-body {
+    padding: 36px 40px 48px;
+  }
+
+  /* Tabela de controle histórico */
+  table.meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 28px;
+    font-size: 13.5px;
+  }
+
+  table.meta caption {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    caption-side: top;
+    font-weight: 700;
+  }
+
+  table.meta th, table.meta td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  table.meta th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    width: 20%;
+  }
+
+  .approvals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 20px;
+  }
+
+  .approvals .box {
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    background: var(--accent-light);
+  }
+
+  .approvals .box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .approvals .box .value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .approvals .box .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Bloco de decisão pendente */
+  .decision-pending {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 14px 0 20px;
+    font-size: 13.5px;
+    color: var(--warning-text);
+  }
+
+  .decision-pending .dp-title {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 11.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .decision-pending p, .decision-pending ul {
+    margin: 4px 0;
+    color: #6b4600;
+  }
+
+  .decision-pending ul { padding-left: 18px; }
+
+  .source-note {
+    background: #f8fafc;
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 10px 0 16px;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* Seções do POP */
+  section.pop-section {
+    margin-bottom: 32px;
+  }
+
+  section.pop-section h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+
+  section.pop-section h3 {
+    font-size: 14px;
+    color: var(--accent-dark);
+    margin: 20px 0 8px;
+    font-weight: 700;
+  }
+
+  section.pop-section h4 {
+    font-size: 13px;
+    color: var(--accent-dark);
+    margin: 14px 0 6px;
+    font-weight: 600;
+  }
+
+  section.pop-section p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    text-align: justify;
+  }
+
+  .sub-process-block {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 20px 6px;
+    margin: 0 0 26px;
+    background: #fdfefe;
+  }
+
+  .sub-process-block > h3:first-child {
+    margin-top: 0;
+  }
+
+  .conclusion-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #16a34a;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 12px 0 18px;
+    font-size: 13.5px;
+    color: #166534;
+  }
+
+  .conclusion-box strong {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* Listas e passos */
+  .steps-macro {
+    list-style-type: decimal;
+    margin: 10px 0 16px 22px;
+    padding: 0;
+  }
+
+  .steps-macro li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  ul.plain, ol.plain {
+    margin: 8px 0 14px 20px;
+    padding: 0;
+  }
+
+  ul.plain li, ol.plain li {
+    margin-bottom: 5px;
+    font-size: 13.5px;
+    color: #2c3e50;
+  }
+
+  .script-box {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-left: 4px solid #4f46e5;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 10px 0 14px;
+    font-size: 13.5px;
+    color: #312e81;
+    font-style: italic;
+  }
+
+  .template-box {
+    background: #2d3748;
+    color: #edf2f7;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12.5px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  .ixc-config-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 12px 0 16px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+  }
+
+  .ixc-config-box ul li {
+    margin-bottom: 5px;
+  }
+
+  /* Regras de negócios */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .rule-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rule-number {
+    background: var(--accent);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* BPMN bpmn.io styles */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-action:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .bpmn-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    margin: 10px 0 24px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .bpmn-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+  }
+  .zoom-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .zoom-btn:hover {
+    background: #edf2f7;
+    border-color: var(--accent-border);
+  }
+  #bpmn-canvas {
+    width: 100%;
+    height: 520px;
+    position: relative;
+    background: #ffffff;
+  }
+
+  /* Exceções */
+  .exception-item {
+    margin-bottom: 14px;
+    border: 1px solid #fed7aa;
+    background: #fffdfa;
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+
+  .exception-title {
+    font-weight: 700;
+    color: #c2410c;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .exception-desc {
+    font-size: 13.5px;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+
+  .exception-treatment {
+    font-size: 13px;
+    color: #1e293b;
+    background: #fef3c7;
+    padding: 8px 12px;
+    border-radius: 3px;
+    border-left: 3px solid #f59e0b;
+  }
+
+  .exception-treatment ol, .exception-treatment ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+  }
+
+  .exception-treatment li {
+    margin-bottom: 3px;
+  }
+
+  /* Fluxograma fallback estático */
+  .swimlane {
+    margin-bottom: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .swimlane-header {
+    background: #475569;
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .swimlane-header.ti {
+    background: var(--accent);
+  }
+
+  .swimlane-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .flow-node {
+    background: #f1f5f9;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    text-align: center;
+    max-width: 190px;
+    font-weight: 600;
+  }
+
+  .flow-arrow {
+    color: #64748b;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  /* Assinaturas */
+  .signoff {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    page-break-inside: avoid;
+  }
+
+  .signoff .sig {
+    text-align: center;
+  }
+
+  .signoff .sig .line {
+    border-top: 1px solid var(--ink);
+    margin-top: 48px;
+    padding-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .signoff .sig .role {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .doc-footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 16px 40px 28px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+      color: #000;
+    }
+    .doc {
+      border: none;
+      box-shadow: none;
+      max-width: 100%;
+    }
+    .doc-header {
+      background: var(--accent) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .approvals .box, table.meta th, .rule-number, .exception-item, .exception-treatment, .ixc-config-box, .decision-pending, .conclusion-box, .script-box {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .signoff {
+      page-break-inside: avoid;
+    }
+    #bpmn-canvas { height: 380px; }
+  }
+
+  @media (max-width: 700px) {
+    .doc-header, .doc-body { padding-left: 18px; padding-right: 18px; }
+    .approvals, .signoff, .rules-grid { grid-template-columns: 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- CABEÇALHO -->
+  <div class="doc-header">
+    <p class="kicker">Prestek Telecom • Sistema de Gestão da Qualidade • ISO 9001</p>
+    <h1>POP-INTLE-01 — Internet Lenta</h1>
+    <div class="meta-badges">
+      <span class="badge">Padrão nº: POP-INTLE-01</span>
+      <span class="badge">Revisão: 004</span>
+      <span class="badge">Estabelecido em: 10/09/2026</span>
+      <span class="badge">Responsável: NOC / SAC / Suporte Técnico</span>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- CONTROLE HISTÓRICO -->
+    <table class="meta">
+      <caption>Controle Histórico</caption>
+      <thead>
+        <tr>
+          <th>Revisão</th>
+          <th>Data</th>
+          <th>Elaboração</th>
+          <th>Verificação</th>
+          <th>Aprovação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>001</td>
+          <td>26/01/2026</td>
+          <td>Vinicius</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>002</td>
+          <td>16/06/2026</td>
+          <td>Kênia</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>003</td>
+          <td>13/06/2026</td>
+          <td>Vinicius</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>004</td>
+          <td>10/09/2026</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Pendente</td>
+          <td>Pendente</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="decision-pending">
+      <div class="dp-title">⚠ Decisão pendente — autoria duplicada no histórico</div>
+      <p>O cabeçalho original do documento-fonte indica <strong>"Elaborado por: Marcio Eduardo Felix"</strong>, enquanto a tabela de Controle Histórico do arquivo-fonte (.docx) atribui as revisões <strong>001 e 003 a "Vinicius"</strong> e a revisão <strong>002 a "Kênia"</strong>. Ambos os registros foram preservados acima. A autoria correta de cada revisão precisa ser confirmada pela Direção/Qualidade antes do fechamento formal desta revisão 004.</p>
+    </div>
+
+    <!-- APROVAÇÕES -->
+    <div class="approvals">
+      <div class="box">
+        <div class="label">Elaborado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Supervisor T.I. / NOC</div>
+      </div>
+      <div class="box">
+        <div class="label">Revisado por</div>
+        <div class="value">Pendente</div>
+        <div class="sub">Verificação da revisão 004 em aberto</div>
+      </div>
+      <div class="box">
+        <div class="label">Aprovado por</div>
+        <div class="value">Roberta Kelle Nunes Gomes</div>
+        <div class="sub">Representante da Direção (revisão anterior)</div>
+      </div>
+    </div>
+
+    <!-- 1. OBJETIVO -->
+    <section class="pop-section">
+      <h2>1. Objetivo</h2>
+      <p>Padronizar, do primeiro contato do cliente até o encerramento e a pesquisa de satisfação, o tratamento de chamados de <strong>Internet Lenta</strong> e <strong>Reincidência de Internet Lenta</strong>, cobrindo a triagem inicial no SAC/Atendimento, o diagnóstico e resolução remota no NOC, o suporte técnico presencial e o feedback pós-atendimento — garantindo diagnósticos confiáveis, reduzindo o retrabalho e assegurando a rastreabilidade de todas as decisões técnicas.</p>
+    </section>
+
+    <!-- 2. DESCRIÇÃO DO PROCESSO -->
+    <section class="pop-section">
+      <h2>2. Descrição do processo</h2>
+      <p>Aplica-se a todo chamado de cliente relatando lentidão, oscilação ou degradação de qualidade na conexão (com acesso presente, porém degradado), desde a abertura no SAC/Atendimento até o encerramento definitivo da Ordem de Serviço (O.S.), incluindo o ciclo de feedback e o tratamento de reincidências. Este POP é composto por <strong>4 sub-processos sequenciais</strong>: Suporte 0 — Atendimento/SAC (abertura do chamado); Suporte 1 — Avaliação NOC; Suporte 2 — Feedback e Reincidência; Suporte 3 — Suporte Técnico de Campo.</p>
+
+      <div class="ixc-config-box">
+        <strong>Sistemas e ferramentas:</strong>
+        <ul>
+          <li><strong>UN2000</strong> — Monitoramento da ONU/ONT.</li>
+          <li><strong>IXC Soft</strong> — Ordens de Serviço, histórico e login PPPoE.</li>
+          <li><strong>Acesso remoto ao roteador:</strong> <code>http(s)://(IP do cliente):9090</code>, <code>:35090</code>, ou <code>(IP do cliente):35090/superadmin</code> (ex.: <code>https://200.186.0.256:35090</code>).</li>
+          <li><strong>Telefone / WhatsApp</strong> — contato ativo com o cliente (SAC e Feedback).</li>
+        </ul>
+      </div>
+
+      <div class="ixc-config-box">
+        <strong>Padrões técnicos (sinais ideais das ONUs)</strong> — qualquer valor fora destes parâmetros deve ser obrigatoriamente registrado como ponto de falha ou instabilidade:
+        <ul>
+          <li>Sinal RX ONU: ideal entre -8 e -27 dBm.</li>
+          <li>Sinal TX ONU: ideal entre 0 e 5 dBm.</li>
+          <li>Temperatura ONU: ideal &lt; 70°C (máx. aceitável 75°C).</li>
+          <li>Bias Current: ideal entre 10 e 60 mA. <em>(ver decisão pendente abaixo)</em></li>
+          <li>Modulação ONU: ideal /1000 (/100 apenas para aparelhos Fast Ethernet).</li>
+        </ul>
+      </div>
+
+      <div class="decision-pending">
+        <div class="dp-title">⚠ Decisão pendente — limiar técnico de Bias Current</div>
+        <p>O rascunho-fonte principal registra o intervalo ideal <strong>"10 a 60 mA"</strong> e usa <strong>60 mA fixo</strong> como limiar de proibição de encerramento remoto (ver Seção 6 — Exceções). Outra fonte identificada na varredura cruzada registra uma <strong>faixa de 5–80 mA</strong>. Os dois valores estão documentados aqui; o limiar técnico oficial precisa ser confirmado pela Engenharia/NOC antes de ser usado como critério automático de bloqueio de encerramento.</p>
+      </div>
+    </section>
+
+    <!-- 3. PROCESSO -->
+    <section class="pop-section">
+      <h2>3. Processo</h2>
+      <ol class="steps-macro">
+        <li>Cliente relata lentidão ao SAC/Atendimento → triagem e reinício orientado (Suporte 0).</li>
+        <li>Se não resolvido no primeiro contato → abertura de O.S. Internet Lenta → triagem e diagnóstico técnico no NOC (Suporte 1).</li>
+        <li>NOC resolve remotamente <strong>ou</strong> encaminha para Técnico de Campo com diagnóstico detalhado (Suporte 3).</li>
+        <li>Toda O.S. com status "Resolvido/Executado" entra no ciclo de Feedback: contato ativo, pesquisa de satisfação e, se necessário, abertura de O.S. de Reincidência vinculada, retornando à triagem do NOC (Suporte 2).</li>
+      </ol>
+    </section>
+
+    <!-- 4. PASSOS DO PROCESSO -->
+    <section class="pop-section">
+      <h2>4. Passos do processo</h2>
+
+      <!-- SUPORTE 0 -->
+      <div class="sub-process-block">
+        <h3>Suporte 0 — Atendimento/SAC (Abertura do Chamado)</h3>
+        <div class="source-note">Nota de origem: o rascunho-fonte documenta esta etapa de intake sob o título "Atendimento (Comercial) — POP Atendimento de Cliente Sem Acesso à Internet". Os passos de identificação, verificações sistêmicas e reinicialização orientada são o fluxo genérico de abertura de chamado do SAC, comum a qualquer O.S. de conectividade (sem acesso <strong>ou</strong> lentidão). Esta seção adapta esse fluxo compartilhado para o contexto específico de Internet Lenta, mantendo os passos literais da fonte.</div>
+        <p><strong>Objetivo:</strong> padronizar a triagem inicial do SAC/Atendimento antes da abertura de O.S. de Internet Lenta, garantindo coleta de dados completa do cliente e reduzindo aberturas de O.S. mal classificadas.</p>
+
+        <h4>0.1 Identificação do cliente</h4>
+        <ul class="plain">
+          <li>Solicitar nome completo do titular, CPF/CNPJ, endereço de instalação e número de contato atualizado.</li>
+          <li>Confirmar os dados no sistema.</li>
+        </ul>
+
+        <h4>0.2 Verificações sistêmicas</h4>
+        <ul class="plain">
+          <li>Consultar status do cliente: situação financeira, bloqueios administrativos, contrato ativo.</li>
+          <li>Verificar estado da ONU/ONT no sistema, último registro de conexão, níveis de sinal óptico e alarmes/eventos registrados.</li>
+          <li>Verificar se há manutenção programada, incidente massivo na região ou falha em equipamentos de rede.</li>
+        </ul>
+
+        <h4>0.3 Diagnóstico inicial com o cliente</h4>
+        <p>Coletar o sintoma relatado (lentidão, oscilação, quedas intermitentes), horário/frequência do problema e dispositivos afetados.</p>
+
+        <h4>0.4 Reinicialização orientada dos equipamentos (obrigatória antes de abrir O.S.)</h4>
+        <ol class="plain">
+          <li>Desligar ONU/ONT e roteador.</li>
+          <li>Aguardar 30 segundos.</li>
+          <li>Ligar primeiro a ONU/ONT.</li>
+          <li>Aguardar estabilização dos LEDs.</li>
+          <li>Ligar o roteador.</li>
+          <li>Testar a navegação.</li>
+        </ol>
+
+        <h4>0.5 Critérios para abertura de O.S. (Internet Lenta)</h4>
+        <p>Abrir O.S. quando o sinal estiver fora dos parâmetros aceitáveis, o problema não for resolvido após os testes remotos básicos do SAC, ou houver reclamação recorrente de velocidade.</p>
+
+        <h4>0.6 Registro do atendimento</h4>
+        <p>Registrar obrigatoriamente data/hora, sintoma informado, testes realizados no SAC, resultado, evidências recebidas (se houver) e o encaminhamento (O.S. aberta e classificada como Internet Lenta), incluindo o número da O.S.</p>
+
+        <div class="conclusion-box">
+          <strong>Conclusão — Suporte 0</strong>
+          A triagem correta no SAC evita aberturas de O.S. mal classificadas e garante que o NOC receba, já na Etapa 1 de triagem (Suporte 1), um histórico completo e testes básicos já executados — reduzindo o retrabalho e o tempo total de resolução.
+        </div>
+      </div>
+
+      <!-- SUPORTE 1 -->
+      <div class="sub-process-block">
+        <h3>Suporte 1 — Avaliação NOC (Internet Lenta)</h3>
+        <p><strong>Objetivo:</strong> garantir diagnósticos confiáveis, reduzir o retrabalho e assegurar a rastreabilidade das decisões técnicas no encaminhamento e resolução de O.S. de Internet Lenta e Reincidência de Internet Lenta. Aplica-se quando há acesso, porém com qualidade degradada, lentidão recorrente ou reclamação de velocidade.</p>
+
+        <h4>Etapa 1 — Triagem inicial da O.S.</h4>
+        <ul class="plain">
+          <li>Ler integralmente a Ordem de Serviço aberta pelo cliente (ou recebida do SAC, Suporte 0).</li>
+          <li>Identificar se a O.S. é do tipo Internet Lenta ou Reincidência de Internet Lenta.</li>
+          <li>Verificar o histórico completo de atendimentos do cliente e as últimas O.S. relacionadas ao mesmo problema.</li>
+          <li>Confirmar se a classificação da O.S. está correta conforme o relato do cliente, reclassificando se necessário.</li>
+          <li>Verificar diagnósticos anteriores, ações executadas e conclusões registradas; analisar recorrência e frequência dos chamados.</li>
+          <li>Registrar qualquer inconsistência identificada antes de prosseguir com a análise.</li>
+        </ul>
+        <div class="exception-item">
+          <div class="exception-title">⚠ Atenção</div>
+          <div class="exception-desc">Caso seja identificada classificação incorreta da O.S., o analista deverá corrigir ou solicitar correção do atendimento e encaminhar para o fluxo correto antes de prosseguir.</div>
+        </div>
+
+        <h4>Tratamento de reincidência (aprofundado)</h4>
+        <p>Quando a O.S. for classificada como <strong>Reincidência de Internet Lenta</strong>, torna-se obrigatório:</p>
+        <ul class="plain">
+          <li>Consultar a última O.S. relacionada ao mesmo problema.</li>
+          <li>Ler integralmente o diagnóstico anterior.</li>
+          <li>Verificar quais procedimentos já foram realizados.</li>
+          <li>Confirmar se a causa atual está relacionada ao atendimento anterior.</li>
+          <li>Comparar os parâmetros atuais (RX/TX, temperatura, bias, modulação) com os registrados na última O.S.</li>
+          <li>Registrar, na análise, o número da O.S. anterior e seu diagnóstico.</li>
+        </ul>
+        <p>A análise de reincidência <strong>só pode prosseguir</strong> após a validação completa do histórico do cliente. Casos de reincidência <strong>em menos de 90 dias</strong> devem ser tratados com <strong>prioridade</strong> (ver Regras de negócios).</p>
+        <div class="source-note">Lacuna documental conhecida: os sub-estados "Avaliação NOC Reincidência", "Reincidência", "Auditoria Reincidência" e "Feedback de Reincidência" (fluxo do sistema) ainda não possuem procedimento próprio documentado — ver lista consolidada ao final da Seção 7. Até que sejam formalizados, o tratamento de reincidência segue integralmente as regras acima.</div>
+
+        <h4>Etapa 2 — Roteador</h4>
+        <ul class="plain">
+          <li>Verificar se o firmware está na versão mais recente.</li>
+          <li>Verificar DNS.</li>
+          <li>Validar se o modelo do equipamento suporta o plano contratado pelo cliente.</li>
+          <li>Analisar o histórico de quedas nos últimos 7 dias no diagnóstico do cliente.</li>
+          <li>Realizar testes de latência (ping) no roteador (8.8.8.8 ou 1.1.1.1).</li>
+        </ul>
+
+        <h4>Etapa 3 — ONU</h4>
+        <ul class="plain">
+          <li>Verificar se a modulação da ONU está /100 (fast) ou /1000 (giga).</li>
+          <li>Consultar o log de alarmes e históricos recentes no sistema UNM.</li>
+          <li>Verificar os dados atuais de sinal RX, TX, temperatura e bias current.</li>
+          <li>Confirmar se a modulação está em /1000 (Gigabit).</li>
+        </ul>
+
+        <h4>Etapa 4 — Análise de resolução remota (NOC)</h4>
+        <p>Após a conclusão das verificações do roteador e da ONU, o analista deve avaliar se a causa da lentidão pode ser corrigida remotamente. Situações passíveis de resolução remota: ajuste de DNS, atualização de firmware, reinicialização de equipamentos, reconfiguração de Wi-Fi, alteração de canal Wi-Fi, separação das redes 2.4/5 GHz, ajustes de potência/configuração do roteador, correções de parâmetros de rede, orientações técnicas ao cliente.</p>
+        <p><strong>Procedimento:</strong> entrar em contato com o cliente para validar os sintomas; informar os ajustes que serão realizados; executar os procedimentos remotos; realizar novos testes de ping, navegação e velocidade; validar junto ao cliente se houve normalização.</p>
+        <p><strong>Resultado:</strong> se resolvido remotamente e validado pelo cliente, a O.S. deve ser encerrada como "Resolvido no NOC"; se persistir ou for identificada necessidade de intervenção física, encaminhar para o Suporte/Técnico de Campo com diagnóstico detalhado.</p>
+
+        <h4>Etapa 5 — Resolução ou encaminhamento</h4>
+        <p><strong>Resolução no NOC — Internet Lenta:</strong> obrigatório preencher na O.S. modelo do roteador, firmware, testes de ping (externo), validação de navegação, sinais RX/TX da ONU, temperatura e bias, ajuste realizado (Wi-Fi, firmware, reboot, DNS). Obrigatório anexar testes realizados e comprovação de contato com o cliente.</p>
+        <div class="template-box">MENSAGEM PADRÃO — RESOLVIDO NO NOC:
+"O.S. analisada pelo NOC. Identificada lentidão causada por configuração/equipamento. Ajustes realizados remotamente. Sinais ópticos no padrão, testes de ping e navegação validados com o cliente. Conexão normalizada sem necessidade de envio de técnico."</div>
+        <p>Encerrar como resolvida apenas se sinais ópticos ideais, ping sem perda e navegação validada com o cliente.</p>
+
+        <p><strong>Encaminhamento para suporte técnico — internet lenta:</strong> obrigatório preencher modelo do roteador, firmware atual, resultado dos testes de ping, histórico de desconexões dos últimos 7 dias, sinais RX/TX da ONU, temperatura e bias current (quando fora do padrão), modulação da ONU, alarmes identificados no UNM, testes e validações realizados pelo NOC, possível causa identificada. Obrigatório anexar evidências dos testes, prints dos parâmetros da ONU, registro de contato com o cliente e informações relevantes para o técnico em campo.</p>
+
+        <h4>Fluxo obrigatório para encerramento da O.S. (encaminhamento técnico)</h4>
+        <ol class="plain">
+          <li>Acessar a O.S. no IXC.</li>
+          <li>Clicar em Ações → Finalizar.</li>
+          <li>Descrever a resposta padrão conforme o cenário (Resolvido no NOC / Encaminhado para Suporte-Técnico / Reincidência).</li>
+          <li>Selecionar o diagnóstico da O.S. (obrigatório) — deve refletir exatamente o problema identificado.</li>
+          <li>Definir a próxima tarefa: Encaminhar para Técnico / Encaminhar para Suporte / <em>ver decisão pendente abaixo</em> / Encerramento definitivo no NOC.</li>
+          <li>Salvar e concluir a O.S.</li>
+        </ol>
+
+        <div class="decision-pending">
+          <div class="dp-title">⚠ Decisão pendente — nome do campo "Próxima Tarefa" no IXC</div>
+          <p>O rascunho-fonte principal lista a opção como <strong>"NPS"</strong>. Outra fonte da varredura cruzada registra o mesmo campo como <strong>"Feedback ao Cliente"</strong>. Ambos os nomes são mantidos aqui; o nome correto do campo no IXC Soft precisa ser confirmado operacionalmente antes de treinar a equipe com um único termo.</p>
+        </div>
+
+        <div class="exception-item">
+          <div class="exception-title">⚠ Atenção</div>
+          <div class="exception-desc">O encerramento da O.S. sem diagnóstico selecionado ou sem definição da próxima tarefa é considerado incorreto e passível de retrabalho.</div>
+        </div>
+
+        <p><strong>Link de diagnósticos NOC:</strong> <a href="https://docs.google.com/spreadsheets/d/1OSbAeFtZYhvtwS0-Kcu-dqTslehfC_rART5geKTxq2k/edit?usp=sharing" target="_blank" rel="noopener noreferrer">planilha de diagnósticos NOC</a></p>
+
+        <div class="conclusion-box">
+          <strong>Conclusão — Suporte 1</strong>
+          A padronização da avaliação técnica no NOC garante diagnósticos rastreáveis, reduz o envio desnecessário de técnicos a campo e assegura que o cliente receba resolução remota sempre que tecnicamente viável — otimizando SLA, recursos de campo e a base histórica usada no tratamento de reincidências.
+        </div>
+      </div>
+
+      <!-- SUPORTE 2 -->
+      <div class="sub-process-block">
+        <h3>Suporte 2 — Feedback Internet Lenta e Reincidência de Internet Lenta</h3>
+        <p><strong>Objetivo:</strong> padronizar a verificação do atendimento de serviços ou suportes realizados, validando a solução entregue e mensurando a satisfação do cliente, a fim de garantir a qualidade e o fechamento adequado das Ordens de Serviço (OS) e do Atendimento.</p>
+        <p><strong>Entradas:</strong> Ordens de Serviço (OS) com status "Resolvido/Executado" (vindas do NOC ou do Técnico de Campo). <strong>Recursos:</strong> IXC Soft, telefone, lista de contatos. <strong>Saídas:</strong> OS finalizada, OS de reincidência ou nova OS de serviço.</p>
+
+        <ul class="plain">
+          <li><strong>Triagem inicial:</strong> no início do dia, acessar o sistema e listar as O.S. abertas para o setor de feedback; organizar a lista priorizando o SLA mais crítico para o menos crítico.</li>
+          <li><strong>Tentativa de contato:</strong> realizar a ligação para o cliente registrado na O.S., com 3 tentativas obrigatórias em horários distintos.</li>
+          <li><strong>Registro de contato:</strong> sem sucesso após a 3ª tentativa → encerrar com status "Falta de contato com o cliente" (sem nota de avaliação); com sucesso → prosseguir para a pesquisa de satisfação.</li>
+          <li><strong>Pesquisa e avaliação:</strong> questionar o cliente sobre o serviço e registrar a nota no sistema.</li>
+          <li><strong>Tratamento de nota baixa:</strong> registrar detalhadamente o motivo informado e escalonar imediatamente para a Supervisão.</li>
+          <li><strong>Validação da solução:</strong> se não resolvido, abrir OS de Reincidência vinculada ao atendimento anterior (retorna à Etapa 1 de triagem do NOC, Suporte 1); se resolvido, finalizar a OS atual.</li>
+          <li><strong>Novas solicitações:</strong> se o cliente solicitar atendimento não relacionado ao chamado original, abrir nova O.S. específica e encaminhar ao setor responsável.</li>
+        </ul>
+
+        <div class="conclusion-box">
+          <strong>Conclusão — Suporte 2</strong>
+          A execução correta deste procedimento assegura que nenhum chamado seja encerrado sem a devida confirmação de qualidade, garantindo a recuperação de serviços mal executados (reincidência) e a fidelização do cliente através da escuta ativa.
+        </div>
+      </div>
+
+      <!-- SUPORTE 3 -->
+      <div class="sub-process-block">
+        <h3>Suporte 3 — Internet Lenta (Suporte Técnico de Campo)</h3>
+        <p><strong>Objetivo:</strong> suporte técnico presencial para clientes de serviços de internet, combinado com a documentação fotográfica das etapas críticas, garantindo suporte preciso e eficiente e registro visual do processo integral, com exatidão, conformidade e transparência nas atividades técnicas.</p>
+        <p><strong>Entradas:</strong> abertura de chamado (histórico), agendamento, materiais (roteador, ONT, cabos). <strong>Saídas:</strong> internet funcionando, testes de velocidade validados, cliente orientado, O.S. encerrada com documentação fotográfica.</p>
+
+        <h4>Etapa 1 — Preparação e deslocamento</h4>
+        <ul class="plain">
+          <li>Verificar histórico do chamado antes do deslocamento.</li>
+          <li>Confirmar agendamento (ligação ou WhatsApp), endereço e horário.</li>
+          <li>Conferência de material: roteador, ONT/ONU, fontes, conectores, cabo UTP e fibra óptica.</li>
+          <li>Decisão: se tudo OK, deslocar-se; caso contrário, reagendar e seguir para a próxima O.S.</li>
+        </ul>
+
+        <h4>Etapa 2 — Abordagem ao cliente (script padrão)</h4>
+        <div class="script-box">"Bom dia/tarde! Meu nome é [Nome], técnico da Prestek Telecom, aqui para realizar o serviço de [Suporte] conforme agendado."</div>
+        <p>Após a saudação: confirmar o serviço e verificar se o cliente possui demandas específicas; informar o procedimento e o tempo estimado da visita.</p>
+
+        <h4>Etapa 3 — Diagnóstico físico e lógico</h4>
+        <ul class="plain">
+          <li>Verificar tomada elétrica e funcionamento da fonte.</li>
+          <li>Verificar integridade do cabo de rede, conectores e fibra óptica (atenuação).</li>
+          <li>Realizar reinicialização, reset de fábrica ou atualização de firmware se necessário.</li>
+          <li>Checar PPPoE, IP e VLAN.</li>
+        </ul>
+
+        <h4>Etapa 4 — Testes de conectividade e Wi-Fi</h4>
+        <ul class="plain">
+          <li>Verificar SSID e explicar o uso das frequências 2.4/5 GHz; ajustar canal (automático/manual) conforme análise.</li>
+          <li>Realizar teste de velocidade (obrigatório) via Wi-Fi (celular do cliente ou do técnico) e comparar com o plano contratado.</li>
+          <li>Testar navegação em sites diferentes para validar DNS e rotas.</li>
+        </ul>
+
+        <h4>Etapa 5 — Ações corretivas (se falha identificada)</h4>
+        <p>Troca de ONU/ONT, roteador ou fonte; recrimpagem de cabos; reposicionamento do roteador (site survey); ajuste de sinal ou reconfiguração completa.</p>
+
+        <h4>Etapa 6 — Validação e encerramento (critérios de solução)</h4>
+        <ul class="plain">
+          <li><strong>Validação:</strong> só encerrar se internet funcionando, velocidade no padrão e navegação validada.</li>
+          <li><strong>Documentação fotográfica obrigatória:</strong> MAC/ONU e roteador; atenuação da ONU; teste de velocidade; instalação/substituição e Termo de Responsabilidade (se fora do padrão); CTO aberta/fechada e atenuação (se houver alteração).</li>
+          <li><strong>Finalização:</strong> orientar o cliente, entregar panfleto de onboarding e coletar assinatura.</li>
+          <li><strong>Baixa:</strong> registrar testes, equipamentos trocados e encerrar a O.S. no sistema.</li>
+        </ul>
+
+        <div class="conclusion-box">
+          <strong>Conclusão — Suporte 3</strong>
+          A execução padronizada do suporte técnico presencial, aliada ao registro fotográfico obrigatório em cada etapa crítica, garante rastreabilidade completa da intervenção, resguarda a empresa e o cliente quanto ao estado dos equipamentos entregues/trocados e eleva a taxa de resolução no primeiro atendimento (FCR), reduzindo reagendamentos e reincidências originadas de falhas de campo mal documentadas.
+        </div>
+      </div>
+
+      <!-- BPMN (INTEGRAÇÃO BPMN.IO) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 10px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">Fluxograma Oficial (BPMN 2.0 • bpmn.io)</h3>
+        <div style="display: flex; gap: 8px;">
+          <a href="POP-INTLE-01 - Internet Lenta.bpmn" download="POP-INTLE-01 - Internet Lenta.bpmn" class="btn-action" title="Baixar arquivo XML padrão BPMN 2.0">⬇ Baixar .bpmn</a>
+          <a href="https://demo.bpmn.io/" target="_blank" rel="noopener noreferrer" class="btn-action" title="Abrir ferramenta bpmn.io">🌐 Abrir no bpmn.io</a>
+        </div>
+      </div>
+
+      <div class="bpmn-wrapper">
+        <div class="bpmn-toolbar">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Interativo: clique e arraste para navegar • scroll para zoom • 3 raias (SAC/Atendimento, NOC, Técnico de Campo) + gateway de reincidência</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btn-zoom-in" class="zoom-btn" title="Aumentar zoom">+</button>
+            <button type="button" id="btn-zoom-out" class="zoom-btn" title="Diminuir zoom">-</button>
+            <button type="button" id="btn-zoom-fit" class="zoom-btn" title="Ajustar à tela">⤢ Ajustar</button>
+          </div>
+        </div>
+        <div id="bpmn-canvas">
+          <!-- Fallback estático caso esteja sem internet -->
+          <div id="bpmn-fallback" style="display: none; padding: 20px;">
+            <div class="swimlane">
+              <div class="swimlane-header ti">Raia / SAC-Atendimento</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Cliente relata lentidão</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Identificação + verificações sistêmicas</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Diagnóstico inicial / reinício orientado</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Resolvido no SAC?<br><small>[Sim] ➔ Encerra<br>[Não] ➔ Abre O.S.</small></div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header">Raia / NOC</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Triagem inicial da O.S.</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color:#f59e0b;background:#fffbeb;">É reincidência?<br><small>[Sim] ➔ Valida histórico<br>[Não] ➔ segue</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Diagnóstico técnico (roteador + ONU)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Resolúvel remotamente?<br><small>[Sim] ➔ Resolvido no NOC<br>[Não] ➔ Encaminha Técnico</small></div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header" style="background:#334155;">Raia / Técnico de Campo</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Preparação + abordagem (script padrão)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Diagnóstico físico/lógico + testes Wi-Fi</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Falha identificada?<br><small>[Sim] ➔ Ações corretivas<br>[Não] ➔ segue</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color: #16a34a; background: #f0fdf4; color: #166534;">Validação + doc. fotográfica + encerramento</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. REGRAS DE NEGÓCIOS -->
+    <section class="pop-section">
+      <h2>5. Regras de negócios</h2>
+
+      <h3>Suporte 0 — SAC/Atendimento</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">1</div><div>Reinicialização orientada é obrigatória antes de abrir O.S.</div></div>
+        <div class="rule-card"><div class="rule-number">2</div><div>Dados do cliente confirmados no sistema antes do registro</div></div>
+      </div>
+
+      <h3>Suporte 1 — NOC (bloco padrão, aplicável a todas as O.S.)</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">1</div><div>Toda O.S. deve conter diagnóstico claro</div></div>
+        <div class="rule-card"><div class="rule-number">2</div><div>Toda decisão deve ser justificada tecnicamente</div></div>
+        <div class="rule-card"><div class="rule-number">3</div><div>Encaminhamento só ocorre após validação completa no NOC</div></div>
+        <div class="rule-card"><div class="rule-number">4</div><div>Valores fora do padrão obrigam registro e ação</div></div>
+      </div>
+
+      <h3>Suporte 2 — Feedback</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">1</div><div>Meta diária "D-1": O.S. do dia anterior finalizadas no dia corrente</div></div>
+        <div class="rule-card"><div class="rule-number">2</div><div>Nenhuma O.S. com nota baixa encerra sem validação da Supervisão</div></div>
+      </div>
+
+      <h3>Suporte 3 — Técnico de Campo</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">1</div><div>FCR (First Call Resolution): meta entre 80% e 90%</div></div>
+        <div class="rule-card"><div class="rule-number">2</div><div>Procedimento fora do padrão gera reprovação da O.S.</div></div>
+        <div class="rule-card" style="grid-column: span 2;"><div class="rule-number">3</div><div>Todo material utilizado deve ter baixa registrada na O.S.</div></div>
+      </div>
+    </section>
+
+    <!-- 6. EXCEÇÕES E TRATAMENTO DE ERROS -->
+    <section class="pop-section">
+      <h2>6. Exceções e tratamento de erros</h2>
+      <p>Procedimentos obrigatórios para contingências e desvios durante o fluxo de Internet Lenta:</p>
+
+      <div class="exception-item">
+        <div class="exception-title">6.1. Sinais fora do padrão (NOC)</div>
+        <div class="exception-desc"><strong>Descrição:</strong> sinal RX abaixo de -27 dBm ou Bias acima do limiar vigente (ver decisão pendente na Seção 2).</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> o encerramento remoto é proibido; a O.S. deve ser obrigatoriamente encaminhada para o técnico de campo com o diagnóstico completo anexado.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.2. Reincidência em menos de 90 dias</div>
+        <div class="exception-desc"><strong>Descrição:</strong> nova O.S. de Internet Lenta do mesmo cliente aberta em menos de 90 dias após atendimento anterior.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> tratar com prioridade; o analista deve obrigatoriamente consultar a O.S. anterior, ler o diagnóstico e comparar os parâmetros técnicos antes de prosseguir com a nova análise.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.3. Falta de contato com o cliente (Feedback)</div>
+        <div class="exception-desc"><strong>Descrição:</strong> 3 tentativas de contato em horários distintos sem sucesso.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> encerrar a O.S. com status "Falta de contato com o cliente", sem registrar nota de avaliação.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.4. Dados de contato desatualizados</div>
+        <div class="exception-desc"><strong>Descrição:</strong> telefone do cliente desatualizado impede o contato de feedback.</div>
+        <div class="exception-treatment">
+          <ol>
+            <li>Registrar a ocorrência no cadastro do cliente.</li>
+            <li>Notificar o setor comercial/atualização cadastral antes de encerrar por falta de contato.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.5. Indisponibilidade do sistema (IXC Soft)</div>
+        <div class="exception-desc"><strong>Descrição:</strong> falha ou indisponibilidade do sistema durante a pesquisa de satisfação.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> registrar as avaliações em planilha manual de contingência e lançá-las no sistema assim que ele retornar.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.6. Cliente ausente ou menor de idade (visita técnica)</div>
+        <div class="exception-desc"><strong>Descrição:</strong> técnico de campo chega ao endereço e o responsável não está presente, ou apenas um menor de idade está no local.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> reagendar o atendimento e seguir para a próxima ordem de serviço da rota.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.7. Falha externa identificada em campo</div>
+        <div class="exception-desc"><strong>Descrição:</strong> sinal fora do padrão na rede externa, rompimento de fibra, falha em equipamentos de rede ou incidente coletivo.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> escalonar imediatamente para a equipe de Infraestrutura, registrando as evidências coletadas em campo.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.8. Encerramento sem diagnóstico ou sem próxima tarefa (NOC)</div>
+        <div class="exception-desc"><strong>Descrição:</strong> tentativa de finalizar a O.S. no IXC sem diagnóstico selecionado ou sem definição da próxima tarefa.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> considerado incorreto e passível de retrabalho; o analista deve preencher os dois campos obrigatórios antes de salvar.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSÃO -->
+    <section class="pop-section">
+      <h2>7. Conclusão</h2>
+      <p>A padronização integral do fluxo — do intake no SAC até o feedback pós-atendimento, passando pelo diagnóstico remoto do NOC e pela intervenção presencial do Técnico de Campo — assegura que nenhum chamado de Internet Lenta seja encerrado sem diagnóstico técnico registrado, validação com o cliente e, quando aplicável, documentação fotográfica.</p>
+      <p>A rastreabilidade de cada decisão (triagem, reincidência, resolução remota vs. encaminhamento, nota de satisfação) sustenta a melhoria contínua do SGQ, reduz retrabalho entre setores e forma a base de dados usada para identificar padrões de reincidência e agir preventivamente.</p>
+      <p><strong>Estados do fluxo ainda sem procedimento documentado</strong> (lacunas conhecidas, fora do escopo desta revisão): Auditoria (Internet Lenta); Avaliação NOC Reincidência; Reincidência; Auditoria Reincidência; Feedback de Reincidência; Reprovado_Suporte; Corrigido_Suporte; Ação Corretiva (Pós-Suporte); Corrigida Ação Corretiva (Pós-Suporte).</p>
+    </section>
+
+    <!-- ASSINATURAS FORMAIS -->
+    <div class="signoff">
+      <div class="sig">
+        <div class="line">Marcio Eduardo Felix &nbsp;&nbsp;|&nbsp;&nbsp; 10/09/2026</div>
+        <div class="role">Supervisor T.I. / NOC • Elaborador (revisão 004)</div>
+      </div>
+      <div class="sig">
+        <div class="line">Roberta Kelle Nunes Gomes &nbsp;&nbsp;|&nbsp;&nbsp; 23/09/2025</div>
+        <div class="role">Representante da Direção • Aprovadora (revisão anterior — reaprovação da rev. 004 pendente)</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ CONTROLADO -->
+  <div class="doc-footer">
+    Documento controlado — Sistema de Gestão da Qualidade ISO 9001 • Prestek Telecom
+  </div>
+
+</div>
+
+<!-- Script BPMN.io / bpmn-js -->
+<script type="text/xml" id="bpmn-data">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_InternetLenta" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_InternetLenta">
+    <bpmn:participant id="Participant_InternetLenta" name="SUPORTE INTERNET LENTA" processRef="Process_InternetLenta" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>POP-INTLE-01 - INTERNET LENTA
+Marcio Eduardo Felix
+Prestek Telecom
+Revisao 004 | 10/09/2026
+Gateway "E reincidencia?" destacado (NOC)</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_InternetLenta" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_InternetLenta" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_SAC" name="SAC / ATENDIMENTO">
+        <bpmn:flowNodeRef>StartEvent_Cliente</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Identificacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DiagnosticoInicial</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ResolvidoSAC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ResolvidoSAC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AbreOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Feedback</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ContatoCliente</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_SemContato</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PesquisaSatisfacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ClienteConfirma</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Fidelizado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AbreReincidencia</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_NOC" name="NOC">
+        <bpmn:flowNodeRef>Task_TriagemOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Reincidencia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ValidaHistorico</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DiagnosticoTecnico</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ResolveRemoto</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AjustesRemotos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_EncaminhaTecnico</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Tecnico" name="TÉCNICO DE CAMPO">
+        <bpmn:flowNodeRef>Task_Preparacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DiagnosticoCampo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_FalhaCampo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AcoesCorretivas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ValidacaoDocFoto</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Cliente" name="Cliente relata lentidão / degradação">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Identificacao" name="Identificação do cliente e verificações sistêmicas (SAC)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_DiagnosticoInicial" name="Diagnóstico inicial e reinício orientado dos equipamentos">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ResolvidoSAC" name="Resolvido no SAC?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_ResolvidoSAC" name="Encerrado no SAC (sem O.S.)">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_AbreOS" name="Abre O.S. Internet Lenta">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_TriagemOS" name="Triagem inicial da O.S. (NOC) — inclui checagem de reincidência">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:incoming>Flow_28</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Reincidencia" name="É reincidência?">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_ValidaHistorico" name="Valida histórico e O.S. anterior (reincidência)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_DiagnosticoTecnico" name="Diagnóstico técnico: roteador + ONU (Etapas 2 e 3)">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ResolveRemoto" name="Resolúvel remotamente e sinais no padrão?">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_AjustesRemotos" name="Executa ajustes remotos e valida com o cliente">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_EncaminhaTecnico" name="Encaminha para Técnico de Campo com diagnóstico">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Preparacao" name="Preparação, deslocamento e abordagem ao cliente (script padrão)">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_DiagnosticoCampo" name="Diagnóstico físico/lógico e testes de conectividade/Wi-Fi">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_FalhaCampo" name="Falha identificada?">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_AcoesCorretivas" name="Ações corretivas (troca de equipamento, recrimpagem, site survey)">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ValidacaoDocFoto" name="Validação, documentação fotográfica obrigatória e encerramento em campo">
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Feedback" name="Contato ativo para pesquisa de satisfação (até 3 tentativas)">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_22</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ContatoCliente" name="Contato realizado em até 3 tentativas?">
+      <bpmn:incoming>Flow_22</bpmn:incoming>
+      <bpmn:outgoing>Flow_23</bpmn:outgoing>
+      <bpmn:outgoing>Flow_24</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_SemContato" name="Encerrado — falta de contato com o cliente">
+      <bpmn:incoming>Flow_23</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_PesquisaSatisfacao" name="Pesquisa e registro da nota de avaliação">
+      <bpmn:incoming>Flow_24</bpmn:incoming>
+      <bpmn:outgoing>Flow_25</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ClienteConfirma" name="Problema resolvido e nota OK?">
+      <bpmn:incoming>Flow_25</bpmn:incoming>
+      <bpmn:outgoing>Flow_26</bpmn:outgoing>
+      <bpmn:outgoing>Flow_27</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_Fidelizado" name="Atendimento finalizado e validado">
+      <bpmn:incoming>Flow_26</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_AbreReincidencia" name="Abre O.S. de Reincidência vinculada ao atendimento anterior">
+      <bpmn:incoming>Flow_27</bpmn:incoming>
+      <bpmn:outgoing>Flow_28</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Cliente" targetRef="Task_Identificacao" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Identificacao" targetRef="Task_DiagnosticoInicial" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_DiagnosticoInicial" targetRef="Gateway_ResolvidoSAC" />
+    <bpmn:sequenceFlow id="Flow_4" name="Sim" sourceRef="Gateway_ResolvidoSAC" targetRef="EndEvent_ResolvidoSAC" />
+    <bpmn:sequenceFlow id="Flow_5" name="Não" sourceRef="Gateway_ResolvidoSAC" targetRef="Task_AbreOS" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_AbreOS" targetRef="Task_TriagemOS" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_TriagemOS" targetRef="Gateway_Reincidencia" />
+    <bpmn:sequenceFlow id="Flow_8" name="Sim" sourceRef="Gateway_Reincidencia" targetRef="Task_ValidaHistorico" />
+    <bpmn:sequenceFlow id="Flow_9" name="Não" sourceRef="Gateway_Reincidencia" targetRef="Task_DiagnosticoTecnico" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_ValidaHistorico" targetRef="Task_DiagnosticoTecnico" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_DiagnosticoTecnico" targetRef="Gateway_ResolveRemoto" />
+    <bpmn:sequenceFlow id="Flow_12" name="Sim" sourceRef="Gateway_ResolveRemoto" targetRef="Task_AjustesRemotos" />
+    <bpmn:sequenceFlow id="Flow_13" name="Não" sourceRef="Gateway_ResolveRemoto" targetRef="Task_EncaminhaTecnico" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_AjustesRemotos" targetRef="Task_Feedback" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_EncaminhaTecnico" targetRef="Task_Preparacao" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_Preparacao" targetRef="Task_DiagnosticoCampo" />
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Task_DiagnosticoCampo" targetRef="Gateway_FalhaCampo" />
+    <bpmn:sequenceFlow id="Flow_18" name="Sim" sourceRef="Gateway_FalhaCampo" targetRef="Task_AcoesCorretivas" />
+    <bpmn:sequenceFlow id="Flow_19" name="Não" sourceRef="Gateway_FalhaCampo" targetRef="Task_ValidacaoDocFoto" />
+    <bpmn:sequenceFlow id="Flow_20" sourceRef="Task_AcoesCorretivas" targetRef="Task_ValidacaoDocFoto" />
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Task_ValidacaoDocFoto" targetRef="Task_Feedback" />
+    <bpmn:sequenceFlow id="Flow_22" sourceRef="Task_Feedback" targetRef="Gateway_ContatoCliente" />
+    <bpmn:sequenceFlow id="Flow_23" name="Não" sourceRef="Gateway_ContatoCliente" targetRef="EndEvent_SemContato" />
+    <bpmn:sequenceFlow id="Flow_24" name="Sim" sourceRef="Gateway_ContatoCliente" targetRef="Task_PesquisaSatisfacao" />
+    <bpmn:sequenceFlow id="Flow_25" sourceRef="Task_PesquisaSatisfacao" targetRef="Gateway_ClienteConfirma" />
+    <bpmn:sequenceFlow id="Flow_26" name="Sim" sourceRef="Gateway_ClienteConfirma" targetRef="EndEvent_Fidelizado" />
+    <bpmn:sequenceFlow id="Flow_27" name="Não" sourceRef="Gateway_ClienteConfirma" targetRef="Task_AbreReincidencia" />
+    <bpmn:sequenceFlow id="Flow_28" sourceRef="Task_AbreReincidencia" targetRef="Task_TriagemOS" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_InternetLenta">
+    <bpmndi:BPMNPlane id="BPMNPlane_InternetLenta" bpmnElement="Collaboration_InternetLenta">
+      <bpmndi:BPMNShape id="Participant_InternetLenta_di" bpmnElement="Participant_InternetLenta" isHorizontal="true">
+        <dc:Bounds x="140" y="90" width="4020" height="760" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_SAC_di" bpmnElement="Lane_SAC" isHorizontal="true">
+        <dc:Bounds x="170" y="100" width="3990" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_NOC_di" bpmnElement="Lane_NOC" isHorizontal="true">
+        <dc:Bounds x="170" y="320" width="3990" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Tecnico_di" bpmnElement="Lane_Tecnico" isHorizontal="true">
+        <dc:Bounds x="170" y="540" width="3990" height="220" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Cliente_di" bpmnElement="StartEvent_Cliente">
+        <dc:Bounds x="190" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="165" y="228" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Identificacao_di" bpmnElement="Task_Identificacao">
+        <dc:Bounds x="270" y="170" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DiagnosticoInicial_di" bpmnElement="Task_DiagnosticoInicial">
+        <dc:Bounds x="470" y="170" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ResolvidoSAC_di" bpmnElement="Gateway_ResolvidoSAC" isMarkerVisible="true">
+        <dc:Bounds x="680" y="185" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="668" y="160" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_ResolvidoSAC_di" bpmnElement="EndEvent_ResolvidoSAC">
+        <dc:Bounds x="770" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="752" y="102" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AbreOS_di" bpmnElement="Task_AbreOS">
+        <dc:Bounds x="770" y="240" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_TriagemOS_di" bpmnElement="Task_TriagemOS">
+        <dc:Bounds x="970" y="390" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Reincidencia_di" bpmnElement="Gateway_Reincidencia" isMarkerVisible="true">
+        <dc:Bounds x="1180" y="405" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1168" y="459" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ValidaHistorico_di" bpmnElement="Task_ValidaHistorico">
+        <dc:Bounds x="1280" y="320" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DiagnosticoTecnico_di" bpmnElement="Task_DiagnosticoTecnico">
+        <dc:Bounds x="1500" y="390" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ResolveRemoto_di" bpmnElement="Gateway_ResolveRemoto" isMarkerVisible="true">
+        <dc:Bounds x="1720" y="405" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1705" y="459" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AjustesRemotos_di" bpmnElement="Task_AjustesRemotos">
+        <dc:Bounds x="1820" y="320" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EncaminhaTecnico_di" bpmnElement="Task_EncaminhaTecnico">
+        <dc:Bounds x="1820" y="460" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Preparacao_di" bpmnElement="Task_Preparacao">
+        <dc:Bounds x="2050" y="610" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DiagnosticoCampo_di" bpmnElement="Task_DiagnosticoCampo">
+        <dc:Bounds x="2290" y="610" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_FalhaCampo_di" bpmnElement="Gateway_FalhaCampo" isMarkerVisible="true">
+        <dc:Bounds x="2520" y="625" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2508" y="679" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AcoesCorretivas_di" bpmnElement="Task_AcoesCorretivas">
+        <dc:Bounds x="2620" y="560" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ValidacaoDocFoto_di" bpmnElement="Task_ValidacaoDocFoto">
+        <dc:Bounds x="2840" y="610" width="190" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Feedback_di" bpmnElement="Task_Feedback">
+        <dc:Bounds x="3300" y="170" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ContatoCliente_di" bpmnElement="Gateway_ContatoCliente" isMarkerVisible="true">
+        <dc:Bounds x="3540" y="185" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3528" y="130" width="75" height="41" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_SemContato_di" bpmnElement="EndEvent_SemContato">
+        <dc:Bounds x="3630" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3610" y="298" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PesquisaSatisfacao_di" bpmnElement="Task_PesquisaSatisfacao">
+        <dc:Bounds x="3630" y="170" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ClienteConfirma_di" bpmnElement="Gateway_ClienteConfirma" isMarkerVisible="true">
+        <dc:Bounds x="3850" y="185" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3838" y="130" width="75" height="41" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Fidelizado_di" bpmnElement="EndEvent_Fidelizado">
+        <dc:Bounds x="3940" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3920" y="102" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AbreReincidencia_di" bpmnElement="Task_AbreReincidencia">
+        <dc:Bounds x="3940" y="240" width="180" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="1900" y="-70" width="280" height="130" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="226" y="210" />
+        <di:waypoint x="270" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="420" y="210" />
+        <di:waypoint x="470" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="630" y="210" />
+        <di:waypoint x="680" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="705" y="185" />
+        <di:waypoint x="705" y="140" />
+        <di:waypoint x="770" y="140" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="712" y="160" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="705" y="235" />
+        <di:waypoint x="705" y="280" />
+        <di:waypoint x="770" y="280" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="712" y="255" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="920" y="280" />
+        <di:waypoint x="945" y="280" />
+        <di:waypoint x="945" y="430" />
+        <di:waypoint x="970" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1130" y="430" />
+        <di:waypoint x="1180" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1205" y="405" />
+        <di:waypoint x="1205" y="360" />
+        <di:waypoint x="1280" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1212" y="380" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1230" y="430" />
+        <di:waypoint x="1500" y="430" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1350" y="412" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1440" y="360" />
+        <di:waypoint x="1585" y="360" />
+        <di:waypoint x="1585" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1670" y="430" />
+        <di:waypoint x="1720" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1745" y="405" />
+        <di:waypoint x="1745" y="360" />
+        <di:waypoint x="1820" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1752" y="380" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1745" y="455" />
+        <di:waypoint x="1745" y="500" />
+        <di:waypoint x="1820" y="500" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1752" y="475" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1980" y="360" />
+        <di:waypoint x="2200" y="360" />
+        <di:waypoint x="2200" y="210" />
+        <di:waypoint x="3300" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="1990" y="500" />
+        <di:waypoint x="2020" y="500" />
+        <di:waypoint x="2020" y="650" />
+        <di:waypoint x="2050" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="2240" y="650" />
+        <di:waypoint x="2290" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="2470" y="650" />
+        <di:waypoint x="2520" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="2545" y="625" />
+        <di:waypoint x="2545" y="600" />
+        <di:waypoint x="2620" y="600" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2552" y="608" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19">
+        <di:waypoint x="2570" y="650" />
+        <di:waypoint x="2840" y="650" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2695" y="632" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <di:waypoint x="2790" y="600" />
+        <di:waypoint x="2935" y="600" />
+        <di:waypoint x="2935" y="610" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21">
+        <di:waypoint x="3030" y="650" />
+        <di:waypoint x="3200" y="650" />
+        <di:waypoint x="3200" y="210" />
+        <di:waypoint x="3300" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_22_di" bpmnElement="Flow_22">
+        <di:waypoint x="3490" y="210" />
+        <di:waypoint x="3540" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_23_di" bpmnElement="Flow_23">
+        <di:waypoint x="3565" y="235" />
+        <di:waypoint x="3565" y="280" />
+        <di:waypoint x="3630" y="280" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3572" y="255" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_24_di" bpmnElement="Flow_24">
+        <di:waypoint x="3590" y="210" />
+        <di:waypoint x="3630" y="210" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3600" y="192" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_25_di" bpmnElement="Flow_25">
+        <di:waypoint x="3810" y="210" />
+        <di:waypoint x="3850" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_26_di" bpmnElement="Flow_26">
+        <di:waypoint x="3875" y="185" />
+        <di:waypoint x="3875" y="140" />
+        <di:waypoint x="3940" y="140" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3882" y="160" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_27_di" bpmnElement="Flow_27">
+        <di:waypoint x="3875" y="235" />
+        <di:waypoint x="3875" y="280" />
+        <di:waypoint x="3940" y="280" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3882" y="255" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_28_di" bpmnElement="Flow_28">
+        <di:waypoint x="3940" y="280" />
+        <di:waypoint x="3940" y="800" />
+        <di:waypoint x="1050" y="800" />
+        <di:waypoint x="1050" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="2100" y="90" />
+        <di:waypoint x="2040" y="60" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+</script>
+
+<!-- Carregador bpmn-js com fallback automático -->
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/bpmn-js@17/dist/bpmn-navigated-viewer.production.min.js';
+    script.onload = function() {
+      try {
+        var BpmnViewer = window.BpmnJS;
+        var viewer = new BpmnViewer({
+          container: '#bpmn-canvas'
+        });
+        var xml = document.getElementById('bpmn-data').textContent.trim();
+        viewer.importXML(xml).then(function() {
+          var canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+
+          // Controles de zoom
+          document.getElementById('btn-zoom-in').onclick = function() { canvas.zoom(canvas.zoom() * 1.2); };
+          document.getElementById('btn-zoom-out').onclick = function() { canvas.zoom(canvas.zoom() * 0.8); };
+          document.getElementById('btn-zoom-fit').onclick = function() { canvas.zoom('fit-viewport'); };
+        }).catch(function(err) {
+          console.warn('Erro ao importar BPMN:', err);
+          document.getElementById('bpmn-fallback').style.display = 'block';
+        });
+      } catch(e) {
+        document.getElementById('bpmn-fallback').style.display = 'block';
+      }
+    };
+    script.onerror = function() {
+      // Caso offline ou sem acesso à CDN
+      document.getElementById('bpmn-fallback').style.display = 'block';
+    };
+    document.head.appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

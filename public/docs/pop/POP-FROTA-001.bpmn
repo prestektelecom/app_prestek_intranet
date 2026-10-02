@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Frota" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_Frota">
+    <bpmn:participant id="Participant_GestaoFrota" name="GESTÃO DE FROTA" processRef="Process_Frota" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>GESTÃO DE FROTA
+Marcio Felix
+Prestek Telecom
+Criação | 23/09/2025
+Última Atualização | 10/9/2026</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_GestaoFrota" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Frota" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Condutor" name="CONDUTOR">
+        <bpmn:flowNodeRef>Activity_RelataDefeito</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Frota" name="SETOR FROTA">
+        <bpmn:flowNodeRef>StartEvent_Frota</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_TipoManutencao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_VerificaPlano</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AutorizaReparo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MergeFluxos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_RegistraFinanceiro</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Frota</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Oficina" name="OFICINA CREDENCIADA">
+        <bpmn:flowNodeRef>Activity_ElaboraOrcamentoPrev</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ExecutaServicoPrev</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_DiagnosticoOficina</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Frota" name="Necessidade de manutenção identificada">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:exclusiveGateway id="Gateway_TipoManutencao" name="Tipo de manutenção?">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Prev</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Cor</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- Ramo Preventiva -->
+    <bpmn:userTask id="Activity_VerificaPlano" name="Verifica plano de revisão (tempo/km) e solicita orçamento">
+      <bpmn:incoming>Flow_Prev</bpmn:incoming>
+      <bpmn:outgoing>Flow_P1P2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Activity_ElaboraOrcamentoPrev" name="Elabora orçamento preventivo">
+      <bpmn:incoming>Flow_P1P2</bpmn:incoming>
+      <bpmn:outgoing>Flow_P2P3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_ExecutaServicoPrev" name="Executa serviço preventivo autorizado">
+      <bpmn:incoming>Flow_P2P3</bpmn:incoming>
+      <bpmn:outgoing>Flow_P3GW2</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- Ramo Corretiva -->
+    <bpmn:userTask id="Activity_RelataDefeito" name="Relata defeito e leva veículo à oficina">
+      <bpmn:incoming>Flow_Cor</bpmn:incoming>
+      <bpmn:outgoing>Flow_C1C2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Activity_DiagnosticoOficina" name="Realiza diagnóstico e elabora orçamento (com acompanhamento do Supervisor da Frota)">
+      <bpmn:incoming>Flow_C1C2</bpmn:incoming>
+      <bpmn:outgoing>Flow_C2C3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="Activity_AutorizaReparo" name="Autoriza orçamento; oficina executa reparo corretivo">
+      <bpmn:incoming>Flow_C2C3</bpmn:incoming>
+      <bpmn:outgoing>Flow_C3GW2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Convergência e fluxo administrativo -->
+    <bpmn:exclusiveGateway id="Gateway_MergeFluxos">
+      <bpmn:incoming>Flow_P3GW2</bpmn:incoming>
+      <bpmn:incoming>Flow_C3GW2</bpmn:incoming>
+      <bpmn:outgoing>Flow_GW2A1</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Activity_RegistraFinanceiro" name="Registra no IXC e encaminha ao Financeiro">
+      <bpmn:incoming>Flow_GW2A1</bpmn:incoming>
+      <bpmn:outgoing>Flow_A1EE</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Frota" name="Manutenção concluída e pagamento efetivado">
+      <bpmn:incoming>Flow_A1EE</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Frota" targetRef="Gateway_TipoManutencao" />
+    <bpmn:sequenceFlow id="Flow_Prev" name="Preventiva" sourceRef="Gateway_TipoManutencao" targetRef="Activity_VerificaPlano" />
+    <bpmn:sequenceFlow id="Flow_Cor" name="Corretiva" sourceRef="Gateway_TipoManutencao" targetRef="Activity_RelataDefeito" />
+    <bpmn:sequenceFlow id="Flow_P1P2" sourceRef="Activity_VerificaPlano" targetRef="Activity_ElaboraOrcamentoPrev" />
+    <bpmn:sequenceFlow id="Flow_P2P3" sourceRef="Activity_ElaboraOrcamentoPrev" targetRef="Activity_ExecutaServicoPrev" />
+    <bpmn:sequenceFlow id="Flow_P3GW2" sourceRef="Activity_ExecutaServicoPrev" targetRef="Gateway_MergeFluxos" />
+    <bpmn:sequenceFlow id="Flow_C1C2" sourceRef="Activity_RelataDefeito" targetRef="Activity_DiagnosticoOficina" />
+    <bpmn:sequenceFlow id="Flow_C2C3" sourceRef="Activity_DiagnosticoOficina" targetRef="Activity_AutorizaReparo" />
+    <bpmn:sequenceFlow id="Flow_C3GW2" sourceRef="Activity_AutorizaReparo" targetRef="Gateway_MergeFluxos" />
+    <bpmn:sequenceFlow id="Flow_GW2A1" sourceRef="Gateway_MergeFluxos" targetRef="Activity_RegistraFinanceiro" />
+    <bpmn:sequenceFlow id="Flow_A1EE" sourceRef="Activity_RegistraFinanceiro" targetRef="EndEvent_Frota" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Frota">
+    <bpmndi:BPMNPlane id="BPMNPlane_Frota" bpmnElement="Collaboration_Frota">
+      <bpmndi:BPMNShape id="Participant_GestaoFrota_di" bpmnElement="Participant_GestaoFrota" isHorizontal="true">
+        <dc:Bounds x="140" y="220" width="1180" height="600" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Condutor_di" bpmnElement="Lane_Condutor" isHorizontal="true">
+        <dc:Bounds x="170" y="220" width="1150" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Frota_di" bpmnElement="Lane_Frota" isHorizontal="true">
+        <dc:Bounds x="170" y="370" width="1150" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Oficina_di" bpmnElement="Lane_Oficina" isHorizontal="true">
+        <dc:Bounds x="170" y="610" width="1150" height="210" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Frota_di" bpmnElement="StartEvent_Frota">
+        <dc:Bounds x="200" y="472" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="180" y="515" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_TipoManutencao_di" bpmnElement="Gateway_TipoManutencao" isMarkerVisible="true">
+        <dc:Bounds x="300" y="465" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="286" y="441" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_VerificaPlano_di" bpmnElement="Activity_VerificaPlano">
+        <dc:Bounds x="420" y="450" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ElaboraOrcamentoPrev_di" bpmnElement="Activity_ElaboraOrcamentoPrev">
+        <dc:Bounds x="600" y="620" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ExecutaServicoPrev_di" bpmnElement="Activity_ExecutaServicoPrev">
+        <dc:Bounds x="780" y="620" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_RelataDefeito_di" bpmnElement="Activity_RelataDefeito">
+        <dc:Bounds x="420" y="255" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_DiagnosticoOficina_di" bpmnElement="Activity_DiagnosticoOficina">
+        <dc:Bounds x="600" y="730" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AutorizaReparo_di" bpmnElement="Activity_AutorizaReparo">
+        <dc:Bounds x="780" y="450" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_MergeFluxos_di" bpmnElement="Gateway_MergeFluxos" isMarkerVisible="true">
+        <dc:Bounds x="960" y="465" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_RegistraFinanceiro_di" bpmnElement="Activity_RegistraFinanceiro">
+        <dc:Bounds x="1040" y="450" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Frota_di" bpmnElement="EndEvent_Frota">
+        <dc:Bounds x="1240" y="472" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1220" y="515" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="470" y="80" width="260" height="110" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="236" y="490" />
+        <di:waypoint x="300" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Prev_di" bpmnElement="Flow_Prev">
+        <di:waypoint x="350" y="490" />
+        <di:waypoint x="420" y="490" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="360" y="472" width="52" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Cor_di" bpmnElement="Flow_Cor">
+        <di:waypoint x="325" y="465" />
+        <di:waypoint x="325" y="295" />
+        <di:waypoint x="420" y="295" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="330" y="370" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1P2_di" bpmnElement="Flow_P1P2">
+        <di:waypoint x="560" y="490" />
+        <di:waypoint x="560" y="660" />
+        <di:waypoint x="600" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P2P3_di" bpmnElement="Flow_P2P3">
+        <di:waypoint x="740" y="660" />
+        <di:waypoint x="780" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P3GW2_di" bpmnElement="Flow_P3GW2">
+        <di:waypoint x="850" y="620" />
+        <di:waypoint x="850" y="611" />
+        <di:waypoint x="940" y="611" />
+        <di:waypoint x="940" y="490" />
+        <di:waypoint x="960" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_C1C2_di" bpmnElement="Flow_C1C2">
+        <di:waypoint x="490" y="335" />
+        <di:waypoint x="650" y="335" />
+        <di:waypoint x="650" y="770" />
+        <di:waypoint x="600" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_C2C3_di" bpmnElement="Flow_C2C3">
+        <di:waypoint x="740" y="770" />
+        <di:waypoint x="760" y="770" />
+        <di:waypoint x="760" y="490" />
+        <di:waypoint x="780" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_C3GW2_di" bpmnElement="Flow_C3GW2">
+        <di:waypoint x="920" y="490" />
+        <di:waypoint x="960" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_GW2A1_di" bpmnElement="Flow_GW2A1">
+        <di:waypoint x="1010" y="490" />
+        <di:waypoint x="1040" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_A1EE_di" bpmnElement="Flow_A1EE">
+        <di:waypoint x="1200" y="490" />
+        <di:waypoint x="1240" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="600" y="220" />
+        <di:waypoint x="600" y="190" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

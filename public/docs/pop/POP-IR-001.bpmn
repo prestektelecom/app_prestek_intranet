@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_InstalacaoRoteador" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_InstalacaoRoteador">
+    <bpmn:participant id="Participant_InstalacaoRoteador" name="INSTALAÇÃO DE ROTEADOR" processRef="Process_InstalacaoRoteador" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>INSTALAÇÃO DE ROTEADOR
+Marcio Felix
+Prestek Telecom
+Criação | 22/07/2026
+Última Atualização | 10/9/2026</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_InstalacaoRoteador" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_InstalacaoRoteador" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Atendimento" name="Atendimento / Triagem">
+        <bpmn:flowNodeRef>StartEvent_Recepcao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AbreOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ColetaDados</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Extensao</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Tecnico" name="Técnico de Campo">
+        <bpmn:flowNodeRef>Activity_RecebeOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Desloca</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_VerificaCTO</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_SiteSurvey</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ContataNOC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ConfiguraRoteador</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_TesteConexao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_FinalizaOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Fim</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_NOC" name="NOC">
+        <bpmn:flowNodeRef>Activity_AutenticaONU</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Recepcao" name="Recepção da demanda">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Activity_AbreOS" name="Abre OS 1247 (Triagem de Instalação de Roteador)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_ColetaDados" name="Coleta dados da triagem e investiga infraestrutura do cliente">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Extensao" name="Necessita extensão de rede?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_RecebeOS" name="Recebe OS direcionada e confere materiais/ferramentas (checklist)">
+      <bpmn:incoming>Flow_Sim</bpmn:incoming>
+      <bpmn:incoming>Flow_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_Desloca" name="Confirma agendamento e desloca até o cliente">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_VerificaCTO" name="Verifica CTO: vaga, distância (até 100m) e potência (Splitter 1:8 = -18dBm / 1:16 = -22dBm)">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_SiteSurvey" name="Realiza site survey, passa fibra e fixa equipamentos">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_ContataNOC" name="Contata o NOC para autenticação da ONU">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_ConfiguraRoteador" name="Configura PPPoE, Wi-Fi e altera senha padrão (Prstk@@24)">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_TesteConexao" name="Testa conexão e velocidade">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_FinalizaOS" name="Finaliza OS: checklist de fechamento + 5 fotos obrigatórias">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Fim" name="Instalação concluída">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:task id="Activity_AutenticaONU" name="Autentica a ONU">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Recepcao" targetRef="Activity_AbreOS" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_AbreOS" targetRef="Activity_ColetaDados" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_ColetaDados" targetRef="Gateway_Extensao" />
+    <bpmn:sequenceFlow id="Flow_Sim" name="Sim (com extensão)" sourceRef="Gateway_Extensao" targetRef="Activity_RecebeOS" />
+    <bpmn:sequenceFlow id="Flow_Nao" name="Não (sem extensão)" sourceRef="Gateway_Extensao" targetRef="Activity_RecebeOS" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_RecebeOS" targetRef="Activity_Desloca" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Activity_Desloca" targetRef="Activity_VerificaCTO" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_VerificaCTO" targetRef="Activity_SiteSurvey" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_SiteSurvey" targetRef="Activity_ContataNOC" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Activity_ContataNOC" targetRef="Activity_AutenticaONU" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Activity_AutenticaONU" targetRef="Activity_ConfiguraRoteador" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Activity_ConfiguraRoteador" targetRef="Activity_TesteConexao" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Activity_TesteConexao" targetRef="Activity_FinalizaOS" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Activity_FinalizaOS" targetRef="EndEvent_Fim" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_InstalacaoRoteador">
+    <bpmndi:BPMNPlane id="BPMNPlane_InstalacaoRoteador" bpmnElement="Collaboration_InstalacaoRoteador">
+      <bpmndi:BPMNShape id="Participant_InstalacaoRoteador_di" bpmnElement="Participant_InstalacaoRoteador" isHorizontal="true">
+        <dc:Bounds x="160" y="240" width="2160" height="600" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Atendimento_di" bpmnElement="Lane_Atendimento" isHorizontal="true">
+        <dc:Bounds x="190" y="240" width="2130" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Tecnico_di" bpmnElement="Lane_Tecnico" isHorizontal="true">
+        <dc:Bounds x="190" y="440" width="2130" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_NOC_di" bpmnElement="Lane_NOC" isHorizontal="true">
+        <dc:Bounds x="190" y="640" width="2130" height="200" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Recepcao_di" bpmnElement="StartEvent_Recepcao">
+        <dc:Bounds x="232" y="322" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="210" y="365" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AbreOS_di" bpmnElement="Activity_AbreOS">
+        <dc:Bounds x="320" y="300" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ColetaDados_di" bpmnElement="Activity_ColetaDados">
+        <dc:Bounds x="520" y="300" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Extensao_di" bpmnElement="Gateway_Extensao" isMarkerVisible="true">
+        <dc:Bounds x="720" y="315" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="700" y="285" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_RecebeOS_di" bpmnElement="Activity_RecebeOS">
+        <dc:Bounds x="740" y="500" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Desloca_di" bpmnElement="Activity_Desloca">
+        <dc:Bounds x="930" y="500" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_VerificaCTO_di" bpmnElement="Activity_VerificaCTO">
+        <dc:Bounds x="1120" y="500" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_SiteSurvey_di" bpmnElement="Activity_SiteSurvey">
+        <dc:Bounds x="1330" y="500" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ContataNOC_di" bpmnElement="Activity_ContataNOC">
+        <dc:Bounds x="1520" y="500" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ConfiguraRoteador_di" bpmnElement="Activity_ConfiguraRoteador">
+        <dc:Bounds x="1710" y="500" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_TesteConexao_di" bpmnElement="Activity_TesteConexao">
+        <dc:Bounds x="1920" y="500" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_FinalizaOS_di" bpmnElement="Activity_FinalizaOS">
+        <dc:Bounds x="2110" y="500" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Fim_di" bpmnElement="EndEvent_Fim">
+        <dc:Bounds x="2322" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2300" y="565" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_AutenticaONU_di" bpmnElement="Activity_AutenticaONU">
+        <dc:Bounds x="1520" y="700" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="500" y="100" width="260" height="110" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="268" y="340" />
+        <di:waypoint x="320" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="470" y="340" />
+        <di:waypoint x="520" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="670" y="340" />
+        <di:waypoint x="720" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Sim_di" bpmnElement="Flow_Sim">
+        <di:waypoint x="755" y="365" />
+        <di:waypoint x="755" y="460" />
+        <di:waypoint x="855" y="460" />
+        <di:waypoint x="855" y="500" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="760" y="440" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nao_di" bpmnElement="Flow_Nao">
+        <di:waypoint x="735" y="365" />
+        <di:waypoint x="735" y="480" />
+        <di:waypoint x="775" y="480" />
+        <di:waypoint x="775" y="500" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="640" y="465" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="890" y="540" />
+        <di:waypoint x="930" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="1080" y="540" />
+        <di:waypoint x="1120" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="1290" y="540" />
+        <di:waypoint x="1330" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1480" y="540" />
+        <di:waypoint x="1520" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1595" y="580" />
+        <di:waypoint x="1595" y="700" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1670" y="740" />
+        <di:waypoint x="1795" y="740" />
+        <di:waypoint x="1795" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1880" y="540" />
+        <di:waypoint x="1920" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="2070" y="540" />
+        <di:waypoint x="2110" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="2280" y="540" />
+        <di:waypoint x="2322" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="580" y="240" />
+        <di:waypoint x="580" y="210" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_FSAC" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_FSAC">
+    <bpmn:participant id="Participant_FSAC" name="FLUXO DE CANCELAMENTO DE CONTRATO — PRESTEK TELECOM (F-SAC-001)" processRef="Process_FSAC" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>F-SAC-001
+Formulário de Solicitação de Cancelamento de Contrato
+Elaboração: Marcio Eduardo Felix
+Aprovação: Roberta Kelle Nunes Gomes (Direção)
+Prestek Telecom — ISO 9001</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_FSAC" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_FSAC" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_FSAC">
+      <bpmn:lane id="Lane_Cliente" name="CLIENTE">
+        <bpmn:flowNodeRef>StartEvent_Solicitacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_PreencherFormulario</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Atendimento" name="ATENDIMENTO / COMERCIAL">
+        <bpmn:flowNodeRef>Activity_RegistrarProtocolo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Complementar</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Auditoria" name="AUDITORIA / QUALIDADE (SGQ)">
+        <bpmn:flowNodeRef>Activity_ValidarDocumentacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_DocConforme</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Gestor" name="GESTOR RESPONSÁVEL (APROVAÇÃO)">
+        <bpmn:flowNodeRef>Activity_Aprovacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Aprovado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ProcessarIXC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Indeferido</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Processado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_NaoAprovado</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Solicitacao" name="Cliente solicita cancelamento">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Activity_PreencherFormulario" name="Preencher e assinar Formulário F-SAC-001">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_RegistrarProtocolo" name="Atendimento registra protocolo e anexa formulário no IXC Soft">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_ValidarDocumentacao" name="Auditoria/Qualidade valida motivo e documentação">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:incoming>Flow_Retorno</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_DocConforme" name="Documentação Conforme?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Doc_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Doc_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Activity_Complementar" name="Solicitar complementação de dados ao cliente">
+      <bpmn:incoming>Flow_Doc_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_Retorno</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_Aprovacao" name="Gestor/Direção analisa e decide sobre o cancelamento">
+      <bpmn:incoming>Flow_Doc_Sim</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Aprovado" name="Aprovado?">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Aprov_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Aprov_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Activity_ProcessarIXC" name="Processar baixa do contrato no IXC Soft (cancelamento processado)">
+      <bpmn:incoming>Flow_Aprov_Sim</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:task id="Activity_Indeferido" name="Notificar cliente sobre indeferimento e manter contrato ativo">
+      <bpmn:incoming>Flow_Aprov_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Processado" name="Cancelamento Processado">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_NaoAprovado" name="Cancelamento Não Aprovado">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Solicitacao" targetRef="Activity_PreencherFormulario" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_PreencherFormulario" targetRef="Activity_RegistrarProtocolo" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_RegistrarProtocolo" targetRef="Activity_ValidarDocumentacao" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_ValidarDocumentacao" targetRef="Gateway_DocConforme" />
+    <bpmn:sequenceFlow id="Flow_Doc_Sim" name="Sim" sourceRef="Gateway_DocConforme" targetRef="Activity_Aprovacao" />
+    <bpmn:sequenceFlow id="Flow_Doc_Nao" name="Não" sourceRef="Gateway_DocConforme" targetRef="Activity_Complementar" />
+    <bpmn:sequenceFlow id="Flow_Retorno" sourceRef="Activity_Complementar" targetRef="Activity_ValidarDocumentacao" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Activity_Aprovacao" targetRef="Gateway_Aprovado" />
+    <bpmn:sequenceFlow id="Flow_Aprov_Sim" name="Sim" sourceRef="Gateway_Aprovado" targetRef="Activity_ProcessarIXC" />
+    <bpmn:sequenceFlow id="Flow_Aprov_Nao" name="Não" sourceRef="Gateway_Aprovado" targetRef="Activity_Indeferido" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_ProcessarIXC" targetRef="EndEvent_Processado" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_Indeferido" targetRef="EndEvent_NaoAprovado" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_FSAC">
+    <bpmndi:BPMNPlane id="BPMNPlane_FSAC" bpmnElement="Collaboration_FSAC">
+      <bpmndi:BPMNShape id="Participant_FSAC_di" bpmnElement="Participant_FSAC" isHorizontal="true">
+        <dc:Bounds x="140" y="200" width="1180" height="820" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Cliente_di" bpmnElement="Lane_Cliente" isHorizontal="true">
+        <dc:Bounds x="170" y="200" width="1150" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Atendimento_di" bpmnElement="Lane_Atendimento" isHorizontal="true">
+        <dc:Bounds x="170" y="340" width="1150" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Auditoria_di" bpmnElement="Lane_Auditoria" isHorizontal="true">
+        <dc:Bounds x="170" y="490" width="1150" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Gestor_di" bpmnElement="Lane_Gestor" isHorizontal="true">
+        <dc:Bounds x="170" y="650" width="1150" height="370" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Solicitacao_di" bpmnElement="StartEvent_Solicitacao">
+        <dc:Bounds x="210" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="190" y="295" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_PreencherFormulario_di" bpmnElement="Activity_PreencherFormulario">
+        <dc:Bounds x="300" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_RegistrarProtocolo_di" bpmnElement="Activity_RegistrarProtocolo">
+        <dc:Bounds x="300" y="390" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Complementar_di" bpmnElement="Activity_Complementar">
+        <dc:Bounds x="520" y="390" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ValidarDocumentacao_di" bpmnElement="Activity_ValidarDocumentacao">
+        <dc:Bounds x="300" y="540" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_DocConforme_di" bpmnElement="Gateway_DocConforme" isMarkerVisible="true">
+        <dc:Bounds x="520" y="555" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="508" y="612" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Aprovacao_di" bpmnElement="Activity_Aprovacao">
+        <dc:Bounds x="300" y="700" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Aprovado_di" bpmnElement="Gateway_Aprovado" isMarkerVisible="true">
+        <dc:Bounds x="520" y="715" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="524" y="772" width="42" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Indeferido_di" bpmnElement="Activity_Indeferido">
+        <dc:Bounds x="700" y="700" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_NaoAprovado_di" bpmnElement="EndEvent_NaoAprovado">
+        <dc:Bounds x="930" y="718" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="908" y="761" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ProcessarIXC_di" bpmnElement="Activity_ProcessarIXC">
+        <dc:Bounds x="300" y="860" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Processado_di" bpmnElement="EndEvent_Processado">
+        <dc:Bounds x="520" y="882" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="500" y="925" width="76" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="430" y="60" width="360" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="246" y="270" />
+        <di:waypoint x="300" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="380" y="310" />
+        <di:waypoint x="380" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="380" y="470" />
+        <di:waypoint x="380" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="460" y="580" />
+        <di:waypoint x="520" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Doc_Sim_di" bpmnElement="Flow_Doc_Sim">
+        <di:waypoint x="545" y="605" />
+        <di:waypoint x="545" y="660" />
+        <di:waypoint x="380" y="660" />
+        <di:waypoint x="380" y="700" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="551" y="630" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Doc_Nao_di" bpmnElement="Flow_Doc_Nao">
+        <di:waypoint x="545" y="555" />
+        <di:waypoint x="545" y="470" />
+        <di:waypoint x="520" y="470" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="551" y="510" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Retorno_di" bpmnElement="Flow_Retorno">
+        <di:waypoint x="600" y="470" />
+        <di:waypoint x="600" y="580" />
+        <di:waypoint x="460" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="460" y="740" />
+        <di:waypoint x="520" y="740" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Aprov_Sim_di" bpmnElement="Flow_Aprov_Sim">
+        <di:waypoint x="545" y="765" />
+        <di:waypoint x="545" y="900" />
+        <di:waypoint x="460" y="900" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="551" y="830" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Aprov_Nao_di" bpmnElement="Flow_Aprov_Nao">
+        <di:waypoint x="570" y="740" />
+        <di:waypoint x="700" y="740" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="626" y="722" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="460" y="900" />
+        <di:waypoint x="520" y="900" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="860" y="740" />
+        <di:waypoint x="930" y="736" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="610" y="200" />
+        <di:waypoint x="610" y="170" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

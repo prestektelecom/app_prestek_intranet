@@ -1,0 +1,1571 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP-VENDAS-001 — Processo de Vendas | Prestek Telecom</title>
+<style>
+  :root {
+    --accent: #384C9C;
+    --accent-dark: #D97738;
+    --accent-light: #EAEEF7;
+    --accent-border: #C2CBE3;
+    --ink: #384C9C;
+    --muted: #475467;
+    --border: #D7DDE3;
+    --bg: #F4F6F8;
+    --paper: #ffffff;
+    --warning-bg: #fef8ec;
+    --warning-border: #f3c267;
+    --warning-text: #8a5300;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  /* Cabeçalho */
+  .doc-header {
+    background: var(--accent);
+    color: #ffffff;
+    padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--accent-dark);
+  }
+
+  .doc-header .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    opacity: 0.9;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+
+  .doc-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .doc-header .meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .doc-header .badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .doc-body {
+    padding: 36px 40px 48px;
+  }
+
+  /* Tabela de controle histórico */
+  table.meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 28px;
+    font-size: 13.5px;
+  }
+
+  table.meta caption {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    caption-side: top;
+    font-weight: 700;
+  }
+
+  table.meta th, table.meta td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  table.meta th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    width: 20%;
+  }
+
+  .approvals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 20px;
+  }
+
+  .approvals .box {
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    background: var(--accent-light);
+  }
+
+  .approvals .box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .approvals .box .value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .approvals .box .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Caixa de decisão pendente */
+  .pending-box {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 0 0 32px;
+    font-size: 13.5px;
+    color: var(--warning-text);
+  }
+
+  .pending-box strong.tag {
+    display: inline-block;
+    background: var(--warning-border);
+    color: #4a3200;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-right: 8px;
+    font-weight: 700;
+  }
+
+  .pending-box p {
+    margin: 6px 0 0;
+    color: var(--warning-text);
+  }
+
+  .pending-inline {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-left: 3px solid var(--warning-border);
+    border-radius: 3px;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 13px;
+    color: var(--warning-text);
+  }
+
+  .pending-inline strong.tag {
+    background: var(--warning-border);
+    color: #4a3200;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-right: 6px;
+    font-weight: 700;
+  }
+
+  .xref-box {
+    background: #f8fafc;
+    border: 1px dashed var(--accent-border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 10px 0 16px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Seções do POP */
+  section.pop-section {
+    margin-bottom: 32px;
+  }
+
+  section.pop-section h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+
+  section.pop-section h3 {
+    font-size: 14px;
+    color: var(--accent-dark);
+    margin: 18px 0 8px;
+    font-weight: 600;
+  }
+
+  section.pop-section h4 {
+    font-size: 13px;
+    color: var(--accent-dark);
+    margin: 14px 0 6px;
+    font-weight: 700;
+  }
+
+  section.pop-section p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    text-align: justify;
+  }
+
+  /* Listas e passos */
+  .steps-macro {
+    list-style-type: lower-alpha;
+    margin: 10px 0 16px 22px;
+    padding: 0;
+  }
+
+  .steps-macro li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed {
+    margin: 12px 0;
+    padding-left: 20px;
+  }
+
+  .steps-detailed > li {
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed ul, .steps-detailed ol {
+    margin: 6px 0 6px 20px;
+    padding: 0;
+  }
+
+  .steps-detailed ul li, .steps-detailed ol li {
+    margin-bottom: 4px;
+    font-size: 13.5px;
+  }
+
+  .checklist-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 12px 0 16px;
+    font-size: 13.5px;
+  }
+
+  .checklist-box ul {
+    margin: 6px 0 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 18px;
+  }
+
+  .checklist-box ul li {
+    margin-bottom: 3px;
+    padding-left: 18px;
+    position: relative;
+  }
+
+  .checklist-box ul li::before {
+    content: "☐";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .ixc-config-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 12px 0 16px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+  }
+
+  .ixc-config-box ul li {
+    margin-bottom: 5px;
+  }
+
+  .script-box {
+    background: #2d3748;
+    color: #edf2f7;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12.5px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    line-height: 1.55;
+  }
+
+  .commercial-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0 16px;
+  }
+
+  .commercial-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .commercial-card strong {
+    display: block;
+    color: var(--accent-dark);
+    font-size: 12.5px;
+    margin-bottom: 3px;
+  }
+
+  /* Regras de negócios */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .rule-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .rule-number {
+    background: var(--accent);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* BPMN bpmn.io styles */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-action:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .bpmn-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    margin: 10px 0 24px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .bpmn-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+  }
+  .zoom-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .zoom-btn:hover {
+    background: #edf2f7;
+    border-color: var(--accent-border);
+  }
+  #bpmn-canvas {
+    width: 100%;
+    height: 520px;
+    position: relative;
+    background: #ffffff;
+  }
+
+  /* Exceções */
+  .exception-item {
+    margin-bottom: 14px;
+    border: 1px solid #fed7aa;
+    background: #fffdfa;
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+
+  .exception-title {
+    font-weight: 700;
+    color: #c2410c;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .exception-desc {
+    font-size: 13.5px;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+
+  .exception-treatment {
+    font-size: 13px;
+    color: #1e293b;
+    background: #fef3c7;
+    padding: 8px 12px;
+    border-radius: 3px;
+    border-left: 3px solid #f59e0b;
+  }
+
+  /* Fluxograma estático (fallback) */
+  .swimlane {
+    margin-bottom: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .swimlane-header {
+    background: #475569;
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .swimlane-header.va { background: var(--accent); }
+
+  .swimlane-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .flow-node {
+    background: #f1f5f9;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    text-align: center;
+    max-width: 190px;
+    font-weight: 600;
+  }
+
+  .flow-arrow {
+    color: #64748b;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  /* Assinaturas */
+  .signoff {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    page-break-inside: avoid;
+  }
+
+  .signoff .sig {
+    text-align: center;
+  }
+
+  .signoff .sig .line {
+    border-top: 1px solid var(--ink);
+    margin-top: 48px;
+    padding-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .signoff .sig .role {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .doc-footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 16px 40px 28px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+      color: #000;
+    }
+    .doc {
+      border: none;
+      box-shadow: none;
+      max-width: 100%;
+    }
+    .doc-header {
+      background: var(--accent) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .approvals .box, table.meta th, .rule-number, .exception-item, .exception-treatment, .ixc-config-box, .pending-box, .pending-inline, .checklist-box {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .signoff {
+      page-break-inside: avoid;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .doc-header, .doc-body { padding-left: 18px; padding-right: 18px; }
+    .approvals, .signoff, .rules-grid, .commercial-grid { grid-template-columns: 1fr; gap: 16px; }
+    .checklist-box ul { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- CABEÇALHO -->
+  <div class="doc-header">
+    <p class="kicker">Prestek Telecom • Sistema de Gestão da Qualidade • ISO 9001</p>
+    <h1>POP-VENDAS-001 — Processo de Vendas</h1>
+    <div class="meta-badges">
+      <span class="badge">Padrão nº: POP-VENDAS-001</span>
+      <span class="badge">Revisão: 002</span>
+      <span class="badge">Estabelecido em: 04/12/2025</span>
+      <span class="badge">Responsável: SETOR COMERCIAL</span>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- CONTROLE HISTÓRICO -->
+    <table class="meta">
+      <caption>Controle Histórico</caption>
+      <thead>
+        <tr>
+          <th>Revisão</th>
+          <th>Data</th>
+          <th>Elaboração</th>
+          <th>Verificação</th>
+          <th>Aprovação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>001</td>
+          <td>04/12/2025</td>
+          <td>Setor T.I.</td>
+          <td>Supervisor T.I.</td>
+          <td>Roberta Kelle Nunes Gomes</td>
+        </tr>
+        <tr>
+          <td>002</td>
+          <td>10/09/2026</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Roberta Kelle Nunes Gomes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- APROVAÇÕES -->
+    <div class="approvals">
+      <div class="box">
+        <div class="label">Elaborado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Supervisor T.I.</div>
+      </div>
+      <div class="box">
+        <div class="label">Revisado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Supervisor T.I.</div>
+      </div>
+      <div class="box">
+        <div class="label">Aprovado por</div>
+        <div class="value">Roberta Kelle Nunes Gomes</div>
+        <div class="sub">Representante da Direção</div>
+      </div>
+    </div>
+
+    <div class="pending-box">
+      <strong class="tag">Decisão pendente</strong>Alçada de assinatura: este POP hoje define apenas 2 níveis (Elaborador T.I. + Aprovador Direção). O processo de CRM que alimenta o funil de Vendas (Lead → Prospect → Negociação) utiliza uma alçada de <strong>4 níveis</strong>: Supervisor(a) do Setor de Relacionamento, Supervisor(a) do Setor de Auditoria, Gerência e Diretor. Sugere-se avaliar o alinhamento da alçada de POP-VENDAS-001 a esse padrão — a composição final ainda precisa ser definida pela Direção.
+      <p><strong>Ver também:</strong> POP-CRM-001 (a ser criado) para o detalhamento de telas/campos do funil Lead → Prospect → Negociação no CRM.</p>
+    </div>
+
+    <!-- 1. OBJETIVO -->
+    <section class="pop-section">
+      <h2>1. Objetivo</h2>
+      <p>Estabelecer a sistemática padronizada para vendas e ativação de serviços de internet, abrangendo desde a prospecção e atendimento omnichannel (presencial em loja, porta a porta, telefônico e digital) até a emissão de Ordem de Serviço (O.S.), instalação e validação técnica. Este procedimento visa assegurar a conformidade regulatória com a Resolução ANATEL nº 632/2014, o cumprimento dos requisitos da ISO 9001:2015 (Cláusulas 8.2 e 9.1), e o registro integral no sistema IXC Soft. O resultado esperado é alcançar 100% dos clientes ativos com contrato assinado, viabilidade técnica validada e ativação concluída com sucesso após a venda.</p>
+    </section>
+
+    <!-- 2. DESCRIÇÃO DO PROCESSO -->
+    <section class="pop-section">
+      <h2>2. Descrição do processo</h2>
+      <p><strong>Escopo:</strong> este procedimento aplica-se a todas as atividades comerciais e operacionais relacionadas à venda de planos de internet banda larga (fibra óptica), abrangendo público residencial, pequenos comércios e corporativo (B2B); canais omnichannel (loja, porta a porta / PAP, digital/WhatsApp, indicação e televendas); e todas as periodicidades e regimes de fidelidade de contrato.</p>
+      <p><strong>Exclusões</strong> — não fazem parte deste procedimento: suporte técnico pós-ativação e reparos (POP-SUPORTE-001); processos de cobrança, faturamento recorrente e inadimplência (POP-COB-01); obras de infraestrutura de rede e ampliação de cobertura para áreas sem viabilidade técnica (POP-INFRA.AMPLIACAO-001).</p>
+      <p><strong>Siglas e definições:</strong> QLD, SGQ, O.S., SLA, FTTH, ONU/ONT, CTO, SCM, SVA, PAP (Porta a Porta), CAC, Churn, Ticket Médio, Viabilidade Técnica, Fidelidade, Lead, Documento, Registro, Cópia/Documento Controlado, Cópia/Documento Não Controlado — ver definições completas em POP-CDRQ-001 (Controle de Documentos e Registros da Qualidade).</p>
+      <p><strong>Interfaces com outros processos:</strong></p>
+      <ul class="steps-macro" style="list-style-type: disc;">
+        <li>CRM/ERP (IXC Soft): base centralizada para cadastro, contratos, viabilidade e O.S.</li>
+        <li>NOC (Network Operations Center): ativação lógica da porta e monitoramento de sinal (ONU).</li>
+        <li>Suporte ao Cliente: onboarding (boas-vindas) e troubleshooting inicial.</li>
+        <li>Financeiro: emissão da fatura inicial (boletos) e taxa de ativação.</li>
+        <li>Gestão da Qualidade/Auditoria: verificação de aderência ao processo.</li>
+      </ul>
+      <div class="xref-box">
+        <strong>Ver também:</strong> POP-CRM-001 (a ser criado) — detalhamento de telas/campos do funil Lead → Prospect → Negociação no CRM.
+      </div>
+    </section>
+
+    <!-- 3. PROCESSO -->
+    <section class="pop-section">
+      <h2>3. Processo</h2>
+      <p>Visão resumida do macrofluxo — combina os dois canais de entrada (Loja e Porta a Porta) com o fluxo interno de cadastro, ativação e melhoria contínua:</p>
+      <ol class="steps-macro">
+        <li>Abordagem inicial ao cliente: identificação de lead via canais omnichannel (loja ou PAP); registro de dados básicos no IXC Soft.</li>
+        <li>Identificação de requisitos: avaliação de necessidades (velocidade, add-ons); consulta de viabilidade técnica.</li>
+        <li>Geração de cotação/proposta comercial personalizada; revisão de termos regulatórios (ANATEL); obtenção do aceite do cliente.</li>
+        <li>Cadastro completo no IXC Soft (INMAP/Sales/Wizard) e emissão da Ordem de Serviço.</li>
+        <li>Processamento interno: Financeiro gera taxa de ativação; Estoque vincula equipamento.</li>
+        <li>Assinatura do contrato pelo cliente e auditoria da O.S.</li>
+        <li>Ativação e instalação: NOC direciona técnico; instalação e validação de sinal.</li>
+        <li>Pós-venda e feedback: geração do financeiro do cliente, entrega de carnê, pesquisa de satisfação.</li>
+        <li>Monitoramento e melhoria: análise de indicadores mensais e auditorias internas.</li>
+      </ol>
+    </section>
+
+    <!-- 4. PASSOS DO PROCESSO -->
+    <section class="pop-section">
+      <h2>4. Passos do processo</h2>
+
+      <h3>Canal Loja — Etapas 1 a 12</h3>
+
+      <ol class="steps-detailed">
+        <li>
+          <strong>Etapa 1 — Atendimento inicial.</strong> Quando o cliente chegar à loja solicitando informações para contratar internet, a atendente deverá:
+          <ul>
+            <li><strong>3.1 Verificação de viabilidade:</strong> solicitar o endereço completo do local de instalação e realizar a consulta de viabilidade técnica.</li>
+            <li><strong>3.2 Levantamento de necessidades:</strong> perguntar quantas pessoas utilizarão a internet simultaneamente; se alguém faz cursos on-line; se alguém trabalha em home office; se há uso de jogos on-line; se há uso frequente de streaming. Apresentar o plano mais adequado.</li>
+            <li><strong>3.3 Aceite da proposta:</strong> <strong>Não</strong> → gerar o lead no sistema para futura contratação. <strong>Sim</strong> → prosseguir para coleta da documentação.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Etapa 2 — Coleta de documentação.</strong> Solicitar RG, CPF, comprovante de residência, ponto de referência, data de vencimento (05, 10, 15 ou 20), e-mail e telefone para contato.
+        </li>
+        <li>
+          <strong>Etapa 3 — Cadastro no INMAP.</strong>
+          <ul>
+            <li><strong>3.1 Verificação de cliente existente:</strong> acessar o IXC, inserir o CPF do cliente na base e verificar se já existe cadastro. <strong>Sim</strong> → no IXC, clicar em INMAP → SALE → quadro Kanban → Negociações e preencher os dados. <strong>Não</strong> → prosseguir para criação do lead.</li>
+            <li><strong>3.2 Criação do lead:</strong> acessar INMAP → Sales → Kanban → Leads → Novo. Inserir todos os dados do cliente, preencher todas as abas solicitadas e salvar.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Etapa 4 — Conversão do lead.</strong> Localizar o lead criado e clicar em "Converter para Wizard". Após a conversão, o cadastro é encaminhado para o IXC.
+        </li>
+        <li>
+          <strong>Etapa 5 — Complementação do cadastro no IXC.</strong> Preencher todas as informações pendentes nas abas Cliente, Endereço, Contato, CRM, Outros, Informações. Revisar os dados e salvar.
+        </li>
+        <li>
+          <strong>Etapa 6 — Cadastro do contrato.</strong> Acessar a aba Contrato e preencher: <strong>Contrato</strong> (filial, motivo de inclusão); <strong>Faturamento</strong> (carteira de cobrança, vendedor); <strong>Taxa de Ativação</strong> (valor de instalação/adesão quando aplicável, vendedor responsável/de ativação, desconto de fidelidade). Salvar.
+        </li>
+        <li>
+          <strong>Etapa 7 — Criação de login.</strong> Acessar a aba Login, preencher o login do cliente, gerar senha e salvar.
+        </li>
+        <li>
+          <strong>Etapa 8 — Abertura da Ordem de Serviço.</strong> Acessar a aba Atendimento e preencher todos os campos solicitados para que a O.S. siga para os setores responsáveis. Salvar.
+        </li>
+        <li>
+          <strong>Etapa 9 — Processamento interno.</strong> <strong>Financeiro:</strong> gera a taxa de contratação. <strong>Estoque:</strong> vincula o equipamento em comodato. Após essas etapas, a O.S. retorna ao setor comercial.
+        </li>
+        <li>
+          <strong>Etapa 10 — Assinatura do contrato.</strong> O setor comercial coleta a assinatura do cliente e anexa: contrato assinado, documentação do cliente, termos obrigatórios. Finaliza a O.S. e encaminha para Auditoria.
+        </li>
+        <li>
+          <strong>Etapa 11 — Auditoria.</strong> <strong>Aprovou? Sim</strong> → a O.S. é liberada para instalação. <strong>Aprovou? Não</strong> → a O.S. retorna ao responsável; realizam-se as correções apontadas; finaliza-se novamente a O.S.; encaminha-se para nova validação da Auditoria.
+        </li>
+        <li>
+          <strong>Etapa 12 — Instalação.</strong> Após aprovação da Auditoria: a O.S. é encaminhada ao NOC; o NOC direciona a atividade ao técnico instalador; o técnico realiza a instalação no endereço do cliente; serviço concluído.
+        </li>
+      </ol>
+
+      <h3>Canal Porta a Porta (PAP)</h3>
+      <p style="font-size: 13px; color: var(--muted);">Fonte: rascunho "POP DE VENDAS EXTERNAS" (equipe de vendas externas/PAP). Via de entrada alternativa à Etapa 1 (loja) — o fechamento converge para o mesmo fluxo de cadastro/contrato (Etapas 2 a 12) descrito acima.</p>
+
+      <h4>Checklist de saída do vendedor</h4>
+      <div class="checklist-box">
+        <strong>Conferido antes de sair para a rota do dia (após bater ponto e conferir rota/meta da cidade):</strong>
+        <ul>
+          <li>Panfletos</li>
+          <li>Termos em branco</li>
+          <li>Carnê a ser entregue</li>
+          <li>Água</li>
+          <li>Lanche</li>
+          <li>Caneta</li>
+          <li>Protetor solar</li>
+          <li>Boné</li>
+          <li>Gerador (equipamento do veículo, quando aplicável)</li>
+          <li>Brinde na mala do veículo</li>
+          <li>Papel + caneta + prancheta</li>
+          <li>Padrão da empresa em relação ao vestuário</li>
+        </ul>
+      </div>
+
+      <h4>Regra de abordagem em campo</h4>
+      <ul class="steps-macro" style="list-style-type: disc;">
+        <li>Abordagem realizada em dupla — 2 pessoas por rua.</li>
+        <li>Casa aberta → aborda o morador diretamente. Casa fechada → panfleto por debaixo da porta.</li>
+        <li>Uma rua é finalizada antes de iniciar a próxima.</li>
+      </ul>
+
+      <h4>Script de abordagem</h4>
+      <div class="script-box">1) IDENTIFICAÇÃO
+"Boa tarde, me chamo [vendedor(a)], sou vendedor(a) da Prestek Telecom.
+Seu nome é? Você conhece a Prestek Telecom?"
+-> Apresentar: +20 anos de mercado, atuação em 22 cidades (incl. SE e AL),
+   WhatsApp profissional e site (2ª via de boleto, solicitação de assistência),
+   sorteios mensais para adimplentes, programa "indique e ganhe".
+
+2) LEVANTAMENTO DE NECESSIDADES (se houver interesse)
+-> Provedor atual? Quantos aparelhos conectados simultaneamente?
+   Sites/serviços mais usados? Tamanho da casa/cômodos?
+   Curso on-line? Jogos on-line?
+
+3) APRESENTAÇÃO DO PLANO
+-> Ofertar o plano mais adequado às respostas + amostragem do panfleto
+   e das plataformas de streaming incluídas.</div>
+      <p style="font-size: 12.5px; color: var(--muted);">Plataformas de streaming citadas no rascunho de origem: Ittv (32 e 108 canais), Leveduca, Whatch, Paramount, Premiere — grafia das marcas a confirmar com o Comercial/Marketing.</p>
+
+      <h4>Detalhes comerciais e ofertas apresentadas em campo</h4>
+      <div class="commercial-grid">
+        <div class="commercial-card"><strong>Wi-Fi 360</strong>Mensalidade adicional de R$ 20,00; disponibiliza um 2º roteador para a residência (indicado para casas grandes ou de mais de um andar).</div>
+        <div class="commercial-card"><strong>ROKU</strong>Aluguel R$ 24,90/mês ou compra à vista R$ 280,00 (acréscimo de maquineta se pago no cartão).</div>
+        <div class="commercial-card"><strong>Cabo excedente</strong>Metragem padrão fornecida pela empresa; metro excedente cobrado a R$ 1,00/metro, parcelável no boleto a depender da metragem.</div>
+        <div class="commercial-card"><strong>Pré-pago</strong>Opção explicada ao cliente durante a abordagem (sem detalhamento adicional no rascunho de origem).</div>
+      </div>
+
+      <div class="pending-inline">
+        <strong class="tag">Decisão pendente</strong>Prazo de instalação comunicado ao cliente: no PAP, o vendedor informa ao cliente, no ato da venda em campo, que a instalação ocorre <strong>em até 24 horas</strong> após o contrato ser lançado no sistema. Esse prazo diverge do restante do fluxo interno (Auditoria → NOC → Técnico, Etapas 11-12) e do Objetivo geral deste POP, que tratam de <strong>48 horas</strong>. É necessário que o Comercial/Qualidade decida qual prazo é o oficial a ser comunicado ao cliente e alinhe a comunicação do PAP ao restante do processo.
+      </div>
+
+      <h4>Fechamento da venda em campo</h4>
+      <ul class="steps-macro" style="list-style-type: disc;">
+        <li>Coleta de documentos: foto do RG (frente e verso), telefone, comprovante de residência, ponto de referência, data de vencimento, localização, foto da residência (uso interno), contato e e-mail.</li>
+        <li>Coleta da assinatura do cliente no termo em branco (regularizado no fluxo abaixo).</li>
+      </ul>
+
+      <h4>Fluxo pós-fechamento (convergência com o cadastro interno — Etapas 2 a 12)</h4>
+      <ol class="steps-detailed">
+        <li>O vendedor envia os dados para o setor interno realizar o cadastro no sistema (equivalente às Etapas 2 a 8).</li>
+        <li>Após o cadastro, a O.S. é encaminhada ao setor de Estoque para vinculação dos equipamentos (Etapa 9).</li>
+        <li>O termo de contrato é enviado em PDF ao vendedor, que o preenche com os dados coletados em campo e devolve ao interno as fotos do termo assinado.</li>
+        <li>O setor interno finaliza o cadastro e a O.S. com base nas fotos recebidas (equivalente à Etapa 10).</li>
+        <li>A O.S. finalizada segue para a Auditoria (Etapa 11), que valida ou devolve para correção.</li>
+        <li>Após aprovação da Auditoria, a O.S. segue para instalação (Etapa 12) — ver decisão pendente sobre o prazo comunicado ao cliente.</li>
+        <li>Assim que instalado, o Financeiro gera o financeiro do cliente (boleto/carnê), enviado por e-mail ou PDF via WhatsApp; o vendedor também pode levar o carnê impresso na entrega, aproveitando o momento para uma ação de pós-venda.</li>
+      </ol>
+
+      <h4>Benefício de indicação</h4>
+      <p>Na entrega do carnê / contato de pós-venda, o vendedor informa que, caso o cliente indique um novo cliente, recebe <strong>50% de desconto na mensalidade seguinte</strong>.</p>
+
+      <h4>Tratamento de objeção</h4>
+      <ul class="steps-macro" style="list-style-type: disc;">
+        <li>Se o cliente disser que não tem interesse, perguntar o motivo da não contratação naquele momento.</li>
+        <li>Caso o cliente mantenha a recusa, perguntar se pode registrar o contato para formalizar a abordagem e permitir contato futuro.</li>
+        <li>Deixar panfleto com os planos e o contato do vendedor (nome, telefone, cidade).</li>
+        <li>Se houver dados de contato, registrar o Lead no IXC Soft para acompanhamento comercial futuro.</li>
+      </ul>
+
+      <h4>Prestação de contas diária</h4>
+      <p>As vendas fechadas no dia são informadas pela equipe de campo no grupo interno; quando não informadas em tempo real, é feita a conferência no final do dia. A liderança registra quantas vendas foram realizadas, pergunta aos vendedores os pontos positivos e negativos da cidade visitada, e reforça o incentivo para o dia seguinte.</p>
+
+      <!-- BPMN - VENDAS (INTEGRAÇÃO BPMN.IO) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 10px; flex-wrap: wrap; gap: 8px;">
+        <h3 style="margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">Fluxograma Oficial (BPMN 2.0 • bpmn.io)</h3>
+        <div style="display: flex; gap: 8px;">
+          <a href="POP-VENDAS-001 - Processo de Vendas.bpmn" download="POP-VENDAS-001 - Processo de Vendas.bpmn" class="btn-action" title="Baixar arquivo XML padrão BPMN 2.0">⬇ Baixar .bpmn</a>
+          <a href="https://demo.bpmn.io/" target="_blank" rel="noopener noreferrer" class="btn-action" title="Abrir ferramenta bpmn.io">🌐 Abrir no bpmn.io</a>
+        </div>
+      </div>
+
+      <div class="bpmn-wrapper">
+        <div class="bpmn-toolbar">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Interativo: clique e arraste para navegar • scroll para zoom</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btn-zoom-in" class="zoom-btn" title="Aumentar zoom">+</button>
+            <button type="button" id="btn-zoom-out" class="zoom-btn" title="Diminuir zoom">-</button>
+            <button type="button" id="btn-zoom-fit" class="zoom-btn" title="Ajustar à tela">⤢ Ajustar</button>
+          </div>
+        </div>
+        <div id="bpmn-canvas">
+          <!-- Fallback estático caso esteja sem internet -->
+          <div id="bpmn-fallback" style="display: none; padding: 20px;">
+            <div class="swimlane">
+              <div class="swimlane-header va">Vendedor / Atendente</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Canal de venda? [Loja / PAP]</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Loja: viabilidade + necessidades — ou — PAP: checklist + abordagem em dupla</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Aceitou / Interessou?<br><small>[Não] ➔ Lead / Objeção<br>[Sim] ➔ Coleta de documentação</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Cadastro INMAP/IXC (Etapas 3-8) + Assinatura do contrato (Etapa 10)</div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header">Financeiro / Estoque</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Financeiro gera taxa de ativação (Etapa 9)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Estoque vincula equipamento (Etapa 9)</div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header">Auditoria</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Audita a O.S. (Etapa 11)<br><small>[Não] ➔ retorna p/ correção<br>[Sim] ➔ libera instalação</small></div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header">NOC / Técnico</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">NOC direciona ao técnico</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Instalação (Etapa 12)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color: #16a34a; background: #f0fdf4; color: #166534;">Financeiro gera fatura + pós-venda — Venda concluída</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. REGRAS DE NEGÓCIOS -->
+    <section class="pop-section">
+      <h2>5. Regras de negócios</h2>
+
+      <h3>Reativação vs. Nova Venda (cliente com histórico de cancelamento)</h3>
+      <div class="rules-grid">
+        <div class="rule-card">
+          <div class="rule-number">1</div>
+          <div>Cliente cancelado por <strong>inadimplência</strong> só pode recontratar em <strong>Pré-Pago, sem fidelidade</strong>, e apenas após quitar o débito anterior.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">2</div>
+          <div>Retorno em <strong>até 120 dias</strong> do cancelamento = <strong>Reativação</strong>.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">3</div>
+          <div>Retorno <strong>após 120 dias</strong> do cancelamento = <strong>Nova Venda</strong>.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">4</div>
+          <div>Cancelamento por vontade própria ou mudança de titularidade, com fidelidade já cumprida/quitada, pode contratar novamente em <strong>Pós-Pago com fidelidade</strong>, como <strong>Nova Venda</strong>.</div>
+        </div>
+      </div>
+
+      <div class="pending-inline">
+        <strong class="tag">Decisão pendente</strong>Esta regra de Reativação/Nova Venda está hoje replicada aqui por completude, mas sua origem é o fluxo de relacionamento com o cliente (CRM/Cobrança). É necessário decidir com a Direção/Qualidade se ela deve residir oficialmente neste POP-VENDAS-001, no futuro POP-CRM-001 (gestão do funil comercial), ou no POP-COB-01 (Cobrança) — evitando duplicidade de fonte de verdade entre os três documentos.
+      </div>
+    </section>
+
+    <!-- 6. EXCEÇÕES E TRATAMENTO DE ERROS -->
+    <section class="pop-section">
+      <h2>6. Exceções e tratamento de erros</h2>
+      <p style="font-size: 12.5px; color: var(--muted);">Seção estruturada conforme o padrão ISO 9001 da Prestek (Jarvis Quality Gate), com base nos pontos de decisão já descritos nas Etapas 1-12 e no canal PAP. Recomenda-se validação do setor Comercial/Auditoria.</p>
+
+      <div class="exception-item">
+        <div class="exception-title">6.1. Viabilidade técnica indisponível</div>
+        <div class="exception-desc"><strong>Descrição:</strong> não há atendimento de fibra na região do endereço informado pelo cliente.</div>
+        <div class="exception-treatment"><strong>Tratamento:</strong> gerar o Lead no sistema para futura contratação (canal loja) ou registrar o contato do cliente para retomada futura (canal PAP), sem prosseguir para a coleta de documentação.</div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.2. Cliente já cadastrado com dados desatualizados</div>
+        <div class="exception-desc"><strong>Descrição:</strong> ao inserir o CPF no IXC (Etapa 3.1), constata-se cadastro existente com dados divergentes dos informados pelo cliente.</div>
+        <div class="exception-treatment"><strong>Tratamento:</strong> atualizar o cadastro via INMAP → SALE → Kanban → Negociações antes de prosseguir, em vez de criar um novo lead duplicado.</div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.3. Documentação incompleta ou ilegível</div>
+        <div class="exception-desc"><strong>Descrição:</strong> RG, CPF, comprovante de residência ou demais dados obrigatórios (Etapa 2 / fechamento em campo no PAP) estão incompletos ou ilegíveis.</div>
+        <div class="exception-treatment"><strong>Tratamento:</strong> a O.S. não deve ser finalizada nem encaminhada à Auditoria sem a documentação completa e legível; solicitar reenvio ao cliente/vendedor antes de prosseguir.</div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.4. Sistema IXC/INMAP indisponível</div>
+        <div class="exception-desc"><strong>Descrição:</strong> o sistema fica indisponível durante o cadastro do cliente.</div>
+        <div class="exception-treatment"><strong>Tratamento:</strong> registrar manualmente os dados coletados (papel/prancheta no caso do PAP) e lançar no sistema assim que o acesso for restabelecido, sem atrasar a coleta de documentação do cliente.</div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.5. Auditoria reprova a O.S.</div>
+        <div class="exception-desc"><strong>Descrição:</strong> a Auditoria (Etapa 11) identifica inconsistências na O.S. finalizada.</div>
+        <div class="exception-treatment"><strong>Tratamento:</strong> a O.S. retorna ao responsável, que realiza as correções apontadas, finaliza novamente a O.S. e reencaminha para nova validação da Auditoria.</div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.6. Divergência entre a proposta comercial verbal (PAP) e o que foi lançado no sistema</div>
+        <div class="exception-desc"><strong>Descrição:</strong> o valor, plano ou condições informadas ao cliente em campo não conferem com o que foi cadastrado internamente.</div>
+        <div class="exception-treatment"><strong>Tratamento:</strong> o setor interno deve contatar o vendedor para confirmar os dados antes de finalizar a O.S., evitando divergência entre o que foi prometido e o que foi contratado.</div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSÃO -->
+    <section class="pop-section">
+      <h2>7. Conclusão</h2>
+      <p>Este procedimento assegura que toda venda de internet — seja iniciada na loja, seja prospectada em campo pelo canal Porta a Porta (PAP) — converge para um único fluxo de cadastro, contrato e ativação registrado integralmente no IXC Soft, garantindo rastreabilidade completa da jornada do cliente do primeiro contato até a instalação.</p>
+      <p>A padronização do script de abordagem, do checklist de saída do vendedor e das regras de negócio de Reativação/Nova Venda reduz a variabilidade entre atendentes de loja e vendedores externos, apoiando o cumprimento da Resolução ANATEL nº 632/2014 e dos requisitos de conformidade da ISO 9001:2015 (Cláusulas 8.2 e 9.1).</p>
+      <p>Os pontos sinalizados como <strong>decisão pendente</strong> (prazo de instalação comunicado no PAP, alçada de assinatura alinhada ao padrão de 4 níveis do CRM, e a residência oficial da regra de Reativação/Nova Venda) devem ser resolvidos pela Direção/Comercial/Qualidade antes da próxima revisão deste POP, de modo a eliminar ambiguidades na comunicação com o cliente e na auditoria do processo.</p>
+    </section>
+
+    <!-- ASSINATURAS FORMAIS -->
+    <div class="signoff">
+      <div class="sig">
+        <div class="line">Marcio Eduardo Felix &nbsp;&nbsp;|&nbsp;&nbsp; 10/09/2026</div>
+        <div class="role">Supervisor T.I. • Elaborador / Revisor</div>
+      </div>
+      <div class="sig">
+        <div class="line">Roberta Kelle Nunes Gomes &nbsp;&nbsp;|&nbsp;&nbsp; 10/09/2026</div>
+        <div class="role">Representante da Direção • Aprovadora</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ CONTROLADO -->
+  <div class="doc-footer">
+    Documento controlado — Sistema de Gestão da Qualidade ISO 9001 • Prestek Telecom
+  </div>
+
+</div>
+
+<!-- Script BPMN.io / bpmn-js -->
+<script type="text/xml" id="bpmn-data">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Vendas001" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_Vendas001">
+    <bpmn:participant id="Participant_Vendas" name="PROCESSO DE VENDAS E CADASTRO DE CLIENTE" processRef="Process_Vendas001" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>POP-VENDAS-001
+Processo de Vendas
+Prestek Telecom
+Canais: Loja e Porta a Porta (PAP)
+Revisão 002 | 10/09/2026</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_Vendas" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Vendas001" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_VendedorAtendente" name="VENDEDOR / ATENDENTE">
+        <bpmn:flowNodeRef>StartEvent_Inicio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Canal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Loja</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_AceiteLoja</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_LeadLoja</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_PerdemosLoja</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ChecklistPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AbordagemPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_InteressePAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ObjecaoPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_PerdemosPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_OfertaPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_FechaPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ColetaDoc</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Cadastro</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Assinatura</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Financeiro" name="FINANCEIRO">
+        <bpmn:flowNodeRef>Activity_TaxaAtivacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_FinanceiroFinal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_Vendemos</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Estoque" name="ESTOQUE / SERVIÇO">
+        <bpmn:flowNodeRef>Activity_VinculaEquip</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Auditoria" name="AUDITORIA">
+        <bpmn:flowNodeRef>Activity_AuditaOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Auditoria</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_NOC" name="NOC / TÉCNICO">
+        <bpmn:flowNodeRef>Activity_NOC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Instalacao</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Inicio" name="Início do atendimento comercial">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:exclusiveGateway id="Gateway_Canal" name="Canal de venda?">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Loja</bpmn:outgoing>
+      <bpmn:outgoing>Flow_PAP</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_Loja" name="Loja: viabilidade técnica + levantamento de necessidades (Etapa 1)">
+      <bpmn:incoming>Flow_Loja</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:exclusiveGateway id="Gateway_AceiteLoja" name="Cliente aceitou a proposta?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_AceiteNao</bpmn:outgoing>
+      <bpmn:outgoing>Flow_AceiteSim</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_LeadLoja" name="Gera Lead no sistema">
+      <bpmn:incoming>Flow_AceiteNao</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="Event_PerdemosLoja" name="Não vendemos (Loja)">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:task id="Activity_ChecklistPAP" name="PAP: checklist de saída do vendedor + conferência de rota/meta">
+      <bpmn:incoming>Flow_PAP</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_AbordagemPAP" name="PAP: abordagem porta a porta em dupla (casa aberta = aborda / fechada = panfleto)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:exclusiveGateway id="Gateway_InteressePAP" name="Cliente demonstrou interesse?">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_InteresseNao</bpmn:outgoing>
+      <bpmn:outgoing>Flow_InteresseSim</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_ObjecaoPAP" name="Trata objeção / registra contato para Lead">
+      <bpmn:incoming>Flow_InteresseNao</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="Event_PerdemosPAP" name="Não vendemos (PAP)">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:task id="Activity_OfertaPAP" name="Levantamento de necessidades + oferta do plano/streaming (PAP)">
+      <bpmn:incoming>Flow_InteresseSim</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_FechaPAP" name="Fecha venda em campo: coleta de documentos + termo em branco assinado [DECISÃO PENDENTE: prazo 24h vs 48h]">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_ColetaDoc" name="Etapa 2: Coleta de documentação (RG, CPF, comprovante, vencimento, contato)">
+      <bpmn:incoming>Flow_AceiteSim</bpmn:incoming>
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_Cadastro" name="Etapas 3-8: Cadastro INMAP/IXC, contrato, taxa de ativação, login, abertura de O.S.">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_TaxaAtivacao" name="Etapa 9: Financeiro gera a taxa de contratação">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_VinculaEquip" name="Etapa 9: Estoque vincula o equipamento em comodato">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_Assinatura" name="Etapa 10: Coleta assinatura do contrato + anexa documentação e termos">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:incoming>Flow_AuditoriaNao</bpmn:incoming>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_AuditaOS" name="Etapa 11: Auditoria analisa a O.S.">
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:exclusiveGateway id="Gateway_Auditoria" name="Auditoria aprovou?">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_AuditoriaNao</bpmn:outgoing>
+      <bpmn:outgoing>Flow_AuditoriaSim</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_NOC" name="NOC direciona a atividade ao técnico instalador">
+      <bpmn:incoming>Flow_AuditoriaSim</bpmn:incoming>
+      <bpmn:outgoing>Flow_24</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_Instalacao" name="Etapa 12: Técnico realiza a instalação no endereço do cliente">
+      <bpmn:incoming>Flow_24</bpmn:incoming>
+      <bpmn:outgoing>Flow_25</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_FinanceiroFinal" name="Financeiro gera fatura/carnê pós-instalação; vendedor faz pós-venda (feedback + indicação = 50% desconto)">
+      <bpmn:incoming>Flow_25</bpmn:incoming>
+      <bpmn:outgoing>Flow_26</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="Event_Vendemos" name="Venda concluída — cliente ativo">
+      <bpmn:incoming>Flow_26</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Inicio" targetRef="Gateway_Canal" />
+    <bpmn:sequenceFlow id="Flow_Loja" name="Loja" sourceRef="Gateway_Canal" targetRef="Activity_Loja" />
+    <bpmn:sequenceFlow id="Flow_PAP" name="PAP" sourceRef="Gateway_Canal" targetRef="Activity_ChecklistPAP" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_Loja" targetRef="Gateway_AceiteLoja" />
+    <bpmn:sequenceFlow id="Flow_AceiteNao" name="Não" sourceRef="Gateway_AceiteLoja" targetRef="Activity_LeadLoja" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_LeadLoja" targetRef="Event_PerdemosLoja" />
+    <bpmn:sequenceFlow id="Flow_AceiteSim" name="Sim" sourceRef="Gateway_AceiteLoja" targetRef="Activity_ColetaDoc" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Activity_ChecklistPAP" targetRef="Activity_AbordagemPAP" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Activity_AbordagemPAP" targetRef="Gateway_InteressePAP" />
+    <bpmn:sequenceFlow id="Flow_InteresseNao" name="Não" sourceRef="Gateway_InteressePAP" targetRef="Activity_ObjecaoPAP" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Activity_ObjecaoPAP" targetRef="Event_PerdemosPAP" />
+    <bpmn:sequenceFlow id="Flow_InteresseSim" name="Sim" sourceRef="Gateway_InteressePAP" targetRef="Activity_OfertaPAP" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Activity_OfertaPAP" targetRef="Activity_FechaPAP" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Activity_FechaPAP" targetRef="Activity_ColetaDoc" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Activity_ColetaDoc" targetRef="Activity_Cadastro" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Activity_Cadastro" targetRef="Activity_TaxaAtivacao" />
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Activity_Cadastro" targetRef="Activity_VinculaEquip" />
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Activity_TaxaAtivacao" targetRef="Activity_Assinatura" />
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Activity_VinculaEquip" targetRef="Activity_Assinatura" />
+    <bpmn:sequenceFlow id="Flow_20" sourceRef="Activity_Assinatura" targetRef="Activity_AuditaOS" />
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Activity_AuditaOS" targetRef="Gateway_Auditoria" />
+    <bpmn:sequenceFlow id="Flow_AuditoriaNao" name="Não (correção)" sourceRef="Gateway_Auditoria" targetRef="Activity_Assinatura" />
+    <bpmn:sequenceFlow id="Flow_AuditoriaSim" name="Sim" sourceRef="Gateway_Auditoria" targetRef="Activity_NOC" />
+    <bpmn:sequenceFlow id="Flow_24" sourceRef="Activity_NOC" targetRef="Activity_Instalacao" />
+    <bpmn:sequenceFlow id="Flow_25" sourceRef="Activity_Instalacao" targetRef="Activity_FinanceiroFinal" />
+    <bpmn:sequenceFlow id="Flow_26" sourceRef="Activity_FinanceiroFinal" targetRef="Event_Vendemos" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Vendas001">
+    <bpmndi:BPMNPlane id="BPMNPlane_Vendas001" bpmnElement="Collaboration_Vendas001">
+
+      <bpmndi:BPMNShape id="Participant_Vendas_di" bpmnElement="Participant_Vendas" isHorizontal="true">
+        <dc:Bounds x="100" y="130" width="1790" height="1030" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_VendedorAtendente_di" bpmnElement="Lane_VendedorAtendente" isHorizontal="true">
+        <dc:Bounds x="130" y="140" width="1750" height="450" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Financeiro_di" bpmnElement="Lane_Financeiro" isHorizontal="true">
+        <dc:Bounds x="130" y="590" width="1750" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Estoque_di" bpmnElement="Lane_Estoque" isHorizontal="true">
+        <dc:Bounds x="130" y="730" width="1750" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Auditoria_di" bpmnElement="Lane_Auditoria" isHorizontal="true">
+        <dc:Bounds x="130" y="870" width="1750" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_NOC_di" bpmnElement="Lane_NOC" isHorizontal="true">
+        <dc:Bounds x="130" y="1010" width="1750" height="140" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Inicio_di" bpmnElement="StartEvent_Inicio">
+        <dc:Bounds x="180" y="302" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="160" y="345" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_Canal_di" bpmnElement="Gateway_Canal" isMarkerVisible="true">
+        <dc:Bounds x="260" y="295" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="250" y="270" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_Loja_di" bpmnElement="Activity_Loja">
+        <dc:Bounds x="360" y="160" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_AceiteLoja_di" bpmnElement="Gateway_AceiteLoja" isMarkerVisible="true">
+        <dc:Bounds x="560" y="175" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="545" y="148" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_LeadLoja_di" bpmnElement="Activity_LeadLoja">
+        <dc:Bounds x="660" y="160" width="130" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_PerdemosLoja_di" bpmnElement="Event_PerdemosLoja">
+        <dc:Bounds x="830" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="815" y="225" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_ColetaDoc_di" bpmnElement="Activity_ColetaDoc">
+        <dc:Bounds x="660" y="280" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_Cadastro_di" bpmnElement="Activity_Cadastro">
+        <dc:Bounds x="850" y="280" width="160" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_Assinatura_di" bpmnElement="Activity_Assinatura">
+        <dc:Bounds x="1240" y="280" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_ChecklistPAP_di" bpmnElement="Activity_ChecklistPAP">
+        <dc:Bounds x="360" y="400" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_AbordagemPAP_di" bpmnElement="Activity_AbordagemPAP">
+        <dc:Bounds x="560" y="400" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_InteressePAP_di" bpmnElement="Gateway_InteressePAP" isMarkerVisible="true">
+        <dc:Bounds x="770" y="415" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="755" y="388" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_OfertaPAP_di" bpmnElement="Activity_OfertaPAP">
+        <dc:Bounds x="880" y="400" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_FechaPAP_di" bpmnElement="Activity_FechaPAP">
+        <dc:Bounds x="1080" y="400" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_ObjecaoPAP_di" bpmnElement="Activity_ObjecaoPAP">
+        <dc:Bounds x="880" y="500" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_PerdemosPAP_di" bpmnElement="Event_PerdemosPAP">
+        <dc:Bounds x="1080" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1065" y="562" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_TaxaAtivacao_di" bpmnElement="Activity_TaxaAtivacao">
+        <dc:Bounds x="850" y="610" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_FinanceiroFinal_di" bpmnElement="Activity_FinanceiroFinal">
+        <dc:Bounds x="1600" y="610" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_Vendemos_di" bpmnElement="Event_Vendemos">
+        <dc:Bounds x="1810" y="632" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1795" y="672" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_VinculaEquip_di" bpmnElement="Activity_VinculaEquip">
+        <dc:Bounds x="850" y="750" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_AuditaOS_di" bpmnElement="Activity_AuditaOS">
+        <dc:Bounds x="1240" y="890" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_Auditoria_di" bpmnElement="Gateway_Auditoria" isMarkerVisible="true">
+        <dc:Bounds x="1440" y="905" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1425" y="878" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_NOC_di" bpmnElement="Activity_NOC">
+        <dc:Bounds x="1440" y="1030" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_Instalacao_di" bpmnElement="Activity_Instalacao">
+        <dc:Bounds x="1620" y="1030" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="600" y="10" width="280" height="110" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="216" y="320" />
+        <di:waypoint x="260" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Loja_di" bpmnElement="Flow_Loja">
+        <di:waypoint x="285" y="295" />
+        <di:waypoint x="285" y="200" />
+        <di:waypoint x="360" y="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="291" y="245" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PAP_di" bpmnElement="Flow_PAP">
+        <di:waypoint x="285" y="345" />
+        <di:waypoint x="285" y="440" />
+        <di:waypoint x="360" y="440" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="291" y="390" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="500" y="200" />
+        <di:waypoint x="560" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AceiteNao_di" bpmnElement="Flow_AceiteNao">
+        <di:waypoint x="610" y="200" />
+        <di:waypoint x="660" y="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="625" y="182" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="790" y="200" />
+        <di:waypoint x="830" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AceiteSim_di" bpmnElement="Flow_AceiteSim">
+        <di:waypoint x="585" y="225" />
+        <di:waypoint x="585" y="320" />
+        <di:waypoint x="660" y="320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="591" y="270" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="500" y="440" />
+        <di:waypoint x="560" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="710" y="440" />
+        <di:waypoint x="770" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_InteresseNao_di" bpmnElement="Flow_InteresseNao">
+        <di:waypoint x="795" y="465" />
+        <di:waypoint x="795" y="540" />
+        <di:waypoint x="880" y="540" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="801" y="500" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1030" y="540" />
+        <di:waypoint x="1080" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_InteresseSim_di" bpmnElement="Flow_InteresseSim">
+        <di:waypoint x="820" y="440" />
+        <di:waypoint x="880" y="440" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="840" y="422" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1030" y="440" />
+        <di:waypoint x="1080" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1155" y="400" />
+        <di:waypoint x="1155" y="320" />
+        <di:waypoint x="800" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="800" y="320" />
+        <di:waypoint x="850" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="900" y="360" />
+        <di:waypoint x="900" y="610" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="960" y="360" />
+        <di:waypoint x="960" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="1000" y="650" />
+        <di:waypoint x="1150" y="650" />
+        <di:waypoint x="1150" y="320" />
+        <di:waypoint x="1240" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19">
+        <di:waypoint x="1000" y="790" />
+        <di:waypoint x="1180" y="790" />
+        <di:waypoint x="1180" y="340" />
+        <di:waypoint x="1240" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <di:waypoint x="1310" y="360" />
+        <di:waypoint x="1310" y="890" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21">
+        <di:waypoint x="1390" y="930" />
+        <di:waypoint x="1440" y="930" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AuditoriaNao_di" bpmnElement="Flow_AuditoriaNao">
+        <di:waypoint x="1465" y="905" />
+        <di:waypoint x="1465" y="320" />
+        <di:waypoint x="1380" y="320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1471" y="600" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AuditoriaSim_di" bpmnElement="Flow_AuditoriaSim">
+        <di:waypoint x="1465" y="955" />
+        <di:waypoint x="1465" y="1070" />
+        <di:waypoint x="1440" y="1070" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1471" y="990" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_24_di" bpmnElement="Flow_24">
+        <di:waypoint x="1580" y="1070" />
+        <di:waypoint x="1620" y="1070" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_25_di" bpmnElement="Flow_25">
+        <di:waypoint x="1695" y="1030" />
+        <di:waypoint x="1695" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_26_di" bpmnElement="Flow_26">
+        <di:waypoint x="1770" y="650" />
+        <di:waypoint x="1810" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="890" y="130" />
+        <di:waypoint x="740" y="120" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+</script>
+
+<!-- Carregador bpmn-js com fallback automático -->
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/bpmn-js@17/dist/bpmn-navigated-viewer.production.min.js';
+    script.onload = function() {
+      try {
+        var BpmnViewer = window.BpmnJS;
+        var viewer = new BpmnViewer({
+          container: '#bpmn-canvas'
+        });
+        var xml = document.getElementById('bpmn-data').textContent.trim();
+        viewer.importXML(xml).then(function() {
+          var canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+
+          // Controles de zoom
+          document.getElementById('btn-zoom-in').onclick = function() { canvas.zoom(canvas.zoom() * 1.2); };
+          document.getElementById('btn-zoom-out').onclick = function() { canvas.zoom(canvas.zoom() * 0.8); };
+          document.getElementById('btn-zoom-fit').onclick = function() { canvas.zoom('fit-viewport'); };
+        }).catch(function(err) {
+          console.warn('Erro ao importar BPMN:', err);
+          document.getElementById('bpmn-fallback').style.display = 'block';
+        });
+      } catch(e) {
+        document.getElementById('bpmn-fallback').style.display = 'block';
+      }
+    };
+    script.onerror = function() {
+      // Caso offline ou sem acesso à CDN
+      document.getElementById('bpmn-fallback').style.display = 'block';
+    };
+    document.head.appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

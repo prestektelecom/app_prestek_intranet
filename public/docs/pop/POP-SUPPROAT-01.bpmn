@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_SuporteProativoNOC" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_SuporteProativoNOC">
+    <bpmn:participant id="Participant_SuporteProativoNOC" name="SUPORTE PROATIVO NOC" processRef="Process_SuporteProativoNOC" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>SUPORTE PROATIVO NOC
+Vinicius / Marcio Felix
+Prestek Telecom
+Criação | 31/01/2026
+Última Atualização | 10/09/2026</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_SuporteProativoNOC" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_SuporteProativoNOC" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_NOC" name="NOC">
+        <bpmn:flowNodeRef>StartEvent_Gatilho</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Triagem</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ValidacaoTecnica</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AberturaOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_SolucaoRemota</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Resolvido</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_FinalizaResolvido</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_ResolvidoNOC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_EncaminhaCampo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_EncaminhadoCampo</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Gatilho" name="Gatilho identificado&#10;(alerta / alarme / quedas)">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Activity_Triagem" name="Etapa 1: Identificação e Triagem&#10;(dashboards Grafana/UNM, Service &gt;10 quedas/dia)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_ValidacaoTecnica" name="Etapa 2: Validação Técnica&#10;(status ONU, sinal RX/TX, bias, temperatura, alarmes)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_AberturaOS" name="Etapa 3: Registro&#10;Abertura de O.S. no IXC Soft (Assunto 1151)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_SolucaoRemota" name="Etapa 4: Tentativa de Solução Remota&#10;(reinício, config., testes de conectividade)">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Resolvido" name="Resolvido no NOC?">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Activity_FinalizaResolvido" name="Finaliza O.S.: &quot;Resolvido no NOC&quot;&#10;(atualiza RX/TX, status de alarmes)">
+      <bpmn:incoming>Flow_Sim</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="Event_ResolvidoNOC" name="Próxima tarefa:&#10;Feedback Acesso Normalizado">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Activity_EncaminhaCampo" name="Mantém diagnóstico técnico e encaminha&#10;para visita técnica / setor responsável">
+      <bpmn:incoming>Flow_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="Event_EncaminhadoCampo" name="Próxima tarefa:&#10;Melhoria de Sinal / Tratar Sem Acesso">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Gatilho" targetRef="Activity_Triagem" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_Triagem" targetRef="Activity_ValidacaoTecnica" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_ValidacaoTecnica" targetRef="Activity_AberturaOS" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_AberturaOS" targetRef="Activity_SolucaoRemota" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Activity_SolucaoRemota" targetRef="Gateway_Resolvido" />
+    <bpmn:sequenceFlow id="Flow_Sim" name="Sim" sourceRef="Gateway_Resolvido" targetRef="Activity_FinalizaResolvido" />
+    <bpmn:sequenceFlow id="Flow_Nao" name="Não" sourceRef="Gateway_Resolvido" targetRef="Activity_EncaminhaCampo" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_FinalizaResolvido" targetRef="Event_ResolvidoNOC" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_EncaminhaCampo" targetRef="Event_EncaminhadoCampo" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_SuporteProativoNOC">
+    <bpmndi:BPMNPlane id="BPMNPlane_SuporteProativoNOC" bpmnElement="Collaboration_SuporteProativoNOC">
+      <bpmndi:BPMNShape id="Participant_SuporteProativoNOC_di" bpmnElement="Participant_SuporteProativoNOC" isHorizontal="true">
+        <dc:Bounds x="140" y="240" width="1180" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_NOC_di" bpmnElement="Lane_NOC" isHorizontal="true">
+        <dc:Bounds x="170" y="240" width="1150" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Gatilho_di" bpmnElement="StartEvent_Gatilho">
+        <dc:Bounds x="212" y="322" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="194" y="365" width="75" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Triagem_di" bpmnElement="Activity_Triagem">
+        <dc:Bounds x="300" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ValidacaoTecnica_di" bpmnElement="Activity_ValidacaoTecnica">
+        <dc:Bounds x="480" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AberturaOS_di" bpmnElement="Activity_AberturaOS">
+        <dc:Bounds x="660" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_SolucaoRemota_di" bpmnElement="Activity_SolucaoRemota">
+        <dc:Bounds x="840" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Resolvido_di" bpmnElement="Gateway_Resolvido" isMarkerVisible="true">
+        <dc:Bounds x="1020" y="315" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1008" y="368" width="75" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_FinalizaResolvido_di" bpmnElement="Activity_FinalizaResolvido">
+        <dc:Bounds x="1120" y="250" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ResolvidoNOC_di" bpmnElement="Event_ResolvidoNOC">
+        <dc:Bounds x="1122" y="150" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1105" y="107" width="70" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_EncaminhaCampo_di" bpmnElement="Activity_EncaminhaCampo">
+        <dc:Bounds x="1120" y="390" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_EncaminhadoCampo_di" bpmnElement="Event_EncaminhadoCampo">
+        <dc:Bounds x="1122" y="500" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1090" y="537" width="100" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="560" y="80" width="260" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="248" y="340" />
+        <di:waypoint x="300" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="440" y="340" />
+        <di:waypoint x="480" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="620" y="340" />
+        <di:waypoint x="660" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="800" y="340" />
+        <di:waypoint x="840" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="980" y="340" />
+        <di:waypoint x="1020" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Sim_di" bpmnElement="Flow_Sim">
+        <di:waypoint x="1045" y="315" />
+        <di:waypoint x="1045" y="290" />
+        <di:waypoint x="1120" y="290" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1053" y="295" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nao_di" bpmnElement="Flow_Nao">
+        <di:waypoint x="1045" y="365" />
+        <di:waypoint x="1045" y="430" />
+        <di:waypoint x="1120" y="430" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1053" y="395" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="1195" y="250" />
+        <di:waypoint x="1195" y="186" />
+        <di:waypoint x="1158" y="186" />
+        <di:waypoint x="1158" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1195" y="470" />
+        <di:waypoint x="1195" y="518" />
+        <di:waypoint x="1158" y="518" />
+        <di:waypoint x="1158" y="500" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="690" y="240" />
+        <di:waypoint x="690" y="200" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

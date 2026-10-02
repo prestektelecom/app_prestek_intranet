@@ -1,0 +1,1059 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP-FROTA-001 — Gestão de Frota | Prestek Telecom</title>
+<style>
+  :root {
+    --accent: #384C9C;
+    --accent-dark: #D97738;
+    --accent-light: #EAEEF7;
+    --accent-border: #C2CBE3;
+    --ink: #384C9C;
+    --muted: #475467;
+    --border: #D7DDE3;
+    --bg: #F4F6F8;
+    --paper: #ffffff;
+    --warning-bg: #fef8ec;
+    --warning-border: #f3c267;
+    --warning-text: #8a5300;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 880px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  /* Cabeçalho */
+  .doc-header {
+    background: var(--accent);
+    color: #ffffff;
+    padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--accent-dark);
+  }
+
+  .doc-header .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    opacity: 0.9;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+
+  .doc-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .doc-header .meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .doc-header .badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .doc-body {
+    padding: 36px 40px 48px;
+  }
+
+  /* Tabela de controle histórico */
+  table.meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 28px;
+    font-size: 13.5px;
+  }
+
+  table.meta caption {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    caption-side: top;
+    font-weight: 700;
+  }
+
+  table.meta th, table.meta td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  table.meta th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    width: 20%;
+  }
+
+  .approvals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 32px;
+  }
+
+  .approvals .box {
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    background: var(--accent-light);
+  }
+
+  .approvals .box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .approvals .box .value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .approvals .box .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Seções do POP */
+  section.pop-section {
+    margin-bottom: 32px;
+  }
+
+  section.pop-section h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+
+  section.pop-section h3 {
+    font-size: 14px;
+    color: var(--accent-dark);
+    margin: 18px 0 8px;
+    font-weight: 600;
+  }
+
+  section.pop-section p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    text-align: justify;
+  }
+
+  /* Listas e passos */
+  .steps-macro {
+    list-style-type: lower-alpha;
+    margin: 10px 0 16px 22px;
+    padding: 0;
+  }
+
+  .steps-macro li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed {
+    margin: 12px 0;
+    padding-left: 20px;
+  }
+
+  .steps-detailed > li {
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed ul {
+    margin: 6px 0 6px 20px;
+    padding: 0;
+  }
+
+  .steps-detailed ul li {
+    margin-bottom: 4px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 12px 0 16px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+  }
+
+  .ixc-config-box ul li {
+    margin-bottom: 5px;
+  }
+
+  /* Regras de negócios */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .rule-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rule-number {
+    background: var(--accent);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Alçada de aprovação */
+  .alcada-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 10px 0 16px;
+  }
+
+  .alcada-chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .alcada-step {
+    background: #fff;
+    border: 1px solid var(--accent-border);
+    color: var(--accent-dark);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  /* BPMN bpmn.io styles */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-action:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .bpmn-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    margin: 10px 0 24px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .bpmn-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+  }
+  .zoom-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .zoom-btn:hover {
+    background: #edf2f7;
+    border-color: var(--accent-border);
+  }
+  #bpmn-canvas {
+    width: 100%;
+    height: 560px;
+    position: relative;
+    background: #ffffff;
+  }
+
+  /* Exceções */
+  .exception-item {
+    margin-bottom: 14px;
+    border: 1px solid #fed7aa;
+    background: #fffdfa;
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+
+  .exception-title {
+    font-weight: 700;
+    color: #c2410c;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .exception-desc {
+    font-size: 13.5px;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+
+  .exception-treatment {
+    font-size: 13px;
+    color: #1e293b;
+    background: #fef3c7;
+    padding: 8px 12px;
+    border-radius: 3px;
+    border-left: 3px solid #f59e0b;
+  }
+
+  /* Fluxograma BPMN (fallback estático) */
+  .bpmn-container {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .swimlane {
+    margin-bottom: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .swimlane-header {
+    background: #475569;
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .swimlane-header.frota {
+    background: var(--accent);
+  }
+
+  .swimlane-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .flow-node {
+    background: #f1f5f9;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    text-align: center;
+    max-width: 190px;
+    font-weight: 600;
+  }
+
+  .flow-arrow {
+    color: #64748b;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  /* Assinaturas */
+  .signoff {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    page-break-inside: avoid;
+  }
+
+  .signoff .sig {
+    text-align: center;
+  }
+
+  .signoff .sig .line {
+    border-top: 1px solid var(--ink);
+    margin-top: 48px;
+    padding-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .signoff .sig .role {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .doc-footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 16px 40px 28px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+      color: #000;
+    }
+    .doc {
+      border: none;
+      box-shadow: none;
+      max-width: 100%;
+    }
+    .doc-header {
+      background: var(--accent) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .approvals .box, table.meta th, .rule-number, .exception-item, .exception-treatment, .ixc-config-box, .alcada-box {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .signoff {
+      page-break-inside: avoid;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .doc-header, .doc-body { padding-left: 18px; padding-right: 18px; }
+    .approvals, .signoff, .rules-grid { grid-template-columns: 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- CABEÇALHO -->
+  <div class="doc-header">
+    <p class="kicker">Prestek Telecom • Sistema de Gestão da Qualidade • ISO 9001</p>
+    <h1>POP-FROTA-001 — Gestão de Frota</h1>
+    <div class="meta-badges">
+      <span class="badge">Padrão nº: POP-FROTA-001</span>
+      <span class="badge">Revisão: 001</span>
+      <span class="badge">Estabelecido em: 23/09/2025</span>
+      <span class="badge">Responsável: SETOR FROTA</span>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- CONTROLE HISTÓRICO -->
+    <table class="meta">
+      <caption>Controle Histórico</caption>
+      <thead>
+        <tr>
+          <th>Revisão</th>
+          <th>Data</th>
+          <th>Elaboração</th>
+          <th>Verificação</th>
+          <th>Aprovação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>001</td>
+          <td>23/09/2025</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Roberta Kelle Nunes Gomes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- APROVAÇÕES -->
+    <div class="approvals">
+      <div class="box">
+        <div class="label">Elaborado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Responsável pela Documentação do Processo (SGQ)</div>
+      </div>
+      <div class="box">
+        <div class="label">Revisado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Responsável pela Documentação do Processo (SGQ)</div>
+      </div>
+      <div class="box">
+        <div class="label">Aprovado por</div>
+        <div class="value">Roberta Kelle Nunes Gomes</div>
+        <div class="sub">Representante da Direção</div>
+      </div>
+    </div>
+
+    <!-- 1. OBJETIVO -->
+    <section class="pop-section">
+      <h2>1. Objetivo</h2>
+      <p>Padronizar o fluxo de manutenções da frota, visando assegurar a disponibilidade e a segurança dos veículos. O objetivo específico divide-se em:</p>
+      <ul>
+        <li><strong>Preventiva:</strong> substituir componentes desgastados (por tempo ou quilometragem) antes que ocorra a falha.</li>
+        <li><strong>Corretiva:</strong> realizar correções imediatas de falhas para restabelecer o funcionamento do veículo.</li>
+      </ul>
+    </section>
+
+    <!-- 2. DESCRIÇÃO DO PROCESSO -->
+    <section class="pop-section">
+      <h2>2. Descrição do processo</h2>
+      <p>A gestão de frota abrange <strong>todos os veículos da frota da Prestek Telecom, incluindo motocicletas e carros/veículos leves</strong>. Este procedimento cobre desde a identificação da necessidade de manutenção (seja por agendamento preventivo ou ocorrência de defeito), passando pela cotação e aprovação em oficina credenciada, acompanhamento técnico, até o registro final no sistema de gestão e encaminhamento para pagamento.</p>
+    </section>
+
+    <!-- 3. PROCESSO -->
+    <section class="pop-section">
+      <h2>3. Processo</h2>
+      <ol class="steps-macro">
+        <li>Identificação da necessidade de manutenção — preventiva (plano de revisão por tempo ou quilometragem) ou corretiva (defeito relatado pelo condutor).</li>
+        <li>Cotação do orçamento em oficina credenciada, para o modelo específico do veículo (motocicleta ou carro).</li>
+        <li>Aprovação do orçamento pelo setor responsável.</li>
+        <li>Execução do serviço, com acompanhamento técnico (obrigatório do Supervisor da Frota na corretiva).</li>
+        <li>Registro dos serviços e peças utilizadas no sistema IXC.</li>
+        <li>Encaminhamento dos orçamentos autorizados ao Departamento Financeiro para pagamento.</li>
+      </ol>
+    </section>
+
+    <!-- 4. PASSOS DO PROCESSO -->
+    <section class="pop-section">
+      <h2>4. Passos do processo</h2>
+      <ol class="steps-detailed">
+        <li>
+          <strong>4.1. Fluxo de Manutenção Preventiva</strong>
+          <ul>
+            <li>Verificar o plano de revisão (tempo ou quilometragem).</li>
+            <li>Solicitar orçamento com antecedência em oficina credenciada para o modelo específico do veículo (motocicleta ou carro).</li>
+            <li>Enviar orçamento para o setor responsável e aguardar autorização.</li>
+            <li>Após autorizado, encaminhar o veículo para execução do serviço.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.2. Fluxo de Manutenção Corretiva</strong>
+          <ul>
+            <li>Condutor relata a irregularidade/defeito no veículo.</li>
+            <li>Levar o veículo imediatamente à oficina para análise técnica.</li>
+            <li><strong>Ação de supervisão:</strong> o Supervisor da Frota deve acompanhar a análise na oficina para atestar a veracidade dos fatos e a real necessidade das trocas.</li>
+            <li>Oficina elabora o orçamento do defeito diagnosticado.</li>
+            <li>Submeter orçamento à autorização do setor responsável.</li>
+            <li>Executar o reparo.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.3. Fluxo Administrativo (Pós-Manutenção)</strong>
+          <div class="ixc-config-box">
+            <strong>Registro obrigatório no sistema (IXC Soft):</strong>
+            <ul>
+              <li>Registrar imediatamente todos os serviços realizados e peças utilizadas no sistema IXC para histórico do veículo.</li>
+              <li>Encaminhar os orçamentos (já autorizados e com serviço executado) ao Departamento Financeiro.</li>
+              <li>Departamento Financeiro efetiva os pagamentos.</li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+
+      <!-- BPMN - GESTÃO DE FROTA (INTEGRAÇÃO BPMN.IO) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 10px;">
+        <h3 style="margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">Fluxograma Oficial (BPMN 2.0 • bpmn.io)</h3>
+        <div style="display: flex; gap: 8px;">
+          <a href="POP-FROTA-001 - Gestão de Frota.bpmn" download="POP-FROTA-001 - Gestão de Frota.bpmn" class="btn-action" title="Baixar arquivo XML padrão BPMN 2.0">⬇ Baixar .bpmn</a>
+          <a href="https://demo.bpmn.io/" target="_blank" rel="noopener noreferrer" class="btn-action" title="Abrir ferramenta bpmn.io">🌐 Abrir no bpmn.io</a>
+        </div>
+      </div>
+
+      <div class="bpmn-wrapper">
+        <div class="bpmn-toolbar">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Interativo: clique e arraste para navegar • scroll para zoom • raias: Condutor / Setor Frota / Oficina Credenciada</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btn-zoom-in" class="zoom-btn" title="Aumentar zoom">+</button>
+            <button type="button" id="btn-zoom-out" class="zoom-btn" title="Diminuir zoom">-</button>
+            <button type="button" id="btn-zoom-fit" class="zoom-btn" title="Ajustar à tela">⤢ Ajustar</button>
+          </div>
+        </div>
+        <div id="bpmn-canvas">
+          <!-- Fallback estático caso esteja sem internet -->
+          <div id="bpmn-fallback" style="display: none; padding: 20px;">
+            <div class="swimlane">
+              <div class="swimlane-header">Raia / Condutor</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Relata defeito e leva veículo à oficina (fluxo corretivo)</div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header frota">Raia / Setor Frota</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Necessidade de manutenção identificada</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Tipo de manutenção?<br><small>[Preventiva] ➔ Verifica plano de revisão<br>[Corretiva] ➔ Condutor relata defeito</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Autoriza orçamento (fluxo corretivo)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color: #16a34a; background: #f0fdf4; color: #166534;">Registra no IXC e encaminha ao Financeiro</div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header">Raia / Oficina Credenciada</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Elabora orçamento preventivo</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Executa serviço preventivo autorizado</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Realiza diagnóstico e elabora orçamento (fluxo corretivo)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. REGRAS DE NEGÓCIOS -->
+    <section class="pop-section">
+      <h2>5. Regras de negócios</h2>
+      <div class="rules-grid">
+        <div class="rule-card">
+          <div class="rule-number">1</div>
+          <div>Oficinas credenciadas: orçamento estritamente em oficinas aptas para o modelo do veículo (moto ou carro)</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">2</div>
+          <div>Validação da corretiva: acompanhamento obrigatório do Supervisor da Frota no diagnóstico</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">3</div>
+          <div>Registro obrigatório de peças e serviços no sistema IXC</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">4</div>
+          <div>Prioridade imediata para manutenções corretivas (risco de segurança)</div>
+        </div>
+      </div>
+
+      <h3>Alçada de aprovação</h3>
+      <div class="alcada-box">
+        <strong>Fluxo de autorização do orçamento e pagamento:</strong>
+        <div class="alcada-chain">
+          <span class="alcada-step">Condutor / Solicitante</span>
+          <span class="flow-arrow">➔</span>
+          <span class="alcada-step">Supervisor da Frota (valida diagnóstico)</span>
+          <span class="flow-arrow">➔</span>
+          <span class="alcada-step">Setor Responsável (autoriza orçamento)</span>
+          <span class="flow-arrow">➔</span>
+          <span class="alcada-step">Departamento Financeiro (efetiva pagamento)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. EXCEÇÕES E TRATAMENTO DE ERROS -->
+    <section class="pop-section">
+      <h2>6. Exceções e tratamento de erros</h2>
+      <p>Procedimentos obrigatórios para contingências e desvios durante o fluxo de manutenção da frota:</p>
+
+      <div class="exception-item">
+        <div class="exception-title">6.1. Orçamento reprovado</div>
+        <div class="exception-desc"><strong>Descrição:</strong> caso o orçamento seja considerado abusivo ou desnecessário pelo setor responsável.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> o veículo deve ser encaminhado para uma segunda opinião em outra oficina credenciada.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.2. Indisponibilidade de peças</div>
+        <div class="exception-desc"><strong>Descrição:</strong> a oficina não possui a peça necessária para o serviço.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> o Supervisor deve intervir para buscar fornecedores alternativos homologados ou reagendar o serviço (se não for impeditivo para a segurança), registrando a pendência no sistema.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.3. Divergência no IXC</div>
+        <div class="exception-desc"><strong>Descrição:</strong> erro no lançamento do IXC (peças, serviços ou valores divergentes).</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> o Financeiro deve bloquear o pagamento até a correção do registro pelo responsável da frota.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSÃO -->
+    <section class="pop-section">
+      <h2>7. Conclusão</h2>
+      <p>A execução rigorosa deste procedimento garante a longevidade da frota, o controle de custos através da validação presencial das corretivas e a organização do histórico financeiro e mecânico de cada veículo no sistema da empresa.</p>
+    </section>
+
+    <!-- ASSINATURAS FORMAIS -->
+    <div class="signoff">
+      <div class="sig">
+        <div class="line">Marcio Eduardo Felix &nbsp;&nbsp;|&nbsp;&nbsp; 23/09/2025</div>
+        <div class="role">Responsável pela Documentação do Processo (SGQ) • Elaborador / Revisor</div>
+      </div>
+      <div class="sig">
+        <div class="line">Roberta Kelle Nunes Gomes &nbsp;&nbsp;|&nbsp;&nbsp; 23/09/2025</div>
+        <div class="role">Representante da Direção • Aprovadora</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ CONTROLADO -->
+  <div class="doc-footer">
+    Documento controlado — Sistema de Gestão da Qualidade ISO 9001 • Prestek Telecom
+  </div>
+
+</div>
+
+<!-- Script BPMN.io / bpmn-js -->
+<script type="text/xml" id="bpmn-data">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Frota" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_Frota">
+    <bpmn:participant id="Participant_GestaoFrota" name="GESTÃO DE FROTA" processRef="Process_Frota" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>GESTÃO DE FROTA
+Marcio Felix
+Prestek Telecom
+Criação | 23/09/2025
+Última Atualização | 10/9/2026</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_GestaoFrota" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Frota" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Condutor" name="CONDUTOR">
+        <bpmn:flowNodeRef>Activity_RelataDefeito</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Frota" name="SETOR FROTA">
+        <bpmn:flowNodeRef>StartEvent_Frota</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_TipoManutencao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_VerificaPlano</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AutorizaReparo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MergeFluxos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_RegistraFinanceiro</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Frota</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Oficina" name="OFICINA CREDENCIADA">
+        <bpmn:flowNodeRef>Activity_ElaboraOrcamentoPrev</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ExecutaServicoPrev</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_DiagnosticoOficina</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Frota" name="Necessidade de manutenção identificada">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:exclusiveGateway id="Gateway_TipoManutencao" name="Tipo de manutenção?">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Prev</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Cor</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- Ramo Preventiva -->
+    <bpmn:userTask id="Activity_VerificaPlano" name="Verifica plano de revisão (tempo/km) e solicita orçamento">
+      <bpmn:incoming>Flow_Prev</bpmn:incoming>
+      <bpmn:outgoing>Flow_P1P2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Activity_ElaboraOrcamentoPrev" name="Elabora orçamento preventivo">
+      <bpmn:incoming>Flow_P1P2</bpmn:incoming>
+      <bpmn:outgoing>Flow_P2P3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_ExecutaServicoPrev" name="Executa serviço preventivo autorizado">
+      <bpmn:incoming>Flow_P2P3</bpmn:incoming>
+      <bpmn:outgoing>Flow_P3GW2</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- Ramo Corretiva -->
+    <bpmn:userTask id="Activity_RelataDefeito" name="Relata defeito e leva veículo à oficina">
+      <bpmn:incoming>Flow_Cor</bpmn:incoming>
+      <bpmn:outgoing>Flow_C1C2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Activity_DiagnosticoOficina" name="Realiza diagnóstico e elabora orçamento (com acompanhamento do Supervisor da Frota)">
+      <bpmn:incoming>Flow_C1C2</bpmn:incoming>
+      <bpmn:outgoing>Flow_C2C3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="Activity_AutorizaReparo" name="Autoriza orçamento; oficina executa reparo corretivo">
+      <bpmn:incoming>Flow_C2C3</bpmn:incoming>
+      <bpmn:outgoing>Flow_C3GW2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Convergência e fluxo administrativo -->
+    <bpmn:exclusiveGateway id="Gateway_MergeFluxos">
+      <bpmn:incoming>Flow_P3GW2</bpmn:incoming>
+      <bpmn:incoming>Flow_C3GW2</bpmn:incoming>
+      <bpmn:outgoing>Flow_GW2A1</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Activity_RegistraFinanceiro" name="Registra no IXC e encaminha ao Financeiro">
+      <bpmn:incoming>Flow_GW2A1</bpmn:incoming>
+      <bpmn:outgoing>Flow_A1EE</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Frota" name="Manutenção concluída e pagamento efetivado">
+      <bpmn:incoming>Flow_A1EE</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Frota" targetRef="Gateway_TipoManutencao" />
+    <bpmn:sequenceFlow id="Flow_Prev" name="Preventiva" sourceRef="Gateway_TipoManutencao" targetRef="Activity_VerificaPlano" />
+    <bpmn:sequenceFlow id="Flow_Cor" name="Corretiva" sourceRef="Gateway_TipoManutencao" targetRef="Activity_RelataDefeito" />
+    <bpmn:sequenceFlow id="Flow_P1P2" sourceRef="Activity_VerificaPlano" targetRef="Activity_ElaboraOrcamentoPrev" />
+    <bpmn:sequenceFlow id="Flow_P2P3" sourceRef="Activity_ElaboraOrcamentoPrev" targetRef="Activity_ExecutaServicoPrev" />
+    <bpmn:sequenceFlow id="Flow_P3GW2" sourceRef="Activity_ExecutaServicoPrev" targetRef="Gateway_MergeFluxos" />
+    <bpmn:sequenceFlow id="Flow_C1C2" sourceRef="Activity_RelataDefeito" targetRef="Activity_DiagnosticoOficina" />
+    <bpmn:sequenceFlow id="Flow_C2C3" sourceRef="Activity_DiagnosticoOficina" targetRef="Activity_AutorizaReparo" />
+    <bpmn:sequenceFlow id="Flow_C3GW2" sourceRef="Activity_AutorizaReparo" targetRef="Gateway_MergeFluxos" />
+    <bpmn:sequenceFlow id="Flow_GW2A1" sourceRef="Gateway_MergeFluxos" targetRef="Activity_RegistraFinanceiro" />
+    <bpmn:sequenceFlow id="Flow_A1EE" sourceRef="Activity_RegistraFinanceiro" targetRef="EndEvent_Frota" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Frota">
+    <bpmndi:BPMNPlane id="BPMNPlane_Frota" bpmnElement="Collaboration_Frota">
+      <bpmndi:BPMNShape id="Participant_GestaoFrota_di" bpmnElement="Participant_GestaoFrota" isHorizontal="true">
+        <dc:Bounds x="140" y="220" width="1180" height="600" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Condutor_di" bpmnElement="Lane_Condutor" isHorizontal="true">
+        <dc:Bounds x="170" y="220" width="1150" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Frota_di" bpmnElement="Lane_Frota" isHorizontal="true">
+        <dc:Bounds x="170" y="370" width="1150" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Oficina_di" bpmnElement="Lane_Oficina" isHorizontal="true">
+        <dc:Bounds x="170" y="610" width="1150" height="210" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Frota_di" bpmnElement="StartEvent_Frota">
+        <dc:Bounds x="200" y="472" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="180" y="515" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_TipoManutencao_di" bpmnElement="Gateway_TipoManutencao" isMarkerVisible="true">
+        <dc:Bounds x="300" y="465" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="286" y="441" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_VerificaPlano_di" bpmnElement="Activity_VerificaPlano">
+        <dc:Bounds x="420" y="450" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ElaboraOrcamentoPrev_di" bpmnElement="Activity_ElaboraOrcamentoPrev">
+        <dc:Bounds x="600" y="620" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ExecutaServicoPrev_di" bpmnElement="Activity_ExecutaServicoPrev">
+        <dc:Bounds x="780" y="620" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_RelataDefeito_di" bpmnElement="Activity_RelataDefeito">
+        <dc:Bounds x="420" y="255" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_DiagnosticoOficina_di" bpmnElement="Activity_DiagnosticoOficina">
+        <dc:Bounds x="600" y="730" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AutorizaReparo_di" bpmnElement="Activity_AutorizaReparo">
+        <dc:Bounds x="780" y="450" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_MergeFluxos_di" bpmnElement="Gateway_MergeFluxos" isMarkerVisible="true">
+        <dc:Bounds x="960" y="465" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_RegistraFinanceiro_di" bpmnElement="Activity_RegistraFinanceiro">
+        <dc:Bounds x="1040" y="450" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Frota_di" bpmnElement="EndEvent_Frota">
+        <dc:Bounds x="1240" y="472" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1220" y="515" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="470" y="80" width="260" height="110" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="236" y="490" />
+        <di:waypoint x="300" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Prev_di" bpmnElement="Flow_Prev">
+        <di:waypoint x="350" y="490" />
+        <di:waypoint x="420" y="490" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="360" y="472" width="52" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Cor_di" bpmnElement="Flow_Cor">
+        <di:waypoint x="325" y="465" />
+        <di:waypoint x="325" y="295" />
+        <di:waypoint x="420" y="295" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="330" y="370" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1P2_di" bpmnElement="Flow_P1P2">
+        <di:waypoint x="560" y="490" />
+        <di:waypoint x="560" y="660" />
+        <di:waypoint x="600" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P2P3_di" bpmnElement="Flow_P2P3">
+        <di:waypoint x="740" y="660" />
+        <di:waypoint x="780" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P3GW2_di" bpmnElement="Flow_P3GW2">
+        <di:waypoint x="850" y="620" />
+        <di:waypoint x="850" y="611" />
+        <di:waypoint x="940" y="611" />
+        <di:waypoint x="940" y="490" />
+        <di:waypoint x="960" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_C1C2_di" bpmnElement="Flow_C1C2">
+        <di:waypoint x="490" y="335" />
+        <di:waypoint x="650" y="335" />
+        <di:waypoint x="650" y="770" />
+        <di:waypoint x="600" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_C2C3_di" bpmnElement="Flow_C2C3">
+        <di:waypoint x="740" y="770" />
+        <di:waypoint x="760" y="770" />
+        <di:waypoint x="760" y="490" />
+        <di:waypoint x="780" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_C3GW2_di" bpmnElement="Flow_C3GW2">
+        <di:waypoint x="920" y="490" />
+        <di:waypoint x="960" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_GW2A1_di" bpmnElement="Flow_GW2A1">
+        <di:waypoint x="1010" y="490" />
+        <di:waypoint x="1040" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_A1EE_di" bpmnElement="Flow_A1EE">
+        <di:waypoint x="1200" y="490" />
+        <di:waypoint x="1240" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="600" y="220" />
+        <di:waypoint x="600" y="190" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+</script>
+
+<!-- Carregador bpmn-js com fallback automático -->
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/bpmn-js@17/dist/bpmn-navigated-viewer.production.min.js';
+    script.onload = function() {
+      try {
+        var BpmnViewer = window.BpmnJS;
+        var viewer = new BpmnViewer({
+          container: '#bpmn-canvas'
+        });
+        var xml = document.getElementById('bpmn-data').textContent.trim();
+        viewer.importXML(xml).then(function() {
+          var canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+
+          // Controles de zoom
+          document.getElementById('btn-zoom-in').onclick = function() { canvas.zoom(canvas.zoom() * 1.2); };
+          document.getElementById('btn-zoom-out').onclick = function() { canvas.zoom(canvas.zoom() * 0.8); };
+          document.getElementById('btn-zoom-fit').onclick = function() { canvas.zoom('fit-viewport'); };
+        }).catch(function(err) {
+          console.warn('Erro ao importar BPMN:', err);
+          document.getElementById('bpmn-fallback').style.display = 'block';
+        });
+      } catch(e) {
+        document.getElementById('bpmn-fallback').style.display = 'block';
+      }
+    };
+    script.onerror = function() {
+      // Caso offline ou sem acesso à CDN
+      document.getElementById('bpmn-fallback').style.display = 'block';
+    };
+    document.head.appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

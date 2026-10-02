@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_ChamadoTI" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_ChamadoTI">
+    <bpmn:participant id="Participant_SuporteProativo" name="SUPORTE PROATIVO" processRef="Process_ChamadoTI" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>CHAMADO T.I.
+Marcio Felix
+Prestek Telecom
+Criação | 02/05/2025
+Última Atualização | 23/9/2025</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_SuporteProativo" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_ChamadoTI" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_TI" name="T.I.">
+        <bpmn:flowNodeRef>Activity_VerificaChamado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ExecutaAtendimento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Resolvido</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_FinalizaSim</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_TirarDuvidas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_FinalizaNao</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Colaborador" name="COLABORADOR">
+        <bpmn:flowNodeRef>StartEvent_Colaborador</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_IdentificaNecessidade</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_PreencheChamado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AgendaAtendimento</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Colaborador" name="Colaborador(a)">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Activity_IdentificaNecessidade" name="Identifica necessidade e solicita suporte">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Activity_PreencheChamado" name="Preenche chamado (descreve situação, anexa evidências, define canal)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="Activity_AgendaAtendimento" name="Agenda atendimento, define responsável/data/prioridade">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_VerificaChamado" name="Verifica chamado recebido">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Activity_ExecutaAtendimento" name="Executa atendimento">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Resolvido" name="Foi resolvido?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Event_FinalizaSim" name="Finaliza Atendimento">
+      <bpmn:incoming>Flow_Sim</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Activity_TirarDuvidas" name="Tirar dúvidas com quem abriu o chamado">
+      <bpmn:incoming>Flow_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_FinalizaNao" name="Finaliza Atendimento">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Colaborador" targetRef="Activity_IdentificaNecessidade" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_IdentificaNecessidade" targetRef="Activity_PreencheChamado" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_PreencheChamado" targetRef="Activity_AgendaAtendimento" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_AgendaAtendimento" targetRef="Activity_VerificaChamado" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Activity_VerificaChamado" targetRef="Activity_ExecutaAtendimento" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_ExecutaAtendimento" targetRef="Gateway_Resolvido" />
+    <bpmn:sequenceFlow id="Flow_Sim" name="Sim" sourceRef="Gateway_Resolvido" targetRef="Event_FinalizaSim" />
+    <bpmn:sequenceFlow id="Flow_Nao" name="Não" sourceRef="Gateway_Resolvido" targetRef="Activity_TirarDuvidas" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_TirarDuvidas" targetRef="Event_FinalizaNao" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ChamadoTI">
+    <bpmndi:BPMNPlane id="BPMNPlane_ChamadoTI" bpmnElement="Collaboration_ChamadoTI">
+      <bpmndi:BPMNShape id="Participant_SuporteProativo_di" bpmnElement="Participant_SuporteProativo" isHorizontal="true">
+        <dc:Bounds x="160" y="240" width="950" height="420" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Colaborador_di" bpmnElement="Lane_Colaborador" isHorizontal="true">
+        <dc:Bounds x="190" y="240" width="920" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_TI_di" bpmnElement="Lane_TI" isHorizontal="true">
+        <dc:Bounds x="190" y="450" width="920" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Colaborador_di" bpmnElement="StartEvent_Colaborador">
+        <dc:Bounds x="232" y="322" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="213" y="365" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_IdentificaNecessidade_di" bpmnElement="Activity_IdentificaNecessidade">
+        <dc:Bounds x="320" y="300" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_PreencheChamado_di" bpmnElement="Activity_PreencheChamado">
+        <dc:Bounds x="490" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AgendaAtendimento_di" bpmnElement="Activity_AgendaAtendimento">
+        <dc:Bounds x="670" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_VerificaChamado_di" bpmnElement="Activity_VerificaChamado">
+        <dc:Bounds x="320" y="510" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ExecutaAtendimento_di" bpmnElement="Activity_ExecutaAtendimento">
+        <dc:Bounds x="490" y="510" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Resolvido_di" bpmnElement="Gateway_Resolvido" isMarkerVisible="true">
+        <dc:Bounds x="665" y="525" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="655" y="501" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_FinalizaSim_di" bpmnElement="Event_FinalizaSim">
+        <dc:Bounds x="782" y="532" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="768" y="575" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_TirarDuvidas_di" bpmnElement="Activity_TirarDuvidas">
+        <dc:Bounds x="860" y="510" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_FinalizaNao_di" bpmnElement="Event_FinalizaNao">
+        <dc:Bounds x="1032" y="532" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1018" y="575" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="470" y="100" width="260" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="268" y="340" />
+        <di:waypoint x="320" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="450" y="340" />
+        <di:waypoint x="490" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="630" y="340" />
+        <di:waypoint x="670" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="740" y="380" />
+        <di:waypoint x="740" y="470" />
+        <di:waypoint x="385" y="470" />
+        <di:waypoint x="385" y="510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="450" y="550" />
+        <di:waypoint x="490" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="620" y="550" />
+        <di:waypoint x="665" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Sim_di" bpmnElement="Flow_Sim">
+        <di:waypoint x="715" y="550" />
+        <di:waypoint x="782" y="550" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="739" y="532" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nao_di" bpmnElement="Flow_Nao">
+        <di:waypoint x="690" y="575" />
+        <di:waypoint x="690" y="620" />
+        <di:waypoint x="925" y="620" />
+        <di:waypoint x="925" y="590" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="797" y="602" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="990" y="550" />
+        <di:waypoint x="1032" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="550" y="240" />
+        <di:waypoint x="550" y="210" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

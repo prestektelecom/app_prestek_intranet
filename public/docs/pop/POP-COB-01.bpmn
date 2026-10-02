@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Cobranca" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_Cobranca">
+    <bpmn:participant id="Participant_Cobranca" name="PROCESSO DE COBRANÇA" processRef="Process_Cobranca" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>COBRANÇA
+Marcio Felix
+Prestek Telecom
+Criação | 26/01/2026
+Última Atualização | 10/09/2026</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_Cobranca" targetRef="TextAnnotation_Header" />
+    <bpmn:textAnnotation id="TextAnnotation_Pendente">
+      <bpmn:text>[DECISÃO PENDENTE]
+Escopo de "Retirada de Fibra/Comodato"
+carece de confirmação do setor
+responsável (Infraestrutura/Patrimônio).</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Pendente" sourceRef="Task_RetiradaFibra" targetRef="TextAnnotation_Pendente" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Cobranca" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Cobranca" name="Cobrança">
+        <bpmn:flowNodeRef>StartEvent_Inicio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Automatizada</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Receptivo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Receptivo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AberturaAtiva</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NegociacaoAtiva</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Regularizou</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Regularizado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AuditoriaExterna</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Campo" name="Infraestrutura/Campo">
+        <bpmn:flowNodeRef>Task_VisitaExterna</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_CasaAberta</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RetornoReagendamento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NegociaCampo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_AcordoInadimplencia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_AcordoExterno</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RetiradaFibra</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ProcedimentoOk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_RetiradaDevolucao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Cancelamento</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Inicio" name="Fatura Vencida">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_Automatizada" name="Cobrança Automatizada (lembretes multicanal + IA a partir do 6º dia)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Receptivo" name="Atendimento Receptivo (plataforma Synapz)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_R2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Receptivo" name="Atendimento Receptivo Concluído">
+      <bpmn:incoming>Flow_R2</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:task id="Task_AberturaAtiva" name="CRM Cobrança abre O.S. de Cobrança Interna Ativa">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_NegociacaoAtiva" name="Operador negocia com o cliente (SLA de 48h)">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Regularizou" name="Cliente regularizou o débito?">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_Regularizado" name="Débito Regularizado">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_AuditoriaExterna" name="Auditoria financeira + gera O.S. Lembrete de Cobrança Externa">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_VisitaExterna" name="Cobrador realiza visita domiciliar (Cobrança Externa 30/60 dias)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_CasaAberta" name="Casa está aberta?">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_RetornoReagendamento" name="Encaminha O.S. para &quot;Retorno para Cobrança Externa&quot; (reagendar visita)">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_NegociaCampo" name="Negocia débito / recebe pagamento em campo">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_AcordoInadimplencia" name="Houve acordo ou pagamento?">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_AcordoExterno" name="Acordo Sim por Cobrança Externa">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_RetiradaFibra" name="[DECISÃO PENDENTE] Retirada de Fibra/Comodato em Campo (checklist fotográfico obrigatório)">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ProcedimentoOk" name="Procedimento concluído com sucesso?">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_RetiradaDevolucao" name="Retirada de Devolução">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_Cancelamento" name="Cancelamento por Inatividade">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Inicio" targetRef="Task_Automatizada" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Automatizada" targetRef="Task_AberturaAtiva" />
+    <bpmn:sequenceFlow id="Flow_3" name="Contato espontâneo do cliente" sourceRef="Task_Automatizada" targetRef="Task_Receptivo" />
+    <bpmn:sequenceFlow id="Flow_R2" sourceRef="Task_Receptivo" targetRef="EndEvent_Receptivo" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_AberturaAtiva" targetRef="Task_NegociacaoAtiva" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_NegociacaoAtiva" targetRef="Gateway_Regularizou" />
+    <bpmn:sequenceFlow id="Flow_6" name="Sim" sourceRef="Gateway_Regularizou" targetRef="EndEvent_Regularizado" />
+    <bpmn:sequenceFlow id="Flow_7" name="Não" sourceRef="Gateway_Regularizou" targetRef="Task_AuditoriaExterna" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_AuditoriaExterna" targetRef="Task_VisitaExterna" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_VisitaExterna" targetRef="Gateway_CasaAberta" />
+    <bpmn:sequenceFlow id="Flow_10" name="Não (1ª/2ª tentativa)" sourceRef="Gateway_CasaAberta" targetRef="Task_RetornoReagendamento" />
+    <bpmn:sequenceFlow id="Flow_11" name="Nova visita agendada" sourceRef="Task_RetornoReagendamento" targetRef="Task_VisitaExterna" />
+    <bpmn:sequenceFlow id="Flow_12" name="Sim" sourceRef="Gateway_CasaAberta" targetRef="Task_NegociaCampo" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_NegociaCampo" targetRef="Gateway_AcordoInadimplencia" />
+    <bpmn:sequenceFlow id="Flow_14" name="Acordo/Pagamento" sourceRef="Gateway_AcordoInadimplencia" targetRef="EndEvent_AcordoExterno" />
+    <bpmn:sequenceFlow id="Flow_15" name="Sem acordo / inadimplência confirmada" sourceRef="Gateway_AcordoInadimplencia" targetRef="Task_RetiradaFibra" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_RetiradaFibra" targetRef="Gateway_ProcedimentoOk" />
+    <bpmn:sequenceFlow id="Flow_17" name="Sucesso" sourceRef="Gateway_ProcedimentoOk" targetRef="EndEvent_RetiradaDevolucao" />
+    <bpmn:sequenceFlow id="Flow_18" name="2ª tentativa sem sucesso" sourceRef="Gateway_ProcedimentoOk" targetRef="EndEvent_Cancelamento" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Cobranca">
+    <bpmndi:BPMNPlane id="BPMNPlane_Cobranca" bpmnElement="Collaboration_Cobranca">
+      <bpmndi:BPMNShape id="Participant_Cobranca_di" bpmnElement="Participant_Cobranca" isHorizontal="true">
+        <dc:Bounds x="140" y="80" width="1950" height="600" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Cobranca_di" bpmnElement="Lane_Cobranca" isHorizontal="true">
+        <dc:Bounds x="170" y="80" width="1920" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Campo_di" bpmnElement="Lane_Campo" isHorizontal="true">
+        <dc:Bounds x="170" y="380" width="1920" height="300" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Inicio_di" bpmnElement="StartEvent_Inicio">
+        <dc:Bounds x="210" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="192" y="205" width="72" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Automatizada_di" bpmnElement="Task_Automatizada">
+        <dc:Bounds x="290" y="140" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Receptivo_di" bpmnElement="Task_Receptivo">
+        <dc:Bounds x="290" y="260" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Receptivo_di" bpmnElement="EndEvent_Receptivo">
+        <dc:Bounds x="480" y="282" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="463" y="325" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AberturaAtiva_di" bpmnElement="Task_AberturaAtiva">
+        <dc:Bounds x="490" y="140" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_NegociacaoAtiva_di" bpmnElement="Task_NegociacaoAtiva">
+        <dc:Bounds x="690" y="140" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Regularizou_di" bpmnElement="Gateway_Regularizou" isMarkerVisible="true">
+        <dc:Bounds x="890" y="155" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="878" y="122" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Regularizado_di" bpmnElement="EndEvent_Regularizado">
+        <dc:Bounds x="980" y="90" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="962" y="60" width="72" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AuditoriaExterna_di" bpmnElement="Task_AuditoriaExterna">
+        <dc:Bounds x="980" y="140" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_VisitaExterna_di" bpmnElement="Task_VisitaExterna">
+        <dc:Bounds x="980" y="440" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_CasaAberta_di" bpmnElement="Gateway_CasaAberta" isMarkerVisible="true">
+        <dc:Bounds x="1200" y="455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1195" y="422" width="60" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RetornoReagendamento_di" bpmnElement="Task_RetornoReagendamento">
+        <dc:Bounds x="1200" y="560" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_NegociaCampo_di" bpmnElement="Task_NegociaCampo">
+        <dc:Bounds x="1330" y="440" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_AcordoInadimplencia_di" bpmnElement="Gateway_AcordoInadimplencia" isMarkerVisible="true">
+        <dc:Bounds x="1550" y="455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1540" y="422" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_AcordoExterno_di" bpmnElement="EndEvent_AcordoExterno">
+        <dc:Bounds x="1650" y="390" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1633" y="360" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RetiradaFibra_di" bpmnElement="Task_RetiradaFibra">
+        <dc:Bounds x="1650" y="440" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ProcedimentoOk_di" bpmnElement="Gateway_ProcedimentoOk" isMarkerVisible="true">
+        <dc:Bounds x="1900" y="455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1890" y="422" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_RetiradaDevolucao_di" bpmnElement="EndEvent_RetiradaDevolucao">
+        <dc:Bounds x="1990" y="390" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1973" y="360" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Cancelamento_di" bpmnElement="EndEvent_Cancelamento">
+        <dc:Bounds x="1990" y="560" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1973" y="600" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="520" y="0" width="260" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Pendente_di" bpmnElement="TextAnnotation_Pendente">
+        <dc:Bounds x="1660" y="290" width="260" height="90" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="246" y="180" />
+        <di:waypoint x="290" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="440" y="180" />
+        <di:waypoint x="490" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="365" y="220" />
+        <di:waypoint x="365" y="260" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="368" y="230" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_R2_di" bpmnElement="Flow_R2">
+        <di:waypoint x="440" y="300" />
+        <di:waypoint x="480" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="640" y="180" />
+        <di:waypoint x="690" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="840" y="180" />
+        <di:waypoint x="890" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="915" y="155" />
+        <di:waypoint x="915" y="108" />
+        <di:waypoint x="980" y="108" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="928" y="90" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="940" y="180" />
+        <di:waypoint x="980" y="180" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="953" y="162" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1065" y="220" />
+        <di:waypoint x="1065" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1150" y="480" />
+        <di:waypoint x="1200" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1225" y="505" />
+        <di:waypoint x="1225" y="600" />
+        <di:waypoint x="1200" y="600" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1230" y="530" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1200" y="600" />
+        <di:waypoint x="1065" y="600" />
+        <di:waypoint x="1065" y="520" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1080" y="605" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1250" y="480" />
+        <di:waypoint x="1330" y="480" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1281" y="462" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1500" y="480" />
+        <di:waypoint x="1550" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1575" y="455" />
+        <di:waypoint x="1575" y="408" />
+        <di:waypoint x="1650" y="408" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1578" y="385" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="1600" y="480" />
+        <di:waypoint x="1650" y="480" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1595" y="495" width="120" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="1840" y="480" />
+        <di:waypoint x="1900" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="1925" y="455" />
+        <di:waypoint x="1925" y="408" />
+        <di:waypoint x="1990" y="408" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1935" y="390" width="46" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="1925" y="505" />
+        <di:waypoint x="1925" y="578" />
+        <di:waypoint x="1990" y="578" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1935" y="545" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="650" y="80" />
+        <di:waypoint x="650" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Pendente_di" bpmnElement="Association_Pendente">
+        <di:waypoint x="1780" y="440" />
+        <di:waypoint x="1790" y="380" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP-TI-001 — Processo Chamado Suporte T.I. | Prestek Telecom</title>
+<style>
+  :root {
+    --accent: #384C9C;
+    --accent-dark: #D97738;
+    --accent-light: #EAEEF7;
+    --accent-border: #C2CBE3;
+    --ink: #384C9C;
+    --muted: #475467;
+    --border: #D7DDE3;
+    --bg: #F4F6F8;
+    --paper: #ffffff;
+    --warning-bg: #fef8ec;
+    --warning-border: #f3c267;
+    --warning-text: #8a5300;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 880px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  /* Cabeçalho */
+  .doc-header {
+    background: var(--accent);
+    color: #ffffff;
+    padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--accent-dark);
+  }
+
+  .doc-header .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    opacity: 0.9;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+
+  .doc-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .doc-header .meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .doc-header .badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .doc-body {
+    padding: 36px 40px 48px;
+  }
+
+  /* Tabela de controle histórico */
+  table.meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 28px;
+    font-size: 13.5px;
+  }
+
+  table.meta caption {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    caption-side: top;
+    font-weight: 700;
+  }
+
+  table.meta th, table.meta td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  table.meta th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    width: 20%;
+  }
+
+  .approvals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 32px;
+  }
+
+  .approvals .box {
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    background: var(--accent-light);
+  }
+
+  .approvals .box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .approvals .box .value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .approvals .box .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Seções do POP */
+  section.pop-section {
+    margin-bottom: 32px;
+  }
+
+  section.pop-section h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+
+  section.pop-section h3 {
+    font-size: 14px;
+    color: var(--accent-dark);
+    margin: 18px 0 8px;
+    font-weight: 600;
+  }
+
+  section.pop-section p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    text-align: justify;
+  }
+
+  /* Listas e passos */
+  .steps-macro {
+    list-style-type: lower-alpha;
+    margin: 10px 0 16px 22px;
+    padding: 0;
+  }
+
+  .steps-macro li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed {
+    margin: 12px 0;
+    padding-left: 20px;
+  }
+
+  .steps-detailed > li {
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed ul {
+    margin: 6px 0 6px 20px;
+    padding: 0;
+  }
+
+  .steps-detailed ul li {
+    margin-bottom: 4px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 12px 0 16px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+  }
+
+  .ixc-config-box ul li {
+    margin-bottom: 5px;
+  }
+
+  .template-box {
+    background: #2d3748;
+    color: #edf2f7;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12.5px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  /* Regras de negócios */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .rule-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rule-number {
+    background: var(--accent);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* BPMN bpmn.io styles */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-action:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .bpmn-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    margin: 10px 0 24px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .bpmn-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+  }
+  .zoom-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .zoom-btn:hover {
+    background: #edf2f7;
+    border-color: var(--accent-border);
+  }
+  #bpmn-canvas {
+    width: 100%;
+    height: 480px;
+    position: relative;
+    background: #ffffff;
+  }
+
+  /* Exceções */
+  .exception-item {
+    margin-bottom: 14px;
+    border: 1px solid #fed7aa;
+    background: #fffdfa;
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+
+  .exception-title {
+    font-weight: 700;
+    color: #c2410c;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .exception-desc {
+    font-size: 13.5px;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+
+  .exception-treatment {
+    font-size: 13px;
+    color: #1e293b;
+    background: #fef3c7;
+    padding: 8px 12px;
+    border-radius: 3px;
+    border-left: 3px solid #f59e0b;
+  }
+
+  .exception-treatment ol, .exception-treatment ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+  }
+
+  .exception-treatment li {
+    margin-bottom: 3px;
+  }
+
+  /* Fluxograma BPMN */
+  .bpmn-container {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .swimlane {
+    margin-bottom: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .swimlane-header {
+    background: #475569;
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .swimlane-header.ti {
+    background: var(--accent);
+  }
+
+  .swimlane-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .flow-node {
+    background: #f1f5f9;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    text-align: center;
+    max-width: 170px;
+    font-weight: 600;
+  }
+
+  .flow-arrow {
+    color: #64748b;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  /* Assinaturas */
+  .signoff {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    page-break-inside: avoid;
+  }
+
+  .signoff .sig {
+    text-align: center;
+  }
+
+  .signoff .sig .line {
+    border-top: 1px solid var(--ink);
+    margin-top: 48px;
+    padding-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .signoff .sig .role {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .doc-footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 16px 40px 28px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+      color: #000;
+    }
+    .doc {
+      border: none;
+      box-shadow: none;
+      max-width: 100%;
+    }
+    .doc-header {
+      background: var(--accent) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .approvals .box, table.meta th, .rule-number, .exception-item, .exception-treatment, .ixc-config-box {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .signoff {
+      page-break-inside: avoid;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .doc-header, .doc-body { padding-left: 18px; padding-right: 18px; }
+    .approvals, .signoff, .rules-grid { grid-template-columns: 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- CABEÇALHO -->
+  <div class="doc-header">
+    <p class="kicker">Prestek Telecom • Sistema de Gestão da Qualidade • ISO 9001</p>
+    <h1>POP-TI-001 — Processo Chamado Suporte T.I.</h1>
+    <div class="meta-badges">
+      <span class="badge">Padrão nº: POP-TI-001</span>
+      <span class="badge">Revisão: 002</span>
+      <span class="badge">Estabelecido em: 02/05/2025</span>
+      <span class="badge">Responsável: SETOR T.I.</span>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- CONTROLE HISTÓRICO -->
+    <table class="meta">
+      <caption>Controle Histórico</caption>
+      <thead>
+        <tr>
+          <th>Revisão</th>
+          <th>Data</th>
+          <th>Elaboração</th>
+          <th>Verificação</th>
+          <th>Aprovação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>001</td>
+          <td>02/05/2025</td>
+          <td>Setor T.I.</td>
+          <td>Supervisor T.I.</td>
+          <td>Gestora</td>
+        </tr>
+        <tr>
+          <td>002</td>
+          <td>23/09/2025</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Roberta Kelle Nunes Gomes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- APROVAÇÕES -->
+    <div class="approvals">
+      <div class="box">
+        <div class="label">Elaborado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Supervisor T.I.</div>
+      </div>
+      <div class="box">
+        <div class="label">Revisado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Supervisor T.I.</div>
+      </div>
+      <div class="box">
+        <div class="label">Aprovado por</div>
+        <div class="value">Roberta Kelle Nunes Gomes</div>
+        <div class="sub">Representante da Direção</div>
+      </div>
+    </div>
+
+    <!-- 1. OBJETIVO -->
+    <section class="pop-section">
+      <h2>1. Objetivo</h2>
+      <p>Garantir que as solicitações de suporte técnico sejam registradas de forma clara e completa, possibilitando à equipe de T.I. um diagnóstico ágil e preciso, com foco na rápida resolução de falhas de conexão, instabilidades, lentidão, problemas em equipamentos, dúvidas técnicas ou necessidade de suporte remoto/presencial.</p>
+    </section>
+
+    <!-- 2. DESCRIÇÃO DO PROCESSO -->
+    <section class="pop-section">
+      <h2>2. Descrição do processo</h2>
+      <p>O processo consiste em abrir chamado para T.I. relacionado a falhas de conexão, instabilidade, lentidão, problemas em equipamentos, dúvidas técnicas ou necessidade de suporte remoto/presencial. Descrever o problema com detalhes e, se possível, anexar evidências (prints, fotos ou vídeos) para agilizar o diagnóstico.</p>
+    </section>
+
+    <!-- 3. PROCESSO -->
+    <section class="pop-section">
+      <h2>3. Processo</h2>
+      <ol class="steps-macro">
+        <li>Identificação da necessidade pelo colaborador e solicitação de suporte ao setor de T.I.</li>
+        <li>Registro e verificação da solicitação.</li>
+        <li>Agendamento do atendimento para o responsável.</li>
+        <li>Atendimento e resolução do problema.</li>
+        <li>Encerramento da Ordem de Serviço (O.S.)</li>
+      </ol>
+    </section>
+
+    <!-- 4. PASSOS DO PROCESSO -->
+    <section class="pop-section">
+      <h2>4. Passos do processo</h2>
+      <ol class="steps-detailed">
+        <li>
+          <strong>4.1. Solicitação ao setor de T.I.</strong>
+          <ul>
+            <li>O colaborador(a) solicita ao setor T.I.</li>
+            <li>Descreve a situação com clareza.</li>
+            <li>Preenche um canal de atendimento e salva.</li>
+            <li>Agenda a Ordem de Serviço para o colaborador desejado.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.2. Abertura de Ordem de Serviço</strong>
+          <div class="ixc-config-box">
+            <strong>Parâmetros obrigatórios no sistema (IXC Soft):</strong>
+            <ul>
+              <li><strong>Cliente:</strong> <code>681 - J S E SERVIÇOS E COMERCIO DE EQUIPAMENTOS DE COMUNICAÇÕES LTDA</code></li>
+              <li><strong>Contrato do processo:</strong> <code>Penedo - ID Contrato: 18426 | Login: 1</code></li>
+              <li><strong>ID Código da O.S para abertura:</strong> <code>1154 - SOLICITAR ATENDIMENTO AO SETOR DE T.I.</code></li>
+              <li><strong>Prioridade:</strong> Marcar a opção definindo a prioridade do atendimento (baixa, normal, alta ou crítica).</li>
+              <li><strong>Canal de Atendimento:</strong> Deve ser devidamente preenchido com a informação referente ao meio pelo qual a solicitação foi realizada.</li>
+            </ul>
+          </div>
+          <p><strong>Descrição da Ordem de Serviço:</strong> Deve ser preenchido utilizando exatamente o formato padronizado abaixo:</p>
+          <div class="template-box">=============================
+DESCREVA A SITUAÇÃO: ( O que está acontecendo )
+=============================
+Obs: Anexar uma foto na seção de arquivos, se necessário, para agilizar o suporte.</div>
+        </li>
+        <li>
+          <strong>4.3. Ordem de serviço solicitar atendimento ao setor de T.I.</strong>
+          <ul>
+            <li><strong>Agendar:</strong> Selecione a Ordem de Serviço que foi aberta e agende para os responsáveis do T.I. É obrigatório conter <strong>data</strong>, <strong>colaborador</strong> e <strong>descrição</strong>.</li>
+            <li><strong>OBSERVAÇÃO CRÍTICA:</strong> É fundamental agendar a Ordem de Serviço para que a equipe seja notificada e dê andamento.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <!-- BPMN - CHAMADO TI (INTEGRAÇÃO BPMN.IO) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 10px;">
+        <h3 style="margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">Fluxograma Oficial (BPMN 2.0 • bpmn.io)</h3>
+        <div style="display: flex; gap: 8px;">
+          <a href="POP-TI-001 - Chamado TI.bpmn" download="POP-TI-001 - Chamado TI.bpmn" class="btn-action" title="Baixar arquivo XML padrão BPMN 2.0">⬇ Baixar .bpmn</a>
+          <a href="https://demo.bpmn.io/" target="_blank" rel="noopener noreferrer" class="btn-action" title="Abrir ferramenta bpmn.io">🌐 Abrir no bpmn.io</a>
+        </div>
+      </div>
+
+      <div class="bpmn-wrapper">
+        <div class="bpmn-toolbar">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Interativo: clique e arraste para navegar • scroll para zoom</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btn-zoom-in" class="zoom-btn" title="Aumentar zoom">+</button>
+            <button type="button" id="btn-zoom-out" class="zoom-btn" title="Diminuir zoom">-</button>
+            <button type="button" id="btn-zoom-fit" class="zoom-btn" title="Ajustar à tela">⤢ Ajustar</button>
+          </div>
+        </div>
+        <div id="bpmn-canvas">
+          <!-- Fallback estático caso esteja sem internet -->
+          <div id="bpmn-fallback" style="display: none; padding: 20px;">
+            <div class="swimlane">
+              <div class="swimlane-header">Raias / Colaborador</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Identifica necessidade e solicita suporte</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Preenche chamado (descreve situação, anexa evidências, define canal)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Agenda atendimento (responsável / data / prioridade)</div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header ti">Raias / Setor T.I.</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Verifica chamado recebido</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Executa atendimento</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Foi resolvido?<br><small>[Sim] ➔ Finaliza O.S.<br>[Não] ➔ Alinha com solicitante</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color: #16a34a; background: #f0fdf4; color: #166534;">Finaliza Atendimento</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. REGRAS DE NEGÓCIOS -->
+    <section class="pop-section">
+      <h2>5. Regras de negócios</h2>
+      <div class="rules-grid">
+        <div class="rule-card">
+          <div class="rule-number">1</div>
+          <div>Solicitação formal de suporte</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">2</div>
+          <div>Anexar evidências visuais, caso necessário</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">3</div>
+          <div>Abertura obrigatória de ordem de serviço</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">4</div>
+          <div>Preenchimento estruturado da descrição da O.S.</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">5</div>
+          <div>Agendamento obrigatório da ordem de serviço</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-number">6</div>
+          <div>Execução técnica e atendimento</div>
+        </div>
+        <div class="rule-card" style="grid-column: span 2;">
+          <div class="rule-number">7</div>
+          <div>Encerramento formal da ordem de serviço após validação</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. EXCEÇÕES E TRATAMENTO DE ERROS -->
+    <section class="pop-section">
+      <h2>6. Exceções e tratamento de erros</h2>
+      <p>Procedimentos obrigatórios para contingências e desvios durante o fluxo de chamado de suporte:</p>
+
+      <div class="exception-item">
+        <div class="exception-title">6.1. Falha ao Registrar Solicitação (Descrição)</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> O sistema não permite o registro da solicitação de suporte se o campo "DESCREVA A SITUAÇÃO" não for preenchido.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>O sistema deve exibir uma mensagem de erro clara e concisa, indicando que a descrição do problema é obrigatória.</li>
+            <li>O solicitante deve ser instruído a preencher o campo "DESCREVA A SITUAÇÃO" com detalhes suficientes sobre o problema encontrado.</li>
+            <li>O registro da solicitação só será concluído após o preenchimento adequado do campo de descrição.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.2. Falha ao Criar ou Abrir a Ordem de Serviço (O.S.)</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> O sistema IXC Soft pode apresentar inconsistências ao tentar criar ou finalizar uma Ordem de Serviço (O.S.).</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Verificar se todos os dados obrigatórios para a criação da O.S. foram preenchidos corretamente (cliente, contrato, código da O.S., prioridade, etc.).</li>
+            <li>Analisar e interpretar as mensagens de erro exibidas pelo IXC Soft para identificar a causa da falha.</li>
+            <li>Se o erro persistir, mesmo após a verificação dos dados, a O.S. deve ser agendada manualmente para a equipe responsável, detalhando o problema encontrado e as tentativas de solução.</li>
+            <li>Registrar a falha na descrição para análise e correção posterior pela equipe técnica.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.3. Problema ao Agendar a Ordem de Serviço</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> O sistema não permite o agendamento da O.S. se a data, hora e/ou responsável não forem definidos.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>O sistema deve exibir uma mensagem de erro clara e concisa, indicando que todos os campos de agendamento (data, hora e responsável) são obrigatórios.</li>
+            <li>O responsável pela O.S. deve preencher todos os campos de agendamento antes de prosseguir.</li>
+            <li>Se houver problemas técnicos com o agendamento, o responsável deve comunicar a falha à equipe de T.I. para resolução.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.4. Solicitações via Ramal</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Solicitações de suporte realizadas por meio de ligações via ramal não serão processadas.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> O atendente (se houver) deve orientar o solicitante de que todo registro deve ser realizado obrigatoriamente por meio do IXC Soft para controle e rastreabilidade.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.5. Problemas com Anexos</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Falha ao anexar evidências (prints, fotos ou vídeos) à solicitação de suporte.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Verificar o tamanho e o formato do arquivo a ser anexado, garantindo que estejam dentro dos limites permitidos pelo sistema.</li>
+            <li>Em caso de problemas persistentes, o solicitante pode enviar os anexos por e-mail para a equipe de T.I. (<strong>E-mail:</strong> <code>ti@prestek.com.br</code>), referenciando o número da O.S. ou o nome do solicitante.</li>
+            <li>A equipe de T.I. deve verificar os anexos recebidos por e-mail e vinculá-los à O.S. correspondente.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.6. Duplicidade de Solicitações</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Registro de múltiplas solicitações para o mesmo problema.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ul>
+            <li>A equipe de T.I. deve identificar as solicitações duplicadas e consolidá-las em uma única O.S.</li>
+            <li>Informar ao solicitante sobre a consolidação das solicitações e o número da O.S. principal para acompanhamento.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.7. Problemas de Acesso ao Sistema</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Solicitante não consegue acessar o sistema para registrar a solicitação.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Verificar as credenciais de acesso do solicitante (login e senha).</li>
+            <li>Orientar o solicitante sobre como recuperar ou redefinir a senha, se necessário.</li>
+            <li>Se o problema persistir, a equipe de T.I. deve verificar as configurações de acesso e permissões do usuário no sistema.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSÃO -->
+    <section class="pop-section">
+      <h2>7. Conclusão</h2>
+      <p>Para diagnosticar e resolver problemas de TI eficientemente, é crucial registrar solicitações de suporte detalhadamente, incluindo evidências visuais. A correta abertura e preenchimento da Ordem de Serviço, com agendamento adequado, são essenciais para um atendimento eficaz.</p>
+      <p>O acompanhamento e encerramento garantem o registro e monitoramento das etapas. O processo deve seguir regras de negócios claras e prever tratamento de exceções (falhas no preenchimento, inconsistências na OS, problemas de agendamento ou solicitações via ramal) para ser robusto, ágil e transparente, assegurando alta qualidade e cumprimento de prazos.</p>
+      <p>O tratamento eficaz de erros e exceções, com a observância das etapas, capacita a equipe de TI a responder eficientemente, garantindo a continuidade dos serviços e a satisfação dos colaboradores.</p>
+    </section>
+
+    <!-- ASSINATURAS FORMAIS -->
+    <div class="signoff">
+      <div class="sig">
+        <div class="line">Marcio Eduardo Felix &nbsp;&nbsp;|&nbsp;&nbsp; 23/09/2025</div>
+        <div class="role">Supervisor T.I. • Elaborador / Revisor</div>
+      </div>
+      <div class="sig">
+        <div class="line">Roberta Kelle Nunes Gomes &nbsp;&nbsp;|&nbsp;&nbsp; 23/09/2025</div>
+        <div class="role">Representante da Direção • Aprovadora</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ CONTROLADO -->
+  <div class="doc-footer">
+    Documento controlado — Sistema de Gestão da Qualidade ISO 9001 • Prestek Telecom
+  </div>
+
+</div>
+
+<!-- Script BPMN.io / bpmn-js -->
+<script type="text/xml" id="bpmn-data">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_ChamadoTI" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_ChamadoTI">
+    <bpmn:participant id="Participant_SuporteProativo" name="SUPORTE PROATIVO" processRef="Process_ChamadoTI" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>CHAMADO T.I.
+Marcio Felix
+Prestek Telecom
+Criação | 02/05/2025
+Última Atualização | 23/9/2025</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_SuporteProativo" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_ChamadoTI" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_TI" name="T.I.">
+        <bpmn:flowNodeRef>Activity_VerificaChamado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ExecutaAtendimento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Resolvido</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_FinalizaSim</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_TirarDuvidas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_FinalizaNao</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Colaborador" name="COLABORADOR">
+        <bpmn:flowNodeRef>StartEvent_Colaborador</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_IdentificaNecessidade</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_PreencheChamado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AgendaAtendimento</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Colaborador" name="Colaborador(a)">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Activity_IdentificaNecessidade" name="Identifica necessidade e solicita suporte">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Activity_PreencheChamado" name="Preenche chamado (descreve situação, anexa evidências, define canal)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="Activity_AgendaAtendimento" name="Agenda atendimento, define responsável/data/prioridade">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_VerificaChamado" name="Verifica chamado recebido">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Activity_ExecutaAtendimento" name="Executa atendimento">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Resolvido" name="Foi resolvido?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Event_FinalizaSim" name="Finaliza Atendimento">
+      <bpmn:incoming>Flow_Sim</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Activity_TirarDuvidas" name="Tirar dúvidas com quem abriu o chamado">
+      <bpmn:incoming>Flow_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_FinalizaNao" name="Finaliza Atendimento">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Colaborador" targetRef="Activity_IdentificaNecessidade" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_IdentificaNecessidade" targetRef="Activity_PreencheChamado" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_PreencheChamado" targetRef="Activity_AgendaAtendimento" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_AgendaAtendimento" targetRef="Activity_VerificaChamado" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Activity_VerificaChamado" targetRef="Activity_ExecutaAtendimento" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_ExecutaAtendimento" targetRef="Gateway_Resolvido" />
+    <bpmn:sequenceFlow id="Flow_Sim" name="Sim" sourceRef="Gateway_Resolvido" targetRef="Event_FinalizaSim" />
+    <bpmn:sequenceFlow id="Flow_Nao" name="Não" sourceRef="Gateway_Resolvido" targetRef="Activity_TirarDuvidas" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_TirarDuvidas" targetRef="Event_FinalizaNao" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ChamadoTI">
+    <bpmndi:BPMNPlane id="BPMNPlane_ChamadoTI" bpmnElement="Collaboration_ChamadoTI">
+      <bpmndi:BPMNShape id="Participant_SuporteProativo_di" bpmnElement="Participant_SuporteProativo" isHorizontal="true">
+        <dc:Bounds x="160" y="240" width="950" height="420" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Colaborador_di" bpmnElement="Lane_Colaborador" isHorizontal="true">
+        <dc:Bounds x="190" y="240" width="920" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_TI_di" bpmnElement="Lane_TI" isHorizontal="true">
+        <dc:Bounds x="190" y="450" width="920" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Colaborador_di" bpmnElement="StartEvent_Colaborador">
+        <dc:Bounds x="232" y="322" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="213" y="365" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_IdentificaNecessidade_di" bpmnElement="Activity_IdentificaNecessidade">
+        <dc:Bounds x="320" y="300" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_PreencheChamado_di" bpmnElement="Activity_PreencheChamado">
+        <dc:Bounds x="490" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AgendaAtendimento_di" bpmnElement="Activity_AgendaAtendimento">
+        <dc:Bounds x="670" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_VerificaChamado_di" bpmnElement="Activity_VerificaChamado">
+        <dc:Bounds x="320" y="510" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ExecutaAtendimento_di" bpmnElement="Activity_ExecutaAtendimento">
+        <dc:Bounds x="490" y="510" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Resolvido_di" bpmnElement="Gateway_Resolvido" isMarkerVisible="true">
+        <dc:Bounds x="665" y="525" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="655" y="501" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_FinalizaSim_di" bpmnElement="Event_FinalizaSim">
+        <dc:Bounds x="782" y="532" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="768" y="575" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_TirarDuvidas_di" bpmnElement="Activity_TirarDuvidas">
+        <dc:Bounds x="860" y="510" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_FinalizaNao_di" bpmnElement="Event_FinalizaNao">
+        <dc:Bounds x="1032" y="532" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1018" y="575" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="470" y="100" width="260" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="268" y="340" />
+        <di:waypoint x="320" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="450" y="340" />
+        <di:waypoint x="490" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="630" y="340" />
+        <di:waypoint x="670" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="740" y="380" />
+        <di:waypoint x="740" y="470" />
+        <di:waypoint x="385" y="470" />
+        <di:waypoint x="385" y="510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="450" y="550" />
+        <di:waypoint x="490" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="620" y="550" />
+        <di:waypoint x="665" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Sim_di" bpmnElement="Flow_Sim">
+        <di:waypoint x="715" y="550" />
+        <di:waypoint x="782" y="550" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="739" y="532" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nao_di" bpmnElement="Flow_Nao">
+        <di:waypoint x="690" y="575" />
+        <di:waypoint x="690" y="620" />
+        <di:waypoint x="925" y="620" />
+        <di:waypoint x="925" y="590" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="797" y="602" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="990" y="550" />
+        <di:waypoint x="1032" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="550" y="240" />
+        <di:waypoint x="550" y="210" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+</script>
+
+<!-- Carregador bpmn-js com fallback automático -->
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/bpmn-js@17/dist/bpmn-navigated-viewer.production.min.js';
+    script.onload = function() {
+      try {
+        var BpmnViewer = window.BpmnJS;
+        var viewer = new BpmnViewer({
+          container: '#bpmn-canvas'
+        });
+        var xml = document.getElementById('bpmn-data').textContent.trim();
+        viewer.importXML(xml).then(function() {
+          var canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+
+          // Controles de zoom
+          document.getElementById('btn-zoom-in').onclick = function() { canvas.zoom(canvas.zoom() * 1.2); };
+          document.getElementById('btn-zoom-out').onclick = function() { canvas.zoom(canvas.zoom() * 0.8); };
+          document.getElementById('btn-zoom-fit').onclick = function() { canvas.zoom('fit-viewport'); };
+        }).catch(function(err) {
+          console.warn('Erro ao importar BPMN:', err);
+          document.getElementById('bpmn-fallback').style.display = 'block';
+        });
+      } catch(e) {
+        document.getElementById('bpmn-fallback').style.display = 'block';
+      }
+    };
+    script.onerror = function() {
+      // Caso offline ou sem acesso à CDN
+      document.getElementById('bpmn-fallback').style.display = 'block';
+    };
+    document.head.appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

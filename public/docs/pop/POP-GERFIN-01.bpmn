@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_GerarFinanceiro" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_GerarFinanceiro">
+    <bpmn:participant id="Participant_GerarFinanceiro" name="GERAR FINANCEIRO" processRef="Process_GerarFinanceiro" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>GERAR FINANCEIRO (POP-GERFIN-01)
+Prestek Telecom
+Revisão 001 — status: EM REVISÃO
+Aprovador oficial: [DECISÃO PENDENTE]</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_GerarFinanceiro" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_GerarFinanceiro" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Financeiro" name="FINANCEIRO">
+        <bpmn:flowNodeRef>StartEvent_Inicio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PreencheOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Triagem</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ChecklistCompleto</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Devolve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Devolvido</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ValidaDados</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Lancamento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GeraFatura</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_FinalizaEncaminha</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Reprova</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Reprovado</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Auditoria" name="AUDITORIA">
+        <bpmn:flowNodeRef>Task_RecebeAuditoria</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ConferenciaDocumental</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ValidacaoLancamento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Conforme</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Aprova</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Aprovado</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Inicio" name="Início: Solicitação de Geração Financeira">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_PreencheOS" name="Atendente/Comercial preenche OS &quot;GERAR FINANCEIRO&quot; (cliente, contrato, valor, desconto, anexos)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="Task_Triagem" name="Financeiro verifica checklist e anexos da OS">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_ChecklistCompleto" name="Checklist completo?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Nao1</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Sim1</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Devolve" name="Devolve OS ao solicitante para correção">
+      <bpmn:incoming>Flow_Nao1</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Devolvido" name="OS devolvida para correção">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_ValidaDados" name="Valida contrato, autorizações internas e pendências anteriores do cliente">
+      <bpmn:incoming>Flow_Sim1</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Task_Lancamento" name="Define tipo de documento (501/502), preenche DOCUMENTO/OBS e gera o lançamento">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_GeraFatura" name="Gera fatura, exporta PDF e envia ao cliente (e-mail / Portal do Cliente)">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_FinalizaEncaminha" name="Finaliza a OS e encaminha automaticamente para a Auditoria">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:userTask id="Task_RecebeAuditoria" name="Auditoria recebe OS &quot;Aguardando Auditoria&quot; e inicia atendimento">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:task id="Task_ConferenciaDocumental" name="Confere solicitação original x contrato do cliente x anexos/autorizações">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ValidacaoLancamento" name="Valida lançamento gerado: tipo de documento, campos DOCUMENTO/OBS e envio da fatura">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Conforme" name="Conforme?">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sim2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Nao2</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Aprova" name="Aprova a OS com parecer padrão e finaliza definitivamente">
+      <bpmn:incoming>Flow_Sim2</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Aprovado" name="Encerrado — Conforme">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_Reprova" name="Registra erro detalhado na OS e reprova para correção do Financeiro">
+      <bpmn:incoming>Flow_Nao2</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Reprovado" name="Encerrado — Reprovado (retorna ao Financeiro para correção)">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Inicio" targetRef="Task_PreencheOS" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_PreencheOS" targetRef="Task_Triagem" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Triagem" targetRef="Gateway_ChecklistCompleto" />
+    <bpmn:sequenceFlow id="Flow_Nao1" name="Não" sourceRef="Gateway_ChecklistCompleto" targetRef="Task_Devolve" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_Devolve" targetRef="EndEvent_Devolvido" />
+    <bpmn:sequenceFlow id="Flow_Sim1" name="Sim" sourceRef="Gateway_ChecklistCompleto" targetRef="Task_ValidaDados" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_ValidaDados" targetRef="Task_Lancamento" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_Lancamento" targetRef="Task_GeraFatura" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_GeraFatura" targetRef="Task_FinalizaEncaminha" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_FinalizaEncaminha" targetRef="Task_RecebeAuditoria" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_RecebeAuditoria" targetRef="Task_ConferenciaDocumental" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_ConferenciaDocumental" targetRef="Task_ValidacaoLancamento" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_ValidacaoLancamento" targetRef="Gateway_Conforme" />
+    <bpmn:sequenceFlow id="Flow_Sim2" name="Sim" sourceRef="Gateway_Conforme" targetRef="Task_Aprova" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_Aprova" targetRef="EndEvent_Aprovado" />
+    <bpmn:sequenceFlow id="Flow_Nao2" name="Não" sourceRef="Gateway_Conforme" targetRef="Task_Reprova" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_Reprova" targetRef="EndEvent_Reprovado" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_GerarFinanceiro">
+    <bpmndi:BPMNPlane id="BPMNPlane_GerarFinanceiro" bpmnElement="Collaboration_GerarFinanceiro">
+      <bpmndi:BPMNShape id="Participant_GerarFinanceiro_di" bpmnElement="Participant_GerarFinanceiro" isHorizontal="true">
+        <dc:Bounds x="160" y="180" width="1500" height="650" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Financeiro_di" bpmnElement="Lane_Financeiro" isHorizontal="true">
+        <dc:Bounds x="190" y="180" width="1470" height="320" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Auditoria_di" bpmnElement="Lane_Auditoria" isHorizontal="true">
+        <dc:Bounds x="190" y="500" width="1470" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Inicio_di" bpmnElement="StartEvent_Inicio">
+        <dc:Bounds x="230" y="322" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="358" width="96" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PreencheOS_di" bpmnElement="Task_PreencheOS">
+        <dc:Bounds x="320" y="300" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Triagem_di" bpmnElement="Task_Triagem">
+        <dc:Bounds x="510" y="300" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ChecklistCompleto_di" bpmnElement="Gateway_ChecklistCompleto" isMarkerVisible="true">
+        <dc:Bounds x="690" y="315" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="665" y="285" width="100" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Devolve_di" bpmnElement="Task_Devolve">
+        <dc:Bounds x="670" y="190" width="150" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Devolvido_di" bpmnElement="EndEvent_Devolvido">
+        <dc:Bounds x="860" y="207" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="838" y="250" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ValidaDados_di" bpmnElement="Task_ValidaDados">
+        <dc:Bounds x="780" y="300" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Lancamento_di" bpmnElement="Task_Lancamento">
+        <dc:Bounds x="970" y="300" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GeraFatura_di" bpmnElement="Task_GeraFatura">
+        <dc:Bounds x="1170" y="300" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_FinalizaEncaminha_di" bpmnElement="Task_FinalizaEncaminha">
+        <dc:Bounds x="1370" y="300" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RecebeAuditoria_di" bpmnElement="Task_RecebeAuditoria">
+        <dc:Bounds x="320" y="620" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ConferenciaDocumental_di" bpmnElement="Task_ConferenciaDocumental">
+        <dc:Bounds x="510" y="620" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ValidacaoLancamento_di" bpmnElement="Task_ValidacaoLancamento">
+        <dc:Bounds x="700" y="620" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Conforme_di" bpmnElement="Gateway_Conforme" isMarkerVisible="true">
+        <dc:Bounds x="900" y="640" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="907" y="610" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Aprova_di" bpmnElement="Task_Aprova">
+        <dc:Bounds x="1000" y="620" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Aprovado_di" bpmnElement="EndEvent_Aprovado">
+        <dc:Bounds x="1200" y="647" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1180" y="690" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Reprova_di" bpmnElement="Task_Reprova">
+        <dc:Bounds x="1000" y="740" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Reprovado_di" bpmnElement="EndEvent_Reprovado">
+        <dc:Bounds x="1220" y="767" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1200" y="810" width="80" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="650" y="20" width="320" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="266" y="340" />
+        <di:waypoint x="320" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="470" y="340" />
+        <di:waypoint x="510" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="650" y="340" />
+        <di:waypoint x="690" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nao1_di" bpmnElement="Flow_Nao1">
+        <di:waypoint x="715" y="315" />
+        <di:waypoint x="715" y="225" />
+        <di:waypoint x="820" y="225" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="820" y="225" />
+        <di:waypoint x="860" y="225" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Sim1_di" bpmnElement="Flow_Sim1">
+        <di:waypoint x="740" y="340" />
+        <di:waypoint x="780" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="930" y="340" />
+        <di:waypoint x="970" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="1130" y="340" />
+        <di:waypoint x="1170" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1330" y="340" />
+        <di:waypoint x="1370" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1450" y="380" />
+        <di:waypoint x="1450" y="560" />
+        <di:waypoint x="395" y="560" />
+        <di:waypoint x="395" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="470" y="660" />
+        <di:waypoint x="510" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="660" y="660" />
+        <di:waypoint x="700" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="860" y="660" />
+        <di:waypoint x="900" y="665" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Sim2_di" bpmnElement="Flow_Sim2">
+        <di:waypoint x="950" y="665" />
+        <di:waypoint x="1000" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1160" y="660" />
+        <di:waypoint x="1200" y="665" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nao2_di" bpmnElement="Flow_Nao2">
+        <di:waypoint x="925" y="690" />
+        <di:waypoint x="925" y="780" />
+        <di:waypoint x="1000" y="780" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1170" y="780" />
+        <di:waypoint x="1220" y="780" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="900" y="180" />
+        <di:waypoint x="900" y="130" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

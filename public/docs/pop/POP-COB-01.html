@@ -1,0 +1,1432 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP-COB-01 — Cobrança | Prestek Telecom</title>
+<style>
+  :root {
+    --accent: #384C9C;
+    --accent-dark: #D97738;
+    --accent-light: #EAEEF7;
+    --accent-border: #C2CBE3;
+    --ink: #384C9C;
+    --muted: #475467;
+    --border: #D7DDE3;
+    --bg: #F4F6F8;
+    --paper: #ffffff;
+    --warning-bg: #fef8ec;
+    --warning-border: #f3c267;
+    --warning-text: #8a5300;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  /* Cabeçalho */
+  .doc-header {
+    background: var(--accent);
+    color: #ffffff;
+    padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--accent-dark);
+  }
+
+  .doc-header .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    opacity: 0.9;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+
+  .doc-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .doc-header .meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .doc-header .badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .doc-body {
+    padding: 36px 40px 48px;
+  }
+
+  /* Tabela de controle histórico */
+  table.meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 28px;
+    font-size: 13.5px;
+  }
+
+  table.meta caption {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    caption-side: top;
+    font-weight: 700;
+  }
+
+  table.meta th, table.meta td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  table.meta th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .approvals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 32px;
+  }
+
+  .approvals .box {
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    background: var(--accent-light);
+  }
+
+  .approvals .box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .approvals .box .value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .approvals .box .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Seções do POP */
+  section.pop-section {
+    margin-bottom: 32px;
+  }
+
+  section.pop-section h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+
+  section.pop-section h3 {
+    font-size: 14px;
+    color: var(--accent-dark);
+    margin: 18px 0 8px;
+    font-weight: 600;
+  }
+
+  section.pop-section h4 {
+    font-size: 13px;
+    color: var(--ink);
+    margin: 14px 0 6px;
+    font-weight: 700;
+  }
+
+  section.pop-section p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    text-align: justify;
+  }
+
+  /* Listas e passos */
+  .steps-macro {
+    list-style-type: lower-alpha;
+    margin: 10px 0 16px 22px;
+    padding: 0;
+  }
+
+  .steps-macro li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed {
+    margin: 12px 0;
+    padding-left: 20px;
+  }
+
+  .steps-detailed > li {
+    margin-bottom: 18px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed ul, .steps-detailed ol {
+    margin: 6px 0 6px 20px;
+    padding: 0;
+  }
+
+  .steps-detailed ul li, .steps-detailed ol li {
+    margin-bottom: 4px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 12px 0 16px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+  }
+
+  .ixc-config-box ul li {
+    margin-bottom: 5px;
+  }
+
+  .template-box {
+    background: #2d3748;
+    color: #edf2f7;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12.5px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  /* Bloco de decisão pendente */
+  .decision-pending {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-left: 5px solid var(--warning-text);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 14px 0 18px;
+  }
+
+  .decision-pending .dp-title {
+    font-weight: 800;
+    color: var(--warning-text);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .decision-pending p {
+    font-size: 13.5px;
+    color: #6b4a12;
+    margin: 0 0 6px;
+    text-align: left;
+  }
+
+  .decision-pending p:last-child { margin-bottom: 0; }
+
+  .checklist-photo {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 10px 0 16px;
+  }
+
+  .checklist-photo ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+    font-size: 13.5px;
+  }
+
+  .checklist-photo ul li { margin-bottom: 5px; }
+
+  /* Regras de negócios */
+  table.rules-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+
+  table.rules-table th, table.rules-table td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  table.rules-table th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  table.rules-table td:first-child {
+    font-weight: 600;
+    width: 32%;
+  }
+
+  table.rules-table tr:nth-child(even) td {
+    background: #fafbfc;
+  }
+
+  /* BPMN bpmn.io styles */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-action:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .bpmn-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    margin: 10px 0 24px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .bpmn-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+  }
+  .zoom-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .zoom-btn:hover {
+    background: #edf2f7;
+    border-color: var(--accent-border);
+  }
+  #bpmn-canvas {
+    width: 100%;
+    height: 560px;
+    position: relative;
+    background: #ffffff;
+  }
+
+  /* Exceções */
+  .exception-item {
+    margin-bottom: 14px;
+    border: 1px solid #fed7aa;
+    background: #fffdfa;
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+
+  .exception-title {
+    font-weight: 700;
+    color: #c2410c;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .exception-desc {
+    font-size: 13.5px;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+
+  .exception-treatment {
+    font-size: 13px;
+    color: #1e293b;
+    background: #fef3c7;
+    padding: 8px 12px;
+    border-radius: 3px;
+    border-left: 3px solid #f59e0b;
+  }
+
+  .exception-treatment ol, .exception-treatment ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+  }
+
+  .exception-treatment li {
+    margin-bottom: 3px;
+  }
+
+  /* Fluxograma BPMN fallback */
+  .swimlane {
+    margin-bottom: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .swimlane-header {
+    background: #475569;
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .swimlane-header.cob {
+    background: var(--accent);
+  }
+
+  .swimlane-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .flow-node {
+    background: #f1f5f9;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    text-align: center;
+    max-width: 190px;
+    font-weight: 600;
+  }
+
+  .flow-arrow {
+    color: #64748b;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  /* Alçada de aprovação (subseção de campo) */
+  .alcada-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 10px 0 16px;
+  }
+
+  .alcada-chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .alcada-step {
+    background: #fff;
+    border: 1px solid var(--accent-border);
+    color: var(--accent-dark);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  /* Assinaturas */
+  .signoff {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    page-break-inside: avoid;
+  }
+
+  .signoff .sig {
+    text-align: center;
+  }
+
+  .signoff .sig .line {
+    border-top: 1px solid var(--ink);
+    margin-top: 48px;
+    padding-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .signoff .sig .role {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .doc-footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 16px 40px 28px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+      color: #000;
+    }
+    .doc {
+      border: none;
+      box-shadow: none;
+      max-width: 100%;
+    }
+    .doc-header {
+      background: var(--accent) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .approvals .box, table.meta th, table.rules-table th, .exception-item, .exception-treatment, .ixc-config-box, .decision-pending {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .signoff {
+      page-break-inside: avoid;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .doc-header, .doc-body { padding-left: 18px; padding-right: 18px; }
+    .approvals, .signoff { grid-template-columns: 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- CABEÇALHO -->
+  <div class="doc-header">
+    <p class="kicker">Prestek Telecom • Sistema de Gestão da Qualidade • ISO 9001</p>
+    <h1>POP-COB-01 — Cobrança</h1>
+    <div class="meta-badges">
+      <span class="badge">Padrão nº: POP-COB-01</span>
+      <span class="badge">Revisão: 002</span>
+      <span class="badge">Estabelecido em: 26/01/2026</span>
+      <span class="badge">Responsável: SETOR DE COBRANÇA</span>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- CONTROLE HISTÓRICO -->
+    <table class="meta">
+      <caption>Controle Histórico</caption>
+      <thead>
+        <tr>
+          <th>Revisão</th>
+          <th>Data</th>
+          <th>Elaboração</th>
+          <th>Verificação</th>
+          <th>Aprovação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>001</td>
+          <td>26/01/2026</td>
+          <td>Rosangela O. Santos</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Roberta Kelle Nunes Gomes</td>
+        </tr>
+        <tr>
+          <td>002</td>
+          <td>10/09/2026</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Roberta Kelle Nunes Gomes <em>(subseção "Retirada de Fibra/Comodato em Campo" incluída como decisão pendente — ver seção 4.5)</em></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- APROVAÇÕES -->
+    <div class="approvals">
+      <div class="box">
+        <div class="label">Elaborado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Responsável pela Documentação do Processo (SGQ)</div>
+      </div>
+      <div class="box">
+        <div class="label">Revisado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Responsável pela Documentação do Processo (SGQ)</div>
+      </div>
+      <div class="box">
+        <div class="label">Aprovado por</div>
+        <div class="value">Roberta Kelle Nunes Gomes</div>
+        <div class="sub">Representante da Direção</div>
+      </div>
+    </div>
+
+    <!-- 1. OBJETIVO -->
+    <section class="pop-section">
+      <h2>1. Objetivo</h2>
+      <p>Padronizar todas as etapas do processo de cobrança da Prestek Telecom, estabelecendo diretrizes para a execução da cobrança automatizada, cobrança interna ativa, cobrança interna receptiva e cobrança externa, assegurando que todas as tratativas sejam realizadas de forma organizada, eficiente e rastreável.</p>
+      <p>Este Procedimento Operacional Padrão tem como objetivo maximizar a recuperação de créditos, reduzir os índices de inadimplência, preservar o relacionamento com o cliente e garantir a recuperação dos equipamentos em comodato quando aplicável. Também estabelece padrões para o registro das informações no IXC Soft, utilização correta das Ordens de Serviço, cumprimento dos prazos operacionais (SLA), preenchimento dos diagnósticos e acompanhamento dos indicadores de desempenho, promovendo a melhoria contínua dos processos e contribuindo para a sustentabilidade financeira da empresa.</p>
+    </section>
+
+    <!-- 2. DESCRIÇÃO DO PROCESSO -->
+    <section class="pop-section">
+      <h2>2. Descrição do processo</h2>
+      <p>O setor de Cobrança é responsável pela gestão da inadimplência por meio de um fluxo estruturado e escalonado, composto por processos automatizados e humanizados, com o objetivo de aumentar a recuperação de receitas, reduzir cancelamentos e proporcionar uma experiência de negociação eficiente ao cliente. Atualmente, o processo é dividido em quatro etapas principais, às quais se soma uma rotina de campo executada pela equipe de Infraestrutura quando há retirada de comodato:</p>
+      <div class="ixc-config-box">
+        <ul>
+          <li><strong>Cobrança Automatizada:</strong> envio automático de lembretes, avisos de vencimento e comunicações de inadimplência, conforme o fluxograma de cobrança estabelecido pela empresa, para incentivar o pagamento espontâneo antes da intervenção da equipe.</li>
+          <li><strong>Cobrança Interna Ativa:</strong> realizada pela equipe de cobrança por meio do CRM, com abordagem proativa aos clientes inadimplentes para negociação, formalização de acordos, atualização cadastral e acompanhamento dos compromissos assumidos.</li>
+          <li><strong>Cobrança Interna Receptiva:</strong> atendimento realizado através da plataforma Synapz, destinado aos clientes que entram em contato espontaneamente para esclarecimento de dúvidas, negociação de débitos, emissão de segunda via de faturas, alteração de vencimento e demais solicitações relacionadas à cobrança.</li>
+          <li><strong>Cobrança Externa:</strong> executada por meio de visitas domiciliares aos clientes que permaneceram inadimplentes após as etapas automatizadas e humanizadas, com a finalidade de negociar, receber valores em aberto ou, quando aplicável, recolher os equipamentos, conforme as políticas da empresa.</li>
+        </ul>
+      </div>
+      <p><strong>Escopo, formulários e infraestrutura:</strong> aplica-se a todos os colaboradores dos setores de Cobrança Interna, Cobrança Externa e, na etapa de retirada de comodato, Infraestrutura/Campo. Sistemas utilizados: CRM Cobrança, IXC Soft e plataforma Synapz. Siglas: <strong>O.S.</strong> — Ordem de Serviço; <strong>SLA</strong> — prazo operacional de atendimento; <strong>MAC</strong> — identificador físico do equipamento em comodato.</p>
+    </section>
+
+    <!-- 3. PROCESSO -->
+    <section class="pop-section">
+      <h2>3. Processo</h2>
+      <p>O processo de cobrança inicia-se de forma automatizada, seguindo o fluxo de comunicação definido pela empresa. Antes do vencimento da fatura, o cliente recebe um lembrete preventivo por e-mail, WhatsApp e notificação push. Após o vencimento, são enviados novos avisos automáticos de inadimplência em períodos pré-estabelecidos, sendo que, no sexto dia de atraso, a interação passa a ser realizada também pela Inteligência Artificial (IA) via WhatsApp. Persistindo a inadimplência após o ciclo automatizado e humanizado, o sistema gera automaticamente uma Ordem de Serviço de Cobrança Externa; não sendo possível a negociação, são executados os procedimentos de recolhimento de equipamentos e demais providências administrativas cabíveis.</p>
+      <ol class="steps-macro">
+        <li>Cobrança Automatizada: lembretes multicanal antes e após o vencimento, com reforço por IA a partir do 6º dia de atraso.</li>
+        <li>Abertura automática, via CRM Cobrança, de O.S. de Cobrança Interna Ativa (SLA de 48h).</li>
+        <li>Cobrança Interna Receptiva paralela via Synapz, para atendimentos espontâneos.</li>
+        <li>Auditoria financeira e geração de O.S. de Lembrete de Cobrança Externa quando a inadimplência persiste.</li>
+        <li>Execução da Cobrança Externa (visita domiciliar) pelo cobrador responsável pela região.</li>
+        <li>Recolhimento de equipamentos em comodato quando aplicável, com checklist fotográfico e encaminhamento para Retirada de Devolução.</li>
+      </ol>
+    </section>
+
+    <!-- 4. PASSOS DO PROCESSO -->
+    <section class="pop-section">
+      <h2>4. Passos do processo</h2>
+
+      <h3>4.1. Cobrança Interna Ativa</h3>
+      <p>A Cobrança Interna Ativa é iniciada automaticamente pelo CRM Cobrança. Após o cliente permanecer inadimplente durante o período previsto no fluxo automatizado, o sistema gera uma Ordem de Serviço (O.S.) de cobrança, disponibilizando-a para a equipe de cobrança interna.</p>
+      <ol class="steps-detailed">
+        <li>
+          <strong>Recebimento da Ordem de Serviço</strong>
+          <ul>
+            <li>Acesse o CRM Cobrança e visualize as Ordens de Serviço disponíveis.</li>
+            <li>Assuma a O.S. que será de sua responsabilidade.</li>
+            <li>A partir da assunção da O.S., inicia-se o prazo máximo de <strong>48 horas (SLA)</strong> para conclusão da tratativa e finalização da ordem.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Realização da Cobrança</strong>
+          <p style="margin:6px 0 0;">O operador deverá realizar as tentativas de contato com o cliente utilizando os canais disponibilizados pela empresa, buscando a regularização do débito. Durante a negociação, o colaborador poderá: esclarecer dúvidas referentes aos débitos; negociar a regularização financeira; emitir segunda via de boleto; encaminhar chave ou QR Code PIX; atualizar informações cadastrais; registrar todas as informações relevantes da tratativa.</p>
+        </li>
+        <li>
+          <strong>Finalização da Ordem de Serviço</strong>
+          <div class="ixc-config-box">
+            <strong>Diagnóstico obrigatório ao finalizar a O.S. (CRM Cobrança):</strong>
+            <ul>
+              <li>Não atende / Não responde</li>
+              <li>Acordo Sim – Pagamento Realizado</li>
+              <li>Número de telefone incorreto</li>
+              <li>Promessa de Pagamento</li>
+              <li>Solicitação de Cancelamento</li>
+              <li>Pagamento efetuado antes da cobrança</li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+
+      <h3>4.2. Atendimento Receptivo (Synapz)</h3>
+      <p>A Cobrança Interna Receptiva compreende os atendimentos iniciados espontaneamente pelos clientes por meio da plataforma Synapz, com foco na regularização financeira, esclarecimento de dúvidas e suporte relacionado ao setor de cobrança.</p>
+      <ol class="steps-detailed">
+        <li>
+          <strong>Atendimento ao cliente</strong>
+          <ul>
+            <li>Mantenha a plataforma Synapz disponível durante todo o expediente.</li>
+            <li>Ao receber um atendimento, identifique o cliente e analise sua situação financeira no sistema.</li>
+            <li>Realize as tratativas necessárias: emitir segunda via de boleto; enviar chave/QR Code PIX; realizar renegociações; esclarecer dúvidas financeiras; direcionar solicitações que não sejam do setor.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Registro do atendimento</strong>
+          <div class="ixc-config-box">
+            <strong>Parâmetros obrigatórios no sistema (IXC Soft):</strong>
+            <ul>
+              <li><strong>Caminho:</strong> <code>Cadastro do Cliente → Aba Atendimento → Novo</code></li>
+              <li><strong>Assunto:</strong> <code>1249 – Cobrança Receptiva</code></li>
+              <li><strong>Descrição:</strong> motivo do contato, solicitação apresentada, tratativa realizada, informações fornecidas e resultado do atendimento.</li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <strong>Finalização do atendimento</strong>
+          <p style="margin:6px 0 0;">Diagnóstico obrigatório: Renegociação Solicitada, Pagamento Realizado, Dúvidas Financeiras, Solicitações Não Atreladas ao Setor, Solicitação de Boleto.</p>
+        </li>
+      </ol>
+
+      <h3>4.3. Transição para Cobrança Externa</h3>
+      <p>Destinada aos clientes que não regularizaram seus débitos após o fluxo de Cobrança Automatizada e Cobrança Interna Ativa, aos clientes com inadimplência recorrente e aos contratos cancelados com equipamentos em comodato pendentes de devolução. Divide-se em três processos:</p>
+      <ol class="steps-detailed">
+        <li>
+          <strong>Cobrança Externa – 30 dias:</strong> após o encerramento da Cobrança Interna Ativa, o sistema gera automaticamente uma O.S. de Lembrete de Cobrança Externa. O operador realiza a auditoria financeira, valida os débitos, confirma o histórico de tratativas, abre o Processo de Cobrança Externa e direciona a O.S. ao cobrador responsável pela região.
+        </li>
+        <li>
+          <strong>Cobrança Externa – 60 dias:</strong> destinada aos clientes com duas mensalidades em aberto que já receberam a primeira visita. Diariamente, o operador emite no IXC Soft o relatório de clientes com duas ou mais mensalidades em aberto e reencaminha para nova visita.
+        </li>
+        <li>
+          <strong>Recuperação de Equipamentos em Comodato:</strong> destinada aos contratos cancelados por inadimplência com equipamentos não devolvidos. Diariamente, emite-se no IXC Soft o relatório de contratos cancelados com equipamentos pendentes; após conferência, abre-se o Processo de Recuperação de Comodato para deslocamento da equipe externa.
+        </li>
+      </ol>
+
+      <h3>4.4. Ação em Campo (Cobrador Externo)</h3>
+      <p>A equipe de Cobrança Externa executa as visitas domiciliares, com o objetivo de negociar débitos, receber pagamentos, recuperar equipamentos em comodato e registrar fielmente o resultado de cada atendimento, mantendo postura profissional, cordial e objetiva durante toda a visita.</p>
+      <div class="ixc-config-box">
+        <strong>Scripts de abordagem padronizados:</strong>
+        <ul>
+          <li><strong>1 mensalidade em aberto:</strong> "Bom dia/boa tarde, tudo bem? Meu nome é [NOME] e estou passando em nome da Prestek Telecom. Identificamos uma mensalidade em aberto referente ao seu contrato e, por esse motivo, seu serviço encontra-se bloqueado. Gostaria de verificar se conseguimos realizar a regularização hoje ou alinhar uma previsão de pagamento."</li>
+          <li><strong>2 ou mais mensalidades em aberto:</strong> "Bom dia/boa tarde! Meu nome é [NOME] e estou em visita pela Prestek Telecom. Constatamos duas ou mais mensalidades em aberto vinculadas ao seu contrato. Gostaria de verificar a possibilidade de regularização para evitarmos a continuidade das medidas administrativas previstas pela empresa."</li>
+          <li><strong>Recuperação de comodato:</strong> "Bom dia/boa tarde! Meu nome é [NOME] e estou em visita pela Prestek Telecom para realizar o recolhimento dos equipamentos vinculados ao contrato encerrado por inadimplência. A retirada é necessária para conclusão do processo interno e recuperação do patrimônio da empresa."</li>
+        </ul>
+      </div>
+      <p><strong>Desfechos da visita:</strong> Acordo/Promessa de Pagamento (registrar negociação e data prometida); Pagamento realizado (conferir comprovante e finalizar); Sem acordo (registrar tratativa e executar o procedimento previsto — 30 dias, 60 dias ou Recuperação de Comodato); Casa fechada ou visita não realizada (registrar motivo e encaminhar obrigatoriamente para a próxima tarefa <strong>"Abertura de Cobrança Externa"</strong>, para nova auditoria/avaliação de reagendamento).</p>
+
+      <h3 style="color:#8a5300;">4.5. Retirada de Fibra/Comodato em Campo</h3>
+      <div class="decision-pending">
+        <div class="dp-title">⚠ [Decisão pendente]</div>
+        <p>Não está confirmado se esta rotina realmente pertence ao escopo de Cobrança. Os setores de <strong>Infraestrutura</strong> e <strong>Patrimônio</strong> parecem mais donos deste procedimento — inclusive a alçada de aprovação abaixo é assinada por Infraestrutura, Auditoria, Patrimônio, Gerência e Diretor, sem qualquer assinatura do setor de Cobrança.</p>
+        <p>O conteúdo foi incluído nesta subseção por ter sido localizado em um rascunho fragmentado associado ao POP de Cobrança durante a varredura cruzada de documentos do SGQ, mas <strong>precisa de confirmação formal do setor responsável</strong> antes de ser considerado definitivo. Até essa confirmação, esta subseção deve ser tratada como referência preliminar, não como procedimento vigente.</p>
+      </div>
+      <p>Rotina executada em campo quando o cliente cancela o contrato e a equipe é acionada para retirar o roteador/ONU e o cabo de fibra instalados no imóvel (retirada, não instalação).</p>
+      <ol class="steps-detailed">
+        <li>
+          <strong>Recebimento e verificação inicial</strong>
+          <ul>
+            <li>Informar por quem a O.S. foi recebida.</li>
+            <li>Informar se a casa está aberta. Caso esteja aberta, realizar o serviço.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Controle de tentativas de visita</strong>
+          <ul>
+            <li><strong>1ª tentativa sem sucesso:</strong> se a casa estiver fechada, encaminhar a O.S. para a próxima tarefa <strong>"Retorno para Cobrança Externa"</strong>, para que seja feita uma nova visita.</li>
+            <li><strong>2ª tentativa:</strong> se a casa estiver fechada, segue-se para o passo de retirada da fibra.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Negociação e retirada</strong>
+          <ul>
+            <li>Informar se houve negociação. Se <strong>sim</strong>, encaminhar a O.S. para a próxima tarefa <strong>"Acordo Sim por Cobrança Externa"</strong>, para que o setor responsável faça a negociação com o cliente.</li>
+            <li>Informar se os equipamentos e a fibra foram retirados. Se a segunda tentativa de visita for sem sucesso, realizar a retirada da fibra.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Checklist fotográfico obrigatório</strong>
+          <div class="checklist-photo">
+            <ul>
+              <li>Foto da fibra <strong>desconectada</strong> da porta.</li>
+              <li>Foto da <strong>fibra retirada no chão</strong> (fibra enrolada e totalmente retirada).</li>
+              <li>Foto do <strong>MAC</strong> dos equipamentos em comodato.</li>
+              <li>Caso necessário: foto da <strong>casa fechada</strong>.</li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <strong>Desfecho da O.S.</strong>
+          <ul>
+            <li><strong>Procedimento concluído com sucesso:</strong> encaminhar a O.S. para a próxima tarefa <strong>"Retirada de Devolução"</strong>.</li>
+            <li><strong>2ª tentativa sem sucesso:</strong> retirar a fibra e encaminhar a O.S. para a próxima tarefa <strong>"Cancelamento por Inatividade"</strong>.</li>
+            <li><strong>Impossibilidade de realizar algum serviço citado:</strong> justificar formalmente na O.S.</li>
+          </ul>
+        </li>
+      </ol>
+      <div class="alcada-box">
+        <strong>Alçada de assinaturas identificada no rascunho fragmentado (não confirmada para o escopo de Cobrança):</strong>
+        <div class="alcada-chain">
+          <span class="alcada-step">Supervisor(a) Setor Infraestrutura</span>
+          <span class="flow-arrow">➔</span>
+          <span class="alcada-step">Supervisor(a) Setor Auditoria</span>
+          <span class="flow-arrow">➔</span>
+          <span class="alcada-step">Supervisor(a) Setor de Patrimônio</span>
+          <span class="flow-arrow">➔</span>
+          <span class="alcada-step">Gerência</span>
+          <span class="flow-arrow">➔</span>
+          <span class="alcada-step">Diretor</span>
+        </div>
+      </div>
+
+      <!-- BPMN - COBRANÇA (INTEGRAÇÃO BPMN.IO) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 10px;">
+        <h3 style="margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">Fluxograma Oficial (BPMN 2.0 • bpmn.io)</h3>
+        <div style="display: flex; gap: 8px;">
+          <a href="POP-COB-01 - Cobrança.bpmn" download="POP-COB-01 - Cobrança.bpmn" class="btn-action" title="Baixar arquivo XML padrão BPMN 2.0">⬇ Baixar .bpmn</a>
+          <a href="https://demo.bpmn.io/" target="_blank" rel="noopener noreferrer" class="btn-action" title="Abrir ferramenta bpmn.io">🌐 Abrir no bpmn.io</a>
+        </div>
+      </div>
+
+      <div class="bpmn-wrapper">
+        <div class="bpmn-toolbar">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Interativo: clique e arraste para navegar • scroll para zoom • raias: Cobrança / Infraestrutura-Campo</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btn-zoom-in" class="zoom-btn" title="Aumentar zoom">+</button>
+            <button type="button" id="btn-zoom-out" class="zoom-btn" title="Diminuir zoom">-</button>
+            <button type="button" id="btn-zoom-fit" class="zoom-btn" title="Ajustar à tela">⤢ Ajustar</button>
+          </div>
+        </div>
+        <div id="bpmn-canvas">
+          <!-- Fallback estático caso esteja sem internet -->
+          <div id="bpmn-fallback" style="display: none; padding: 20px;">
+            <div class="swimlane">
+              <div class="swimlane-header cob">Raia / Cobrança</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Fatura vencida ➔ Cobrança Automatizada (multicanal + IA)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">CRM abre O.S. Cobrança Interna Ativa</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Operador negocia (SLA 48h)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Regularizou?<br><small>[Sim] ➔ Débito Regularizado<br>[Não] ➔ Auditoria + O.S. Lembrete Externa</small></div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header">Raia / Infraestrutura-Campo</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Visita domiciliar (30/60 dias)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Casa aberta?<br><small>[Não] ➔ Retorno p/ Cobrança Externa<br>[Sim] ➔ Negocia em campo</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Houve acordo/pagamento?<br><small>[Sim] ➔ Acordo Sim por Cobrança Externa</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color:#f59e0b; background:#fffbeb; color:#8a5300;">[DECISÃO PENDENTE] Retirada de Fibra/Comodato (checklist fotográfico)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color: #16a34a; background: #f0fdf4; color: #166534;">Retirada de Devolução / Cancelamento por Inatividade</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. REGRAS DE NEGÓCIOS -->
+    <section class="pop-section">
+      <h2>5. Regras de negócios</h2>
+      <table class="rules-table">
+        <thead>
+          <tr><th>Situação</th><th>Ação obrigatória</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Ordem de Serviço de Cobrança Ativa recebida</td><td>Assumir a O.S. e concluir toda a tratativa em até 48 horas (SLA), registrando corretamente o diagnóstico ao finalizar.</td></tr>
+          <tr><td>Cliente informa que já realizou o pagamento</td><td>Solicitar o comprovante, validar a informação e finalizar a O.S. com o diagnóstico "Pagamento efetuado antes da cobrança", quando aplicável. Encaminhar o comprovante ao Financeiro caso a baixa ainda não tenha ocorrido.</td></tr>
+          <tr><td>Promessa de pagamento</td><td>Registrar a data informada pelo cliente e finalizar a O.S. com o diagnóstico "Promessa de Pagamento".</td></tr>
+          <tr><td>Pagamento realizado durante o atendimento ou visita</td><td>Confirmar o comprovante e finalizar a O.S. com o diagnóstico "Acordo Sim – Pagamento Realizado".</td></tr>
+          <tr><td>Número de telefone incorreto</td><td>Registrar a inconsistência, atualizar o cadastro quando possível e finalizar a O.S. com o diagnóstico "Número de Telefone Incorreto".</td></tr>
+          <tr><td>Solicitação de cancelamento</td><td>Registrar a manifestação do cliente, finalizar a O.S. com o diagnóstico "Solicitação de Cancelamento" e encaminhar conforme o fluxo interno.</td></tr>
+          <tr><td>Casa fechada</td><td>Registrar a ocorrência, finalizar a O.S. e encaminhá-la obrigatoriamente para "Abertura de Cobrança Externa".</td></tr>
+          <tr><td>Visita não realizada</td><td>Registrar o motivo, finalizar a O.S. e encaminhá-la para "Abertura de Cobrança Externa" para avaliação de novo agendamento.</td></tr>
+          <tr><td>Cliente permanece inadimplente após a Cobrança Ativa</td><td>O processo seguirá automaticamente para o fluxo de Cobrança Externa.</td></tr>
+          <tr><td>Cliente com duas mensalidades em aberto após a primeira visita externa</td><td>Incluir no fluxo de Cobrança Externa – 60 Dias, mediante validação do relatório emitido pelo IXC Soft.</td></tr>
+          <tr><td>Contrato cancelado por inadimplência com equipamento em comodato pendente</td><td>Incluir no processo de Recuperação de Comodato, realizando nova visita para recolhimento dos equipamentos.</td></tr>
+          <tr><td>Equipamento recolhido com avarias</td><td>Registrar as condições, anexar evidências fotográficas quando necessário e informar a ocorrência na O.S.</td></tr>
+          <tr><td>Solicitações não relacionadas ao setor de cobrança</td><td>Orientar o cliente, encaminhar ao setor responsável e registrar a tratativa no histórico.</td></tr>
+          <tr><td>Indisponibilidade dos sistemas utilizados pelo setor</td><td>Prosseguir com os atendimentos pelos meios autorizados e registrar tudo assim que o serviço for restabelecido.</td></tr>
+          <tr><td>Finalização de atendimentos e Ordens de Serviço</td><td>Nenhum atendimento ou O.S. deve permanecer pendente ao final do expediente sem justificativa formal.</td></tr>
+          <tr><td>1ª tentativa de retirada de fibra/comodato sem sucesso (casa fechada) <em>[decisão pendente]</em></td><td>Encaminhar a O.S. para a próxima tarefa "Retorno para Cobrança Externa", para nova visita.</td></tr>
+          <tr><td>2ª tentativa de retirada de fibra/comodato sem sucesso (casa fechada) <em>[decisão pendente]</em></td><td>Retirar a fibra, cumprir o checklist fotográfico obrigatório e encaminhar a O.S. para "Cancelamento por Inatividade".</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6. EXCEÇÕES E TRATAMENTO DE ERROS -->
+    <section class="pop-section">
+      <h2>6. Exceções e tratamento de erros</h2>
+      <p>Procedimentos obrigatórios para contingências e desvios durante o fluxo de cobrança:</p>
+
+      <div class="exception-item">
+        <div class="exception-title">6.1. Cliente informa que o pagamento já foi realizado</div>
+        <div class="exception-desc"><strong>Descrição:</strong> o pagamento foi feito pelo cliente, mas ainda não foi identificado pelo sistema.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Solicitar o comprovante de pagamento.</li>
+            <li>Validar se o pagamento ainda não foi identificado pelo sistema.</li>
+            <li>Se válido, registrar na O.S. e finalizar com o diagnóstico "Pagamento efetuado antes da cobrança".</li>
+            <li>Encaminhar o comprovante ao Financeiro caso ainda não compensado.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.2. Casa fechada</div>
+        <div class="exception-desc"><strong>Descrição:</strong> o imóvel está fechado no momento da visita externa.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Registrar que o imóvel estava fechado, com evidências.</li>
+            <li>Buscar informações com vizinhos com postura ética, sem expor a inadimplência do cliente.</li>
+            <li>Finalizar a O.S. e encaminhar para "Abertura de Cobrança Externa".</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.3. Visita não realizada</div>
+        <div class="exception-desc"><strong>Descrição:</strong> não foi possível realizar a visita programada.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> registrar detalhadamente o motivo (endereço não localizado, ausência de condições de acesso, rota interrompida, etc.), finalizar a O.S. e encaminhar para "Abertura de Cobrança Externa".
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.4. Problemas sistêmicos (indisponibilidade do CRM, IXC Soft ou Synapz)</div>
+        <div class="exception-desc"><strong>Descrição:</strong> indisponibilidade temporária de um dos sistemas utilizados pelo setor.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> registrar a ocorrência internamente, dar continuidade pelos meios autorizados disponíveis e, após o restabelecimento, registrar todas as tratativas realizadas durante o período de indisponibilidade.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.5. Informações cadastrais divergentes</div>
+        <div class="exception-desc"><strong>Descrição:</strong> telefone incorreto, endereço desatualizado ou outra inconsistência cadastral identificada durante a tratativa.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> registrar a inconsistência, atualizar os dados quando confirmados pelo cliente, ou finalizar com o diagnóstico correspondente e registrar a ocorrência para acompanhamento posterior.
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.6. Impossibilidade de concluir a retirada de fibra/comodato <em>[decisão pendente]</em></div>
+        <div class="exception-desc"><strong>Descrição:</strong> não é possível concluir algum dos serviços previstos na rotina de campo (desconexão da fibra, retirada dos equipamentos ou registro fotográfico).</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong> justificar formalmente na O.S. o motivo da impossibilidade. Enquanto o escopo desta rotina não for confirmado pelo setor responsável, tratar o desvio como registro preliminar, sujeito a revisão do procedimento definitivo.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSÃO -->
+    <section class="pop-section">
+      <h2>7. Conclusão</h2>
+      <p>O cumprimento deste Procedimento Operacional Padrão assegura a execução padronizada de todas as etapas do processo de cobrança, desde os acionamentos automatizados até a cobrança externa e a recuperação de equipamentos em comodato. A integração entre as ferramentas utilizadas pela empresa, aliada à atuação das equipes de cobrança interna e externa, garante maior eficiência na recuperação de créditos, redução da inadimplência e preservação do relacionamento com o cliente.</p>
+      <p>O correto registro de todas as tratativas, atendimentos, negociações e visitas no sistema IXC Soft é indispensável para garantir a rastreabilidade das ações, a confiabilidade dos indicadores de desempenho e o direcionamento adequado dos fluxos operacionais. Este documento deverá ser seguido por todos os colaboradores envolvidos no processo de cobrança, servindo como referência para a execução das atividades, treinamento de novos profissionais e melhoria contínua dos processos do setor.</p>
+      <p><strong>Ponto em aberto:</strong> a subseção 4.5 (Retirada de Fibra/Comodato em Campo) permanece como decisão pendente de confirmação de escopo junto aos setores de Infraestrutura e Patrimônio. Até a formalização dessa definição, esta subseção deve ser tratada como referência preliminar dentro deste POP.</p>
+    </section>
+
+    <!-- ASSINATURAS FORMAIS -->
+    <div class="signoff">
+      <div class="sig">
+        <div class="line">Marcio Eduardo Felix &nbsp;&nbsp;|&nbsp;&nbsp; 10/09/2026</div>
+        <div class="role">Responsável pela Documentação do Processo (SGQ) • Elaborador / Revisor</div>
+      </div>
+      <div class="sig">
+        <div class="line">Roberta Kelle Nunes Gomes &nbsp;&nbsp;|&nbsp;&nbsp; 10/09/2026</div>
+        <div class="role">Representante da Direção • Aprovadora</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ CONTROLADO -->
+  <div class="doc-footer">
+    Documento controlado — Sistema de Gestão da Qualidade ISO 9001 • Prestek Telecom
+  </div>
+
+</div>
+
+<!-- Script BPMN.io / bpmn-js -->
+<script type="text/xml" id="bpmn-data">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Cobranca" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_Cobranca">
+    <bpmn:participant id="Participant_Cobranca" name="PROCESSO DE COBRANÇA" processRef="Process_Cobranca" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>COBRANÇA
+Marcio Felix
+Prestek Telecom
+Criação | 26/01/2026
+Última Atualização | 10/09/2026</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_Cobranca" targetRef="TextAnnotation_Header" />
+    <bpmn:textAnnotation id="TextAnnotation_Pendente">
+      <bpmn:text>[DECISÃO PENDENTE]
+Escopo de "Retirada de Fibra/Comodato"
+carece de confirmação do setor
+responsável (Infraestrutura/Patrimônio).</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Pendente" sourceRef="Task_RetiradaFibra" targetRef="TextAnnotation_Pendente" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Cobranca" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Cobranca" name="Cobrança">
+        <bpmn:flowNodeRef>StartEvent_Inicio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Automatizada</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Receptivo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Receptivo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AberturaAtiva</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NegociacaoAtiva</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Regularizou</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Regularizado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AuditoriaExterna</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Campo" name="Infraestrutura/Campo">
+        <bpmn:flowNodeRef>Task_VisitaExterna</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_CasaAberta</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RetornoReagendamento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NegociaCampo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_AcordoInadimplencia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_AcordoExterno</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RetiradaFibra</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ProcedimentoOk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_RetiradaDevolucao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Cancelamento</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Inicio" name="Fatura Vencida">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="Task_Automatizada" name="Cobrança Automatizada (lembretes multicanal + IA a partir do 6º dia)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_Receptivo" name="Atendimento Receptivo (plataforma Synapz)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_R2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Receptivo" name="Atendimento Receptivo Concluído">
+      <bpmn:incoming>Flow_R2</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:task id="Task_AberturaAtiva" name="CRM Cobrança abre O.S. de Cobrança Interna Ativa">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_NegociacaoAtiva" name="Operador negocia com o cliente (SLA de 48h)">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Regularizou" name="Cliente regularizou o débito?">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_Regularizado" name="Débito Regularizado">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_AuditoriaExterna" name="Auditoria financeira + gera O.S. Lembrete de Cobrança Externa">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Task_VisitaExterna" name="Cobrador realiza visita domiciliar (Cobrança Externa 30/60 dias)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_CasaAberta" name="Casa está aberta?">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_RetornoReagendamento" name="Encaminha O.S. para &quot;Retorno para Cobrança Externa&quot; (reagendar visita)">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_NegociaCampo" name="Negocia débito / recebe pagamento em campo">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_AcordoInadimplencia" name="Houve acordo ou pagamento?">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_AcordoExterno" name="Acordo Sim por Cobrança Externa">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_RetiradaFibra" name="[DECISÃO PENDENTE] Retirada de Fibra/Comodato em Campo (checklist fotográfico obrigatório)">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_ProcedimentoOk" name="Procedimento concluído com sucesso?">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_RetiradaDevolucao" name="Retirada de Devolução">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_Cancelamento" name="Cancelamento por Inatividade">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Inicio" targetRef="Task_Automatizada" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Automatizada" targetRef="Task_AberturaAtiva" />
+    <bpmn:sequenceFlow id="Flow_3" name="Contato espontâneo do cliente" sourceRef="Task_Automatizada" targetRef="Task_Receptivo" />
+    <bpmn:sequenceFlow id="Flow_R2" sourceRef="Task_Receptivo" targetRef="EndEvent_Receptivo" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_AberturaAtiva" targetRef="Task_NegociacaoAtiva" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_NegociacaoAtiva" targetRef="Gateway_Regularizou" />
+    <bpmn:sequenceFlow id="Flow_6" name="Sim" sourceRef="Gateway_Regularizou" targetRef="EndEvent_Regularizado" />
+    <bpmn:sequenceFlow id="Flow_7" name="Não" sourceRef="Gateway_Regularizou" targetRef="Task_AuditoriaExterna" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_AuditoriaExterna" targetRef="Task_VisitaExterna" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_VisitaExterna" targetRef="Gateway_CasaAberta" />
+    <bpmn:sequenceFlow id="Flow_10" name="Não (1ª/2ª tentativa)" sourceRef="Gateway_CasaAberta" targetRef="Task_RetornoReagendamento" />
+    <bpmn:sequenceFlow id="Flow_11" name="Nova visita agendada" sourceRef="Task_RetornoReagendamento" targetRef="Task_VisitaExterna" />
+    <bpmn:sequenceFlow id="Flow_12" name="Sim" sourceRef="Gateway_CasaAberta" targetRef="Task_NegociaCampo" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_NegociaCampo" targetRef="Gateway_AcordoInadimplencia" />
+    <bpmn:sequenceFlow id="Flow_14" name="Acordo/Pagamento" sourceRef="Gateway_AcordoInadimplencia" targetRef="EndEvent_AcordoExterno" />
+    <bpmn:sequenceFlow id="Flow_15" name="Sem acordo / inadimplência confirmada" sourceRef="Gateway_AcordoInadimplencia" targetRef="Task_RetiradaFibra" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_RetiradaFibra" targetRef="Gateway_ProcedimentoOk" />
+    <bpmn:sequenceFlow id="Flow_17" name="Sucesso" sourceRef="Gateway_ProcedimentoOk" targetRef="EndEvent_RetiradaDevolucao" />
+    <bpmn:sequenceFlow id="Flow_18" name="2ª tentativa sem sucesso" sourceRef="Gateway_ProcedimentoOk" targetRef="EndEvent_Cancelamento" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Cobranca">
+    <bpmndi:BPMNPlane id="BPMNPlane_Cobranca" bpmnElement="Collaboration_Cobranca">
+      <bpmndi:BPMNShape id="Participant_Cobranca_di" bpmnElement="Participant_Cobranca" isHorizontal="true">
+        <dc:Bounds x="140" y="80" width="1950" height="600" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Cobranca_di" bpmnElement="Lane_Cobranca" isHorizontal="true">
+        <dc:Bounds x="170" y="80" width="1920" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Campo_di" bpmnElement="Lane_Campo" isHorizontal="true">
+        <dc:Bounds x="170" y="380" width="1920" height="300" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Inicio_di" bpmnElement="StartEvent_Inicio">
+        <dc:Bounds x="210" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="192" y="205" width="72" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Automatizada_di" bpmnElement="Task_Automatizada">
+        <dc:Bounds x="290" y="140" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Receptivo_di" bpmnElement="Task_Receptivo">
+        <dc:Bounds x="290" y="260" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Receptivo_di" bpmnElement="EndEvent_Receptivo">
+        <dc:Bounds x="480" y="282" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="463" y="325" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AberturaAtiva_di" bpmnElement="Task_AberturaAtiva">
+        <dc:Bounds x="490" y="140" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_NegociacaoAtiva_di" bpmnElement="Task_NegociacaoAtiva">
+        <dc:Bounds x="690" y="140" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Regularizou_di" bpmnElement="Gateway_Regularizou" isMarkerVisible="true">
+        <dc:Bounds x="890" y="155" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="878" y="122" width="74" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Regularizado_di" bpmnElement="EndEvent_Regularizado">
+        <dc:Bounds x="980" y="90" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="962" y="60" width="72" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AuditoriaExterna_di" bpmnElement="Task_AuditoriaExterna">
+        <dc:Bounds x="980" y="140" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_VisitaExterna_di" bpmnElement="Task_VisitaExterna">
+        <dc:Bounds x="980" y="440" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_CasaAberta_di" bpmnElement="Gateway_CasaAberta" isMarkerVisible="true">
+        <dc:Bounds x="1200" y="455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1195" y="422" width="60" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RetornoReagendamento_di" bpmnElement="Task_RetornoReagendamento">
+        <dc:Bounds x="1200" y="560" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_NegociaCampo_di" bpmnElement="Task_NegociaCampo">
+        <dc:Bounds x="1330" y="440" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_AcordoInadimplencia_di" bpmnElement="Gateway_AcordoInadimplencia" isMarkerVisible="true">
+        <dc:Bounds x="1550" y="455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1540" y="422" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_AcordoExterno_di" bpmnElement="EndEvent_AcordoExterno">
+        <dc:Bounds x="1650" y="390" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1633" y="360" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RetiradaFibra_di" bpmnElement="Task_RetiradaFibra">
+        <dc:Bounds x="1650" y="440" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ProcedimentoOk_di" bpmnElement="Gateway_ProcedimentoOk" isMarkerVisible="true">
+        <dc:Bounds x="1900" y="455" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1890" y="422" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_RetiradaDevolucao_di" bpmnElement="EndEvent_RetiradaDevolucao">
+        <dc:Bounds x="1990" y="390" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1973" y="360" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Cancelamento_di" bpmnElement="EndEvent_Cancelamento">
+        <dc:Bounds x="1990" y="560" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1973" y="600" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="520" y="0" width="260" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Pendente_di" bpmnElement="TextAnnotation_Pendente">
+        <dc:Bounds x="1660" y="290" width="260" height="90" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="246" y="180" />
+        <di:waypoint x="290" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="440" y="180" />
+        <di:waypoint x="490" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="365" y="220" />
+        <di:waypoint x="365" y="260" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="368" y="230" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_R2_di" bpmnElement="Flow_R2">
+        <di:waypoint x="440" y="300" />
+        <di:waypoint x="480" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="640" y="180" />
+        <di:waypoint x="690" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="840" y="180" />
+        <di:waypoint x="890" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="915" y="155" />
+        <di:waypoint x="915" y="108" />
+        <di:waypoint x="980" y="108" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="928" y="90" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="940" y="180" />
+        <di:waypoint x="980" y="180" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="953" y="162" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1065" y="220" />
+        <di:waypoint x="1065" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1150" y="480" />
+        <di:waypoint x="1200" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1225" y="505" />
+        <di:waypoint x="1225" y="600" />
+        <di:waypoint x="1200" y="600" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1230" y="530" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1200" y="600" />
+        <di:waypoint x="1065" y="600" />
+        <di:waypoint x="1065" y="520" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1080" y="605" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1250" y="480" />
+        <di:waypoint x="1330" y="480" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1281" y="462" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1500" y="480" />
+        <di:waypoint x="1550" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1575" y="455" />
+        <di:waypoint x="1575" y="408" />
+        <di:waypoint x="1650" y="408" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1578" y="385" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="1600" y="480" />
+        <di:waypoint x="1650" y="480" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1595" y="495" width="120" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="1840" y="480" />
+        <di:waypoint x="1900" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="1925" y="455" />
+        <di:waypoint x="1925" y="408" />
+        <di:waypoint x="1990" y="408" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1935" y="390" width="46" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="1925" y="505" />
+        <di:waypoint x="1925" y="578" />
+        <di:waypoint x="1990" y="578" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1935" y="545" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="650" y="80" />
+        <di:waypoint x="650" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Pendente_di" bpmnElement="Association_Pendente">
+        <di:waypoint x="1780" y="440" />
+        <di:waypoint x="1790" y="380" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+</script>
+
+<!-- Carregador bpmn-js com fallback automático -->
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/bpmn-js@17/dist/bpmn-navigated-viewer.production.min.js';
+    script.onload = function() {
+      try {
+        var BpmnViewer = window.BpmnJS;
+        var viewer = new BpmnViewer({
+          container: '#bpmn-canvas'
+        });
+        var xml = document.getElementById('bpmn-data').textContent.trim();
+        viewer.importXML(xml).then(function() {
+          var canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+
+          // Controles de zoom
+          document.getElementById('btn-zoom-in').onclick = function() { canvas.zoom(canvas.zoom() * 1.2); };
+          document.getElementById('btn-zoom-out').onclick = function() { canvas.zoom(canvas.zoom() * 0.8); };
+          document.getElementById('btn-zoom-fit').onclick = function() { canvas.zoom('fit-viewport'); };
+        }).catch(function(err) {
+          console.warn('Erro ao importar BPMN:', err);
+          document.getElementById('bpmn-fallback').style.display = 'block';
+        });
+      } catch(e) {
+        document.getElementById('bpmn-fallback').style.display = 'block';
+      }
+    };
+    script.onerror = function() {
+      // Caso offline ou sem acesso à CDN
+      document.getElementById('bpmn-fallback').style.display = 'block';
+    };
+    document.head.appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

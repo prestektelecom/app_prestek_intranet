@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Vendas001" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_Vendas001">
+    <bpmn:participant id="Participant_Vendas" name="PROCESSO DE VENDAS E CADASTRO DE CLIENTE" processRef="Process_Vendas001" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>POP-VENDAS-001
+Processo de Vendas
+Prestek Telecom
+Canais: Loja e Porta a Porta (PAP)
+Revisão 002 | 10/09/2026</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_Vendas" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Vendas001" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_VendedorAtendente" name="VENDEDOR / ATENDENTE">
+        <bpmn:flowNodeRef>StartEvent_Inicio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Canal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Loja</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_AceiteLoja</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_LeadLoja</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_PerdemosLoja</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ChecklistPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AbordagemPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_InteressePAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ObjecaoPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_PerdemosPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_OfertaPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_FechaPAP</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ColetaDoc</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Cadastro</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Assinatura</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Financeiro" name="FINANCEIRO">
+        <bpmn:flowNodeRef>Activity_TaxaAtivacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_FinanceiroFinal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_Vendemos</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Estoque" name="ESTOQUE / SERVIÇO">
+        <bpmn:flowNodeRef>Activity_VinculaEquip</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Auditoria" name="AUDITORIA">
+        <bpmn:flowNodeRef>Activity_AuditaOS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Auditoria</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_NOC" name="NOC / TÉCNICO">
+        <bpmn:flowNodeRef>Activity_NOC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Instalacao</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Inicio" name="Início do atendimento comercial">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:exclusiveGateway id="Gateway_Canal" name="Canal de venda?">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Loja</bpmn:outgoing>
+      <bpmn:outgoing>Flow_PAP</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_Loja" name="Loja: viabilidade técnica + levantamento de necessidades (Etapa 1)">
+      <bpmn:incoming>Flow_Loja</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:exclusiveGateway id="Gateway_AceiteLoja" name="Cliente aceitou a proposta?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_AceiteNao</bpmn:outgoing>
+      <bpmn:outgoing>Flow_AceiteSim</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_LeadLoja" name="Gera Lead no sistema">
+      <bpmn:incoming>Flow_AceiteNao</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="Event_PerdemosLoja" name="Não vendemos (Loja)">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:task id="Activity_ChecklistPAP" name="PAP: checklist de saída do vendedor + conferência de rota/meta">
+      <bpmn:incoming>Flow_PAP</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_AbordagemPAP" name="PAP: abordagem porta a porta em dupla (casa aberta = aborda / fechada = panfleto)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:exclusiveGateway id="Gateway_InteressePAP" name="Cliente demonstrou interesse?">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_InteresseNao</bpmn:outgoing>
+      <bpmn:outgoing>Flow_InteresseSim</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_ObjecaoPAP" name="Trata objeção / registra contato para Lead">
+      <bpmn:incoming>Flow_InteresseNao</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="Event_PerdemosPAP" name="Não vendemos (PAP)">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:task id="Activity_OfertaPAP" name="Levantamento de necessidades + oferta do plano/streaming (PAP)">
+      <bpmn:incoming>Flow_InteresseSim</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_FechaPAP" name="Fecha venda em campo: coleta de documentos + termo em branco assinado [DECISÃO PENDENTE: prazo 24h vs 48h]">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_ColetaDoc" name="Etapa 2: Coleta de documentação (RG, CPF, comprovante, vencimento, contato)">
+      <bpmn:incoming>Flow_AceiteSim</bpmn:incoming>
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_Cadastro" name="Etapas 3-8: Cadastro INMAP/IXC, contrato, taxa de ativação, login, abertura de O.S.">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_TaxaAtivacao" name="Etapa 9: Financeiro gera a taxa de contratação">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_VinculaEquip" name="Etapa 9: Estoque vincula o equipamento em comodato">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_Assinatura" name="Etapa 10: Coleta assinatura do contrato + anexa documentação e termos">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:incoming>Flow_AuditoriaNao</bpmn:incoming>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_AuditaOS" name="Etapa 11: Auditoria analisa a O.S.">
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:exclusiveGateway id="Gateway_Auditoria" name="Auditoria aprovou?">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_AuditoriaNao</bpmn:outgoing>
+      <bpmn:outgoing>Flow_AuditoriaSim</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="Activity_NOC" name="NOC direciona a atividade ao técnico instalador">
+      <bpmn:incoming>Flow_AuditoriaSim</bpmn:incoming>
+      <bpmn:outgoing>Flow_24</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_Instalacao" name="Etapa 12: Técnico realiza a instalação no endereço do cliente">
+      <bpmn:incoming>Flow_24</bpmn:incoming>
+      <bpmn:outgoing>Flow_25</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="Activity_FinanceiroFinal" name="Financeiro gera fatura/carnê pós-instalação; vendedor faz pós-venda (feedback + indicação = 50% desconto)">
+      <bpmn:incoming>Flow_25</bpmn:incoming>
+      <bpmn:outgoing>Flow_26</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="Event_Vendemos" name="Venda concluída — cliente ativo">
+      <bpmn:incoming>Flow_26</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Inicio" targetRef="Gateway_Canal" />
+    <bpmn:sequenceFlow id="Flow_Loja" name="Loja" sourceRef="Gateway_Canal" targetRef="Activity_Loja" />
+    <bpmn:sequenceFlow id="Flow_PAP" name="PAP" sourceRef="Gateway_Canal" targetRef="Activity_ChecklistPAP" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_Loja" targetRef="Gateway_AceiteLoja" />
+    <bpmn:sequenceFlow id="Flow_AceiteNao" name="Não" sourceRef="Gateway_AceiteLoja" targetRef="Activity_LeadLoja" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_LeadLoja" targetRef="Event_PerdemosLoja" />
+    <bpmn:sequenceFlow id="Flow_AceiteSim" name="Sim" sourceRef="Gateway_AceiteLoja" targetRef="Activity_ColetaDoc" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Activity_ChecklistPAP" targetRef="Activity_AbordagemPAP" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Activity_AbordagemPAP" targetRef="Gateway_InteressePAP" />
+    <bpmn:sequenceFlow id="Flow_InteresseNao" name="Não" sourceRef="Gateway_InteressePAP" targetRef="Activity_ObjecaoPAP" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Activity_ObjecaoPAP" targetRef="Event_PerdemosPAP" />
+    <bpmn:sequenceFlow id="Flow_InteresseSim" name="Sim" sourceRef="Gateway_InteressePAP" targetRef="Activity_OfertaPAP" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Activity_OfertaPAP" targetRef="Activity_FechaPAP" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Activity_FechaPAP" targetRef="Activity_ColetaDoc" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Activity_ColetaDoc" targetRef="Activity_Cadastro" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Activity_Cadastro" targetRef="Activity_TaxaAtivacao" />
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Activity_Cadastro" targetRef="Activity_VinculaEquip" />
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Activity_TaxaAtivacao" targetRef="Activity_Assinatura" />
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Activity_VinculaEquip" targetRef="Activity_Assinatura" />
+    <bpmn:sequenceFlow id="Flow_20" sourceRef="Activity_Assinatura" targetRef="Activity_AuditaOS" />
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Activity_AuditaOS" targetRef="Gateway_Auditoria" />
+    <bpmn:sequenceFlow id="Flow_AuditoriaNao" name="Não (correção)" sourceRef="Gateway_Auditoria" targetRef="Activity_Assinatura" />
+    <bpmn:sequenceFlow id="Flow_AuditoriaSim" name="Sim" sourceRef="Gateway_Auditoria" targetRef="Activity_NOC" />
+    <bpmn:sequenceFlow id="Flow_24" sourceRef="Activity_NOC" targetRef="Activity_Instalacao" />
+    <bpmn:sequenceFlow id="Flow_25" sourceRef="Activity_Instalacao" targetRef="Activity_FinanceiroFinal" />
+    <bpmn:sequenceFlow id="Flow_26" sourceRef="Activity_FinanceiroFinal" targetRef="Event_Vendemos" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Vendas001">
+    <bpmndi:BPMNPlane id="BPMNPlane_Vendas001" bpmnElement="Collaboration_Vendas001">
+
+      <bpmndi:BPMNShape id="Participant_Vendas_di" bpmnElement="Participant_Vendas" isHorizontal="true">
+        <dc:Bounds x="100" y="130" width="1790" height="1030" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_VendedorAtendente_di" bpmnElement="Lane_VendedorAtendente" isHorizontal="true">
+        <dc:Bounds x="130" y="140" width="1750" height="450" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Financeiro_di" bpmnElement="Lane_Financeiro" isHorizontal="true">
+        <dc:Bounds x="130" y="590" width="1750" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Estoque_di" bpmnElement="Lane_Estoque" isHorizontal="true">
+        <dc:Bounds x="130" y="730" width="1750" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Auditoria_di" bpmnElement="Lane_Auditoria" isHorizontal="true">
+        <dc:Bounds x="130" y="870" width="1750" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_NOC_di" bpmnElement="Lane_NOC" isHorizontal="true">
+        <dc:Bounds x="130" y="1010" width="1750" height="140" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Inicio_di" bpmnElement="StartEvent_Inicio">
+        <dc:Bounds x="180" y="302" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="160" y="345" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_Canal_di" bpmnElement="Gateway_Canal" isMarkerVisible="true">
+        <dc:Bounds x="260" y="295" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="250" y="270" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_Loja_di" bpmnElement="Activity_Loja">
+        <dc:Bounds x="360" y="160" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_AceiteLoja_di" bpmnElement="Gateway_AceiteLoja" isMarkerVisible="true">
+        <dc:Bounds x="560" y="175" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="545" y="148" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_LeadLoja_di" bpmnElement="Activity_LeadLoja">
+        <dc:Bounds x="660" y="160" width="130" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_PerdemosLoja_di" bpmnElement="Event_PerdemosLoja">
+        <dc:Bounds x="830" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="815" y="225" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_ColetaDoc_di" bpmnElement="Activity_ColetaDoc">
+        <dc:Bounds x="660" y="280" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_Cadastro_di" bpmnElement="Activity_Cadastro">
+        <dc:Bounds x="850" y="280" width="160" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_Assinatura_di" bpmnElement="Activity_Assinatura">
+        <dc:Bounds x="1240" y="280" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_ChecklistPAP_di" bpmnElement="Activity_ChecklistPAP">
+        <dc:Bounds x="360" y="400" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_AbordagemPAP_di" bpmnElement="Activity_AbordagemPAP">
+        <dc:Bounds x="560" y="400" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_InteressePAP_di" bpmnElement="Gateway_InteressePAP" isMarkerVisible="true">
+        <dc:Bounds x="770" y="415" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="755" y="388" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_OfertaPAP_di" bpmnElement="Activity_OfertaPAP">
+        <dc:Bounds x="880" y="400" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_FechaPAP_di" bpmnElement="Activity_FechaPAP">
+        <dc:Bounds x="1080" y="400" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_ObjecaoPAP_di" bpmnElement="Activity_ObjecaoPAP">
+        <dc:Bounds x="880" y="500" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_PerdemosPAP_di" bpmnElement="Event_PerdemosPAP">
+        <dc:Bounds x="1080" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1065" y="562" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_TaxaAtivacao_di" bpmnElement="Activity_TaxaAtivacao">
+        <dc:Bounds x="850" y="610" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_FinanceiroFinal_di" bpmnElement="Activity_FinanceiroFinal">
+        <dc:Bounds x="1600" y="610" width="170" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Event_Vendemos_di" bpmnElement="Event_Vendemos">
+        <dc:Bounds x="1810" y="632" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1795" y="672" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_VinculaEquip_di" bpmnElement="Activity_VinculaEquip">
+        <dc:Bounds x="850" y="750" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_AuditaOS_di" bpmnElement="Activity_AuditaOS">
+        <dc:Bounds x="1240" y="890" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_Auditoria_di" bpmnElement="Gateway_Auditoria" isMarkerVisible="true">
+        <dc:Bounds x="1440" y="905" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1425" y="878" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_NOC_di" bpmnElement="Activity_NOC">
+        <dc:Bounds x="1440" y="1030" width="140" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Activity_Instalacao_di" bpmnElement="Activity_Instalacao">
+        <dc:Bounds x="1620" y="1030" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="600" y="10" width="280" height="110" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="216" y="320" />
+        <di:waypoint x="260" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Loja_di" bpmnElement="Flow_Loja">
+        <di:waypoint x="285" y="295" />
+        <di:waypoint x="285" y="200" />
+        <di:waypoint x="360" y="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="291" y="245" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PAP_di" bpmnElement="Flow_PAP">
+        <di:waypoint x="285" y="345" />
+        <di:waypoint x="285" y="440" />
+        <di:waypoint x="360" y="440" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="291" y="390" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="500" y="200" />
+        <di:waypoint x="560" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AceiteNao_di" bpmnElement="Flow_AceiteNao">
+        <di:waypoint x="610" y="200" />
+        <di:waypoint x="660" y="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="625" y="182" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="790" y="200" />
+        <di:waypoint x="830" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AceiteSim_di" bpmnElement="Flow_AceiteSim">
+        <di:waypoint x="585" y="225" />
+        <di:waypoint x="585" y="320" />
+        <di:waypoint x="660" y="320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="591" y="270" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="500" y="440" />
+        <di:waypoint x="560" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="710" y="440" />
+        <di:waypoint x="770" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_InteresseNao_di" bpmnElement="Flow_InteresseNao">
+        <di:waypoint x="795" y="465" />
+        <di:waypoint x="795" y="540" />
+        <di:waypoint x="880" y="540" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="801" y="500" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1030" y="540" />
+        <di:waypoint x="1080" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_InteresseSim_di" bpmnElement="Flow_InteresseSim">
+        <di:waypoint x="820" y="440" />
+        <di:waypoint x="880" y="440" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="840" y="422" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1030" y="440" />
+        <di:waypoint x="1080" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1155" y="400" />
+        <di:waypoint x="1155" y="320" />
+        <di:waypoint x="800" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="800" y="320" />
+        <di:waypoint x="850" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="900" y="360" />
+        <di:waypoint x="900" y="610" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="960" y="360" />
+        <di:waypoint x="960" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="1000" y="650" />
+        <di:waypoint x="1150" y="650" />
+        <di:waypoint x="1150" y="320" />
+        <di:waypoint x="1240" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19">
+        <di:waypoint x="1000" y="790" />
+        <di:waypoint x="1180" y="790" />
+        <di:waypoint x="1180" y="340" />
+        <di:waypoint x="1240" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <di:waypoint x="1310" y="360" />
+        <di:waypoint x="1310" y="890" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21">
+        <di:waypoint x="1390" y="930" />
+        <di:waypoint x="1440" y="930" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AuditoriaNao_di" bpmnElement="Flow_AuditoriaNao">
+        <di:waypoint x="1465" y="905" />
+        <di:waypoint x="1465" y="320" />
+        <di:waypoint x="1380" y="320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1471" y="600" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AuditoriaSim_di" bpmnElement="Flow_AuditoriaSim">
+        <di:waypoint x="1465" y="955" />
+        <di:waypoint x="1465" y="1070" />
+        <di:waypoint x="1440" y="1070" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1471" y="990" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_24_di" bpmnElement="Flow_24">
+        <di:waypoint x="1580" y="1070" />
+        <di:waypoint x="1620" y="1070" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_25_di" bpmnElement="Flow_25">
+        <di:waypoint x="1695" y="1030" />
+        <di:waypoint x="1695" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_26_di" bpmnElement="Flow_26">
+        <di:waypoint x="1770" y="650" />
+        <di:waypoint x="1810" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="890" y="130" />
+        <di:waypoint x="740" y="120" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

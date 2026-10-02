@@ -1,0 +1,1489 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP-REATVC-001 - Processo de Reativação de Internet | Prestek Telecom</title>
+<style>
+  :root {
+    --accent: #384C9C;
+    --accent-dark: #D97738;
+    --accent-light: #EAEEF7;
+    --accent-border: #C2CBE3;
+    --ink: #384C9C;
+    --muted: #475467;
+    --border: #D7DDE3;
+    --bg: #F4F6F8;
+    --paper: #ffffff;
+    --warning-bg: #fef8ec;
+    --warning-border: #f3c267;
+    --warning-text: #8a5300;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 880px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  /* Cabeçalho */
+  .doc-header {
+    background: var(--accent);
+    color: #ffffff;
+    padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--accent-dark);
+  }
+
+  .doc-header .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    opacity: 0.9;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+
+  .doc-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .doc-header .meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .doc-header .badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .doc-body {
+    padding: 36px 40px 48px;
+  }
+
+  /* Tabela de controle histórico */
+  table.meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 28px;
+    font-size: 13.5px;
+  }
+
+  table.meta caption {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    caption-side: top;
+    font-weight: 700;
+  }
+
+  table.meta th, table.meta td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  table.meta th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    width: 20%;
+  }
+
+  .approvals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 32px;
+  }
+
+  .approvals .box {
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    background: var(--accent-light);
+  }
+
+  .approvals .box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .approvals .box .value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .approvals .box .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Seções do POP */
+  section.pop-section {
+    margin-bottom: 32px;
+  }
+
+  section.pop-section h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+
+  section.pop-section h3 {
+    font-size: 14px;
+    color: var(--accent-dark);
+    margin: 18px 0 8px;
+    font-weight: 600;
+  }
+
+  section.pop-section p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    text-align: justify;
+  }
+
+  /* Listas e passos */
+  .steps-macro {
+    list-style-type: lower-alpha;
+    margin: 10px 0 16px 22px;
+    padding: 0;
+  }
+
+  .steps-macro li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed {
+    margin: 12px 0;
+    padding-left: 20px;
+  }
+
+  .steps-detailed > li {
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .steps-detailed ul {
+    margin: 6px 0 6px 20px;
+    padding: 0;
+  }
+
+  .steps-detailed ul li {
+    margin-bottom: 4px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 12px 0 16px;
+    font-size: 13.5px;
+  }
+
+  .ixc-config-box ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+  }
+
+  .ixc-config-box ul li {
+    margin-bottom: 5px;
+  }
+
+  .template-box {
+    background: #2d3748;
+    color: #edf2f7;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12.5px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  /* Bloco de decisão pendente */
+  .pending-decision {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 4px 0 20px;
+    font-size: 13.5px;
+    color: var(--warning-text);
+  }
+
+  .pending-decision .pd-title {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 12px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pending-decision p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--warning-text);
+    text-align: left;
+  }
+
+  /* Regras de negócios */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .rule-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rule-number {
+    background: var(--accent);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .rule-card.wide { grid-column: span 2; }
+
+  /* Tabelas de indicadores / riscos */
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 20px;
+    font-size: 13px;
+  }
+
+  table.data-table th, table.data-table td {
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    text-align: left;
+  }
+
+  table.data-table th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* BPMN bpmn.io styles */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-action:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .bpmn-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    margin: 10px 0 24px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .bpmn-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+  }
+  .zoom-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .zoom-btn:hover {
+    background: #edf2f7;
+    border-color: var(--accent-border);
+  }
+  #bpmn-canvas, #bpmn-canvas-2 {
+    width: 100%;
+    height: 520px;
+    position: relative;
+    background: #ffffff;
+  }
+
+  /* Exceções */
+  .exception-item {
+    margin-bottom: 14px;
+    border: 1px solid #fed7aa;
+    background: #fffdfa;
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+
+  .exception-title {
+    font-weight: 700;
+    color: #c2410c;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .exception-desc {
+    font-size: 13.5px;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+
+  .exception-treatment {
+    font-size: 13px;
+    color: #1e293b;
+    background: #fef3c7;
+    padding: 8px 12px;
+    border-radius: 3px;
+    border-left: 3px solid #f59e0b;
+  }
+
+  .exception-treatment ol, .exception-treatment ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+  }
+
+  .exception-treatment li {
+    margin-bottom: 3px;
+  }
+
+  /* Fluxograma BPMN (fallback estático) */
+  .bpmn-container {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .swimlane {
+    margin-bottom: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .swimlane-header {
+    background: #475569;
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .swimlane-header.ti {
+    background: var(--accent);
+  }
+
+  .swimlane-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .flow-node {
+    background: #f1f5f9;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    text-align: center;
+    max-width: 190px;
+    font-weight: 600;
+  }
+
+  .flow-arrow {
+    color: #64748b;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  /* Assinaturas */
+  .signoff {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    page-break-inside: avoid;
+  }
+
+  .signoff .sig {
+    text-align: center;
+  }
+
+  .signoff .sig .line {
+    border-top: 1px solid var(--ink);
+    margin-top: 48px;
+    padding-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .signoff .sig .role {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .doc-footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 16px 40px 28px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+      color: #000;
+    }
+    .doc {
+      border: none;
+      box-shadow: none;
+      max-width: 100%;
+    }
+    .doc-header {
+      background: var(--accent) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .approvals .box, table.meta th, .rule-number, .exception-item, .exception-treatment, .ixc-config-box, .pending-decision, table.data-table th {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .signoff {
+      page-break-inside: avoid;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .doc-header, .doc-body { padding-left: 18px; padding-right: 18px; }
+    .approvals, .signoff, .rules-grid { grid-template-columns: 1fr; gap: 16px; }
+    .rule-card.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- CABEÇALHO -->
+  <div class="doc-header">
+    <p class="kicker">Prestek Telecom • Sistema de Gestão da Qualidade • ISO 9001</p>
+    <h1>POP-REATVC-001 - Processo de Reativação de Internet</h1>
+    <div class="meta-badges">
+      <span class="badge">Padrão nº: POP-REATVC-001</span>
+      <span class="badge">Revisão: 002</span>
+      <span class="badge">Elaborado em: 23/09/2025</span>
+      <span class="badge">Responsável: Atendimento / T.I.</span>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- CONTROLE HISTÓRICO -->
+    <table class="meta">
+      <caption>Controle Histórico</caption>
+      <thead>
+        <tr>
+          <th>Revisão</th>
+          <th>Data</th>
+          <th>Elaboração</th>
+          <th>Verificação</th>
+          <th>Aprovação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>001</td>
+          <td>23/09/2025</td>
+          <td>Marcio Eduardo Felix</td>
+          <td>Marcio Eduardo Felix - Setor T.I.</td>
+          <td>Roberta Kelle Nunes Gomes</td>
+        </tr>
+        <tr>
+          <td>002</td>
+          <td>10/09/2026</td>
+          <td>Setor T.I. - atualização de consolidação (incorporação das regras de negócio de elegibilidade de 120 dias, verificação de equipamentos/débitos e dispensa de visita técnica)</td>
+          <td>Marcio Eduardo Felix - Setor T.I.</td>
+          <td>Roberta Kelle Nunes Gomes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- APROVAÇÕES -->
+    <div class="approvals">
+      <div class="box">
+        <div class="label">Elaborado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Setor T.I. - 23/09/2025</div>
+      </div>
+      <div class="box">
+        <div class="label">Verificado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Setor T.I. - 23/09/2025</div>
+      </div>
+      <div class="box">
+        <div class="label">Aprovado por</div>
+        <div class="value">Roberta Kelle Nunes Gomes</div>
+        <div class="sub">Representante da Direção • 23/09/2025</div>
+      </div>
+    </div>
+
+    <!-- 1. OBJETIVO -->
+    <section class="pop-section">
+      <h2>1. Objetivo</h2>
+      <p>Estabelecer procedimento padronizado para reinstalação (reativação) de serviços de internet, garantindo qualidade, conformidade com requisitos regulamentares da ANATEL, satisfação do cliente e alinhamento aos objetivos do Sistema de Gestão da Qualidade conforme ISO 9001:2015, assegurando rastreabilidade, controle de riscos e melhoria contínua do processo.</p>
+    </section>
+
+    <!-- 2. DESCRIÇÃO DO PROCESSO -->
+    <section class="pop-section">
+      <h2>2. Descrição do processo</h2>
+      <p>O processo de reinstalação de internet visa restabelecer o serviço de conectividade para clientes que necessitam de nova instalação física ou migração tecnológica, seguindo padrões de qualidade estabelecidos pelo SGQ. O processo abrange desde o agendamento até a finalização com pesquisa de satisfação, garantindo conformidade técnica e regulamentar.</p>
+
+      <h3>Aplicabilidade</h3>
+      <p>Equipe de atendimento ao cliente; técnicos de campo responsáveis por reinstalação; supervisores técnicos; equipe de financeiro; auditores internos de qualidade; e todos os colaboradores envolvidos no processo de reinstalação de internet.</p>
+
+      <h3>Siglas e definições</h3>
+      <div class="ixc-config-box">
+        <ul>
+          <li><strong>QLD:</strong> Quality Level Definition</li>
+          <li><strong>SGQ:</strong> Sistema de Gestão da Qualidade</li>
+          <li><strong>O.S.:</strong> Ordem de Serviço</li>
+          <li><strong>SLA:</strong> Service Level Agreement</li>
+          <li><strong>FTTH:</strong> Fiber to the Home</li>
+          <li><strong>ONU/ONT:</strong> Optical Network Unit/Terminal</li>
+          <li><strong>CTO:</strong> Caixa de Terminação Óptica</li>
+        </ul>
+      </div>
+
+      <h3>Recursos necessários</h3>
+      <p><strong>Equipamentos e materiais:</strong> cabo de fibra óptica drop, ONU/ONT e roteador Wi-Fi, roseta óptica e conectores, ferramentas de conectorização (cortador, descascador), medidor de potência óptica, equipamentos de proteção individual (EPI) e tablet/smartphone com acesso ao sistema.</p>
+      <p><strong>Documentos de referência:</strong> manual técnico de instalação, normas internas de qualidade, regulamentação ANATEL e ISO 9001:2015 (cláusulas 8.1, 8.2, 8.5).</p>
+    </section>
+
+    <!-- 3. PROCESSO -->
+    <section class="pop-section">
+      <h2>3. Processo</h2>
+      <ol class="steps-macro">
+        <li>Elegibilidade - verificar janela de 120 dias (Reativação x Nova Venda).</li>
+        <li>Verificação - checar equipamentos na residência e débitos/multa.</li>
+        <li>Tratativa - pré-contrato (dentro dos 120 dias) ou cliente normal (fora do prazo).</li>
+        <li>Vinculação - equipamentos, contrato e decisão sobre visita técnica.</li>
+        <li>Execução - visita técnica quando necessária (cobrança de R$ 50,00) ou liberação direta de login.</li>
+        <li>Finalização - documentação e pesquisa de satisfação.</li>
+      </ol>
+    </section>
+
+    <!-- 4. PASSOS DO PROCESSO -->
+    <section class="pop-section">
+      <h2>4. Passos do processo</h2>
+
+      <div class="pending-decision">
+        <div class="pd-title">⚠ Decisão pendente</div>
+        <p><strong>[DECISÃO PENDENTE - telas/campos concretos do IXC Soft, parcialmente resolvido]</strong><br>
+        A lógica de negócio abaixo (prazo de 120 dias, verificação de equipamentos/débitos, dispensa de visita técnica) foi validada diretamente com o setor. Os passos 4.1 a 4.3 já têm as abas reais do IXC Soft identificadas. Os passos 4.4 a 4.8 ainda estão em nível conceitual - faltam as telas/campos exatos de pré-contrato, vinculação de estoque e finalização de O.S.</p>
+      </div>
+
+      <ol class="steps-detailed">
+        <li>
+          <strong>4.1. Verificação de elegibilidade - janela de 120 dias</strong>
+          <ul>
+            <li>Verificar a data do cancelamento anterior do cliente. <strong>Tela IXC:</strong> dentro do contrato do cliente, aba <strong>"Cancel./Negat.Desist."</strong>.</li>
+            <li>Dentro do prazo de 120 dias do cancelamento → segue como <strong>Reativação</strong> (este POP).</li>
+            <li>Fora do prazo de 120 dias → cliente é tratado como <strong>Cliente Novo (Nova Venda)</strong>, seguindo o POP-VENDAS-001 ainda assim repetir as verificações dos passos 4.2 e 4.3 antes de seguir como nova venda.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.2. Verificação de equipamentos na residência</strong> (clientes dentro do prazo de 120 dias)
+          <ul>
+            <li>Validar com o cliente quais equipamentos permaneceram na residência. <strong>Tela IXC:</strong> dentro do contrato do cliente, aba <strong>"Comodato"</strong>.</li>
+            <li>Solicitar foto e número de série/MAC de cada equipamento.</li>
+            <li>Verificar se os equipamentos estão em boas condições, ligados na tomada e com as luzes/LEDs acesos.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.3. Verificação de débitos e multa contratual</strong>
+          <ul>
+            <li>Verificar se o cliente possui débito em aberto. <strong>Tela IXC:</strong> dentro do contrato do cliente, aba <strong>"Financeiro"</strong> (débitos de mensalidade) e aba <strong>"Financeiro Avulso"</strong> (multas e dias de acesso).</li>
+            <li>Débito por inadimplência → cliente se enquadra como <strong>pré-contrato</strong>; débitos devem ser negociados e quitados antes da reativação (equivale à criação de um novo contrato).</li>
+            <li>Verificar existência de multa contratual e negociar com o cliente.</li>
+            <li><strong>Se o cliente se recusar a negociar débito/multa, o procedimento NÃO é realizado</strong> a pendência permanece registrada no sistema.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.4. Tratativa de criação da reativação - fluxo pré-contrato</strong> (dentro dos 120 dias, débito já negociado/quitado)
+          <ul>
+            <li>Conferir novamente todos os documentos do cliente.</li>
+            <li>Verificar se o cliente mudou de telefone, coletar e-mail atualizado (obrigatório para validação).</li>
+            <li>Como pré-contrato, o cliente paga a primeira mensalidade já no período de vencimento dos dias de acesso inicial realizar a quitação.</li>
+            <li>Cliente assina todos os documentos normais de pré-contrato.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.5. Tratativa de cliente fora do prazo de 120 dias - fluxo Nova Venda</strong>
+          <ul>
+            <li>Repetir a verificação de equipamentos (4.2) e de débitos pendentes (4.3).</li>
+            <li>Cliente entra como cliente normal (Nova Venda), não como pré-contrato.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.6. Vinculação de equipamentos, contrato e visita técnica</strong>
+          <ul>
+            <li>Vincular os novos equipamentos no estoque (equipamentos devolvidos corretamente e em dias vinculados normalmente ao novo contrato).</li>
+            <li>Cliente assina o contrato.</li>
+            <li><strong>Dispensa de visita técnica:</strong> equipamentos em dias, ligados e funcionando (fluxo pré-contrato) → não há necessidade de visita, basta subir o login e liberar o acesso.</li>
+            <li><strong>Visita técnica necessária:</strong> configuração em campo necessária (equipamento não devolvido, substituição, nova instalação) → realizar conforme 4.7 e <strong>cobrar R$ 50,00</strong> pela visita.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.7. Visita técnica - instalação/configuração</strong> (quando necessária, conforme 4.6)
+          <ul>
+            <li>Conferir equipamentos/materiais e EPI obrigatórios; confirmar agendamento 1 hora antes, registrar saída/chegada via GPS.</li>
+            <li>Se aplicável, remover equipamentos/cabeamento antigos com segurança e fotografar estado inicial.</li>
+            <li>Instalação externa: CTO (se necessário), cabo drop, abraçadeiras a cada 50cm, potência do sinal -8 a -25 dBm.</li>
+            <li>Instalação interna: roseta óptica, conector SC/APC, ONU (VLAN/autenticação) e roteador Wi-Fi (nome/senha personalizados).</li>
+            <li>Testes: potência óptica, velocidade (mínimo 80% do contratado), latência (ping &lt; 50ms), navegação em múltiplos dispositivos.</li>
+            <li>Orientar o cliente sobre o funcionamento dos equipamentos e entregar dados da rede Wi-Fi.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>4.8. Finalização e documentação</strong>
+          <ul>
+            <li>Fotografar a instalação completa (quando houver visita) ou registrar a liberação de login (quando dispensada).</li>
+            <li>Atualizar o sistema com os dados da reativação e coletar assinatura digital do cliente.</li>
+            <li>Enviar link para pesquisa de satisfação e finalizar a O.S. no sistema.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <!-- BPMN - ELEGIBILIDADE E ATENDIMENTO (INTEGRAÇÃO BPMN.IO) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 10px;">
+        <h3 style="margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">Fluxograma do Processo (BPMN 2.0 • bpmn.io)</h3>
+        <div style="display: flex; gap: 8px;">
+          <a href="POP-REATVC-001 - Elegibilidade e Atendimento.bpmn" download="POP-REATVC-001 - Elegibilidade e Atendimento.bpmn" class="btn-action" title="Baixar arquivo XML padrão BPMN 2.0">⬇ Baixar .bpmn</a>
+          <a href="https://demo.bpmn.io/" target="_blank" rel="noopener noreferrer" class="btn-action" title="Abrir ferramenta bpmn.io">🌐 Abrir no bpmn.io</a>
+        </div>
+      </div>
+
+      <p style="font-size: 13px; color: var(--muted); margin: 0 0 10px;">Este diagrama representa a lógica de negócio de elegibilidade e atendimento descrita nos passos 4.1 a 4.8 acima (janela de 120 dias, verificação de equipamentos/débitos, classificação em pré-contrato ou cliente normal, dispensa de visita técnica). Havia também um segundo diagrama, mais operacional (fluxo de O.S. automáticas e auditoria entre 7 setores) - foi removido deste documento para manter um único fluxograma; o arquivo <code>.bpmn</code> correspondente permanece em <code>Concluidos/</code>.</p>
+
+      <div class="bpmn-wrapper">
+        <div class="bpmn-toolbar">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Interativo: clique e arraste para navegar • scroll para zoom</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btn-zoom-in-2" class="zoom-btn" title="Aumentar zoom">+</button>
+            <button type="button" id="btn-zoom-out-2" class="zoom-btn" title="Diminuir zoom">-</button>
+            <button type="button" id="btn-zoom-fit-2" class="zoom-btn" title="Ajustar à tela">⤢ Ajustar</button>
+          </div>
+        </div>
+        <div id="bpmn-canvas-2">
+          <!-- Fallback estático caso esteja sem internet -->
+          <div id="bpmn-fallback-2" style="display: none; padding: 20px;">
+            <div class="swimlane">
+              <div class="swimlane-header">Raia / Atendimento / Comercial</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Cliente solicita reativação ➔ Verificar data do cancelamento anterior (Cancel./Negat.Desist.)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Dentro do prazo de 120 dias?<br><small>[Não] ➔ Tratar como Cliente Novo (Nova Venda), depois segue normalmente<br>[Sim] ➔ segue direto</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Verificar equipamentos na residência (Comodato) ➔ Verificar débitos e multa (Financeiro / Financeiro Avulso)</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Cliente com débito ou multa?<br><small>[Recusa negociar] ➔ Fim: procedimento não realizado<br>[Negocia e quita] ➔ Classificar como pré-contrato<br>[Sem débito] ➔ Classificar como normal (Nova Venda)</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Conferir documentos, telefone e e-mail ➔ Quitar 1ª mensalidade e assinar documentos ➔ Vincular novos equipamentos no estoque</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Equipamentos em dias, ligados e funcionando?<br><small>[Sim] ➔ Dispensar visita técnica: subir login e liberar acesso<br>[Não] ➔ segue para Setor Técnico</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color: #16a34a; background: #f0fdf4; color: #166534;">Enviar pesquisa de satisfação ➔ Atendimento concluído <small>(recebe também o retorno da visita técnica do Setor Técnico)</small></div>
+              </div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-header ti">Raia / Setor Técnico</div>
+              <div class="swimlane-steps">
+                <div class="flow-node">Executar visita técnica: instalação/configuração de ONU e roteador ➔ Testar sinal, velocidade e conectividade</div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">Testes conformes aos parâmetros?<br><small>[Não] ➔ Corrigir conexões / ajustar equipamentos ➔ volta a testar sinal (loop)<br>[Sim] ➔ Finalizar O.S. e documentar: fotos, assinatura do cliente</small></div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" style="border-color: #16a34a; background: #f0fdf4; color: #166534;">Retorna para Atendimento/Comercial: Enviar pesquisa de satisfação</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 5. REGRAS DE NEGÓCIOS -->
+    <section class="pop-section">
+      <h2>5. Regras de negócios</h2>
+
+      <h3>Elegibilidade e classificação do cliente</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">1</div><div>Reativação só se aplica dentro do prazo de 120 dias do cancelamento, fora do prazo é Cliente Novo/Nova Venda</div></div>
+        <div class="rule-card"><div class="rule-number">2</div><div>Débito por inadimplência → cliente entra como pré-contrato, com quitação antes da reativação</div></div>
+        <div class="rule-card wide"><div class="rule-number">3</div><div>Multa contratual pendente deve ser nego, recusa do cliente impede a execução do procedimento</div></div>
+      </div>
+
+      <h3>Taxa de visita técnica</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">4</div><div>Dispensada quando os equipamentos estão em dias, ligados e funcionando (sobe-se apenas o login)</div></div>
+        <div class="rule-card"><div class="rule-number">5</div><div>Cobrado R$ 50,00 quando a visita é necessária para configuração</div></div>
+      </div>
+
+      <h3>Critérios técnicos obrigatórios</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">6</div><div>Potência óptica entre -8 e -25 dBm</div></div>
+        <div class="rule-card"><div class="rule-number">7</div><div>Velocidade mínima: 80% da contratada</div></div>
+        <div class="rule-card"><div class="rule-number">8</div><div>Latência máxima: 50ms (servidores nacionais)</div></div>
+        <div class="rule-card"><div class="rule-number">9</div><div>Instalação conforme normas de segurança</div></div>
+      </div>
+
+      <h3>Prazos de atendimento (ANATEL)</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">10</div><div>Instalação residencial: até 7 dias úteis</div></div>
+        <div class="rule-card"><div class="rule-number">11</div><div>Instalação empresarial: até 10 dias úteis</div></div>
+        <div class="rule-card wide"><div class="rule-number">12</div><div>Reagendamento: máximo 2 vezes</div></div>
+      </div>
+
+      <h3>Documentação obrigatória</h3>
+      <div class="rules-grid">
+        <div class="rule-card"><div class="rule-number">13</div><div>Registro fotográfico da instalação</div></div>
+        <div class="rule-card"><div class="rule-number">14</div><div>Assinatura digital ou física do cliente</div></div>
+        <div class="rule-card"><div class="rule-number">15</div><div>Dados técnicos no sistema (potência, velocidade)</div></div>
+        <div class="rule-card"><div class="rule-number">16</div><div>Pesquisa de satisfação</div></div>
+      </div>
+
+      <h3>Alçadas e responsabilidades</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>Função</th><th>Responsabilidade</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Atendimento ao Cliente</td><td>Registrar e qualificar a solicitação, agendar visita e coletar pesquisa de satisfação (NPS/CSAT).</td></tr>
+          <tr><td>Supervisor Atendimento</td><td>Monitorar a qualidade das interações, auditar registros e gerenciar escaladas.</td></tr>
+          <tr><td>Técnico Instalador</td><td>Executar o serviço em campo, documentar parâmetros técnicos e orientar o cliente.</td></tr>
+          <tr><td>Supervisor Técnico</td><td>Garantir qualidade técnica via auditorias, gerir recursos e liberar O.S. para faturamento.</td></tr>
+          <tr><td>Financeiro</td><td>Processar faturamento e cobrança da taxa de reativação; tratar exceções de inadimplência.</td></tr>
+          <tr><td>Auditor de Qualidade</td><td>Mapear o fluxo, identificar não conformidades e recomendar melhorias.</td></tr>
+          <tr><td>Gerente Técnico</td><td>Revisar o procedimento e aprovar melhorias.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Indicadores de desempenho</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>Indicador</th><th>Meta</th><th>Frequência</th><th>Responsável</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tempo Médio de Instalação</td><td>≤ 4 horas</td><td>Mensal</td><td>Supervisor Técnico</td></tr>
+          <tr><td>Taxa de Primeira Instalação</td><td>≥ 90%</td><td>Mensal</td><td>Gerente Técnico</td></tr>
+          <tr><td>Índice de Satisfação</td><td>≥ 4,5/5,0</td><td>Mensal</td><td>Atendimento</td></tr>
+          <tr><td>Conformidade Técnica</td><td>100%</td><td>Semanal</td><td>Auditor Qualidade</td></tr>
+          <tr><td>Cumprimento de Prazo</td><td>≥ 95%</td><td>Mensal</td><td>Supervisor</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6. EXCEÇÕES E TRATAMENTO DE ERROS -->
+    <section class="pop-section">
+      <h2>6. Exceções e tratamento de erros</h2>
+      <p>Procedimentos obrigatórios para contingências e desvios durante o fluxo de reativação:</p>
+
+      <div class="exception-item">
+        <div class="exception-title">6.1. Cliente recusa negociar débito ou multa</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Cliente com débito/multa pendente não aceita negociar.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Procedimento não é realizado.</li>
+            <li>Pendência permanece registrada no sistema.</li>
+            <li>Encerrar o atendimento sem reativação.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.2. Falha na análise de viabilidade</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Sistema indica viabilidade, mas o local não possui infraestrutura.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Comunicar o cliente imediatamente.</li>
+            <li>Reagendar após análise técnica presencial.</li>
+            <li>Registrar a situação para melhoria do sistema de viabilidade.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.3. Cliente ausente no agendamento</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Cliente não atende ou não está presente no horário agendado.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Aguardar 30 minutos no local.</li>
+            <li>Contatar o cliente por telefone/WhatsApp.</li>
+            <li>Reagendar uma única vez após 2 faltas, exigir confirmação expressa.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.4. Potência óptica inadequada</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Medição fora dos parâmetros (-8 a -25 dBm).</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Verificar todas as conexões e limpar conectores.</li>
+            <li>Se persistir, acionar equipe de infraestrutura.</li>
+            <li>Não finalizar a instalação até a correção.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.5. Velocidade abaixo do contratado</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Teste de velocidade inferior a 80% do contratado.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Verificar configurações da ONU e testar com cabo direto.</li>
+            <li>Verificar congestionamento da rede.</li>
+            <li>Escalonar para o NOC se necessário.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.6. Falha de equipamento durante instalação</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> ONU ou roteador apresenta defeito.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Substituir por equipamento do estoque de campo, testando-o antes da instalação.</li>
+            <li>Registrar o defeito para troca junto ao fornecedor.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.7. Recusa do cliente em assinar</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Cliente insatisfeito recusa a assinatura de finalização.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Identificar o motivo da insatisfação e corrigir o problema, se possível.</li>
+            <li>Se não resolvido, acionar o supervisor.</li>
+            <li>Documentar a situação e não finalizar a O.S.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.8. Problemas de acesso ao imóvel</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Impossibilidade de acesso ao local para instalação.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ol>
+            <li>Documentar com fotos o impedimento.</li>
+            <li>Orientar o cliente sobre a necessidade de acesso e reagendar.</li>
+            <li>Informar sobre possível cobrança adicional.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.9. Interferência em outros serviços</div>
+        <div class="exception-desc"><strong>Descrição do Erro:</strong> Instalação afeta TV/telefone de outros moradores.</div>
+        <div class="exception-treatment">
+          <strong>Tratamento:</strong>
+          <ul>
+            <li>Interromper a instalação imediatamente e comunicar o supervisor.</li>
+            <li>Buscar rota alternativa; se não possível, cancelar e reagendar análise.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSÃO -->
+    <section class="pop-section">
+      <h2>7. Conclusão</h2>
+      <p>Este Procedimento Operacional Padrão estabelece diretrizes claras e objetivas para garantir que o processo de reinstalação de internet atenda aos mais altos padrões de qualidade, conformidade regulamentar e satisfação do cliente. A implementação rigorosa deste POP contribui para a padronização e reprodutibilidade do processo, a redução de retrabalhos e não conformidades, e o fortalecimento da satisfação e fidelização de clientes.</p>
+      <p>O comprometimento de toda a equipe - Atendimento, Comercial e T.I. - com estes procedimentos é fundamental para o sucesso do Sistema de Gestão da Qualidade e para a consolidação da excelência operacional da empresa. O levantamento de telas e campos concretos do IXC Soft, indicado como decisão pendente na Seção 4, deve ser priorizado para elevar este POP ao mesmo nível de detalhamento técnico do POP-TI-001.</p>
+    </section>
+
+    <!-- ASSINATURAS FORMAIS -->
+    <div class="signoff">
+      <div class="sig">
+        <div class="line">Marcio Eduardo Felix &nbsp;&nbsp;|&nbsp;&nbsp; 23/09/2025</div>
+        <div class="role">Setor T.I. • Elaborador</div>
+      </div>
+      <div class="sig">
+        <div class="line">Roberta Kelle Nunes Gomes &nbsp;&nbsp;|&nbsp;&nbsp; 23/09/2025</div>
+        <div class="role">Representante da Direção • Aprovadora</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ CONTROLADO -->
+  <div class="doc-footer">
+    Documento controlado - Sistema de Gestão da Qualidade ISO 9001 • Prestek Telecom
+  </div>
+
+</div>
+
+<!-- Script BPMN.io / bpmn-js — Fluxograma de Elegibilidade e Atendimento -->
+<script type="text/xml" id="bpmn-data-2">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_ElegibilidadeAtendimento" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_Elegibilidade">
+    <bpmn:participant id="Participant_Elegibilidade" name="Elegibilidade e Atendimento — Reativação" processRef="Process_Elegibilidade" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>ELEGIBILIDADE E ATENDIMENTO
+Atendimento/Comercial / Setor Técnico
+Prestek Telecom
+Regras de negócio validadas com o setor (120 dias, equipamentos/débitos, dispensa de visita técnica)
+Fluxograma de referência único deste POP (revisão 2026-09-11)</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_Elegibilidade" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Elegibilidade" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Atendimento" name="ATENDIMENTO / COMERCIAL">
+        <bpmn:flowNodeRef>StartEvent_Solicitacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerificarCancelamento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Prazo120</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TratarClienteNovo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerificarEquipamentos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerificarDebitos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Debito</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_NaoRealizado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ClassificarPreContrato</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ClassificarNormal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ConferirDocumentos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_QuitarAssinar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VincularEstoque</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_EquipOk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DispensarVisita</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PesquisaSatisfacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Concluido</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_SetorTecnico" name="SETOR TÉCNICO">
+        <bpmn:flowNodeRef>Task_ExecutarVisita</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TestarSinal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_TestesConformes</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CorrigirConexoes</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_FinalizarOSDoc</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Solicitacao" name="Cliente solicita reativação">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_VerificarCancelamento" name="Verificar data do cancelamento anterior (aba Cancel./Negat.Desist.)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Prazo120" name="Dentro do prazo de 120 dias?">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_TratarClienteNovo" name="Tratar como Cliente Novo (Nova Venda)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_VerificarEquipamentos" name="Verificar equipamentos na residência (aba Comodato): foto, MAC/série, estado">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_VerificarDebitos" name="Verificar débitos e multa (aba Financeiro / Financeiro Avulso)">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Debito" name="Cliente com débito ou multa?">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_NaoRealizado" name="Procedimento não realizado (débito registrado)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_ClassificarPreContrato" name="Classificar cliente como pré-contrato">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ClassificarNormal" name="Classificar cliente como normal (Nova Venda)">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ConferirDocumentos" name="Conferir documentos, telefone e e-mail do cliente">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_QuitarAssinar" name="Quitar 1ª mensalidade e assinar documentos">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_VincularEstoque" name="Vincular novos equipamentos no estoque">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_EquipOk" name="Equipamentos em dias, ligados e funcionando?">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_DispensarVisita" name="Dispensar visita técnica: subir login e liberar acesso">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_PesquisaSatisfacao" name="Enviar pesquisa de satisfação">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:incoming>Flow_24</bpmn:incoming>
+      <bpmn:outgoing>Flow_25</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Concluido" name="Atendimento concluído">
+      <bpmn:incoming>Flow_25</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:task id="Task_ExecutarVisita" name="Executar visita técnica: instalação/configuração de ONU e roteador">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_TestarSinal" name="Testar sinal, velocidade e conectividade">
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:incoming>Flow_22</bpmn:incoming>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_TestesConformes" name="Testes conformes aos parâmetros?">
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+      <bpmn:outgoing>Flow_23</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_CorrigirConexoes" name="Corrigir conexões / ajustar equipamentos">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_22</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_FinalizarOSDoc" name="Finalizar O.S. e documentar: fotos, assinatura do cliente">
+      <bpmn:incoming>Flow_23</bpmn:incoming>
+      <bpmn:outgoing>Flow_24</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Solicitacao" targetRef="Task_VerificarCancelamento" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_VerificarCancelamento" targetRef="Gateway_Prazo120" />
+    <bpmn:sequenceFlow id="Flow_3" name="Não" sourceRef="Gateway_Prazo120" targetRef="Task_TratarClienteNovo" />
+    <bpmn:sequenceFlow id="Flow_4" name="Sim" sourceRef="Gateway_Prazo120" targetRef="Task_VerificarEquipamentos" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_TratarClienteNovo" targetRef="Task_VerificarEquipamentos" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_VerificarEquipamentos" targetRef="Task_VerificarDebitos" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_VerificarDebitos" targetRef="Gateway_Debito" />
+    <bpmn:sequenceFlow id="Flow_8" name="Recusa negociar" sourceRef="Gateway_Debito" targetRef="EndEvent_NaoRealizado" />
+    <bpmn:sequenceFlow id="Flow_9" name="Negocia e quita" sourceRef="Gateway_Debito" targetRef="Task_ClassificarPreContrato" />
+    <bpmn:sequenceFlow id="Flow_10" name="Sem débito" sourceRef="Gateway_Debito" targetRef="Task_ClassificarNormal" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_ClassificarPreContrato" targetRef="Task_ConferirDocumentos" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_ClassificarNormal" targetRef="Task_ConferirDocumentos" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_ConferirDocumentos" targetRef="Task_QuitarAssinar" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_QuitarAssinar" targetRef="Task_VincularEstoque" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_VincularEstoque" targetRef="Gateway_EquipOk" />
+    <bpmn:sequenceFlow id="Flow_16" name="Sim" sourceRef="Gateway_EquipOk" targetRef="Task_DispensarVisita" />
+    <bpmn:sequenceFlow id="Flow_17" name="Não" sourceRef="Gateway_EquipOk" targetRef="Task_ExecutarVisita" />
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Task_DispensarVisita" targetRef="Task_PesquisaSatisfacao" />
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Task_ExecutarVisita" targetRef="Task_TestarSinal" />
+    <bpmn:sequenceFlow id="Flow_20" sourceRef="Task_TestarSinal" targetRef="Gateway_TestesConformes" />
+    <bpmn:sequenceFlow id="Flow_21" name="Não" sourceRef="Gateway_TestesConformes" targetRef="Task_CorrigirConexoes" />
+    <bpmn:sequenceFlow id="Flow_22" sourceRef="Task_CorrigirConexoes" targetRef="Task_TestarSinal" />
+    <bpmn:sequenceFlow id="Flow_23" name="Sim" sourceRef="Gateway_TestesConformes" targetRef="Task_FinalizarOSDoc" />
+    <bpmn:sequenceFlow id="Flow_24" sourceRef="Task_FinalizarOSDoc" targetRef="Task_PesquisaSatisfacao" />
+    <bpmn:sequenceFlow id="Flow_25" sourceRef="Task_PesquisaSatisfacao" targetRef="EndEvent_Concluido" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Elegibilidade">
+    <bpmndi:BPMNPlane id="BPMNPlane_Elegibilidade" bpmnElement="Collaboration_Elegibilidade">
+
+      <bpmndi:BPMNShape id="Participant_Elegibilidade_di" bpmnElement="Participant_Elegibilidade" isHorizontal="true">
+        <dc:Bounds x="60" y="20" width="2600" height="1000" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Atendimento_di" bpmnElement="Lane_Atendimento" isHorizontal="true">
+        <dc:Bounds x="90" y="20" width="2570" height="580" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_SetorTecnico_di" bpmnElement="Lane_SetorTecnico" isHorizontal="true">
+        <dc:Bounds x="90" y="600" width="2570" height="420" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="1140" y="-140" width="360" height="140" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Solicitacao_di" bpmnElement="StartEvent_Solicitacao">
+        <dc:Bounds x="140" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="118" y="335" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VerificarCancelamento_di" bpmnElement="Task_VerificarCancelamento">
+        <dc:Bounds x="240" y="260" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Prazo120_di" bpmnElement="Gateway_Prazo120" isMarkerVisible="true">
+        <dc:Bounds x="460" y="285" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="440" y="339" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TratarClienteNovo_di" bpmnElement="Task_TratarClienteNovo">
+        <dc:Bounds x="460" y="460" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VerificarEquipamentos_di" bpmnElement="Task_VerificarEquipamentos">
+        <dc:Bounds x="580" y="260" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VerificarDebitos_di" bpmnElement="Task_VerificarDebitos">
+        <dc:Bounds x="800" y="260" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Debito_di" bpmnElement="Gateway_Debito" isMarkerVisible="true">
+        <dc:Bounds x="1020" y="285" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1000" y="339" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_NaoRealizado_di" bpmnElement="EndEvent_NaoRealizado">
+        <dc:Bounds x="1160" y="492" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1120" y="529" width="116" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ClassificarPreContrato_di" bpmnElement="Task_ClassificarPreContrato">
+        <dc:Bounds x="1140" y="100" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ClassificarNormal_di" bpmnElement="Task_ClassificarNormal">
+        <dc:Bounds x="1140" y="260" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ConferirDocumentos_di" bpmnElement="Task_ConferirDocumentos">
+        <dc:Bounds x="1360" y="260" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_QuitarAssinar_di" bpmnElement="Task_QuitarAssinar">
+        <dc:Bounds x="1580" y="260" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VincularEstoque_di" bpmnElement="Task_VincularEstoque">
+        <dc:Bounds x="1800" y="260" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_EquipOk_di" bpmnElement="Gateway_EquipOk" isMarkerVisible="true">
+        <dc:Bounds x="2020" y="285" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2000" y="339" width="90" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DispensarVisita_di" bpmnElement="Task_DispensarVisita">
+        <dc:Bounds x="2140" y="100" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PesquisaSatisfacao_di" bpmnElement="Task_PesquisaSatisfacao">
+        <dc:Bounds x="2140" y="260" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Concluido_di" bpmnElement="EndEvent_Concluido">
+        <dc:Bounds x="2360" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2338" y="335" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_ExecutarVisita_di" bpmnElement="Task_ExecutarVisita">
+        <dc:Bounds x="1965" y="660" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TestarSinal_di" bpmnElement="Task_TestarSinal">
+        <dc:Bounds x="2165" y="660" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_TestesConformes_di" bpmnElement="Gateway_TestesConformes" isMarkerVisible="true">
+        <dc:Bounds x="2385" y="685" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2365" y="739" width="90" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CorrigirConexoes_di" bpmnElement="Task_CorrigirConexoes">
+        <dc:Bounds x="2330" y="860" width="160" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_FinalizarOSDoc_di" bpmnElement="Task_FinalizarOSDoc">
+        <dc:Bounds x="2455" y="660" width="160" height="100" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="176" y="310" />
+        <di:waypoint x="240" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="400" y="310" />
+        <di:waypoint x="460" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="485" y="335" />
+        <di:waypoint x="485" y="510" />
+        <di:waypoint x="460" y="510" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="491" y="410" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="510" y="310" />
+        <di:waypoint x="580" y="310" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="536" y="292" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="620" y="510" />
+        <di:waypoint x="660" y="510" />
+        <di:waypoint x="660" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="740" y="310" />
+        <di:waypoint x="800" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="960" y="310" />
+        <di:waypoint x="1020" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1045" y="335" />
+        <di:waypoint x="1045" y="510" />
+        <di:waypoint x="1160" y="510" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1051" y="400" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1045" y="285" />
+        <di:waypoint x="1045" y="150" />
+        <di:waypoint x="1140" y="150" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1051" y="190" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1070" y="310" />
+        <di:waypoint x="1140" y="310" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1075" y="292" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1300" y="150" />
+        <di:waypoint x="1440" y="150" />
+        <di:waypoint x="1440" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1300" y="310" />
+        <di:waypoint x="1360" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1520" y="310" />
+        <di:waypoint x="1580" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1740" y="310" />
+        <di:waypoint x="1800" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="1960" y="310" />
+        <di:waypoint x="2020" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="2045" y="285" />
+        <di:waypoint x="2045" y="150" />
+        <di:waypoint x="2140" y="150" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2051" y="210" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="2045" y="335" />
+        <di:waypoint x="2045" y="660" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2051" y="490" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="2220" y="200" />
+        <di:waypoint x="2220" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19">
+        <di:waypoint x="2125" y="710" />
+        <di:waypoint x="2165" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <di:waypoint x="2325" y="710" />
+        <di:waypoint x="2385" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21">
+        <di:waypoint x="2410" y="735" />
+        <di:waypoint x="2410" y="860" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2416" y="795" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_22_di" bpmnElement="Flow_22">
+        <di:waypoint x="2330" y="910" />
+        <di:waypoint x="2245" y="910" />
+        <di:waypoint x="2245" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_23_di" bpmnElement="Flow_23">
+        <di:waypoint x="2435" y="710" />
+        <di:waypoint x="2455" y="710" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2436" y="686" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_24_di" bpmnElement="Flow_24">
+        <di:waypoint x="2535" y="660" />
+        <di:waypoint x="2535" y="360" />
+        <di:waypoint x="2220" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_25_di" bpmnElement="Flow_25">
+        <di:waypoint x="2300" y="310" />
+        <di:waypoint x="2360" y="310" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="1400" y="20" />
+        <di:waypoint x="1400" y="0" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+</script>
+
+<!-- Carregador bpmn-js com fallback automático — Fluxograma de Elegibilidade e Atendimento -->
+<script>
+  (function() {
+    var script2 = document.createElement('script');
+    script2.src = 'https://unpkg.com/bpmn-js@17/dist/bpmn-navigated-viewer.production.min.js';
+    script2.onload = function() {
+      try {
+        var BpmnViewer2 = window.BpmnJS;
+        var viewer2 = new BpmnViewer2({
+          container: '#bpmn-canvas-2'
+        });
+        var xml2 = document.getElementById('bpmn-data-2').textContent.trim();
+        viewer2.importXML(xml2).then(function() {
+          var canvas2 = viewer2.get('canvas');
+          canvas2.zoom('fit-viewport');
+
+          // Controles de zoom
+          document.getElementById('btn-zoom-in-2').onclick = function() { canvas2.zoom(canvas2.zoom() * 1.2); };
+          document.getElementById('btn-zoom-out-2').onclick = function() { canvas2.zoom(canvas2.zoom() * 0.8); };
+          document.getElementById('btn-zoom-fit-2').onclick = function() { canvas2.zoom('fit-viewport'); };
+        }).catch(function(err) {
+          console.warn('Erro ao importar BPMN (Elegibilidade e Atendimento):', err);
+          document.getElementById('bpmn-fallback-2').style.display = 'block';
+        });
+      } catch(e) {
+        document.getElementById('bpmn-fallback-2').style.display = 'block';
+      }
+    };
+    script2.onerror = function() {
+      // Caso offline ou sem acesso à CDN
+      document.getElementById('bpmn-fallback-2').style.display = 'block';
+    };
+    document.head.appendChild(script2);
+  })();
+</script>
+
+</body>
+</html>

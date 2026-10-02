@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_CDRQ" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_CDRQ">
+    <bpmn:participant id="Participant_CDRQ" name="FLUXO DE DOCUMENTOS DO SGQ — PRESTEK TELECOM (POP-CDRQ-001)" processRef="Process_CDRQ" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>POP-CDRQ-001
+Controle de Documentos e Registros da Qualidade
+Elaboração: Marcio Eduardo Felix
+Aprovação: Roberta Kelle Nunes Gomes (Direção)
+Prestek Telecom — ISO 9001</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_CDRQ" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_CDRQ" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_CDRQ">
+      <bpmn:lane id="Lane_Elaborador" name="SETOR SOLICITANTE / ELABORADOR">
+        <bpmn:flowNodeRef>StartEvent_Necessidade</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Emissao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AjusteDocumento</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Verificador" name="GESTOR DO SETOR (APROVAÇÃO SIMPLES)">
+        <bpmn:flowNodeRef>Activity_Verificacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Verificacao</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Direcao" name="REPRESENTANTE DA DIREÇÃO (APROVAÇÃO FINAL)">
+        <bpmn:flowNodeRef>Activity_AprovacaoFinal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_AprovacaoFinal</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Qualidade" name="QUALIDADE — QLD (PUBLICAÇÃO E CONTROLE)">
+        <bpmn:flowNodeRef>Activity_Publicacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AtualizaListaMestra</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_TrataObsoletos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Publicado</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Necessidade" name="Necessidade de Criação ou Revisão">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Activity_Emissao" name="❶ Emissão: Elaborar ou revisar documento no template padrão (Anexo I/II)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:incoming>Flow_RetornoAjuste</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_Verificacao" name="❷ Aprovação Simples: Realizar análise crítica e verificação técnica">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Verificacao" name="Aprovado na Verificação?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Verif_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Verif_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Activity_AjusteDocumento" name="Ajustar documento conforme apontamentos">
+      <bpmn:incoming>Flow_Verif_Nao</bpmn:incoming>
+      <bpmn:incoming>Flow_Aprov_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_RetornoAjuste</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_AprovacaoFinal" name="❸ Aprovação Final: Validar alinhamento estratégico e diretrizes da Direção">
+      <bpmn:incoming>Flow_Verif_Sim</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_AprovacaoFinal" name="Aprovado pela Direção?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Aprov_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Aprov_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Activity_Publicacao" name="❹ Publicação: Disponibilizar na Intranet / Google Drive T.I.">
+      <bpmn:incoming>Flow_Aprov_Sim</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:task id="Activity_AtualizaListaMestra" name="Atualizar Lista Mestra e indexação de códigos">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_TrataObsoletos" name="Recolher cópias físicas e arquivar versão obsoleta (8 anos)">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Publicado" name="Documento Oficial Controlado e Vigente">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Necessidade" targetRef="Activity_Emissao" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_Emissao" targetRef="Activity_Verificacao" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_Verificacao" targetRef="Gateway_Verificacao" />
+    <bpmn:sequenceFlow id="Flow_Verif_Sim" name="Sim" sourceRef="Gateway_Verificacao" targetRef="Activity_AprovacaoFinal" />
+    <bpmn:sequenceFlow id="Flow_Verif_Nao" name="Não" sourceRef="Gateway_Verificacao" targetRef="Activity_AjusteDocumento" />
+    <bpmn:sequenceFlow id="Flow_RetornoAjuste" sourceRef="Activity_AjusteDocumento" targetRef="Activity_Emissao" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_AprovacaoFinal" targetRef="Gateway_AprovacaoFinal" />
+    <bpmn:sequenceFlow id="Flow_Aprov_Sim" name="Sim" sourceRef="Gateway_AprovacaoFinal" targetRef="Activity_Publicacao" />
+    <bpmn:sequenceFlow id="Flow_Aprov_Nao" name="Não" sourceRef="Gateway_AprovacaoFinal" targetRef="Activity_AjusteDocumento" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Activity_Publicacao" targetRef="Activity_AtualizaListaMestra" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_AtualizaListaMestra" targetRef="Activity_TrataObsoletos" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_TrataObsoletos" targetRef="EndEvent_Publicado" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_CDRQ">
+    <bpmndi:BPMNPlane id="BPMNPlane_CDRQ" bpmnElement="Collaboration_CDRQ">
+      <bpmndi:BPMNShape id="Participant_CDRQ_di" bpmnElement="Participant_CDRQ" isHorizontal="true">
+        <dc:Bounds x="160" y="220" width="1080" height="640" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Elaborador_di" bpmnElement="Lane_Elaborador" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="1050" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Verificador_di" bpmnElement="Lane_Verificador" isHorizontal="true">
+        <dc:Bounds x="190" y="380" width="1050" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Direcao_di" bpmnElement="Lane_Direcao" isHorizontal="true">
+        <dc:Bounds x="190" y="530" width="1050" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Qualidade_di" bpmnElement="Lane_Qualidade" isHorizontal="true">
+        <dc:Bounds x="190" y="680" width="1050" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Necessidade_di" bpmnElement="StartEvent_Necessidade">
+        <dc:Bounds x="232" y="272" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="210" y="315" width="81" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Emissao_di" bpmnElement="Activity_Emissao">
+        <dc:Bounds x="320" y="250" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AjusteDocumento_di" bpmnElement="Activity_AjusteDocumento">
+        <dc:Bounds x="540" y="250" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Verificacao_di" bpmnElement="Activity_Verificacao">
+        <dc:Bounds x="320" y="415" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Verificacao_di" bpmnElement="Gateway_Verificacao" isMarkerVisible="true">
+        <dc:Bounds x="525" y="430" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="517" y="487" width="67" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AprovacaoFinal_di" bpmnElement="Activity_AprovacaoFinal">
+        <dc:Bounds x="640" y="565" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_AprovacaoFinal_di" bpmnElement="Gateway_AprovacaoFinal" isMarkerVisible="true">
+        <dc:Bounds x="845" y="580" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="834" y="637" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Publicacao_di" bpmnElement="Activity_Publicacao">
+        <dc:Bounds x="640" y="730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AtualizaListaMestra_di" bpmnElement="Activity_AtualizaListaMestra">
+        <dc:Bounds x="830" y="730" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_TrataObsoletos_di" bpmnElement="Activity_TrataObsoletos">
+        <dc:Bounds x="1010" y="730" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Publicado_di" bpmnElement="EndEvent_Publicado">
+        <dc:Bounds x="1182" y="752" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1160" y="795" width="81" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="460" y="80" width="360" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="268" y="290" />
+        <di:waypoint x="320" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="395" y="330" />
+        <di:waypoint x="395" y="415" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="470" y="455" />
+        <di:waypoint x="525" y="455" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Verif_Sim_di" bpmnElement="Flow_Verif_Sim">
+        <di:waypoint x="575" y="455" />
+        <di:waypoint x="600" y="455" />
+        <di:waypoint x="600" y="605" />
+        <di:waypoint x="640" y="605" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="606" y="527" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Verif_Nao_di" bpmnElement="Flow_Verif_Nao">
+        <di:waypoint x="550" y="430" />
+        <di:waypoint x="550" y="380" />
+        <di:waypoint x="610" y="380" />
+        <di:waypoint x="610" y="330" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="569" y="362" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RetornoAjuste_di" bpmnElement="Flow_RetornoAjuste">
+        <di:waypoint x="540" y="290" />
+        <di:waypoint x="470" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="790" y="605" />
+        <di:waypoint x="845" y="605" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Aprov_Sim_di" bpmnElement="Flow_Aprov_Sim">
+        <di:waypoint x="870" y="630" />
+        <di:waypoint x="870" y="680" />
+        <di:waypoint x="715" y="680" />
+        <di:waypoint x="715" y="730" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="783" y="662" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Aprov_Nao_di" bpmnElement="Flow_Aprov_Nao">
+        <di:waypoint x="895" y="605" />
+        <di:waypoint x="940" y="605" />
+        <di:waypoint x="940" y="200" />
+        <di:waypoint x="650" y="200" />
+        <di:waypoint x="650" y="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="949" y="395" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="790" y="770" />
+        <di:waypoint x="830" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="970" y="770" />
+        <di:waypoint x="1010" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1150" y="770" />
+        <di:waypoint x="1182" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="640" y="220" />
+        <di:waypoint x="640" y="190" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_SST" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_SST">
+    <bpmn:participant id="Participant_SegurancaTrabalho" name="SEGURANÇA NO TRABALHO" processRef="Process_SST" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>SEGURANÇA NO TRABALHO
+Marcio Felix
+Prestek Telecom
+Criação | 23/09/2025
+Última Atualização | 23/09/2025</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_SegurancaTrabalho" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_SST" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_SST" name="SEGURANÇA DO TRABALHO">
+        <bpmn:flowNodeRef>StartEvent_SST</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ConduzDDS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_InspecaoPeriodica</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Acidente</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_RegistraInspecao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_FimSemIntercorrencia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_PrestaSocorro</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_RegistraOcorrencia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_InvestigaCausas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_DDSExtra</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_FimComAcao</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Colaboradores" name="COLABORADORES">
+        <bpmn:flowNodeRef>Activity_ParticipaDDS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_ExecutaAtividade</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_SST" name="Supervisor de SST">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Activity_ConduzDDS" name="Prepara e conduz DDS diário (pauta, riscos do dia, NRs aplicáveis)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_ParticipaDDS" name="Participa do DDS e recebe liberação de EPI/EPC">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_ExecutaAtividade" name="Executa atividade (interna ou de campo) com uso de EPI/EPC">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_InspecaoPeriodica" name="Realiza inspeção periódica (checklist, EPI/EPC, conformidade NR-6/NR-10/NR-35)">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Acidente" name="Acidente ocorreu?">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Nao</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Sim</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Activity_RegistraInspecao" name="Registra inspeção e mantém monitoramento">
+      <bpmn:incoming>Flow_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_FimSemIntercorrencia" name="Encerra turno sem intercorrências">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Activity_PrestaSocorro" name="Presta socorro imediato, isola a área e aciona apoio">
+      <bpmn:incoming>Flow_Sim</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_RegistraOcorrencia" name="Registra ocorrência [DECISÃO PENDENTE — sistema/formulário de registro de incidentes/CAT a definir]">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_InvestigaCausas" name="Investiga causas e define ações corretivas/preventivas">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_DDSExtra" name="Realiza DDS extra (lições aprendidas)">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_FimComAcao" name="Encerra com ação corretiva registrada">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_SST" targetRef="Activity_ConduzDDS" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_ConduzDDS" targetRef="Activity_ParticipaDDS" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_ParticipaDDS" targetRef="Activity_ExecutaAtividade" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_ExecutaAtividade" targetRef="Activity_InspecaoPeriodica" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Activity_InspecaoPeriodica" targetRef="Gateway_Acidente" />
+    <bpmn:sequenceFlow id="Flow_Nao" name="Não" sourceRef="Gateway_Acidente" targetRef="Activity_RegistraInspecao" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_RegistraInspecao" targetRef="Event_FimSemIntercorrencia" />
+    <bpmn:sequenceFlow id="Flow_Sim" name="Sim" sourceRef="Gateway_Acidente" targetRef="Activity_PrestaSocorro" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_PrestaSocorro" targetRef="Activity_RegistraOcorrencia" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Activity_RegistraOcorrencia" targetRef="Activity_InvestigaCausas" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Activity_InvestigaCausas" targetRef="Activity_DDSExtra" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Activity_DDSExtra" targetRef="Event_FimComAcao" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_SST">
+    <bpmndi:BPMNPlane id="BPMNPlane_SST" bpmnElement="Collaboration_SST">
+      <bpmndi:BPMNShape id="Participant_SegurancaTrabalho_di" bpmnElement="Participant_SegurancaTrabalho" isHorizontal="true">
+        <dc:Bounds x="160" y="240" width="2170" height="510" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Colaboradores_di" bpmnElement="Lane_Colaboradores" isHorizontal="true">
+        <dc:Bounds x="190" y="240" width="2140" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_SST_di" bpmnElement="Lane_SST" isHorizontal="true">
+        <dc:Bounds x="190" y="450" width="2140" height="300" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_SST_di" bpmnElement="StartEvent_SST">
+        <dc:Bounds x="230" y="532" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="205" y="575" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ConduzDDS_di" bpmnElement="Activity_ConduzDDS">
+        <dc:Bounds x="320" y="510" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ParticipaDDS_di" bpmnElement="Activity_ParticipaDDS">
+        <dc:Bounds x="530" y="300" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ExecutaAtividade_di" bpmnElement="Activity_ExecutaAtividade">
+        <dc:Bounds x="750" y="300" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_InspecaoPeriodica_di" bpmnElement="Activity_InspecaoPeriodica">
+        <dc:Bounds x="980" y="510" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Acidente_di" bpmnElement="Gateway_Acidente" isMarkerVisible="true">
+        <dc:Bounds x="1210" y="525" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1200" y="497" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_RegistraInspecao_di" bpmnElement="Activity_RegistraInspecao">
+        <dc:Bounds x="1310" y="510" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_FimSemIntercorrencia_di" bpmnElement="Event_FimSemIntercorrencia">
+        <dc:Bounds x="1520" y="532" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1495" y="575" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_PrestaSocorro_di" bpmnElement="Activity_PrestaSocorro">
+        <dc:Bounds x="1310" y="650" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_RegistraOcorrencia_di" bpmnElement="Activity_RegistraOcorrencia">
+        <dc:Bounds x="1530" y="650" width="210" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_InvestigaCausas_di" bpmnElement="Activity_InvestigaCausas">
+        <dc:Bounds x="1790" y="650" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_DDSExtra_di" bpmnElement="Activity_DDSExtra">
+        <dc:Bounds x="2030" y="650" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_FimComAcao_di" bpmnElement="Event_FimComAcao">
+        <dc:Bounds x="2250" y="672" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2225" y="715" width="86" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="900" y="100" width="260" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="266" y="550" />
+        <di:waypoint x="320" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="400" y="510" />
+        <di:waypoint x="400" y="450" />
+        <di:waypoint x="615" y="450" />
+        <di:waypoint x="615" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="700" y="340" />
+        <di:waypoint x="750" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="840" y="380" />
+        <di:waypoint x="840" y="450" />
+        <di:waypoint x="1070" y="450" />
+        <di:waypoint x="1070" y="510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="1160" y="550" />
+        <di:waypoint x="1210" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nao_di" bpmnElement="Flow_Nao">
+        <di:waypoint x="1260" y="550" />
+        <di:waypoint x="1310" y="550" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1270" y="532" width="26" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="1470" y="550" />
+        <di:waypoint x="1520" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Sim_di" bpmnElement="Flow_Sim">
+        <di:waypoint x="1235" y="575" />
+        <di:waypoint x="1235" y="690" />
+        <di:waypoint x="1310" y="690" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1241" y="610" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1480" y="690" />
+        <di:waypoint x="1530" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1740" y="690" />
+        <di:waypoint x="1790" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1980" y="690" />
+        <di:waypoint x="2030" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="2200" y="690" />
+        <di:waypoint x="2250" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="1030" y="240" />
+        <di:waypoint x="1030" y="210" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

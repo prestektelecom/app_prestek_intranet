@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP-CDRQ-001 — Controle de Documentos e Registros da Qualidade | Prestek Telecom</title>
+<style>
+  :root {
+    --accent: #384C9C;
+    --accent-dark: #D97738;
+    --accent-light: #EAEEF7;
+    --accent-border: #C2CBE3;
+    --ink: #384C9C;
+    --muted: #475467;
+    --border: #D7DDE3;
+    --bg: #F4F6F8;
+    --paper: #ffffff;
+    --warning-bg: #fef8ec;
+    --warning-border: #f3c267;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+
+  .doc-header {
+    background: var(--accent);
+    color: #ffffff;
+    padding: 28px 40px 24px;
+    border-bottom: 3px solid var(--accent-dark);
+  }
+
+  .doc-header .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    opacity: 0.9;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+
+  .doc-header h1 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .doc-header .meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .doc-header .badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .doc-body {
+    padding: 36px 40px 48px;
+  }
+
+  /* Tabela de controle histórico */
+  table.meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 28px;
+    font-size: 13.5px;
+  }
+
+  table.meta caption {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    caption-side: top;
+    font-weight: 700;
+  }
+
+  table.meta th, table.meta td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  table.meta th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    width: 20%;
+  }
+
+  .approvals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 32px;
+  }
+
+  .approvals .box {
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    background: var(--accent-light);
+  }
+
+  .approvals .box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .approvals .box .value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .approvals .box .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Seções do POP */
+  section.pop-section {
+    margin-bottom: 32px;
+  }
+
+  section.pop-section h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+
+  section.pop-section p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    text-align: justify;
+  }
+
+  .definitions-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 14px 0 18px;
+    padding: 14px 18px;
+    background: #f8fafc;
+    border-left: 4px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .def-item {
+    font-size: 13.5px;
+  }
+
+  .def-item strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Tabela de Responsabilidades */
+  table.resp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 13.5px;
+  }
+
+  table.resp-table th, table.resp-table td {
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  table.resp-table th {
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 600;
+    width: 25%;
+  }
+
+  table.resp-table td {
+    background: #ffffff;
+    color: #334155;
+  }
+
+  .phase-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.25);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: bold;
+    margin-right: 4px;
+  }
+
+  /* BPMN bpmn.io styles */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-action:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .bpmn-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    margin: 12px 0 24px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .bpmn-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+  }
+  .zoom-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .zoom-btn:hover {
+    background: #edf2f7;
+    border-color: var(--accent-border);
+  }
+  #bpmn-canvas {
+    width: 100%;
+    height: 520px;
+    position: relative;
+    background: #ffffff;
+  }
+
+  .example-box {
+    background: #f1f5f9;
+    border-left: 4px solid #0284c7;
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    font-size: 13.5px;
+    margin: 12px 0;
+  }
+
+  .rules-list {
+    margin: 12px 0;
+    padding-left: 20px;
+  }
+
+  .rules-list li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+
+  .exception-item {
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    background: #fffdfa;
+    border: 1px solid #fed7aa;
+    border-left: 4px solid #f97316;
+    border-radius: 4px;
+    font-size: 13.5px;
+  }
+
+  .exception-title {
+    font-weight: 700;
+    color: #c2410c;
+    margin-bottom: 4px;
+  }
+
+  /* Assinaturas */
+  .signoff {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    page-break-inside: avoid;
+  }
+
+  .signoff .sig {
+    text-align: center;
+  }
+
+  .signoff .sig .line {
+    border-top: 1px solid var(--ink);
+    margin-top: 48px;
+    padding-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .signoff .sig .role {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .doc-footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 16px 40px 28px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; color: #000; }
+    .doc { border: none; box-shadow: none; max-width: 100%; }
+    .doc-header { background: var(--accent) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .approvals .box, table.meta th, table.resp-table th, .definitions-list, .example-box, .exception-item {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .signoff { page-break-inside: avoid; }
+  }
+
+  @media (max-width: 700px) {
+    .doc-header, .doc-body { padding-left: 18px; padding-right: 18px; }
+    .approvals, .signoff { grid-template-columns: 1fr; gap: 16px; }
+    table.resp-table, table.resp-table thead, table.resp-table tbody, table.resp-table th, table.resp-table td, table.resp-table tr {
+      display: block;
+    }
+    table.resp-table th { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <!-- CABEÇALHO -->
+  <div class="doc-header">
+    <p class="kicker">Prestek Telecom • Sistema de Gestão da Qualidade • ISO 9001</p>
+    <h1>POP-CDRQ-001 — Controle de Documentos e Registros da Qualidade</h1>
+    <div class="meta-badges">
+      <span class="badge">Padrão nº: POP-CDRQ-001</span>
+      <span class="badge">Revisão: 001</span>
+      <span class="badge">Estabelecido em: 20/09/2025</span>
+      <span class="badge">Abrangência: Todos os Setores</span>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- CONTROLE HISTÓRICO -->
+    <table class="meta">
+      <caption>Controle Histórico</caption>
+      <thead>
+        <tr>
+          <th>Revisão</th>
+          <th>Data</th>
+          <th>Elaboração</th>
+          <th>Verificação</th>
+          <th>Aprovação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>001</td>
+          <td>20/09/2025</td>
+          <td>Setor T.I. / Marcio Eduardo Felix</td>
+          <td>Supervisor T.I.</td>
+          <td>Roberta Kelle Nunes Gomes (Gestora)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- APROVAÇÕES -->
+    <div class="approvals">
+      <div class="box">
+        <div class="label">Elaborado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Supervisor T.I.</div>
+      </div>
+      <div class="box">
+        <div class="label">Revisado por</div>
+        <div class="value">Marcio Eduardo Felix</div>
+        <div class="sub">Supervisor T.I.</div>
+      </div>
+      <div class="box">
+        <div class="label">Aprovado por</div>
+        <div class="value">Roberta Kelle Nunes Gomes</div>
+        <div class="sub">Representante da Direção</div>
+      </div>
+    </div>
+
+    <!-- 1. OBJETIVO -->
+    <section class="pop-section">
+      <h2>1. Objetivo</h2>
+      <p>Estabelecer uma sistemática padronizada e controlada para a criação, análise crítica, aprovação, indexação, publicação, distribuição, cancelamento e guarda de todos os documentos e registros pertencentes ao Sistema de Gestão da Qualidade (SGQ) da Prestek Telecom, assegurando a rastreabilidade, prevenção do uso de versões obsoletas e conformidade com os requisitos da norma ABNT NBR ISO 9001.</p>
+    </section>
+
+    <!-- 2. DESCRIÇÃO DO PROCESSO -->
+    <section class="pop-section">
+      <h2>2. Descrição do processo</h2>
+      <p>Aplica-se a todos os setores e colaboradores da Prestek Telecom que elaboram, consultam ou gerenciam procedimentos, formulários, matrizes de registros ou dados do SGQ.</p>
+
+      <div class="definitions-list">
+        <div class="def-item"><strong>QLD:</strong> Setor de Qualidade da Prestek Telecom.</div>
+        <div class="def-item"><strong>SGQ:</strong> Sistema de Gestão da Qualidade.</div>
+        <div class="def-item"><strong>Documento:</strong> Meio no qual a informação está contida (ex: procedimentos, políticas, manuais, instruções de trabalho).</div>
+        <div class="def-item"><strong>Registro:</strong> Tipo de documento que apresenta resultados obtidos ou fornece evidências de atividades realizadas (NBR ISO 9001). Não admite rasuras.</div>
+        <div class="def-item"><strong>Cópia Controlada:</strong> Documento oficial em meio eletrônico (intranet) ou impresso exclusivamente com marca d'água "Cópia Controlada" sob gestão da QLD.</div>
+        <div class="def-item"><strong>Cópia Não Controlada:</strong> Documento em fase de teste, rascunho ou edição momentânea, não aceito como padrão operacional oficial.</div>
+      </div>
+    </section>
+
+    <!-- 3. PROCESSO -->
+    <section class="pop-section">
+      <h2>3. Processo</h2>
+      <p>O ciclo de vida documental na Prestek Telecom obedece rigorosamente ao macrofluxo de 4 etapas sequenciais:</p>
+      
+      <!-- TABELA DE RESPONSABILIDADES -->
+      <table class="resp-table">
+        <thead>
+          <tr>
+            <th><span class="phase-badge">❶</span> Emissão</th>
+            <th><span class="phase-badge">❷</span> Aprovação Simples</th>
+            <th><span class="phase-badge">❸</span> Aprovação Final</th>
+            <th><span class="phase-badge">❹</span> Publicação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Responsável:</strong> Elaborador / Revisor do Setor de origem.<br><small>Redação no modelo padrão (Anexo I ou II).</small></td>
+            <td><strong>Responsável:</strong> Gestor do Setor.<br><small>Verificação e análise crítica técnica do conteúdo conforme o fluxo.</small></td>
+            <td><strong>Responsável:</strong> Representante da Direção.<br><small>Aprovação final conforme o nível hierárquico institucional.</small></td>
+            <td><strong>Responsável:</strong> Qualidade (QLD).<br><small>Publicação na intranet, atualização da Lista Mestra e retenção de obsoletos.</small></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4. PASSOS DO PROCESSO -->
+    <section class="pop-section">
+      <h2>4. Passos do processo</h2>
+      <ol style="padding-left: 20px; font-size: 14px; color: #2c3e50;">
+        <li style="margin-bottom: 12px;">
+          <strong>4.1. Elaboração / Emissão (❶):</strong>
+          O colaborador ou gestor identifica a necessidade de padronização, utiliza o <em>Anexo I — Template POP</em> e redige o conteúdo com linguagem direta, objetiva e sem termos ambíguos. Não é permitido que a mesma pessoa elabore e aprove o documento.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong>4.2. Análise Crítica / Aprovação Simples (❷):</strong>
+          O Gestor da área verifica a conformidade técnica, regras de sistemas e viabilidade operacional do procedimento. Se houver desvios, o documento retorna ao elaborador para ajustes antes de seguir adiante.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong>4.3. Aprovação Final (❸):</strong>
+          Submissão à Representante da Direção para validação institucional e alinhamento com os objetivos estratégicos da qualidade da Prestek.
+        </li>
+        <li style="margin-bottom: 12px;">
+          <strong>4.4. Publicação e Controle da Distribuição (❹):</strong>
+          O setor de Qualidade (QLD) recebe o documento formalmente aprovado por e-mail, realiza o registro na <strong>Lista Mestra de Documentos</strong>, publica a versão oficial na Intranet/Google Drive e comunica os setores envolvidos.
+        </li>
+      </ol>
+
+      <div class="example-box">
+        <strong>Padrão Oficial de Indexação de Documentos:</strong><br>
+        Fórmula: <code>[SIGLA TIPO]-[SIGLA SETOR]-[Nº SEQUENCIAL]-[Descrição da Atividade]</code><br>
+        <em>Exemplo:</em> <code>RT-INFRA-003-Plano de manutenção de equipamentos</code> (Relatório Técnico da Infraestrutura, 3º documento).
+      </div>
+
+      <!-- BPMN - FLUXO DE DOCUMENTOS (BPMN.IO) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 10px;">
+        <h3 style="margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">Fluxograma Oficial (BPMN 2.0 • bpmn.io)</h3>
+        <div style="display: flex; gap: 8px;">
+          <a href="POP-CDRQ-001 - Fluxo de Documentos.bpmn" download="POP-CDRQ-001 - Fluxo de Documentos.bpmn" class="btn-action" title="Baixar arquivo XML padrão BPMN 2.0">⬇ Baixar .bpmn</a>
+          <a href="https://demo.bpmn.io/" target="_blank" rel="noopener noreferrer" class="btn-action" title="Abrir no bpmn.io">🌐 Abrir no bpmn.io</a>
+        </div>
+      </div>
+
+      <div class="bpmn-wrapper">
+        <div class="bpmn-toolbar">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Interativo: 4 Raias (Elaborador ➔ Gestor ➔ Direção ➔ QLD) • Scroll para zoom</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btn-zoom-in" class="zoom-btn" title="Aumentar zoom">+</button>
+            <button type="button" id="btn-zoom-out" class="zoom-btn" title="Diminuir zoom">-</button>
+            <button type="button" id="btn-zoom-fit" class="zoom-btn" title="Ajustar à tela">⤢ Ajustar</button>
+          </div>
+        </div>
+        <div id="bpmn-canvas">
+          <!-- Fallback offline -->
+          <div id="bpmn-fallback" style="display: none; padding: 20px; font-size: 13.5px;">
+            <p><strong>Fluxo Linear Resumido:</strong></p>
+            <p>❶ <strong>Emissão:</strong> Elaborador cria/revisa no template ➔<br>
+            ❷ <strong>Aprovação Simples:</strong> Gestor analisa e valida ➔<br>
+            ❸ <strong>Aprovação Final:</strong> Representante da Direção aprova ➔<br>
+            ❹ <strong>Publicação:</strong> QLD publica, atualiza lista mestra e descarta obsoletos.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. REGRAS DE NEGÓCIOS -->
+    <section class="pop-section">
+      <h2>5. Regras de negócios</h2>
+      <ul class="rules-list">
+        <li><strong>Segregação de Funções:</strong> A verificação e a aprovação de documentos não podem ser realizadas por quem elaborou o documento.</li>
+        <li><strong>Cópia Não Autorizada:</strong> É estritamente proibida a reprodução ou impressão avulsa de documentos do SGQ. Cópias físicas controladas são emitidas exclusivamente pela QLD com marca d'água no papel.</li>
+        <li><strong>Retenção de Versões Obsoletas:</strong> As versões anteriores tornam-se imediatamente obsoletas após a publicação de uma nova revisão e devem ser arquivadas pela QLD no diretório exclusivo por no mínimo <strong>8 anos</strong>.</li>
+        <li><strong>Imutabilidade de Códigos Cancelados:</strong> A indexação de um código de documento cancelado nunca poderá ser reaproveitada na elaboração de um novo procedimento.</li>
+        <li><strong>Integridade dos Registros:</strong> Registros da qualidade não admitem rasuras. Correções devem conter justificativa, assinatura e data legíveis.</li>
+      </ul>
+    </section>
+
+    <!-- 6. EXCEÇÕES E TRATAMENTO DE ERROS -->
+    <section class="pop-section">
+      <h2>6. Exceções e tratamento de erros</h2>
+      
+      <div class="exception-item">
+        <div class="exception-title">6.1. Reprovação na Aprovação Simples ou Final</div>
+        <div>Quando o Gestor do Setor ou a Direção identificam inconsistências ou não conformidades técnicas, o fluxo é reprovado no gateway correspondente e devolvido ao Elaborador com as anotações obrigatórias para correção antes de qualquer nova submissão.</div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.2. Uso Não Intencional de Cópia Obsoleta</div>
+        <div>Caso seja identificado um colaborador operando com versão desatualizada, a atividade deve ser interrompida imediatamente, a cópia física recolhida e destruída pela QLD, e o responsável orientado a consultar exclusivamente a versão vigente na Intranet.</div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.3. Extravio ou Danificação de Cópia Física Controlada</div>
+        <div>O gestor do setor deve comunicar imediatamente à QLD para registro formal do extravio na Lista Mestra, cancelamento do carimbo anterior e emissão controlada de uma nova via numerada.</div>
+      </div>
+
+      <div class="exception-item">
+        <div class="exception-title">6.4. Alteração Emergencial por Exigência Regulatória / Externa</div>
+        <div>Em caso de alteração em normas técnicas ou portarias de órgãos públicos que impactem diretamente a operação, o setor responsável deve notificar a QLD via e-mail em até 48 horas para atualização prioritária da Lista Mestra de Documentos Externos (Anexo III) e revisão extraordinária do POP vinculado.</div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSÃO -->
+    <section class="pop-section">
+      <h2>7. Conclusão</h2>
+      <p>O cumprimento rigoroso deste procedimento assegura a padronização e confiabilidade de todas as rotinas operacionais da Prestek Telecom. A gestão controlada de documentos e registros elimina riscos de retrabalho, garante sustentação às auditorias de certificação ISO 9001 e consolida a melhoria contínua dos serviços prestados aos clientes.</p>
+    </section>
+
+    <!-- ASSINATURAS FORMAIS -->
+    <div class="signoff">
+      <div class="sig">
+        <div class="line">Marcio Eduardo Felix &nbsp;&nbsp;|&nbsp;&nbsp; 20/09/2025</div>
+        <div class="role">Supervisor T.I. • Elaborador / Revisor</div>
+      </div>
+      <div class="sig">
+        <div class="line">Roberta Kelle Nunes Gomes &nbsp;&nbsp;|&nbsp;&nbsp; 20/09/2025</div>
+        <div class="role">Representante da Direção • Aprovadora</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ CONTROLADO -->
+  <div class="doc-footer">
+    Documento controlado — Sistema de Gestão da Qualidade ISO 9001 • Prestek Telecom
+  </div>
+
+</div>
+
+<!-- Script BPMN.io / bpmn-js com XML embutido -->
+<script type="text/xml" id="bpmn-data">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_CDRQ" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:collaboration id="Collaboration_CDRQ">
+    <bpmn:participant id="Participant_CDRQ" name="FLUXO DE DOCUMENTOS DO SGQ — PRESTEK TELECOM (POP-CDRQ-001)" processRef="Process_CDRQ" />
+    <bpmn:textAnnotation id="TextAnnotation_Header">
+      <bpmn:text>POP-CDRQ-001
+Controle de Documentos e Registros da Qualidade
+Elaboração: Marcio Eduardo Felix
+Aprovação: Roberta Kelle Nunes Gomes (Direção)
+Prestek Telecom — ISO 9001</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Header" sourceRef="Participant_CDRQ" targetRef="TextAnnotation_Header" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_CDRQ" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_CDRQ">
+      <bpmn:lane id="Lane_Elaborador" name="SETOR SOLICITANTE / ELABORADOR">
+        <bpmn:flowNodeRef>StartEvent_Necessidade</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_Emissao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AjusteDocumento</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Verificador" name="GESTOR DO SETOR (APROVAÇÃO SIMPLES)">
+        <bpmn:flowNodeRef>Activity_Verificacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Verificacao</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Direcao" name="REPRESENTANTE DA DIREÇÃO (APROVAÇÃO FINAL)">
+        <bpmn:flowNodeRef>Activity_AprovacaoFinal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_AprovacaoFinal</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Qualidade" name="QUALIDADE — QLD (PUBLICAÇÃO E CONTROLE)">
+        <bpmn:flowNodeRef>Activity_Publicacao</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_AtualizaListaMestra</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_TrataObsoletos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Publicado</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_Necessidade" name="Necessidade de Criação ou Revisão">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Activity_Emissao" name="❶ Emissão: Elaborar ou revisar documento no template padrão (Anexo I/II)">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:incoming>Flow_RetornoAjuste</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_Verificacao" name="❷ Aprovação Simples: Realizar análise crítica e verificação técnica">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Verificacao" name="Aprovado na Verificação?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Verif_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Verif_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Activity_AjusteDocumento" name="Ajustar documento conforme apontamentos">
+      <bpmn:incoming>Flow_Verif_Nao</bpmn:incoming>
+      <bpmn:incoming>Flow_Aprov_Nao</bpmn:incoming>
+      <bpmn:outgoing>Flow_RetornoAjuste</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_AprovacaoFinal" name="❸ Aprovação Final: Validar alinhamento estratégico e diretrizes da Direção">
+      <bpmn:incoming>Flow_Verif_Sim</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_AprovacaoFinal" name="Aprovado pela Direção?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Aprov_Sim</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Aprov_Nao</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Activity_Publicacao" name="❹ Publicação: Disponibilizar na Intranet / Google Drive T.I.">
+      <bpmn:incoming>Flow_Aprov_Sim</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:task id="Activity_AtualizaListaMestra" name="Atualizar Lista Mestra e indexação de códigos">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Activity_TrataObsoletos" name="Recolher cópias físicas e arquivar versão obsoleta (8 anos)">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Publicado" name="Documento Oficial Controlado e Vigente">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Necessidade" targetRef="Activity_Emissao" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_Emissao" targetRef="Activity_Verificacao" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_Verificacao" targetRef="Gateway_Verificacao" />
+    <bpmn:sequenceFlow id="Flow_Verif_Sim" name="Sim" sourceRef="Gateway_Verificacao" targetRef="Activity_AprovacaoFinal" />
+    <bpmn:sequenceFlow id="Flow_Verif_Nao" name="Não" sourceRef="Gateway_Verificacao" targetRef="Activity_AjusteDocumento" />
+    <bpmn:sequenceFlow id="Flow_RetornoAjuste" sourceRef="Activity_AjusteDocumento" targetRef="Activity_Emissao" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_AprovacaoFinal" targetRef="Gateway_AprovacaoFinal" />
+    <bpmn:sequenceFlow id="Flow_Aprov_Sim" name="Sim" sourceRef="Gateway_AprovacaoFinal" targetRef="Activity_Publicacao" />
+    <bpmn:sequenceFlow id="Flow_Aprov_Nao" name="Não" sourceRef="Gateway_AprovacaoFinal" targetRef="Activity_AjusteDocumento" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Activity_Publicacao" targetRef="Activity_AtualizaListaMestra" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Activity_AtualizaListaMestra" targetRef="Activity_TrataObsoletos" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_TrataObsoletos" targetRef="EndEvent_Publicado" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_CDRQ">
+    <bpmndi:BPMNPlane id="BPMNPlane_CDRQ" bpmnElement="Collaboration_CDRQ">
+      <bpmndi:BPMNShape id="Participant_CDRQ_di" bpmnElement="Participant_CDRQ" isHorizontal="true">
+        <dc:Bounds x="160" y="220" width="1080" height="640" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Elaborador_di" bpmnElement="Lane_Elaborador" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="1050" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Verificador_di" bpmnElement="Lane_Verificador" isHorizontal="true">
+        <dc:Bounds x="190" y="380" width="1050" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Direcao_di" bpmnElement="Lane_Direcao" isHorizontal="true">
+        <dc:Bounds x="190" y="530" width="1050" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Qualidade_di" bpmnElement="Lane_Qualidade" isHorizontal="true">
+        <dc:Bounds x="190" y="680" width="1050" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Necessidade_di" bpmnElement="StartEvent_Necessidade">
+        <dc:Bounds x="232" y="272" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="210" y="315" width="81" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Emissao_di" bpmnElement="Activity_Emissao">
+        <dc:Bounds x="320" y="250" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AjusteDocumento_di" bpmnElement="Activity_AjusteDocumento">
+        <dc:Bounds x="540" y="250" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Verificacao_di" bpmnElement="Activity_Verificacao">
+        <dc:Bounds x="320" y="415" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Verificacao_di" bpmnElement="Gateway_Verificacao" isMarkerVisible="true">
+        <dc:Bounds x="525" y="430" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="517" y="487" width="67" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AprovacaoFinal_di" bpmnElement="Activity_AprovacaoFinal">
+        <dc:Bounds x="640" y="565" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_AprovacaoFinal_di" bpmnElement="Gateway_AprovacaoFinal" isMarkerVisible="true">
+        <dc:Bounds x="845" y="580" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="834" y="637" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Publicacao_di" bpmnElement="Activity_Publicacao">
+        <dc:Bounds x="640" y="730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AtualizaListaMestra_di" bpmnElement="Activity_AtualizaListaMestra">
+        <dc:Bounds x="830" y="730" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_TrataObsoletos_di" bpmnElement="Activity_TrataObsoletos">
+        <dc:Bounds x="1010" y="730" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Publicado_di" bpmnElement="EndEvent_Publicado">
+        <dc:Bounds x="1182" y="752" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1160" y="795" width="81" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Header_di" bpmnElement="TextAnnotation_Header">
+        <dc:Bounds x="460" y="80" width="360" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="268" y="290" />
+        <di:waypoint x="320" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="395" y="330" />
+        <di:waypoint x="395" y="415" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="470" y="455" />
+        <di:waypoint x="525" y="455" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Verif_Sim_di" bpmnElement="Flow_Verif_Sim">
+        <di:waypoint x="575" y="455" />
+        <di:waypoint x="600" y="455" />
+        <di:waypoint x="600" y="605" />
+        <di:waypoint x="640" y="605" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="606" y="527" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Verif_Nao_di" bpmnElement="Flow_Verif_Nao">
+        <di:waypoint x="550" y="430" />
+        <di:waypoint x="550" y="380" />
+        <di:waypoint x="610" y="380" />
+        <di:waypoint x="610" y="330" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="569" y="362" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RetornoAjuste_di" bpmnElement="Flow_RetornoAjuste">
+        <di:waypoint x="540" y="290" />
+        <di:waypoint x="470" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="790" y="605" />
+        <di:waypoint x="845" y="605" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Aprov_Sim_di" bpmnElement="Flow_Aprov_Sim">
+        <di:waypoint x="870" y="630" />
+        <di:waypoint x="870" y="680" />
+        <di:waypoint x="715" y="680" />
+        <di:waypoint x="715" y="730" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="783" y="662" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Aprov_Nao_di" bpmnElement="Flow_Aprov_Nao">
+        <di:waypoint x="895" y="605" />
+        <di:waypoint x="940" y="605" />
+        <di:waypoint x="940" y="200" />
+        <di:waypoint x="650" y="200" />
+        <di:waypoint x="650" y="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="949" y="395" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="790" y="770" />
+        <di:waypoint x="830" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="970" y="770" />
+        <di:waypoint x="1010" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1150" y="770" />
+        <di:waypoint x="1182" y="770" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Header_di" bpmnElement="Association_Header">
+        <di:waypoint x="640" y="220" />
+        <di:waypoint x="640" y="190" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+</script>
+
+<!-- Carregador bpmn-js com fallback automático -->
+<script>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/bpmn-js@17/dist/bpmn-navigated-viewer.production.min.js';
+    script.onload = function() {
+      try {
+        var BpmnViewer = window.BpmnJS;
+        var viewer = new BpmnViewer({ container: '#bpmn-canvas' });
+        var xml = document.getElementById('bpmn-data').textContent.trim();
+        viewer.importXML(xml).then(function() {
+          var canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+          document.getElementById('btn-zoom-in').onclick = function() { canvas.zoom(canvas.zoom() * 1.2); };
+          document.getElementById('btn-zoom-out').onclick = function() { canvas.zoom(canvas.zoom() * 0.8); };
+          document.getElementById('btn-zoom-fit').onclick = function() { canvas.zoom('fit-viewport'); };
+        }).catch(function(err) {
+          console.warn('Erro ao importar BPMN:', err);
+          document.getElementById('bpmn-fallback').style.display = 'block';
+        });
+      } catch(e) {
+        document.getElementById('bpmn-fallback').style.display = 'block';
+      }
+    };
+    script.onerror = function() {
+      document.getElementById('bpmn-fallback').style.display = 'block';
+    };
+    document.head.appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
