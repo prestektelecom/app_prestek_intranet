@@ -145,7 +145,7 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
         )}
       </div>
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-dark)]">
           <Icons.Clock />
         </div>
         <div className="leading-tight">
@@ -257,7 +257,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
         </div>
       ) : (
         <div className="mt-3 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent-dark)]">
             <Icons.Clock />
           </div>
           <div>

@@ -92,7 +92,7 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                         </button>
                         <button
                             onClick={onClose}
-                            className="text-[#8896A8] hover:text-[#E84545] transition-colors p-1.5 rounded-full hover:bg-[var(--danger-soft)]"
+                            className="text-[#8896A8] hover:text-[#B02121] transition-colors p-1.5 rounded-full hover:bg-[var(--danger-soft)]"
                         >
                             <span className="material-symbols-outlined text-[20px]">close</span>
                         </button>
@@ -108,8 +108,8 @@ export default function HistoricoPreviewModal({ isOpen, onClose, filterMonth, fi
                         </div>
                     ) : erro ? (
                         <div className="flex flex-col items-center justify-center gap-3 py-16">
-                            <span className="material-symbols-outlined text-[40px] text-[#E84545]/60">error</span>
-                            <p className="text-sm text-[#E84545] font-medium">{erro}</p>
+                            <span className="material-symbols-outlined text-[40px] text-[#B02121] opacity-70">error</span>
+                            <p className="text-sm text-[#B02121] font-medium">{erro}</p>
                             <button
                                 onClick={() => fetchPage(page)}
                                 className="text-sm text-[#C2410C] font-bold hover:underline"
