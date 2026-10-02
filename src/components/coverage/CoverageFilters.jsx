@@ -111,7 +111,7 @@ export default function CoverageFilters({
                 <button
                     type="button"
                     onClick={onLimpar}
-                    className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-xl px-2.5 py-1.5 text-xs font-bold text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] 2xl:ml-auto 2xl:self-auto"
+                    className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-xl px-2.5 py-1.5 text-xs font-bold text-[var(--accent-dark)] transition-colors hover:bg-[var(--accent-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] 2xl:ml-auto 2xl:self-auto"
                 >
                     <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
                     Limpar filtros

@@ -268,7 +268,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
       )}
       <button
         onClick={() => setCurrentView('schedule')}
-        className={`${ACTION_BTN} text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]`}
+        className={`${ACTION_BTN} text-[var(--accent-dark)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]`}
       >
         Ver plantões <Icons.ArrowR />
       </button>
@@ -919,7 +919,7 @@ function AvatarAniversariante({ nome, foto }) {
   const [erro, setErro] = useState(false);
   const src = erro ? null : resolveAvatarUrl(foto);
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-soft)] text-[13px] font-bold text-[var(--accent)]">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-soft)] text-[13px] font-bold text-[var(--accent-dark)]">
       {src
         ? <img src={src} alt="" className="h-full w-full object-cover" onError={() => setErro(true)} />
         : iniciais(nome)}

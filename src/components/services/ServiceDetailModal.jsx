@@ -270,7 +270,7 @@ export default function ServiceDetailModal({ isOpen, onClose, data, type, format
                                     {p.streamings.map(s => (
                                         <span
                                             key={s}
-                                            className="rounded-md bg-[var(--accent-soft)] px-2 py-1 text-[10.5px] font-bold tracking-wide text-[var(--accent)]"
+                                            className="rounded-md bg-[var(--accent-soft)] px-2 py-1 text-[10.5px] font-bold tracking-wide text-[var(--accent-dark)]"
                                         >
                                             {s}
                                         </span>

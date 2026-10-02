@@ -234,7 +234,7 @@ export default function Coverage({ user }) {
                                 <button
                                     type="button"
                                     onClick={carregar}
-                                    className="mt-1 cursor-pointer rounded-xl border border-border px-4 py-2 text-[12.5px] font-bold text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
+                                    className="mt-1 cursor-pointer rounded-xl border border-border px-4 py-2 text-[12.5px] font-bold text-[var(--accent-dark)] transition-colors hover:bg-[var(--accent-soft)]"
                                 >
                                     Tentar novamente
                                 </button>
@@ -246,7 +246,7 @@ export default function Coverage({ user }) {
                                 <button
                                     type="button"
                                     onClick={carregar}
-                                    className="mt-1 cursor-pointer rounded-xl border border-border px-4 py-2 text-[12.5px] font-bold text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
+                                    className="mt-1 cursor-pointer rounded-xl border border-border px-4 py-2 text-[12.5px] font-bold text-[var(--accent-dark)] transition-colors hover:bg-[var(--accent-soft)]"
                                 >
                                     Tentar novamente
                                 </button>
