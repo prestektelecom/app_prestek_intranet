@@ -61,7 +61,7 @@ Obs.: o `openspec archive` costuma dar EPERM no rename da pasta neste ambiente. 
 Regra do projeto: mudança de UI passa por `/impeccable audit` antes de fechar.
 
 - [ ] Login: testes E2E da Fase 5 do plano; melhorias de 2026-09-29 sem verificação visual no navegador.
-- [ ] `C.danger` como texto de erro em `AdminUsuarios.jsx` e no diálogo de admin (trocar por `dangerStrong`).
+- [x] ~~`C.danger` como texto de erro~~ — 2026-10-03: 8 textos trocados por `dangerStrong` em `AdminUsuarios`, `AdminAuditoria` e `AdminComunicados` (claro: 3,45:1 → 6,00:1). Build limpo, detector sem aviso novo. Não visto no navegador.
 - [ ] Barra inferior do Painel Admin com rótulos colados a 360px ("Responsáveis"/"Comunicados").
 - [ ] `HistoricoPreviewModal` com superfície branca fixa em qualquer tema (P3).
 - [ ] Sidebar: `GroupLabel` perde o rótulo para leitor de tela quando colapsada; altura do `NavRow` (~38px) abaixo de 44px.
@@ -82,10 +82,9 @@ Regra do projeto: mudança de UI passa por `/impeccable audit` antes de fechar.
 
 ## 6. Faxina do repositório
 
-Arquivos versionados no git que não pertencem a um produto em produção:
-- [ ] Capturas e lixo: `schedule-*.png` (4), `help.txt`, `read-pdf.js`, `read-pdf.py`, `attached_assets/*.png`, `.gemini/antigravity/brain/dashboard/uploads/*.png`.
-- [ ] Na raiz, também: `get_schema.js`, `playwright-login.mjs`, `playwright-test.mjs`, `test-results/`, `GEMINI.md`, `replit.md`, `IDEIA.md`, `SKILL.md`, `wfl_data.json`, `tmp_*` (os `tmp_*` e `wfl_data.json` já estão no `.gitignore`). Confirmar um a um antes de mover ou apagar.
-- [ ] `docs/` contém uma ficha de colaborador real (`Ficha Registro de Empregado TESTE .pdf`) e `querys_ixc_prestek.rar`. Conferir se há dado pessoal real e se devem ficar no repositório.
-- [ ] Scripts de diagnóstico em `backend/` (`diagnostico_chinare*.js`, `debug_*`, `test_*`): guardados por `CONFIRMAR_ESCRITA_IXC`, mas não deveriam ir para o servidor de produção.
-- [ ] Branch remota `origin/configuracao_adm` (não verificado se tem trabalho não mesclado; checar `git rev-list --count main..origin/configuracao_adm` antes de apagar).
-- [ ] Obsidian: `MEMORIA.md` tem uma lista de Pendências com dezenas de itens já concluídos (riscados). Depois de transferir o que importa para este arquivo, vale mover o histórico concluído para uma nota separada e deixar lá só um link.
+Feita em 2026-10-03 (commit `896db9c`): removidos capturas, `help.txt`, `read-pdf.*`, `get_schema.js`, `playwright-test.mjs`, `replit.md`, `IDEIA.md`, `attached_assets/`, `test-results/` e o `.rar` duplicado; 34 scripts de diagnóstico movidos para `backend/_diagnostico/`.
+- [ ] Ainda versionados por serem ferramentas ou citados: `playwright-login.mjs`, `.gemini/` e `.agent/` (skills do Impeccable), `GEMINI.md`, `SKILL.md`. Confirmar se algum deve sair do servidor de produção.
+- [ ] `docs/Ficha Registro de Empregado TESTE .pdf`: conferir se há dado pessoal real.
+- [ ] Branch remota `origin/configuracao_adm`: **0 commits à frente da `main`** (verificado em 2026-10-03), pode ser apagada com `git push origin --delete configuracao_adm`; aguarda seu OK.
+- [ ] **`git push` da `main`:** há 5 commits locais de 2026-10-03 ainda não enviados ao GitHub.
+- [ ] Obsidian: `MEMORIA.md` tem uma lista de Pendências com dezenas de itens já concluídos (riscados). Mover o histórico concluído para uma nota separada e deixar lá só um link.

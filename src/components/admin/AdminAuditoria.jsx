@@ -141,7 +141,7 @@ export default function AdminAuditoria({ adminEmail }) {
                     title={erro}
                     role="alert"
                     className="rounded-lg border p-4 text-sm"
-                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.danger }}
+                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.dangerStrong }}
                 >
                     Não foi possível carregar o histórico de auditoria.
                 </div>

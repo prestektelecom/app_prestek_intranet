@@ -65,7 +65,7 @@ function ModalConfirmarPrivilegio({ usuario, salvando, erro, onCancelar, onConfi
                         : <><b style={{ color: C.ink }}>{nome}</b> perde o acesso ao Painel Admin imediatamente.</>}
                 </div>
                 {erro && (
-                    <div role="alert" className="mx-5 mt-3 rounded-lg p-3 text-sm" style={{ background: C.dangerSoft, color: C.danger }}>
+                    <div role="alert" className="mx-5 mt-3 rounded-lg p-3 text-sm" style={{ background: C.dangerSoft, color: C.dangerStrong }}>
                         {erro}
                     </div>
                 )}
@@ -273,7 +273,7 @@ export default function AdminUsuarios({ adminEmail }) {
             {erro && (
                 <div
                     className="rounded-xl border p-4 text-sm"
-                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.danger }}
+                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.dangerStrong }}
                 >
                     {erro}
                 </div>
@@ -347,7 +347,7 @@ export default function AdminUsuarios({ adminEmail }) {
                                 className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-60"
                                 style={{
                                     background: u.is_admin ? C.dangerSoft : C.accentSoft,
-                                    color: u.is_admin ? C.danger : (isDark ? C.accentDark : C.accentDeep),
+                                    color: u.is_admin ? C.dangerStrong : (isDark ? C.accentDark : C.accentDeep),
                                     border: `1px solid ${u.is_admin ? C.danger : C.accent}`,
                                 }}
                             >

@@ -179,7 +179,7 @@ export default function AdminComunicados({ adminEmail }) {
             {erro && (
                 <div
                     className="rounded-xl border p-4 text-sm"
-                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.danger }}
+                    style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.dangerStrong }}
                 >
                     {erro.message || 'Erro ao carregar comunicados.'}
                 </div>
@@ -311,7 +311,7 @@ export default function AdminComunicados({ adminEmail }) {
                                                     onClick={() => { setConfirmExcluirId(c.id); setErroExcluir(''); }}
                                                     className="inline-flex items-center rounded-lg p-1.5 transition-colors"
                                                     style={{ color: C.muted }}
-                                                    onMouseEnter={e => e.currentTarget.style.color = C.danger}
+                                                    onMouseEnter={e => e.currentTarget.style.color = C.dangerStrong}
                                                     onMouseLeave={e => e.currentTarget.style.color = C.muted}
                                                     title="Excluir"
                                                     aria-label="Excluir comunicado"
@@ -322,7 +322,7 @@ export default function AdminComunicados({ adminEmail }) {
                                         )}
                                     </div>
                                     {confirmExcluirId === c.id && (
-                                        <p role={erroExcluir ? 'alert' : 'status'} className="text-[11px] font-semibold" style={{ color: C.danger }}>
+                                        <p role={erroExcluir ? 'alert' : 'status'} className="text-[11px] font-semibold" style={{ color: C.dangerStrong }}>
                                             {erroExcluir || 'Excluir este comunicado do feed da intranet? Esta ação não pode ser desfeita.'}
                                         </p>
                                     )}
@@ -401,7 +401,7 @@ export default function AdminComunicados({ adminEmail }) {
                                 <input id="admin-comunicado-link" type="url" value={form.link_opcional} onChange={e => setForm({ ...form, link_opcional: e.target.value })} onFocus={() => setFocusedInput('link')} onBlur={() => setFocusedInput(null)} style={getInputStyle('link')} />
                             </div>
                             {erroModal && (
-                                <p role="alert" className="text-sm font-semibold" style={{ color: C.danger }}>
+                                <p role="alert" className="text-sm font-semibold" style={{ color: C.dangerStrong }}>
                                     {erroModal}
                                 </p>
                             )}
