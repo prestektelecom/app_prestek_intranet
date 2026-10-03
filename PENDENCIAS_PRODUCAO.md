@@ -87,4 +87,4 @@ Feita em 2026-10-03 (commit `896db9c`): removidos capturas, `help.txt`, `read-pd
 - [ ] `docs/Ficha Registro de Empregado TESTE .pdf`: conferir se há dado pessoal real.
 - [ ] Branch remota `origin/configuracao_adm`: **0 commits à frente da `main`** (verificado em 2026-10-03), pode ser apagada com `git push origin --delete configuracao_adm`; aguarda seu OK.
 - [x] ~~`git push` da `main`~~ — feito em 2026-10-03 (`c475adb..7a84a48`, 9 commits, avanço simples).
-- [ ] Obsidian: `MEMORIA.md` tem uma lista de Pendências com dezenas de itens já concluídos (riscados). Mover o histórico concluído para uma nota separada e deixar lá só um link.
+- [x] ~~Enxugar o `MEMORIA.md`~~ — feito em 2026-10-03: 208 KB (~53 mil tokens por sessão) para 11 KB; o resto foi movido sem alteração para `MEMORIA-historico.md`, que o `CLAUDE.md` não importa.
