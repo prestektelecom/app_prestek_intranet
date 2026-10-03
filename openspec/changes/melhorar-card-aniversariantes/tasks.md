@@ -54,5 +54,5 @@
 
 ## 8. Encerramento
 
-- [ ] 8.1 Avaliar se a rota de debug temporária `/api/debug-funcionario/:id` (`server.js:425-488`) ainda tem propósito após o diagnóstico registrado; remover se não tiver
+- [x] 8.1 Rota `/api/debug-funcionario/:id` removida em 2026-10-03 (diagnóstico fechado por evidência, ver design.md)
 - [x] 8.2 Rodar `openspec validate melhorar-card-aniversariantes --strict`
