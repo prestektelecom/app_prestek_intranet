@@ -24,7 +24,7 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 ## Ambiente
 
 - Código local: `F:\vault\20 Projetos\prestek_intranet` (dentro do vault Obsidian)
-- Produção: `/root/prestek_intranet`
+- Produção: destino do deploy definido em 2026-10-03: `/home/antonio/app_prestek_intranet` (servidor `201.150.48.6`, usuário `antonio`, sem root). Antes constava `/root/prestek_intranet`. A senha nunca vai para nota ou arquivo: trocar por chave SSH.
 - Cliente placeholder de chamados internos de TI na IXC: `id_cliente = 681` ("escritório
   Prestek"). Tem **40 logins** (uma unidade/filial da Prestek por login, ex.: `igrejanova`,
   `piacabucu`, `canabrava`) — NÃO tem um login só. O usado para abrir chamado de TI é

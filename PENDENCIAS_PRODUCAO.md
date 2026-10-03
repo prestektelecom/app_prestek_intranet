@@ -18,7 +18,7 @@ Lacunas de verificação estão marcadas como _(não verificado)_.
 
 ### Deploy / banco
 - [ ] **NÃO rodar `migrations/run.js` inteiro em produção.** Ele reexecuta todos os `.sql` e engole erros. Aplicar só o que falta, via `pg`/`psql -f`. Já aplicadas: 022, 023 e 024. Conferir com `SELECT column_name FROM information_schema.columns WHERE table_name='processos' AND column_name LIKE 'ixc_%'` (esperado: 5 colunas).
-- [ ] **Passos no servidor** (`/root/prestek_intranet`): `git pull`, `npm install` (entrou `@maplibre/maplibre-gl-leaflet`), `npx vite build`, reiniciar o backend. Confirmar que o backend na `3001` roda com a correção do `GROUP BY` de `backend/middleware/permissoes.js` (a versão antiga derrubava toda rota de gestão com 503).
+- [ ] **Passos no servidor** (`/home/antonio/app_prestek_intranet`, ver seção 7): `git pull`, `npm install` (entrou `@maplibre/maplibre-gl-leaflet`), `npx vite build`, reiniciar o backend. Confirmar que o backend na `3001` roda com a correção do `GROUP BY` de `backend/middleware/permissoes.js` (a versão antiga derrubava toda rota de gestão com 503).
 - [ ] **Checar duplicatas em `cobertura_cidades`:** `SELECT cidade, bairro, COUNT(*) FROM cobertura_cidades GROUP BY 1,2 HAVING COUNT(*)>1`. Limpar só com sua aprovação.
 - [x] ~~Ler `013` e `020`~~ — 2026-10-03: a 020 já era idempotente; a 013 só falhava no `ADD CONSTRAINT` (erro falso, sem dano) e ganhou guarda `DO $$ ... IF NOT EXISTS`. Ainda não rodada no banco (alteração só no arquivo). Com isso o runner novo deixa de ser obrigatório, fica opcional.
 - [ ] **Runner de migrations com tabela de controle** (`schema_migrations`, nunca reexecuta, falha alto). Change própria, decisão sua.
@@ -91,14 +91,14 @@ Feita em 2026-10-03 (commit `896db9c`): removidos capturas, `help.txt`, `read-pd
 
 ---
 
-## 7. Roteiro de deploy (`/root/prestek_intranet`)
+## 7. Roteiro de deploy (`/home/antonio/app_prestek_intranet`)
 
 Escrito em 2026-10-03 a partir do código. Itens com **[confirmar]** dependem de como o servidor está montado, o que o repositório não registra (nginx, gerenciador do processo do backend). O Express **não** serve o `dist/`: quem serve o front estático é outro componente.
 
 **Estado do código:** `main` no GitHub em `b36cafa` ou posterior. As migrations 021, 022, 023 e 024 já estão aplicadas no banco (é o mesmo de desenvolvimento); **não há migration a rodar**. A 013 foi alterada só no arquivo, para a eventualidade de reexecução, e não precisa ser aplicada.
 
 ### A. Antes de tocar no servidor
-- [ ] Anotar o commit atual do servidor, para poder voltar: `cd /root/prestek_intranet && git rev-parse HEAD`
+- [ ] Anotar o commit atual do servidor, para poder voltar: `cd /home/antonio/app_prestek_intranet && git rev-parse HEAD (se a pasta ainda não existir, é instalação nova: pule para a seção H)`
 - [ ] Backup do banco: `pg_dump` completo do Postgres de produção (o `psql` não existe na máquina de desenvolvimento; rode no servidor). Guardar fora da pasta do projeto.
 - [ ] Copiar o `.env` atual do servidor para um local seguro (`backend/.env`).
 - [ ] Escolher um horário de pouco uso: o backend reinicia e as sessões continuam válidas (o `JWT_SECRET` não muda).
@@ -137,3 +137,21 @@ Escrito em 2026-10-03 a partir do código. Itens com **[confirmar]** dependem de
 ### G. Se algo der errado (reverter só o código)
 - [ ] `git checkout <commit anotado no passo A>`, repetir B (instalar e build) e reiniciar o backend. Não há migration nova, então **o banco não precisa de reversão**; o backup do passo A só vale se algo mexer em dados.
 - [ ] Se o problema for só o token do IXC novo, restaurar o `.env` copiado no passo A e reiniciar.
+
+### H. Primeira instalação em `/home/antonio/app_prestek_intranet` (usuário `antonio`, sem root)
+
+O destino é um servidor Debian de usuário comum. Se a pasta ainda não existe, não é um `git pull`: é uma instalação completa. Conferir antes, **só com comandos de leitura** (rodar no servidor e anotar o resultado):
+- [ ] `node -v` e `npm -v`. O Vite 5 e o backend (módulos ES) exigem **Node 18 ou mais novo**. O Debian 10 do Antonio traz Node 10 por padrão: se for o caso, instalar o Node pelo `nvm` na conta `antonio` (não precisa de root).
+- [ ] `git --version` e acesso ao repositório (`git clone https://github.com/felixskmarcio/prestek_intranet.git`; repositório privado exige chave de deploy ou token do GitHub, **nunca** a senha da conta).
+- [ ] `ls -la /home/antonio/app_prestek_intranet` (existe? tem `.git`? tem `backend/.env`?).
+- [ ] `ps aux | grep -i "node\|pm2"` e `pm2 list` (já há algo rodando? em qual porta?).
+- [ ] `ss -ltnp` (quais portas estão em uso; o backend usa a `PORT` do `.env`, 3001 por padrão).
+- [ ] `which nginx apache2 caddy` e `ls /etc/nginx/sites-enabled` (quem serve o site). Mexer em nginx/systemd exige `sudo`: confirmar se o usuário `antonio` tem.
+- [ ] Postgres: o app roda no mesmo servidor do banco (`201.150.48.6`)? Nesse caso o `DB_HOST` pode ser `127.0.0.1` e a porta 5432 **não precisa** ficar aberta à internet.
+
+Depois, a instalação:
+1. [ ] `git clone` na pasta, `npm install` na raiz e em `backend/`.
+2. [ ] Criar `backend/.env` a partir de `backend/.env copy.example` (que tem só placeholders), preenchendo as variáveis da seção C. Permissão `chmod 600 backend/.env`.
+3. [ ] `npx vite build` com o `VITE_API_URL` correto e publicar o `dist/` onde o servidor web lê.
+4. [ ] Manter o backend no ar sem root: `pm2 start server.js --name prestek-backend` dentro de `backend/`, mais `pm2 save` e `pm2 startup` (este último pede um comando com `sudo`; sem sudo, usar `crontab -e` com `@reboot`).
+5. [ ] Voltar para as seções D e E (subir e verificar).
