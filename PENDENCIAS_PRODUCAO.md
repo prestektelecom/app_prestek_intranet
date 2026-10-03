@@ -86,5 +86,5 @@ Feita em 2026-10-03 (commit `896db9c`): removidos capturas, `help.txt`, `read-pd
 - [ ] Ainda versionados por serem ferramentas ou citados: `playwright-login.mjs`, `.gemini/` e `.agent/` (skills do Impeccable), `GEMINI.md`, `SKILL.md`. Confirmar se algum deve sair do servidor de produção.
 - [ ] `docs/Ficha Registro de Empregado TESTE .pdf`: conferir se há dado pessoal real.
 - [ ] Branch remota `origin/configuracao_adm`: **0 commits à frente da `main`** (verificado em 2026-10-03), pode ser apagada com `git push origin --delete configuracao_adm`; aguarda seu OK.
-- [ ] **`git push` da `main`:** há 5 commits locais de 2026-10-03 ainda não enviados ao GitHub.
+- [x] ~~`git push` da `main`~~ — feito em 2026-10-03 (`c475adb..7a84a48`, 9 commits, avanço simples).
 - [ ] Obsidian: `MEMORIA.md` tem uma lista de Pendências com dezenas de itens já concluídos (riscados). Mover o histórico concluído para uma nota separada e deixar lá só um link.
