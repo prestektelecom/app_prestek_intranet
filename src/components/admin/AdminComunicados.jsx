@@ -364,7 +364,7 @@ export default function AdminComunicados({ adminEmail }) {
                     >
                         <div
                             className="flex items-center justify-between px-5 py-4 text-white"
-                            style={{ background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accentDark})` }}
+                            style={{ background: `linear-gradient(120deg, ${C.accentDeep}, #C2410C)` }}
                         >
                             <h2 id={COMUNICADO_MODAL_TITULO_ID} className="font-display flex items-center gap-2 text-xl font-bold">
                                 <span className="material-symbols-outlined text-xl">{editando ? 'edit' : 'campaign'}</span>

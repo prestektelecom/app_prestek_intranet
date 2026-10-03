@@ -35,7 +35,7 @@ Lacunas de verificação estão marcadas como _(não verificado)_.
 | Change | Situação | O que falta |
 |---|---|---|
 | ~~`setores-membros-manuais`~~ | 38/38 | **Arquivada em 2026-10-03** (`archive/2026-10-03-setores-membros-manuais`; 1 spec nova e 1 requisito somado a cada uma de `department-chip-filter` e `setores-diretorio`). Pendente só o visual nos temas claro, Cyber, Aurora e Default Dark. |
-| `migrar-accent-laranja-marca` | 21/29 | 8 verificações no navegador (4.3–4.10): 5 temas, hero de Serviços, Sidebar/`Logo_P`, Login/NotFound, ThemeSwitcher, `warning` vs laranja, Aurora e Cyber (maior risco), telas densas. |
+| `migrar-accent-laranja-marca` | 25/29 | Verificada no navegador em 2026-10-03 (API simulada): 4.3, 4.4, 4.5, 4.9. Faltam: 4.6 (só o NotFound), 4.7 (ThemeSwitcher: amostras contra o que cada tema mostra), 4.8 (`warning` amarelo contra laranja em Cobertura/badges, precisa de dados reais) e 4.10 (telas densas com dados reais: Plantão, Cobertura, Processos, Escritórios, Rankings). |
 | `melhorar-card-aniversariantes` | 29/35 | 7.1 feita em 2026-10-03 (hook `useDeptoMap`; diagnóstico fechado por evidência em `design.md`, sem consulta ao IXC). Verificação visual feita em 2026-10-03 (4.5 e 5.3); falta só a 5.1 (comparar lado a lado com o `TeamBento`, a olho) e 6.1–6.4 (não serão executadas ao vivo) e 8.1 feita (rota de debug removida). |
 | `db-replicacao-failover-felix-antonio` | 10/25 | Bloqueada: onde fica o nó standby, mecanismo de replicação, failover automático ou manual, execução em servidor, teste de failover (3.x–5.x). Tarefas 6.x (segurança) estão na seção 1; 6.4–6.6 tratam EOL do Postgres 11/Debian 10 do Antonio, Postgres 14 do Felix (EOL nov/2026) e a saturação de memória do Felix (sem swap, OOM killer ativo; merece change própria). |
 | ~~8 changes de Dashboard/Serviços/Chamados + `teste-cli-openspec` + `instalar-impeccable`~~ | **Resolvido em 2026-10-03** | Arquivadas em `archive/2026-10-03-*` (3 obsoletas/parciais sem spec nova); 2 pastas inúteis apagadas; 4 specs novas escritas com o estado real (laranja, sem comparador): `hover-border-effect`, `atalhos-rapidos-button-layout`, `gradient-service-cards`, `ticket-message-parser`. |
@@ -60,7 +60,7 @@ Obs.: o `openspec archive` costuma dar EPERM no rename da pasta neste ambiente. 
 
 Regra do projeto: mudança de UI passa por `/impeccable audit` antes de fechar.
 
-- [ ] Login: testes E2E da Fase 5 do plano; melhorias de 2026-09-29 sem verificação visual no navegador.
+- [ ] Login: testes E2E da Fase 5 do plano. (Em 2026-10-03 o Login foi visto no navegador em Aurora e carrega nos 5 temas; as melhorias de 09-29 seguem sem checagem detalhada.)
 - [x] ~~`C.danger` como texto de erro~~ — 2026-10-03: 8 textos trocados por `dangerStrong` em `AdminUsuarios`, `AdminAuditoria` e `AdminComunicados` (claro: 3,45:1 → 6,00:1). Build limpo, detector sem aviso novo. Visto no navegador em 2026-10-03 (API simulada, 5 temas): texto de erro 6,0 a 8,7:1 e banners de AdminUsuarios e AdminComunicados agora com `role="alert"`.
 - [ ] Barra inferior do Painel Admin com rótulos colados a 360px ("Responsáveis"/"Comunicados").
 - [ ] `HistoricoPreviewModal` com superfície branca fixa em qualquer tema (P3).

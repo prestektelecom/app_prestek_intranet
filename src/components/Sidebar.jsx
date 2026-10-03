@@ -68,6 +68,7 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, badgeCores, onCl
   return (
     <button
       type="button"
+      className="navrow"
       onClick={() => onClick(id)}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -78,7 +79,7 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, badgeCores, onCl
       style={{
         position: 'relative', display: 'flex', alignItems: 'center',
         justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 12,
-        padding: '9px 12px', minHeight: 44, borderRadius: 8, cursor: 'pointer', width: '100%', textAlign: 'left',
+        padding: '9px 12px', borderRadius: 8, cursor: 'pointer', width: '100%', textAlign: 'left',
         // Item ativo como o DESIGN.md documenta (nav-item-active): fundo
         // Laranja Suave, texto no laranja de texto, ícone no accent.
         background: active ? C.accentSoft : (emphasized ? C.surface : 'transparent'),
@@ -353,6 +354,11 @@ export default function Sidebar({ currentView, setCurrentView, user, profile, se
            Alvo é o <svg> em si (transform-box: fill-box centra a escala nele,
            não no viewport da Sidebar) — só transform + atributo de traço,
            nunca width/height, para não deslocar layout dos itens vizinhos. */
+        /* Alvo de 44px só em ponteiro de toque; com mouse a barra de 13 itens
+           precisa caber em telas de ~900px sem esconder Configurações/Painel Admin. */
+        @media (pointer: coarse) {
+          .navrow { min-height: 44px; }
+        }
         .navrow-icon svg {
           transition: transform 160ms ease-out, stroke-width 160ms ease-out;
           transform-box: fill-box;

@@ -382,7 +382,7 @@ export default function Configuracoes({ user, setCurrentView }) {
 
             {/* ── Hero Banner ─────────────────────────────────────────────── */}
             <div style={{
-                background: `linear-gradient(120deg, ${C.accentDeep} 0%, ${C.accentDark} 55%, ${C.accent} 100%)`,
+                background: `linear-gradient(120deg, ${C.accentDeep} 0%, #C2410C 55%, ${C.accent} 100%)`,
                 padding: '40px 40px 80px', position: 'relative', overflow: 'hidden',
                 boxShadow: `0 8px 32px ${tone(C.accentDeep, 0.3)}`,
             }}>
@@ -406,7 +406,7 @@ export default function Configuracoes({ user, setCurrentView }) {
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: 8,
                             padding: '11px 26px', borderRadius: 12, border: 'none', cursor: (isSaving || isLoading) ? 'not-allowed' : 'pointer',
-                            background: saveSuccess ? C.success : 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)',
+                            background: saveSuccess ? C.success : 'rgba(0,0,0,0.34)', backdropFilter: 'blur(8px)',
                             color: 'white', fontWeight: 700, fontSize: 14,
                             boxShadow: '0 2px 12px rgba(0,0,0,0.15)', transition: 'all .18s',
                             opacity: (isSaving || isLoading) ? 0.7 : 1,

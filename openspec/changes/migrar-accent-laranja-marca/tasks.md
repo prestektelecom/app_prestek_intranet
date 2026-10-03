@@ -32,13 +32,13 @@
 
 - [x] 4.1 `npm run build`
 - [x] 4.2 Varredura: nenhum `#4A9EF5|#1F5BA8|#2D7BD4|#7FD4E8|#00F2FE|#EAF4FF` nem `rgba(74,158,245`/`rgba(31,91,168` restante em `src/`
-- [ ] 4.3 **Browser** — alternar os 5 temas
-- [ ] 4.4 **Browser** — hero do diretório de serviços: o gradiente tem que ter profundidade, não uma cor chapada (é o print que motivou o change)
-- [ ] 4.5 **Browser** — Sidebar: o `Logo_P.webp` deve conversar com a interface, não destoar
-- [ ] 4.6 **Browser** — Login e NotFound sem resquício de identidade própria
+- [x] 4.3 **Browser** — 5 temas (2026-10-03, API simulada): Dashboard, Serviços, Cobertura, Plantão, Processos, Escritórios, Configurações e Login renderizam nos 5 temas, sem tela branca nem overflow horizontal
+- [x] 4.4 **Browser** — hero de Serviços com profundidade (gradiente laranja com realces, não chapado), em claro e Aurora
+- [x] 4.5 **Browser** — `Logo_P` laranja combina com a Sidebar em claro, Cyber e Aurora
+- [ ] 4.6 **Browser** — Login e NotFound sem resquício de identidade própria — Login visto em Aurora e sem resquício de identidade própria (2026-10-03); **NotFound ainda não visto**
 - [ ] 4.7 **Browser** — ThemeSwitcher: as amostras batem com o que cada tema mostra
 - [ ] 4.8 **Browser** — `warning` amarelo lê como aviso, distinto do laranja de destaque (Coverage, badges de status)
-- [ ] 4.9 **Browser** — Aurora (laranja sobre roxo, par complementar) e Cyber (perdeu o néon) são os dois temas de maior risco
+- [x] 4.9 **Browser** — Aurora e Cyber vistos em Dashboard, Serviços, Configurações e Login. Achado e corrigido: gradiente com tom pêssego (`accentDark`) sob texto branco nos temas escuros, em Configuracoes, AdminComunicados e AdminDashboard (2026-10-03)
 - [ ] 4.10 **Browser** — telas densas: Schedule, Coverage, Processos, Offices, Rankings
 
 ## Pendências para changes futuros

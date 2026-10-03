@@ -369,7 +369,7 @@ export default function AdminDashboard({ setCurrentView, user }) {
                                         type="button"
                                         onClick={() => setAbaAtiva('usuarios')}
                                         className="group relative min-h-[44px] cursor-pointer overflow-hidden rounded-2xl p-6 text-left text-white shadow-lg transition-shadow hover:shadow-xl"
-                                        style={{ background: `linear-gradient(135deg, ${C.accentDeep} 0%, ${C.accentDark} 100%)` }}
+                                        style={{ background: `linear-gradient(135deg, ${C.accentDeep} 0%, #C2410C 100%)` }}
                                     >
                                         <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 transform opacity-10 transition-transform duration-500 group-hover:scale-110">
                                             <span className="material-symbols-outlined" style={{ fontSize: '120px' }}>group</span>
