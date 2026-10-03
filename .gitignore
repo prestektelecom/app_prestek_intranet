@@ -90,3 +90,6 @@ tmp_check_ti.js
 backend/.cache/
 *.traineddata
 
+
+# Permissões locais do Claude Code: já continham senhas de servidores. Nunca versionar.
+.claude/settings.local.json
