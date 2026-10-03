@@ -272,6 +272,7 @@ export default function AdminUsuarios({ adminEmail }) {
             {/* Erro */}
             {erro && (
                 <div
+                    role="alert"
                     className="rounded-xl border p-4 text-sm"
                     style={{ background: C.dangerSoft, borderColor: tone(C.danger, 0.35), color: C.dangerStrong }}
                 >

@@ -27,14 +27,14 @@
 - [x] 4.2 Manter o tratamento padrão (`bg-surface-raised`, `text-faint`) para aniversários mais distantes
 - [x] 4.3 Adicionar estado de hover nas linhas de colaborador
 - [x] 4.4 Verificar que nenhuma cor nova hardcoded foi introduzida — apenas tokens de tema existentes
-- [ ] 4.5 Verificar o card em tema claro e escuro
+- [x] 4.5 Verificado em 2026-10-03 no navegador (API simulada) nos 5 temas: todo texto do card >= 4,53:1 (Default Dark e Cyber), 4,79 (Aurora), 6,11 (AMOLED), 6,70 (claro)
 - [x] 4.6 Verificar os estados de lista vazia e de carregamento (skeleton) após as mudanças, ajustando o skeleton se a altura da row mudou
 
 ## 5. Validação da Frente 1
 
 - [ ] 5.1 Conferir o card lado a lado com o `TeamBento`/Disponibilidade adjacente e confirmar coerência visual
 - [x] 5.2 Verificar que o `GlowingEffect`, o `CARD_TITLE` e o `custom-scrollbar` continuam funcionando como antes
-- [ ] 5.3 Verificar o card com lista longa (scroll) e com um único aniversariante
+- [x] 5.3 Verificado em 2026-10-03: 1 aniversariante (sem rolagem) e 12 (rolagem interna, linhas de 49px, sem overflow horizontal)
 - [x] 5.4 Confirmar que o nome completo está acessível via atributo de título na linha
 
 ## 6. Diagnóstico do departamento (execução manual, não bloqueante)
