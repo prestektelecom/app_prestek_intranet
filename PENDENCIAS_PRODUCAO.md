@@ -88,3 +88,52 @@ Feita em 2026-10-03 (commit `896db9c`): removidos capturas, `help.txt`, `read-pd
 - [ ] Branch remota `origin/configuracao_adm`: **0 commits à frente da `main`** (verificado em 2026-10-03), pode ser apagada com `git push origin --delete configuracao_adm`; aguarda seu OK.
 - [x] ~~`git push` da `main`~~ — feito em 2026-10-03 (`c475adb..7a84a48`, 9 commits, avanço simples).
 - [x] ~~Enxugar o `MEMORIA.md`~~ — feito em 2026-10-03: 208 KB (~53 mil tokens por sessão) para 11 KB; o resto foi movido sem alteração para `MEMORIA-historico.md`, que o `CLAUDE.md` não importa.
+
+---
+
+## 7. Roteiro de deploy (`/root/prestek_intranet`)
+
+Escrito em 2026-10-03 a partir do código. Itens com **[confirmar]** dependem de como o servidor está montado, o que o repositório não registra (nginx, gerenciador do processo do backend). O Express **não** serve o `dist/`: quem serve o front estático é outro componente.
+
+**Estado do código:** `main` no GitHub em `b36cafa` ou posterior. As migrations 021, 022, 023 e 024 já estão aplicadas no banco (é o mesmo de desenvolvimento); **não há migration a rodar**. A 013 foi alterada só no arquivo, para a eventualidade de reexecução, e não precisa ser aplicada.
+
+### A. Antes de tocar no servidor
+- [ ] Anotar o commit atual do servidor, para poder voltar: `cd /root/prestek_intranet && git rev-parse HEAD`
+- [ ] Backup do banco: `pg_dump` completo do Postgres de produção (o `psql` não existe na máquina de desenvolvimento; rode no servidor). Guardar fora da pasta do projeto.
+- [ ] Copiar o `.env` atual do servidor para um local seguro (`backend/.env`).
+- [ ] Escolher um horário de pouco uso: o backend reinicia e as sessões continuam válidas (o `JWT_SECRET` não muda).
+
+### B. Atualizar o código
+- [ ] `git pull origin main` (se acusar alteração local no servidor, parar e olhar: não sobrescrever).
+- [ ] Dependências: `npm install` na raiz **e** `cd backend && npm install` (entraram `@maplibre/maplibre-gl-leaflet` e `leaflet.markercluster`; saiu `redis`).
+- [ ] Build do front **com a URL certa da API**: `VITE_API_URL=<url pública da API> npx vite build`. O valor entra no bundle na hora do build; sem ele o front aponta para `localhost:3001`. **[confirmar]** se o nginx faz proxy de `/api` na mesma origem (nesse caso `VITE_API_URL` pode ficar vazio).
+- [ ] Publicar o `dist/` onde o servidor web lê **[confirmar]** (nginx/outro).
+
+### C. Conferir o `.env` do backend (nomes obrigatórios)
+`IXC_HOST`, `IXC_USER_ID`, `IXC_TOKEN_SECRET`, `DB_HOST` (ou `DB_PRIMARY_HOST`/`DB_REPLICA_HOST`), `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `PORT`, `JWT_SECRET`, `CORS_ORIGENS`, `IXC_SENHA_PADRAO_COLABORADOR`.
+- [ ] `CORS_ORIGENS` com o domínio **real** do site (o padrão `http://localhost:5000` bloquearia todo o front em produção).
+- [ ] `JWT_SECRET` longo e próprio. **Trocar derruba todas as sessões**: faça só se estiver fraco e avise o time.
+- [ ] Opcionais de cache (`CACHE_TTL_*`, `CACHE_STW_COBERTURA`): sem eles valem os padrões.
+
+### D. Subir
+- [ ] Reiniciar o backend (`node server.js` em `backend/`) pelo gerenciador que o servidor usa **[confirmar: pm2, systemd ou outro]**.
+- [ ] Ver o log de inicialização: conexão com o Postgres (`DB_PRIMARY_HOST` primeiro, `DB_REPLICA_HOST` de reserva) e ausência de erro.
+- [ ] `GET /api/health` responde OK.
+
+### E. Verificação pós-deploy (5 minutos, com sua conta de admin)
+- [ ] Login funciona e o Dashboard carrega; o card de aniversariantes mostra o departamento ("sáb, 04/10 · COMERCIAL").
+- [ ] Painel Admin: aba Usuários abre sem erro (a versão antiga da consulta de permissões derrubava toda rota de gestão com 503; **se vir 503, o servidor está com código antigo**).
+- [ ] Setores: os totais batem com o filtro de Colaboradores; a equipe do T.I e dos demais setores está como antes (os 5 ajustes manuais seus continuam).
+- [ ] Meus chamados e Plantão carregam; abrir um chamado de TI de teste **só com sua autorização** (escreve no IXC).
+- [ ] Conferir que o navegador não mostra erro de CORS no console.
+- [ ] `git status` limpo no servidor.
+
+### F. Segurança (na mesma janela, nesta ordem)
+1. [ ] **Rotacionar o token do usuário IXC 222:** gerar o novo no IXC, atualizar `IXC_TOKEN_SECRET` no `.env` **de produção e de desenvolvimento**, reiniciar o backend, testar uma tela que lê o IXC (Colaboradores). Só então revogar o token antigo. Não colar o valor no chat nem em arquivo versionado.
+2. [ ] Decidir sobre o usuário IXC 72 (revogar ou rotacionar) e anotar o resultado.
+3. [ ] **PostgreSQL exposto à internet** (`pg_hba.conf` com `0.0.0.0/0`): **primeiro** liberar o IP do servidor da aplicação e dos admins, **depois** remover a regra aberta e recarregar o Postgres, **depois** testar o backend. Fazer nessa ordem evita derrubar o sistema por engano.
+4. [ ] Trocar as senhas que passaram por chat (root do Felix e `antonio`) e passar para chave SSH.
+
+### G. Se algo der errado (reverter só o código)
+- [ ] `git checkout <commit anotado no passo A>`, repetir B (instalar e build) e reiniciar o backend. Não há migration nova, então **o banco não precisa de reversão**; o backup do passo A só vale se algo mexer em dados.
+- [ ] Se o problema for só o token do IXC novo, restaurar o `.env` copiado no passo A e reiniciar.
