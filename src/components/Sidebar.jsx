@@ -29,9 +29,12 @@ const ChevronUpDownIcon = () => (
 
 function GroupLabel({ C, collapsed, children, showSeparator = true }) {
   if (collapsed) {
+    // Colapsada, o grupo vira só um traço; o nome continua disponível em texto
+    // para leitor de tela, que antes perdia a divisão "Dia a dia / Empresa /
+    // Administração" por completo.
     return showSeparator
-      ? <hr style={{ border: 'none', borderTop: `1px solid ${C.line}`, margin: '14px 4px 10px', opacity: 0.7 }} />
-      : <div style={{ height: 10 }} />;
+      ? <><hr style={{ border: 'none', borderTop: `1px solid ${C.line}`, margin: '14px 4px 10px', opacity: 0.7 }} /><span className="sr-only">{children}</span></>
+      : <div style={{ height: 10 }}><span className="sr-only">{children}</span></div>;
   }
   return (
     <>
@@ -75,7 +78,7 @@ function NavRow({ C, collapsed, id, icon, label, active, badge, badgeCores, onCl
       style={{
         position: 'relative', display: 'flex', alignItems: 'center',
         justifyContent: collapsed ? 'center' : 'flex-start', gap: collapsed ? 0 : 12,
-        padding: '9px 12px', borderRadius: 8, cursor: 'pointer', width: '100%', textAlign: 'left',
+        padding: '9px 12px', minHeight: 44, borderRadius: 8, cursor: 'pointer', width: '100%', textAlign: 'left',
         // Item ativo como o DESIGN.md documenta (nav-item-active): fundo
         // Laranja Suave, texto no laranja de texto, ícone no accent.
         background: active ? C.accentSoft : (emphasized ? C.surface : 'transparent'),

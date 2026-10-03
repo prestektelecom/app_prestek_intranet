@@ -64,7 +64,7 @@ Regra do projeto: mudança de UI passa por `/impeccable audit` antes de fechar.
 - [x] ~~`C.danger` como texto de erro~~ — 2026-10-03: 8 textos trocados por `dangerStrong` em `AdminUsuarios`, `AdminAuditoria` e `AdminComunicados` (claro: 3,45:1 → 6,00:1). Build limpo, detector sem aviso novo. Não visto no navegador.
 - [ ] Barra inferior do Painel Admin com rótulos colados a 360px ("Responsáveis"/"Comunicados").
 - [ ] `HistoricoPreviewModal` com superfície branca fixa em qualquer tema (P3).
-- [ ] Sidebar: `GroupLabel` perde o rótulo para leitor de tela quando colapsada; altura do `NavRow` (~38px) abaixo de 44px.
+- [x] ~~Sidebar: rótulo do grupo e altura do `NavRow`~~ — 2026-10-03: `GroupLabel` colapsado mantém o nome em `sr-only`; `NavRow` com `minHeight: 44`. Build limpo, detector 0. **Não visto no navegador:** a barra fica ~6px mais alta por item (12 itens) e rola se faltar espaço; conferir em notebook de tela baixa.
 - [ ] `index.css`: raios e tamanhos de fonte soltos; detector aponta ~190 avisos de deriva do `DESIGN.md` (boa parte é o padrão compartilhado 10px/17px do `HeroShell`).
 - [ ] Specs `dark-mode-bento-foundation`, `bento-blue-global-tokens` e outras 4 `bento-blue-*`/`dark-mode-bento-*` ainda descrevem a paleta "Bento Blue" abandonada. Em 2026-10-03 todas ganharam `## Purpose` (a validação estrita passou de 65 para 83 de 83) com uma nota de que são registro histórico; reescrever o conteúdo continua pendente (baixa prioridade, não afeta o deploy).
 - [ ] Verificar no navegador com sessão **não-admin** o `ProcessoViewModal` (só validado por leitura de código).
