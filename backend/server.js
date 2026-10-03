@@ -455,8 +455,9 @@ app.get('/api/departamentos-empresa', async (req, res) => {
     }
 })
 
-// ─── Rota: Debug de departamento por funcionário (temporária) ───────────
-app.get('/api/debug-funcionario/:id', async (req, res) => {
+// ─── Rota: Debug de departamento por funcionário (temporária, só admin) ───────────
+// Remover ao concluir o diagnóstico da change melhorar-card-aniversariantes (6.x/8.1).
+app.get('/api/debug-funcionario/:id', adminAuth, async (req, res) => {
     const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`
     const host = process.env.IXC_HOST
     const authHeader = 'Basic ' + Buffer.from(token).toString('base64')
@@ -2300,39 +2301,6 @@ app.post('/api/ixc/su-ticket/list', async (req, res) => {
     }
 });
 
-// ─── Rota Debug: Inspecionar dados de funcionários de um setor ───────────────────────
-app.get('/api/debug/setor/:setorId', async (req, res) => {
-    const host = process.env.IXC_HOST;
-    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
-    const headers = {
-        'Content-Type': 'application/json',
-        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
-        ixcsoft: 'listar'
-    };
-    const { setorId } = req.params;
-
-    try {
-        const resFunc = await fetch(`https://${host}/webservice/v1/funcionarios`, {
-            method: 'POST', headers,
-            body: JSON.stringify({ qtype: 'funcionarios.ativo', query: 'S', oper: '=', page: '1', rp: '10000', sortname: 'funcionarios.funcionario', sortorder: 'asc' })
-        });
-
-        const dataFunc = await resFunc.json();
-        const funcionarios = (dataFunc.registros || []).filter(f => String(f.id_departamento).trim() === String(setorId).trim());
-        
-        console.log(`-> Debug setor ${setorId}: ${funcionarios.length} funcionários`);
-        return res.json({ sucesso: true, funcionarios: funcionarios.slice(0, 3).map(f => ({ 
-            id: f.id, 
-            nome: f.funcionario, 
-            depto: f.id_departamento,
-            todos_campos: Object.keys(f) 
-        })) });
-    } catch (e) {
-        console.error('Erro debug:', e);
-        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
-    }
-});
-
 // ─── Rota: Buscar Grupos (names) ───────────────────────
 app.get('/api/grupos', async (req, res) => {
     const host = process.env.IXC_HOST;
@@ -2605,40 +2573,6 @@ app.post('/api/admin/setores-descricoes', gate('usuarios'), async (req, res) => 
             await pool.query(query, [String(id_setor), descricao, atualizado_por]);
         }
         return res.json({ sucesso: true });
-    } catch (e) {
-        console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
-        return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });
-    }
-});
-
-// ─── Rota: Listar todos os id_grupo com seus membros (diagnóstico) ──────────
-app.get('/api/debug/grupos-membros', async (req, res) => {
-    const host = process.env.IXC_HOST;
-    const token = `${process.env.IXC_USER_ID}:${process.env.IXC_TOKEN_SECRET}`;
-    const headers = {
-        'Content-Type': 'application/json',
-        Authorization: 'Basic ' + Buffer.from(token).toString('base64'),
-        ixcsoft: 'listar'
-    };
-    try {
-        const resU = await fetch(`https://${host}/webservice/v1/usuarios`, {
-            method: 'POST', headers,
-            body: JSON.stringify({ qtype: 'usuarios.id', query: '0', oper: '>', page: '1', rp: '10000', sortname: 'usuarios.id', sortorder: 'asc' })
-        });
-        const dataU = await resU.json();
-        const usuarios = dataU.registros || [];
-
-        const porGrupo = {};
-        for (const u of usuarios) {
-            const gid = u.id_grupo || '0';
-            if (!porGrupo[gid]) porGrupo[gid] = [];
-            porGrupo[gid].push({ id: u.id, nome: u.nome, status: u.status, funcionario: u.funcionario });
-        }
-        const resultado = Object.entries(porGrupo)
-            .sort((a, b) => Number(a[0]) - Number(b[0]))
-            .map(([id_grupo, membros]) => ({ id_grupo, total: membros.length, membros }));
-
-        return res.json({ sucesso: true, total_grupos: resultado.length, grupos: resultado });
     } catch (e) {
         console.error(`[erro interno] ${req.method} ${req.originalUrl}:`, e.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno do servidor.' });

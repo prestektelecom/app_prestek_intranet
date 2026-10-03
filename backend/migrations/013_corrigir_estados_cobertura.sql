@@ -17,6 +17,14 @@ UPDATE cobertura_cidades
     WHERE TRIM(estado) NOT IN ('AL', 'SE');
 
 -- 3. Adicionar constraint CHECK para garantir apenas AL e SE no futuro
-ALTER TABLE cobertura_cidades
-    ADD CONSTRAINT chk_estado_valido
-    CHECK (TRIM(estado) IN ('AL', 'SE'));
+-- (idempotente: só cria se a constraint ainda não existir)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'chk_estado_valido'
+    ) THEN
+        ALTER TABLE cobertura_cidades
+            ADD CONSTRAINT chk_estado_valido
+            CHECK (TRIM(estado) IN ('AL', 'SE'));
+    END IF;
+END $$;
