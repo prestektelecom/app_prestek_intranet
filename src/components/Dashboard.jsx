@@ -927,25 +927,41 @@ function AvatarAniversariante({ nome, foto }) {
   );
 }
 
+// Nome do departamento por id. O id_departamento do funcionário casa com a
+// tabela empresa_setor (/api/cargos), a mesma que /api/setores usa para montar
+// as equipes; a tabela departamento (/api/departamentos-empresa) fica só como
+// reserva. Antes os cards liam apenas a reserva e podiam mostrar o nome errado
+// ou nenhum. Cada fonte falha sozinha: se uma cair, a outra ainda preenche.
+function useDeptoMap() {
+  const [mapa, setMapa] = useState({});
+  useEffect(() => {
+    let vivo = true;
+    const ler = (url, campo, rotulo) => fetch(url)
+      .then(r => r.json())
+      .then(d => (d.sucesso ? (d[campo] || []).map(x => [String(x.id), x[rotulo]]) : []))
+      .catch(() => []);
+    Promise.all([
+      ler('/api/cargos', 'cargos', 'setor'),
+      ler('/api/departamentos-empresa', 'departamentos', 'departamento'),
+    ]).then(([setores, departamentos]) => {
+      if (!vivo) return;
+      const m = {};
+      // Reserva primeiro, empresa_setor por cima: o que casa de verdade vence.
+      [...departamentos, ...setores].forEach(([id, nome]) => { if (nome) m[id] = nome; });
+      setMapa(m);
+    });
+    return () => { vivo = false; };
+  }, []);
+  return mapa;
+}
+
 function AniversariantesCard({ onAniversariantesHoje }) {
   const isTouchOnly = useTouchOnly();
   const [aniversariantes, setAniversariantes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
-  const [deptoMap, setDeptoMap] = useState({});
+  const deptoMap = useDeptoMap();
 
-  useEffect(() => {
-    fetch('/api/departamentos-empresa')
-      .then(r => r.json())
-      .then(d => {
-        if (d.sucesso) {
-          const map = {};
-          (d.departamentos || []).forEach(dep => { map[String(dep.id)] = dep.departamento; });
-          setDeptoMap(map);
-        }
-      })
-      .catch(() => { });
-  }, []);
 
   const carregarAniversariantes = useCallback(() => {
     setLoading(true);
@@ -1058,20 +1074,8 @@ function TeamBento() {
   const [totalOnline, setTotalOnline] = useState(0);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
-  const [deptoMap, setDeptoMap] = useState({});
+  const deptoMap = useDeptoMap();
 
-  useEffect(() => {
-    fetch('/api/departamentos-empresa')
-      .then(r => r.json())
-      .then(d => {
-        if (d.sucesso) {
-          const map = {};
-          (d.departamentos || []).forEach(dep => { map[String(dep.id)] = dep.departamento; });
-          setDeptoMap(map);
-        }
-      })
-      .catch(() => { });
-  }, []);
 
   const fetchOnline = useCallback(async () => {
     setErro(false);

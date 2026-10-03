@@ -46,7 +46,7 @@
 
 ## 7. Correção do mapeamento (condicional ao resultado de 6.3)
 
-- [ ] 7.1 Se o diagnóstico apontou tabela diferente: ajustar `/api/departamentos-empresa` (`backend/server.js:395`) para consultar a tabela correta
+- [x] 7.1 Corrigido em 2026-10-03 no front, não na rota: hook `useDeptoMap` em `Dashboard.jsx` busca `/api/cargos` (empresa_setor) e `/api/departamentos-empresa` e dá prioridade à `empresa_setor`; usado por `AniversariantesCard` e `TeamBento`. `npx vite build` limpo; detector com os mesmos 9 avisos de antes (fonte), nenhum nas linhas novas
 - [x] 7.2 Adicionar fallback por `id_funcao` no card, seguindo o padrão já usado em `TeamBento` (`Dashboard.jsx:989`)
 - [x] 7.3 Exibir o departamento como informação complementar da linha, omitindo-o por completo quando não resolver — sem reservar espaço vazio
 - [x] 7.4 Verificar que colaboradores com e sem departamento resolvido convivem na mesma lista sem desalinhamento

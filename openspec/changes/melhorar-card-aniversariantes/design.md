@@ -98,3 +98,7 @@ Rollback: reverter as alterações em `src/components/Dashboard.jsx`. Se a Frent
 ## Open Questions
 
 - Após o diagnóstico, se o departamento resolver, onde ele entra na linha: concatenado à data secundária, ou como terceira informação. Pode ser decidido no momento da Frente 2 — não afeta as specs da Frente 1 nem o desenho acima, já que a spec trata o departamento como informação complementar condicional.
+
+## Conclusão do diagnóstico de departamento (2026-10-03)
+
+Resolvido por evidência de código e de produção, sem rodar a rota de debug: o `id_departamento` do funcionário casa com a tabela `empresa_setor` (`/api/cargos`). `/api/setores` agrupa as equipes comparando `id_departamento` com o `id` da `empresa_setor` (`server.js`, bloco "Agrupa funcionários ativos por setor"), e em 2026-10-01 27 de 27 setores bateram com o filtro de Colaboradores. A rota `/api/departamentos-empresa` consulta a tabela `departamento`, que não é a do vínculo; os cards liam só ela. Correção: `useDeptoMap` consulta as duas e a `empresa_setor` vence. As tarefas 6.1–6.4 ficam sem execução ao vivo por decisão de usar esta evidência.
