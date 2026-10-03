@@ -155,3 +155,15 @@ Depois, a instalação:
 3. [ ] `npx vite build` com o `VITE_API_URL` correto e publicar o `dist/` onde o servidor web lê.
 4. [ ] Manter o backend no ar sem root: `pm2 start server.js --name prestek-backend` dentro de `backend/`, mais `pm2 save` e `pm2 startup` (este último pede um comando com `sudo`; sem sudo, usar `crontab -e` com `@reboot`).
 5. [ ] Voltar para as seções D e E (subir e verificar).
+
+---
+
+## 8. Senhas expostas no histórico do git (achado em 2026-10-03)
+
+O arquivo `.claude/settings.local.json` (regras de permissão do Claude Code) estava versionado e continha senhas em texto puro; foi enviado ao GitHub no commit `c451c61` e em outros. Desde o commit `38f278a` o arquivo está no `.gitignore` e fora do git, **mas as senhas continuam no histórico**. Não repetir os valores aqui.
+- [ ] **Trocar a senha do usuário `antonio`** no servidor `201.150.48.6` (também foi digitada no chat).
+- [ ] **Trocar a senha do `root` do servidor `65.21.149.72`** (a do Felix; aparece em 3 regras do arquivo, linhas ~56, 57 e 63).
+- [ ] **Passar os dois servidores para chave SSH** e desligar login por senha (`PasswordAuthentication no`), depois de testar a chave.
+- [ ] Apagar do seu arquivo local `.claude/settings.local.json` as regras que carregam senha (linhas ~56, 57, 63 e as de `export ..._PW=`), agora que ele não vai mais ao git.
+- [ ] Opcional: limpar o histórico (`git filter-repo` + force-push + reclonar onde houver cópia). Só depois de trocar as senhas; é higiene, não urgência.
+- Regra daqui em diante: nunca colar senha no chat nem em arquivo do projeto; o Claude Code não deve gravar credenciais em regras de permissão.
