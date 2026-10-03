@@ -1,3 +1,8 @@
+# comunicado-banner-destaque Specification
+
+## Purpose
+Banner de comunicado em destaque no Dashboard: posição, imagem de capa, badge de tipo e texto sobreposto.
+
 ## Requirements
 
 ### Requirement: Banner de comunicado em destaque no Dashboard

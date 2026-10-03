@@ -1,4 +1,9 @@
-## ADDED Requirements
+# busca-planos Specification
+
+## Purpose
+Busca textual em tempo real e atalho Ctrl+K para os planos do Diretório de Serviços.
+
+## Requirements
 
 ### Requirement: Busca textual em tempo real nos planos
 O sistema SHALL filtrar os cards de planos exibidos na `ServicesDirectory` em tempo real conforme o usuário digita no campo de busca do Header, correspondendo ao texto nos campos `descricao`, `valor_mensal` e `id` do plano.

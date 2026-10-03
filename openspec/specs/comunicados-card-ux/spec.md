@@ -1,3 +1,8 @@
+# comunicados-card-ux Specification
+
+## Purpose
+Card de Comunicados no Dashboard: preview truncado, indicador de prioridade por tipo e navegação ao clicar.
+
 ## Requirements
 
 ### Requirement: Preview de descrição no card

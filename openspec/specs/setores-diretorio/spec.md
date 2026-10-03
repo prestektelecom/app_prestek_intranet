@@ -34,3 +34,4 @@ O toggle de visão (Cards/Lista) e o botão "Ver mais" da descrição do card SH
 #### Scenario: "Ver mais" com alvo de 44px
 - **WHEN** o botão "Ver mais" é renderizado
 - **THEN** sua área de toque efetiva (incluindo a expansão invisível) mede no mínimo 44px de altura
+

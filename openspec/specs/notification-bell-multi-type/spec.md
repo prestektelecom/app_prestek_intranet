@@ -1,3 +1,8 @@
+# notification-bell-multi-type Specification
+
+## Purpose
+Tipos de comunicado exibidos no sino: Urgente e Importante (Geral não aparece).
+
 ## Requirements
 
 ### Requirement: Sino exibe Urgente e Importante

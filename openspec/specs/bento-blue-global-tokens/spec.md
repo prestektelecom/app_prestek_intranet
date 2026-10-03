@@ -1,3 +1,8 @@
+# bento-blue-global-tokens Specification
+
+## Purpose
+Variáveis CSS semânticas globais e container raiz do design system Bento. Nota: descreve a paleta "Bento Blue" (azul), já substituída pela marca laranja; vale como registro histórico, não como o estado atual do tema. Os tokens vigentes estão em `index.css` e no `DESIGN.md`.
+
 ## Requirements
 
 ### Requirement: Variáveis semânticas globais usam paleta Bento Blue

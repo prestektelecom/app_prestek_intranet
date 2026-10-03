@@ -1,3 +1,8 @@
+# bento-blue-css-polish Specification
+
+## Purpose
+Limpeza dos helpers globais de `index.css` e dos aliases legados do Tailwind após a migração para o design system Bento. Nota: descreve a paleta "Bento Blue" (azul), já substituída pela marca laranja; vale como registro histórico, não como o estado atual do tema.
+
 ## Requirements
 
 ### Requirement: Helpers globais usam paleta Bento Blue

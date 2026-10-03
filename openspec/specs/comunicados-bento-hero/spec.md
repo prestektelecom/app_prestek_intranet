@@ -1,3 +1,8 @@
+# comunicados-bento-hero Specification
+
+## Purpose
+Hero da página de Comunicados: gradiente, KPIs e campo de busca. Nota: descreve a paleta "Bento Blue" (azul), já substituída pela marca laranja; vale como registro histórico, não como o estado atual do tema.
+
 ## Requirements
 
 ### Requirement: Hero banner com identidade Bento Blue

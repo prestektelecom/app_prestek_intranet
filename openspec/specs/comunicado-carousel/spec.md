@@ -1,3 +1,8 @@
+# comunicado-carousel Specification
+
+## Purpose
+Persistência da imagem de capa dos comunicados e rotação automática (carousel) do banner de destaque.
+
 ## Requirements
 
 ### Requirement: Persistência de imagem de capa nos comunicados

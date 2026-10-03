@@ -1,3 +1,8 @@
+# dark-mode-bento-foundation Specification
+
+## Purpose
+Fundação do modo escuro: variáveis do bloco `.dark` e ThemeSwitcher. Nota: descreve a paleta "Bento Blue" (azul), já substituída pela marca laranja; vale como registro histórico, não como o estado atual do tema. Os cinco temas atuais estão em `index.css`.
+
 ## Requirements
 
 ### Requirement: Variáveis CSS dark usam paleta Bento Blue

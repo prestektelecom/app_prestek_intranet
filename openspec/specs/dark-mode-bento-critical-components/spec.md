@@ -1,3 +1,8 @@
+# dark-mode-bento-critical-components Specification
+
+## Purpose
+Adaptação ao tema escuro dos componentes críticos (Header, Sidebar, Dashboard). Nota: descreve a paleta "Bento Blue" (azul), já substituída pela marca laranja; vale como registro histórico, não como o estado atual do tema.
+
 ## Requirements
 
 ### Requirement: Header reage ao tema escuro

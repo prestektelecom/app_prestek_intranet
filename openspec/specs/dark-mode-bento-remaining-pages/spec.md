@@ -1,3 +1,8 @@
+# dark-mode-bento-remaining-pages Specification
+
+## Purpose
+Adaptação ao tema escuro das demais páginas e subcomponentes. Nota: descreve a paleta "Bento Blue" (azul), já substituída pela marca laranja; vale como registro histórico, não como o estado atual do tema.
+
 ## Requirements
 
 ### Requirement: Páginas Bento restantes reagem ao tema escuro

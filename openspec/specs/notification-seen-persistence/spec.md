@@ -1,3 +1,8 @@
+# notification-seen-persistence Specification
+
+## Purpose
+Persistência no `localStorage`, por usuário, dos comunicados já vistos, para controlar o badge.
+
 ## Requirements
 
 ### Requirement: Estado visto persistido no localStorage por usuário e ID

@@ -1,3 +1,8 @@
+# notification-dropdown-animation Specification
+
+## Purpose
+Animação de entrada do dropdown do sino (opacidade, escala e deslocamento, ~160ms).
+
 ## Requirements
 
 ### Requirement: Dropdown abre com animação suave

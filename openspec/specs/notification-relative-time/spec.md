@@ -1,3 +1,8 @@
+# notification-relative-time Specification
+
+## Purpose
+Tempo relativo em pt-BR (`Intl.RelativeTimeFormat`) nas notificações, em utilitário isolado.
+
 ## Requirements
 
 ### Requirement: Exibição de tempo relativo em pt-BR

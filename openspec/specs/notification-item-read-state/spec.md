@@ -1,3 +1,8 @@
+# notification-item-read-state Specification
+
+## Purpose
+Estado lido/não lido das notificações: marcar uma, marcar todas e distinção visual.
+
 ## Requirements
 
 ### Requirement: Marcação individual de notificação como lida

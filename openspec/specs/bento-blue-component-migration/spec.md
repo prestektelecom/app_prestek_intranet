@@ -1,3 +1,8 @@
+# bento-blue-component-migration Specification
+
+## Purpose
+Migração de componentes pontuais (Auditoria do Admin, ThemeSwitcher, LottieAvatar) das cores warm/âmbar para o design system Bento. Nota: descreve a paleta "Bento Blue" (azul), já substituída pela marca laranja; vale como registro histórico, não como o estado atual do tema.
+
 ## Requirements
 
 ### Requirement: Página de Auditoria do Admin usa Bento Blue

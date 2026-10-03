@@ -1,3 +1,8 @@
+# notification-grouping Specification
+
+## Purpose
+Agrupamento das notificações por tipo no dropdown, com cabeçalho de seção.
+
 ## Requirements
 
 ### Requirement: Agrupamento por tipo no dropdown

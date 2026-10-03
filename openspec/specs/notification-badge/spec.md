@@ -1,3 +1,8 @@
+# notification-badge Specification
+
+## Purpose
+Badge numérico no sino de notificações, com teto em "9+" e cor por prioridade.
+
 ## Requirements
 
 ### Requirement: Badge visual no sino

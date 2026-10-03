@@ -106,3 +106,4 @@ Enquanto os dados carregam, a faixa SHALL exibir esqueletos que reservam sua alt
 #### Scenario: Sem "Todos 0"
 - **WHEN** a aba está carregando
 - **THEN** esqueletos de chip são exibidos, e nenhuma contagem numérica aparece
+
