@@ -1,6 +1,6 @@
 ---
 tags: [projeto, prestek, claude-memoria]
-repo: https://github.com/felixskmarcio/prestek_intranet
+repo: https://github.com/prestektelecom/app_prestek_intranet
 ---
 
 # Prestek Intranet — memória do projeto

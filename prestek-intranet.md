@@ -1,6 +1,6 @@
 ---
 tags: [projeto, prestek]
-repo: https://github.com/felixskmarcio/prestek_intranet
+repo: https://github.com/prestektelecom/app_prestek_intranet
 ---
 
 # Prestek Intranet

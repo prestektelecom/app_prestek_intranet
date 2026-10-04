@@ -139,7 +139,7 @@ Escrito em 2026-10-03 a partir do código. Itens com **[confirmar]** dependem de
 
 O destino é um servidor Debian de usuário comum. Se a pasta ainda não existe, não é um `git pull`: é uma instalação completa. Conferir antes, **só com comandos de leitura** (rodar no servidor e anotar o resultado):
 - [ ] `node -v` e `npm -v`. O Vite 5 e o backend (módulos ES) exigem **Node 18 ou mais novo**. O Debian 10 do Antonio traz Node 10 por padrão: se for o caso, instalar o Node pelo `nvm` na conta `antonio` (não precisa de root).
-- [ ] `git --version` e acesso ao repositório (`git clone https://github.com/felixskmarcio/prestek_intranet.git`; repositório privado exige chave de deploy ou token do GitHub, **nunca** a senha da conta).
+- [ ] `git --version` e acesso ao repositório (`git clone git@github.com:prestektelecom/app_prestek_intranet.git`; repositório privado exige chave de deploy ou token do GitHub, **nunca** a senha da conta).
 - [ ] `ls -la /home/antonio/app_prestek_intranet` (existe? tem `.git`? tem `backend/.env`?).
 - [ ] `ps aux | grep -i "node\|pm2"` e `pm2 list` (já há algo rodando? em qual porta?).
 - [ ] `ss -ltnp` (quais portas estão em uso; o backend usa a `PORT` do `.env`, 3001 por padrão).
