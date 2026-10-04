@@ -11,8 +11,6 @@ Lacunas de verificação estão marcadas como _(não verificado)_.
 ### Segurança e credenciais
 - [ ] **Rotacionar `IXC_TOKEN_SECRET` do usuário IXC 222** (conta do Felix). Você adiou para "quando for para produção": é agora. O valor real chegou a ser versionado em `backend/.env copy.example` (já sanitizado) e segue no histórico do git. Onde: IXC → configurações de API/token do usuário 222. Atualizar `backend/.env` da produção.
 - [ ] **Identificar/revogar o usuário IXC 72**, cujo token estava hardcoded em `backend/debug_clients.js` (removido do código em 2026-09-17, mas ainda no histórico).
-- [ ] **PostgreSQL do Antonio exposto à internet:** `pg_hba.conf` com `host all all 0.0.0.0/0 md5` e porta 5432 aberta ao mundo, versão EOL (change `db-replicacao-failover-felix-antonio`, tarefa 6.1). Restringir aos IPs necessários.
-- [ ] **Rotacionar senhas que passaram por chat** (root do Felix e `antonio` do Antonio) e trocar senha por chave SSH nos dois servidores (6.2, 6.3).
 - [ ] **Conferir o `.env` de produção:** `JWT_SECRET` forte e próprio; `CORS_ORIGENS` com o domínio real (o padrão é `http://localhost:5000`, que bloquearia o site); `VITE_API_URL` apontando para a API de produção no build. _(Inferido das decisões de 2026-09-11; não verificado no servidor.)_
 - [ ] **Decidir sobre limpar o histórico do git** (`git filter-repo` + force-push). Só vale depois de rotacionar os tokens; é higiene, não urgência.
 
@@ -159,6 +157,8 @@ Depois, a instalação:
 ---
 
 ## 8. Senhas expostas no histórico do git (achado em 2026-10-03)
+
+> **Decisão do Felix (2026-10-04): não trocar as senhas agora; risco aceito.** Os itens abaixo ficam como recomendação, **não** bloqueiam o deploy. Consequência assumida: quem tiver acesso de leitura ao repositório do GitHub (e ao histórico) consegue as senhas do `antonio` em `201.150.48.6` e do `root` em `65.21.149.72`. Reavaliar se o repositório deixar de ser privado, se mais pessoas ganharem acesso a ele ou quando o sistema for exposto fora da rede interna.
 
 O arquivo `.claude/settings.local.json` (regras de permissão do Claude Code) estava versionado e continha senhas em texto puro; foi enviado ao GitHub no commit `c451c61` e em outros. Desde o commit `38f278a` o arquivo está no `.gitignore` e fora do git, **mas as senhas continuam no histórico**. Não repetir os valores aqui.
 - [ ] **Trocar a senha do usuário `antonio`** no servidor `201.150.48.6` (também foi digitada no chat).
