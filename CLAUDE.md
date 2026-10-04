@@ -46,43 +46,31 @@ Felix em 2026-10-04: trabalho novo passa a ir por **branch + Pull Request**, nã
 mais direto na `main`. Isso substitui o merge direto de 2026-09-28; a `main` continua
 sendo a única branch de vida longa.
 
-**Idioma** (decidido pelo Felix em 2026-10-04): **inglês para o que é código** (nome de
-branch, resumo de commit, título de PR, nomes novos de variáveis, funções e arquivos) e
-**português para o que o Felix lê** (respostas do Claude, corpo de commit, descrição de
-PR, comentários no código, documentação, `CHANGELOG.md`, `MEMORIA.md`, textos da
-interface). Termos de negócio e nomes que já vêm do IXC ou do banco (`setor`, `plantao`,
-`ramal`, colunas, rotas existentes) não se renomeiam só por causa disso.
-
 **Branches**
 - A `main` é sempre implantável: é o que o servidor puxa. Nunca commitar nela nem
   fazer force-push; nunca reescrever histórico publicado (`rebase`/`reset` em
   commit já enviado, `filter-repo`).
-- Uma branch por assunto, curta, a partir da `main` atualizada: `feat/<topic>` (funcionalidade
-  ou integração nova), `fix/<topic>` (bug), `refactor/<topic>` (refatoração sem mudar
-  comportamento), `chore/<topic>` (dependências, infraestrutura, manutenção),
-  `docs/<topic>` (documentação) e `hotfix/<topic>` (correção urgente de produção).
-  Nome **em inglês**, descritivo, minúsculas, hífens, sem acento (`feat/sector-members-override`,
-  `fix/login-token-expiry`). Branches antigas em português continuam como estão.
+- Uma branch por assunto, curta, a partir da `main` atualizada: `feat/<assunto>`,
+  `fix/<assunto>`, `docs/<assunto>`, `chore/<assunto>`, `hotfix/<assunto>` (correção
+  urgente de produção). Minúsculas, hífens, sem acento. Para changes do OpenSpec, usar
+  o nome da change (`feat/setores-membros-manuais`).
 - Apagar a branch depois do merge (`git branch -d` e no GitHub). Antes de apagar,
   conferir `git rev-list --count main..origin/<branch>` = 0. Trabalho que não vai ser
   mesclado vira tag `archive/<nome>`, não branch esquecida.
 
 **Commits**
-- Conventional Commits: `tipo(escopo): resumo no imperativo`, até ~72 caracteres, a
-  linha de resumo **em inglês** (`fix(backend): bind to 127.0.0.1 in production`). Tipos:
-  `feat`, `fix`, `docs`, `chore`, `refactor`, `perf`, `test`, `style`. O corpo,
-  **em português** para o Felix entender, explica o **porquê**, não repete o diff.
-  Commits antigos em português ficam como estão.
-- Commits atômicos: um assunto, uma mudança lógica por commit. Misturar interface,
-  backend e migration no mesmo commit só quando um não funciona sem o outro.
+- Conventional Commits em português, como o histórico já faz: `tipo(escopo): resumo
+  no imperativo`, até ~72 caracteres. Tipos: `feat`, `fix`, `docs`, `chore`,
+  `refactor`, `perf`, `test`, `style`. O corpo explica o **porquê**, não repete o diff.
+- Um assunto por commit. Misturar interface, backend e migration no mesmo commit só
+  quando um não funciona sem o outro.
 - Nunca `--no-verify` nem pular hooks. Nunca commitar `.env`, `.claude/settings.local.json`,
   tokens, senhas, dumps de banco, `node_modules/` ou `dist/`. Em dúvida, `git diff --cached`
   antes de commitar.
 
 **Pull Requests**
-- Todo PR vai para a `main`, com título em inglês no mesmo formato de commit (é ele que
-  vira o commit do squash), descrição **em português** com **o que mudou, por que e
-  como testar**, e o resultado do `/impeccable` quando tocar
+- Todo PR vai para a `main`, com título no mesmo formato de commit, descrição com **o
+  que mudou, por que e como testar**, e o resultado do `/impeccable` quando tocar
   interface (regra acima). Migration nova: dizer no PR qual arquivo aplicar em
   produção (nunca `migrations/run.js` inteiro).
 - Merge por **squash**, para a `main` ficar com um commit por mudança.
