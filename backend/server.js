@@ -28,6 +28,8 @@ const gate = (capacidade) => requerPermissao(pool, capacidade)
 
 const app = express()
 const PORT = process.env.PORT || 3001
+// Em produção o Apache faz o proxy: HOST=127.0.0.1 impede o acesso direto pela internet.
+const HOST = process.env.HOST || '0.0.0.0'
 
 // Origens permitidas por CORS — configurável via .env (CORS_ORIGENS separadas por vírgula)
 const ORIGENS_PERMITIDAS = String(process.env.CORS_ORIGENS || 'http://localhost:5000')
@@ -5072,8 +5074,8 @@ app.use((err, req, res, next) => {
 
 // ─── Inicialização ───────────────────────────────────────────────
 function iniciarServidor() {
-    const server = app.listen(PORT, () => {
-        console.log(`✅ Backend proxy rodando em http://localhost:${PORT}`)
+    const server = app.listen(PORT, HOST, () => {
+        console.log(`✅ Backend proxy rodando em http://${HOST}:${PORT}`)
         console.log('🔥 [warmup] Pré-aquecendo cache de cobertura em background...')
         buildCoberturaCache().catch(e => console.warn('[warmup] falha no pré-aquecimento de cobertura:', e.message))
     })
@@ -5097,8 +5099,8 @@ try {
     console.error('❌ Falha ao conectar com PostgreSQL:', err.message)
     // Mesmo com erro no banco, inicia o servidor para que /api/health responda
     // e outras rotas possam degradar graciosamente.
-    const server = app.listen(PORT, () => {
-        console.log(`⚠️ Backend rodando em http://localhost:${PORT} (sem conexão com banco)`)
+    const server = app.listen(PORT, HOST, () => {
+        console.log(`⚠️ Backend rodando em http://${HOST}:${PORT} (sem conexão com banco)`)
     })
 
     server.on('error', (errSrv) => {
