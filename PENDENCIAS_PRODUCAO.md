@@ -16,7 +16,6 @@ Lacunas de verificação estão marcadas como _(não verificado)_.
 
 ### Deploy / banco
 - [ ] **NÃO rodar `migrations/run.js` inteiro em produção.** Ele reexecuta todos os `.sql` e engole erros. Aplicar só o que falta, via `pg`/`psql -f`. Já aplicadas: 022, 023 e 024. Conferir com `SELECT column_name FROM information_schema.columns WHERE table_name='processos' AND column_name LIKE 'ixc_%'` (esperado: 5 colunas).
-- [ ] **Passos no servidor** (`/home/antonio/app_prestek_intranet`, ver seção 7): `git pull`, `npm install` (entrou `@maplibre/maplibre-gl-leaflet`), `npx vite build`, reiniciar o backend. Confirmar que o backend na `3001` roda com a correção do `GROUP BY` de `backend/middleware/permissoes.js` (a versão antiga derrubava toda rota de gestão com 503).
 - [ ] **Checar duplicatas em `cobertura_cidades`:** `SELECT cidade, bairro, COUNT(*) FROM cobertura_cidades GROUP BY 1,2 HAVING COUNT(*)>1`. Limpar só com sua aprovação.
 - [x] ~~Ler `013` e `020`~~ — 2026-10-03: a 020 já era idempotente; a 013 só falhava no `ADD CONSTRAINT` (erro falso, sem dano) e ganhou guarda `DO $$ ... IF NOT EXISTS`. Ainda não rodada no banco (alteração só no arquivo). Com isso o runner novo deixa de ser obrigatório, fica opcional.
 - [ ] **Runner de migrations com tabela de controle** (`schema_migrations`, nunca reexecuta, falha alto). Change própria, decisão sua.
