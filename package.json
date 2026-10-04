@@ -9,6 +9,7 @@
     "dev": "node scripts/dev-start.mjs",
     "build": "vite build",
     "preview": "vite preview",
+    "sincronizar": "node scripts/sincronizar.mjs",
     "openspec": "node scripts/openspec-cli.mjs",
     "openspec:new": "node scripts/openspec-cli.mjs new",
     "openspec:archive": "node scripts/openspec-cli.mjs archive",
