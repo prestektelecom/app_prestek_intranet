@@ -74,10 +74,12 @@ sendo a única branch de vida longa.
   interface (regra acima). Migration nova: dizer no PR qual arquivo aplicar em
   produção (nunca `migrations/run.js` inteiro).
 - Merge por **squash**, para a `main` ficar com um commit por mudança.
-- O `gh` não está instalado nesta máquina e o push do Claude é bloqueado pelo
-  classificador de permissões: o Claude prepara a branch, o commit e o texto do PR,
-  e o **Felix** roda `git push` e abre o PR no GitHub. O Claude nunca faz push, nem
-  de tag, sem pedido explícito naquela hora.
+- O `gh` está instalado e logado como `prestektelecom`. O Claude cria a branch, faz o
+  commit, envia **só branches de trabalho** (`feat/`, `fix/`, `docs/`, `chore/`,
+  `hotfix/`) e abre o PR com `gh pr create`. O **merge é sempre do Felix**: o Claude
+  nunca faz `gh pr merge`, push na `main`, force-push, push de tag nem exclusão de
+  branch remota, sem pedido explícito naquela hora. Se o `gh` não estiver no `PATH`
+  do terminal, usar `C:\Program Files\GitHub CLI\gh.exe`.
 - Proteção da `main` (Settings → Branches): exigir PR e bloquear force-push e
   exclusão. Repositório privado em organização precisa de plano pago para impor
   isso; se não houver, a regra vale por convenção.
