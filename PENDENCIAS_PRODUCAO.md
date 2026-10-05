@@ -166,3 +166,22 @@ O arquivo `.claude/settings.local.json` (regras de permissão do Claude Code) es
 - [ ] Apagar do seu arquivo local `.claude/settings.local.json` as regras que carregam senha (linhas ~56, 57, 63 e as de `export ..._PW=`), agora que ele não vai mais ao git.
 - [ ] Opcional: limpar o histórico (`git filter-repo` + force-push + reclonar onde houver cópia). Só depois de trocar as senhas; é higiene, não urgência.
 - Regra daqui em diante: nunca colar senha no chat nem em arquivo do projeto; o Claude Code não deve gravar credenciais em regras de permissão.
+
+---
+
+## 9. Estado da implantação (2026-10-05) e o que falta
+
+**Já feito:** a intranet está em `https://intranet.prestek.com.br/` (Apache da porta 443 por nome, ao lado do `insight`; certificado Let's Encrypt emitido pelo root, vence em 2027-01-03). Servidor sincronizado com a `main` por chave de deploy; dependências instaladas com `npm ci`; build com `VITE_API_URL=https://intranet.prestek.com.br`; backend sob `pm2` (`prestek-backend`) com `HOST=127.0.0.1`. O servidor **não** usa nginx: é Apache, e o roteiro da seção 7 vale com essa troca. `GET /api/health` respondeu `ok` com o banco conectado.
+
+**Falta (do Felix, no servidor, como `antonio`):**
+- [ ] `backend/.env` do servidor: `CORS_ORIGENS=https://intranet.prestek.com.br`, `HOST=127.0.0.1` (sem isso, depois de um reboot o backend volta a escutar em todas as interfaces e a porta 3001 reabre) e `IXC_SENHA_PADRAO_COLABORADOR` (copiar do `.env` de desenvolvimento). Depois `pm2 restart prestek-backend --update-env`.
+- [ ] Fazer o backend voltar sozinho após reboot: `pm2 save` e uma linha `@reboot` no `crontab` do `antonio` (`pm2 resurrect`, com o `PATH` do Node). Testar com um reboot real.
+- [ ] Conferir a renovação do certificado (`/root/.acme.sh/acme.sh --list` e o `--reloadcmd`).
+- [ ] Decidir se o `intranet.conf` continua aberto (`Require all granted`, a proteção é o login) ou se restringe à rede da empresa (`Require ip ...`).
+- [ ] Apagar a cópia `/home/antonio/app_prestek_intranet/.claude/settings.local.json` do servidor, que carrega as mesmas senhas da seção 8.
+
+**Falta (root):**
+- [ ] Desligar os virtual hosts temporários: `a2dissite intranet-ip intranet-porta`, apagar `Listen 8081` e `Listen 24781` de `/etc/apache2/ports.conf`, `apache2ctl configtest` e `systemctl reload apache2`. Os arquivos `intranet-ip.conf` e `intranet-porta.conf` ficam em `/home/antonio/` para consulta.
+- [ ] **Postgres (`5432`) aberto à internet.** Não fechar de vez: o `.env` de desenvolvimento usa `DB_HOST=201.150.48.6`. Restringir por IP no `pg_hba.conf` (`127.0.0.1` e `201.150.48.0/22`), tirar a regra `0.0.0.0/0`, recarregar, e testar o backend do servidor e o de desenvolvimento. Se a equipe trabalha fora da rede da empresa, usar túnel SSH.
+
+**Sem root no servidor:** `git` e `pm2` estão em `~/local` (ver `MEMORIA.md`, seção Ambiente). Para atualizar: `git pull origin main`, `npm ci` se o lock mudou, `VITE_API_URL=https://intranet.prestek.com.br npx vite build` e `pm2 restart prestek-backend --update-env`.
