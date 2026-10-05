@@ -7,6 +7,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 ## [Unreleased]
 
 ### Adicionado
+- **Caixa de sugestões** (change `caixa-de-sugestoes`): tela "Sugestões" onde qualquer colaborador envia melhoria, ideia ou problema (limite de 5 por 24 h) e acompanha status e resposta. Nova capacidade de gestão `sugestoes` (ver todas, filtrar, mudar status, responder), tabela `sugestoes` (migration `025_sugestoes.sql`) e Auditoria `sugestao_status`/`sugestao_resposta`. Rotas `POST/GET /api/sugestoes`, `GET /api/sugestoes/minhas`, `PATCH /api/sugestoes/:id`.
 - Aba **TI** (admin), com hub extensível por registry (`src/components/ti/registry.js`) e a primeira ferramenta, **Cadastro de Colaborador**: upload de ficha de registro em PDF (camada de texto ou OCR via `tesseract.js`, com confiança por campo), formulário completo por seções, checagem de duplicidade e dry-run contra o IXC (monta os 1-3 payloads de criação sem gravar nada). `POST /api/ti/colaborador/criar` existe como stub `501` — a gravação real é uma fase futura separada.
 - Rotas de apoio ao Cadastro de Colaborador: `GET /api/funcoes`, `GET /api/ti/colaborador/taxonomias`, `GET /api/ti/colaborador/cidades`, `GET /api/ti/colaborador/duplicado`, `POST /api/ti/colaborador/extrair-pdf`, `POST /api/ti/colaborador/dry-run`.
 - Componentes responsivos reutilizáveis em `src/components/responsive/`:

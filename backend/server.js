@@ -18,6 +18,7 @@ import { extrairCampos } from './services/fichaParser.js'
 import { validar as validarColaborador, montarPlano, buscarDuplicados } from './services/ixcColaborador.js'
 import { requireAuth, assinarToken } from './middleware/auth.js'
 import { CAPACIDADES, carregarAcesso, requerPermissao } from './middleware/permissoes.js'
+import { TIPOS, STATUS, LIMITES, validarEnvio, validarGestao, filtroValido } from './services/sugestoes.js'
 import { aplicarAjustes, SETORES_SEM_AJUSTE_PROPRIO } from './services/equipeSetor.js'
 
 // Gates de rota. `adminAuth` = só is_admin; `gate('x')` = is_admin OU a
@@ -392,6 +393,105 @@ app.delete('/api/comunicados/:id', gate('comunicados'), async (req, res) => {
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao excluir comunicado.' });
     }
 });
+
+// ─── Rotas: Caixa de sugestões ─────────────────────────────────────────
+// Qualquer logado envia e vê as próprias; ver todas e responder é `gate('sugestoes')`.
+// Autoria sempre de req.usuario (JWT), nunca do corpo.
+const COLUNAS_SUGESTAO = 'id, usuario_nome, tipo, titulo, descricao, status, resposta, criado_em, atualizado_em'
+
+app.post('/api/sugestoes', async (req, res) => {
+    const { erro, campo, dados } = validarEnvio(req.body)
+    if (erro) return res.status(400).json({ sucesso: false, erro, campo })
+
+    try {
+        // Limite diário checado no mesmo INSERT: duas requisições simultâneas não furam o teto.
+        const { rows } = await pool.query(
+            `INSERT INTO sugestoes (usuario_id, usuario_nome, tipo, titulo, descricao)
+             SELECT $1, $2, $3, $4, $5
+             WHERE (SELECT COUNT(*) FROM sugestoes
+                    WHERE usuario_id = $1 AND criado_em > NOW() - INTERVAL '24 hours') < $6
+             RETURNING ${COLUNAS_SUGESTAO}`,
+            [String(req.usuario.id), req.usuario.nome || '', dados.tipo, dados.titulo, dados.descricao, LIMITES.porDia]
+        )
+        if (!rows.length) {
+            return res.status(429).json({ sucesso: false, erro: `Você já enviou ${LIMITES.porDia} sugestões nas últimas 24 horas. Tente de novo amanhã.` })
+        }
+        return res.status(201).json({ sucesso: true, sugestao: rows[0] })
+    } catch (err) {
+        console.error('Erro ao salvar sugestão:', err.message)
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao enviar a sugestão.' })
+    }
+})
+
+app.get('/api/sugestoes/minhas', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT ${COLUNAS_SUGESTAO} FROM sugestoes WHERE usuario_id = $1 ORDER BY criado_em DESC LIMIT 100`,
+            [String(req.usuario.id)]
+        )
+        return res.json({ sucesso: true, sugestoes: rows })
+    } catch (err) {
+        console.error('Erro ao listar minhas sugestões:', err.message)
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar suas sugestões.' })
+    }
+})
+
+app.get('/api/sugestoes', gate('sugestoes'), async (req, res) => {
+    const status = filtroValido(req.query.status, STATUS)
+    const tipo = filtroValido(req.query.tipo, TIPOS)
+    try {
+        const { rows } = await pool.query(
+            `SELECT ${COLUNAS_SUGESTAO} FROM sugestoes
+             WHERE ($1::text IS NULL OR status = $1) AND ($2::text IS NULL OR tipo = $2)
+             ORDER BY criado_em DESC LIMIT 300`,
+            [status, tipo]
+        )
+        return res.json({ sucesso: true, sugestoes: rows })
+    } catch (err) {
+        console.error('Erro ao listar sugestões:', err.message)
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar as sugestões.' })
+    }
+})
+
+app.patch('/api/sugestoes/:id', gate('sugestoes'), async (req, res) => {
+    const id = Number.parseInt(req.params.id, 10)
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ sucesso: false, erro: 'Sugestão inválida.' })
+
+    const { erro, campo, dados } = validarGestao(req.body)
+    if (erro) return res.status(400).json({ sucesso: false, erro, campo })
+
+    try {
+        const antes = await pool.query('SELECT status FROM sugestoes WHERE id = $1', [id])
+        if (!antes.rows.length) return res.status(404).json({ sucesso: false, erro: 'Sugestão não encontrada.' })
+
+        const sets = ['atualizado_em = NOW()']
+        const valores = []
+        if (dados.status !== undefined) { valores.push(dados.status); sets.push(`status = $${valores.length}`) }
+        if ('resposta' in dados) {
+            valores.push(dados.resposta); sets.push(`resposta = $${valores.length}`)
+            valores.push(req.usuario.email); sets.push(`respondido_por = $${valores.length}`)
+        }
+        valores.push(id)
+        const { rows } = await pool.query(
+            `UPDATE sugestoes SET ${sets.join(', ')} WHERE id = $${valores.length} RETURNING ${COLUNAS_SUGESTAO}`,
+            valores
+        )
+
+        // O texto da sugestão não vai para o log: só id, status e se houve resposta.
+        if (dados.status !== undefined && dados.status !== antes.rows[0].status) {
+            await registrarAuditoria(req.usuario.email, 'sugestao_status', 'sugestao', id,
+                `Status da sugestão #${id}: ${antes.rows[0].status} → ${dados.status}`)
+        }
+        if ('resposta' in dados) {
+            await registrarAuditoria(req.usuario.email, 'sugestao_resposta', 'sugestao', id,
+                dados.resposta ? `Resposta registrada na sugestão #${id}` : `Resposta removida da sugestão #${id}`)
+        }
+        return res.json({ sucesso: true, sugestao: rows[0] })
+    } catch (err) {
+        console.error('Erro ao atualizar sugestão:', err.message)
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao atualizar a sugestão.' })
+    }
+})
 
 // ─── Rota: Listar Departamentos ─────────────────────────────────────────
 app.get('/api/departamentos', async (req, res) => {

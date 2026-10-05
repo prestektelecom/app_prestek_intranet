@@ -7,7 +7,7 @@
 // Manter em sincronia com src/constants/permissoes.js (rótulos da interface).
 // O backend é a autoridade: valor fora desta lista é sempre rejeitado.
 
-export const CAPACIDADES = ['comunicados', 'plantao', 'usuarios', 'auditoria', 'ti']
+export const CAPACIDADES = ['comunicados', 'plantao', 'usuarios', 'auditoria', 'ti', 'sugestoes']
 
 /**
  * Resolve o acesso do usuário do JWT numa única consulta.
