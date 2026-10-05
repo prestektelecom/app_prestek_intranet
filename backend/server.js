@@ -408,9 +408,9 @@ app.post('/api/sugestoes', async (req, res) => {
         // Limite diário checado no mesmo INSERT: duas requisições simultâneas não furam o teto.
         const { rows } = await pool.query(
             `INSERT INTO sugestoes (usuario_id, usuario_nome, tipo, titulo, descricao)
-             SELECT $1, $2, $3, $4, $5
+             SELECT $1::varchar, $2::varchar, $3::varchar, $4::varchar, $5::text
              WHERE (SELECT COUNT(*) FROM sugestoes
-                    WHERE usuario_id = $1 AND criado_em > NOW() - INTERVAL '24 hours') < $6
+                    WHERE usuario_id = $1::varchar AND criado_em > NOW() - INTERVAL '24 hours') < $6::int
              RETURNING ${COLUNAS_SUGESTAO}`,
             [String(req.usuario.id), req.usuario.nome || '', dados.tipo, dados.titulo, dados.descricao, LIMITES.porDia]
         )

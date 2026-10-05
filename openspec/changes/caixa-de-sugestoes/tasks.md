@@ -9,7 +9,7 @@
 - [x] 2.2 `GET /api/sugestoes/minhas`
 - [x] 2.3 `GET /api/sugestoes` (filtros status/tipo) e `PATCH /api/sugestoes/:id` com `gate('sugestoes')`
 - [x] 2.4 Auditoria `sugestao_status` / `sugestao_resposta`
-- [~] 2.5 Teste das regras de validação (feito: `node scripts/testar-sugestoes.mjs`, 18 casos). **Falta** rodar as consultas SQL no banco real, o que depende de aplicar a migration 025 (escrita em produção, aguarda o Felix)
+- [x] 2.5 Teste das regras (`node scripts/testar-sugestoes.mjs`, 18 casos) e SQL rodado no banco real em 2026-10-05, após aplicar a 025: leituras ok e INSERT com limite (5 gravam, o 6º é barrado) dentro de transação desfeita. Isso pegou um bug que o teste com `pool` falso não pega: `inconsistent types deduced for parameter $1`, corrigido com casts
 
 ## 3. Frontend
 
