@@ -5,7 +5,7 @@ Intranet React/Vite + Express/PG. Gestão por capacidade já existe (`gate('x')`
 ## Goals / Non-Goals
 
 **Goals:** canal simples de sugestões com status; gestão por capacidade; auditoria das mudanças.
-**Non-Goals:** anonimato, votação/curtidas, anexos, notificação por e-mail, integração com IXC, comentários em thread.
+**Non-Goals:** tela de gestão/"minhas sugestões" (a TI trabalha pelo e-mail), anonimato, votação/curtidas, anexos, notificação por e-mail, integração com IXC, comentários em thread.
 
 ## Decisions
 
@@ -14,7 +14,7 @@ Intranet React/Vite + Express/PG. Gestão por capacidade já existe (`gate('x')`
 - **Anti-spam:** máximo de 5 envios por usuário em 24 h, contado no banco (sobrevive a reinício, ao contrário de limitador em memória).
 - **Auditoria:** `sugestao_status` e `sugestao_resposta` com o id da sugestão; o texto da sugestão não vai para o log.
 - **Capacidade `sugestoes`:** entra em `CAPACIDADES` e em `src/constants/permissoes.js`; nenhuma mudança de modelo.
-- **Frontend:** view `Sugestoes` com formulário + "Minhas sugestões"; para gestores, uma segunda aba "Todas" com filtros e edição de status/resposta inline (confirmação clara, sem `window.confirm`). Item no menu e na `MobileBottomNav`/"Mais". Reutiliza `PageShell`, `FilterBar`, `ResponsiveTable`.
+- **Frontend (revisto em 2026-10-05):** `SugestaoFab.jsx` monta um botão flutuante (camada 50, `bottom` acima de `--bottom-nav-h` abaixo de `lg`) e o popup (camada 1100, padrão do `TiSupportModal`: `useDismissable` + `makeTrapTab`). Montado uma vez no `App.jsx`. A tela "Sugestões" e o item de menu da primeira versão foram removidos.
 - **Alternativa rejeitada:** abrir chamado de TI no IXC por sugestão (polui a fila de suporte e depende de contrato válido, ver incidente de 2026-09-17).
 
 ## Risks / Trade-offs

@@ -26,27 +26,27 @@ Ao gravar uma sugestão, o sistema SHALL enviar um e-mail com tipo, autor, títu
 - **WHEN** `SMTP_HOST` não está configurado ou o servidor de e-mail falha
 - **THEN** a sugestão SHALL continuar gravada e o autor SHALL receber a confirmação normal
 
-### Requirement: Acompanhamento pelo autor
-O usuário SHALL ver somente as próprias sugestões, com status e resposta da gestão. Não SHALL ver sugestões de outras pessoas.
+### Requirement: Botão flutuante e popup de envio
+O portal SHALL exibir, para todo usuário logado, um botão flutuante rotulado "Enviar sugestão" que abre um popup (`role="dialog"`, `aria-modal`) com o formulário. O popup SHALL fechar por Escape, clique fora, botão Fechar ou Cancelar, prender o foco enquanto aberto e devolvê-lo ao botão ao fechar. Após o envio, o popup SHALL mostrar a confirmação em vez do formulário.
 
-#### Scenario: Lista própria
-- **WHEN** o usuário abre a tela Sugestões
-- **THEN** o sistema SHALL listar apenas as sugestões dele, da mais recente para a mais antiga, com status e resposta
+#### Scenario: Abrir e enviar
+- **WHEN** o usuário clica no botão flutuante, preenche e envia
+- **THEN** o popup SHALL mostrar a confirmação e a sugestão SHALL ser gravada e enviada por e-mail
 
-### Requirement: Gestão das sugestões
-Quem é `is_admin` ou tem a capacidade `sugestoes` SHALL listar todas as sugestões, filtrar por status e tipo, alterar o status (`nova`, `em_analise`, `planejada`, `concluida`, `recusada`) e registrar uma resposta de até 500 caracteres. A permissão SHALL ser lida do banco a cada requisição.
+#### Scenario: Celular
+- **WHEN** a tela é menor que `sm`
+- **THEN** o botão SHALL ficar acima da barra inferior sem cobri-la e o popup SHALL abrir como folha ancorada embaixo
 
-#### Scenario: Mudança de status
-- **WHEN** um gestor altera o status de uma sugestão
-- **THEN** o sistema SHALL gravar o novo status e a data, e registrar `sugestao_status` na Auditoria
+### Requirement: Rotas de gestão (sem interface)
+O backend SHALL manter `GET /api/sugestoes` e `PATCH /api/sugestoes/:id`, restritos a `is_admin` ou à capacidade `sugestoes` (lida do banco a cada requisição), com Auditoria `sugestao_status` e `sugestao_resposta`. Não há tela de gestão nesta change.
 
 #### Scenario: Usuário sem permissão
-- **WHEN** um usuário sem a capacidade tenta listar todas ou alterar o status
+- **WHEN** um usuário sem a capacidade chama essas rotas
 - **THEN** o sistema SHALL responder 403 e nada SHALL mudar
 
 ### Requirement: Interface acessível e responsiva
-A tela SHALL funcionar nos 5 temas, em celular e desktop, com alvos de toque de pelo menos 44×44px, rótulos nos campos e foco visível.
+O botão e o popup SHALL funcionar nos 5 temas, em celular e desktop, com alvos de toque de pelo menos 44×44px, rótulos nos campos e foco visível.
 
 #### Scenario: Celular
-- **WHEN** a tela é aberta abaixo de `md`
-- **THEN** a lista SHALL aparecer como cards e o formulário SHALL ocupar a largura inteira
+- **WHEN** o popup é aberto abaixo de `sm`
+- **THEN** o formulário SHALL ocupar a largura inteira, com rolagem interna se não couber

@@ -8,6 +8,7 @@ import { canAccess, viewTitleFor } from './navigation'
 import { useProfileDisplay } from './hooks/useProfileDisplay'
 import { HeaderActionsProvider } from './contexts/HeaderActionsContext'
 import MobileBottomNav from './components/MobileBottomNav'
+import SugestaoFab from './components/SugestaoFab'
 import MobileMoreSheet from './components/MobileMoreSheet'
 import { normalizarUsuario } from './constants/permissoes'
 
@@ -26,7 +27,6 @@ const PlantaoHistorico = lazy(() => import('./components/schedule/PlantaoHistori
 const Processos = lazy(() => import('./components/Processos'))
 const Comunicados = lazy(() => import('./components/Comunicados'))
 const Configuracoes = lazy(() => import('./components/Configuracoes'))
-const Sugestoes = lazy(() => import('./components/Sugestoes'))
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'))
 const TicketsList = lazy(() => import('./components/TicketsList'))
 const Offices = lazy(() => import('./components/Offices'))
@@ -214,7 +214,6 @@ export default function App() {
             case 'settings': return <Configuracoes user={user} setCurrentView={setCurrentView} />
             case 'tickets': return <TicketsList user={user} setCurrentView={setCurrentView} />
             case 'offices': return <Offices user={user} setCurrentView={setCurrentView} />
-            case 'suggestions': return <Sugestoes user={user} />
             case 'ti': return <Ti user={user} setCurrentView={setCurrentView} />
             default: return <NotFound setCurrentView={setCurrentView} user={user} />
         }
@@ -237,6 +236,7 @@ export default function App() {
                         <Suspense fallback={<ViewLoading />}>{renderView()}</Suspense>
                     </div>
                 </div>
+                <SugestaoFab />
                 <MobileBottomNav
                     currentView={currentView}
                     setCurrentView={setCurrentView}

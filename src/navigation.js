@@ -28,7 +28,6 @@ export const NAV_ITEMS = [
   { id: 'sectors',       icon: 'Pie',       label: 'Setores',       group: 'empresa' },
   { id: 'offices',       icon: 'Building',  label: 'Escritórios',   group: 'empresa' },
   { id: 'processes',     icon: 'Doc',       label: 'Processos',     group: 'empresa' },
-  { id: 'suggestions',   icon: 'Lightbulb', label: 'Sugestões',     group: 'empresa' },
   { id: 'ti',            icon: 'Chip',      label: 'TI',            group: 'administracao', somenteAdmin: true },
   { id: 'settings',      icon: 'Settings',  label: 'Configurações', group: 'administracao' },
   { id: 'admin',         icon: 'Admin',     label: 'Painel Admin',  group: 'administracao', somenteAdmin: true },

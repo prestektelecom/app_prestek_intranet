@@ -13,10 +13,10 @@
 
 ## 3. Frontend
 
-- [x] 3.1 View `Sugestoes` (formulário, "Minhas sugestões", estados vazio/erro/carregando)
-- [x] 3.2 Aba "Todas" para gestores: filtros, mudança de status e resposta
-- [x] 3.3 Item de menu, `MobileBottomNav`/"Mais" e rótulo da capacidade no Painel Admin
-- [x] 3.4 Textos em português; lista em cards (sem `ResponsiveTable`/`FilterBar`: os filtros são só dois selects); alvos de toque ≥ 44px
+- [x] 3.1 `SugestaoFab.jsx`: botão flutuante + popup com formulário e confirmação (substitui a view `Sugestoes`, removida)
+- [x] 3.2 ~~Aba "Todas" para gestores~~ cortada (opção A): gestão só por e-mail; rotas seguem no backend sem interface
+- [x] 3.3 Rótulo da capacidade no Painel Admin (item de menu removido)
+- [x] 3.4 Textos em português; lista em cards (sem lista nem filtros); alvos de toque ≥ 44px
 
 ## 4. Impeccable e fechamento
 
@@ -25,3 +25,4 @@
 - [x] 4.2 Atualizar `CHANGELOG.md` ([Unreleased]) e `PENDENCIAS_PRODUCAO.md` (aplicar só a migration 025)
 - [ ] 4.3 Branch `feat/suggestion-box`, PR para a `main` com descrição em português e resultado do Impeccable; merge é do Felix
 - [ ] 4.4 Após o deploy: `/opsx:archive` e registrar a decisão em `MEMORIA.md`
+  - Revisão 2026-10-05 (popup): contraste dos tokens reutilizados já calculado nos 5 temas; detector limpo; faltam conferência no navegador (botão não cobre a barra inferior, foco ao abrir/fechar) e o `audit` visual do botão flutuante.

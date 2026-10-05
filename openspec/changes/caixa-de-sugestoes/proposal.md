@@ -4,8 +4,8 @@ Hoje não existe um canal dentro da intranet para o colaborador sugerir melhoria
 
 ## What Changes
 
-- Nova tela **Sugestões** (logada, item de menu): o colaborador envia uma sugestão (tipo, título, descrição) e acompanha as próprias, com status e resposta da gestão.
-- Quem tem a capacidade `sugestoes` (ou é `is_admin`) vê todas as sugestões, filtra por status/tipo, muda o status e escreve uma resposta curta.
+- **Botão flutuante** "Sugerir" (lâmpada), presente em toda tela logada, que abre um **popup** com o formulário (tipo, título, descrição). Não há tela nem item de menu: decisão do Felix em 2026-10-05 (opção A), para reduzir a fricção de enviar.
+- Cada sugestão é enviada por e-mail à TI; o acompanhamento é por e-mail. As rotas de gestão (`GET /api/sugestoes`, `PATCH /api/sugestoes/:id`, capacidade `sugestoes`) continuam no backend, mas **sem interface por ora**.
 - Tabela local `sugestoes` (migration 025). O IXC não é tocado.
 - Nova capacidade `sugestoes` no catálogo de permissões de gestão.
 - Mudanças de status e respostas registradas na Auditoria (`sugestao_status`, `sugestao_resposta`).
