@@ -18,6 +18,7 @@ import { extrairCampos } from './services/fichaParser.js'
 import { validar as validarColaborador, montarPlano, buscarDuplicados } from './services/ixcColaborador.js'
 import { requireAuth, assinarToken } from './middleware/auth.js'
 import { CAPACIDADES, carregarAcesso, requerPermissao } from './middleware/permissoes.js'
+import { enviarEmailSugestao } from './services/emailSugestao.js'
 import { TIPOS, STATUS, LIMITES, validarEnvio, validarGestao, filtroValido } from './services/sugestoes.js'
 import { aplicarAjustes, SETORES_SEM_AJUSTE_PROPRIO } from './services/equipeSetor.js'
 
@@ -416,6 +417,8 @@ app.post('/api/sugestoes', async (req, res) => {
         if (!rows.length) {
             return res.status(429).json({ sucesso: false, erro: `Você já enviou ${LIMITES.porDia} sugestões nas últimas 24 horas. Tente de novo amanhã.` })
         }
+        // Sem await: o SMTP pode demorar e o autor não precisa esperar; falha só vai pro log.
+        enviarEmailSugestao({ sugestao: rows[0], autorEmail: req.usuario.email })
         return res.status(201).json({ sucesso: true, sugestao: rows[0] })
     } catch (err) {
         console.error('Erro ao salvar sugestão:', err.message)

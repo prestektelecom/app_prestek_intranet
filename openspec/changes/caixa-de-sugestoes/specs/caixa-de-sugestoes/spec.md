@@ -15,6 +15,17 @@ Qualquer usuário autenticado SHALL poder enviar uma sugestão com tipo (`melhor
 - **WHEN** o usuário já enviou 5 sugestões nas últimas 24 horas
 - **THEN** o sistema SHALL recusar o novo envio com mensagem clara
 
+### Requirement: Aviso por e-mail à TI
+Ao gravar uma sugestão, o sistema SHALL enviar um e-mail com tipo, autor, título e descrição para `ti@prestek.com.br` e `felixskmarcio2@gmail.com` (sobrescrevíveis por `SUGESTOES_EMAIL_PARA`). O envio SHALL NOT atrasar nem desfazer o registro: falha de e-mail só vai para o log.
+
+#### Scenario: SMTP configurado
+- **WHEN** uma sugestão é gravada e `SMTP_HOST` está configurado
+- **THEN** o sistema SHALL enviar o e-mail aos destinatários, com o autor em `Reply-To`
+
+#### Scenario: SMTP ausente ou falhando
+- **WHEN** `SMTP_HOST` não está configurado ou o servidor de e-mail falha
+- **THEN** a sugestão SHALL continuar gravada e o autor SHALL receber a confirmação normal
+
 ### Requirement: Acompanhamento pelo autor
 O usuário SHALL ver somente as próprias sugestões, com status e resposta da gestão. Não SHALL ver sugestões de outras pessoas.
 
