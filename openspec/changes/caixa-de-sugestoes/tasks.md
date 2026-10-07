@@ -13,7 +13,7 @@
 
 ## 3. Frontend
 
-- [x] 3.1 `SugestaoFab.jsx`: botão flutuante + popup com formulário e confirmação (substitui a view `Sugestoes`, removida)
+- [x] 3.1 `SugestaoButton.jsx` (no Header): botão + popup com formulário e confirmação (substitui a view `Sugestoes`, removida)
 - [x] 3.2 ~~Aba "Todas" para gestores~~ cortada (opção A): gestão só por e-mail; rotas seguem no backend sem interface
 - [x] 3.3 Rótulo da capacidade no Painel Admin (item de menu removido)
 - [x] 3.4 Textos em português; lista em cards (sem lista nem filtros); alvos de toque ≥ 44px
@@ -27,3 +27,4 @@
 - [ ] 4.4 Após o deploy: `/opsx:archive` e registrar a decisão em `MEMORIA.md`
   - Revisão 2026-10-05 (popup): contraste dos tokens reutilizados já calculado nos 5 temas; detector limpo; faltam conferência no navegador (botão não cobre a barra inferior, foco ao abrir/fechar) e o `audit` visual do botão flutuante.
   - Animação de atenção (2026-10-07, 2ª versão: a 1ª, só anéis, ficou discreta demais): rajada de ~6 s com o botão pulando como bola (30 px, só sobe e desce: o achatamento deformava botão e balão e foi removido), lâmpada balançando, leque de 5 raios pelo topo, 2 anéis de pulso e balão "Tem uma ideia? Conta pra gente!". 1,5 s após carregar e a cada 25 s com a aba visível, só até a pessoa abrir o popup (`localStorage`, com try/catch). Só transform/opacity. Verificado no navegador com o CSS gerado em página isolada (pulo, achatamento e capturas no pico). Com `prefers-reduced-motion` a regra global deixa tudo no estado final (balão parado e legível, resto invisível). Falta ver no app real, nos 5 temas e no celular.
+  - Movido para o Header (2026-10-07): o botão no canto da tela ficava longe do olhar; agora mora ao lado do sino. Animação adaptada ao Header de 64 px: quique de 8 px, raios e balão descem pela base, anéis até 1,8×. Verificado no navegador em Header simulado com o CSS gerado, em 375 px (balão de 37 a 309 px, cabe) e no desktop. Falta ver no app real, com os outros itens do Header (avatar no celular, ações da página).

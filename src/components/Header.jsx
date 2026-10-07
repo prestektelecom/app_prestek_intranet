@@ -3,6 +3,7 @@ import { useBentoTheme } from '../hooks/useBentoTheme';
 import { useHeaderActionsSlot } from '../contexts/HeaderActionsContext';
 import { viewTitleFor } from '../navigation';
 import NotificationBell from './notifications/NotificationBell';
+import SugestaoButton from './SugestaoButton';
 import MobileProfileSheet from './MobileProfileSheet';
 
 // Header: diz onde o usuário está, carrega as ações da página e o sino.
@@ -57,6 +58,7 @@ export default function Header({ currentView, setCurrentView, user, profile }) {
         {/* Ações da página + sino */}
         <div className="flex items-center gap-2 shrink-0">
           {actions}
+          {user && <SugestaoButton />}
           <NotificationBell user={user} setCurrentView={setCurrentView} />
         </div>
       </header>
