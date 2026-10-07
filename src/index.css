@@ -513,18 +513,17 @@
 
 /* ── Botão flutuante de sugestão (SugestaoFab) ───────────────── */
 /* Rajada de atenção (~6 s, depois quieto): o botão PULA como uma bola
-   (com achatamento ao cair), a lâmpada acende soltando raios e um balão
+   (só sobe e desce, sem deformar: achatar o botão e o balão ficou estranho), a lâmpada acende soltando raios e um balão
    convida a clicar. Só transform/opacity. O componente remonta tudo (key) a
    cada rajada; com movimento reduzido a regra global deixa cada animação no
    estado final (raios e anéis invisíveis, balão parado e legível). */
 @keyframes sug-hop {
-  0%, 100% { transform: translateY(0) scale(1, 1); }
-  10%      { transform: translateY(0) scale(1.18, 0.82); }          /* agacha */
-  30%      { transform: translateY(-34px) scale(0.9, 1.15); }       /* sobe */
-  50%      { transform: translateY(0) scale(1.22, 0.78); }          /* cai e achata */
-  64%      { transform: translateY(-14px) scale(0.96, 1.06); }      /* quica */
-  78%      { transform: translateY(0) scale(1.08, 0.93); }
-  90%      { transform: translateY(-4px) scale(1, 1); }
+  0%, 100% { transform: translateY(0); }
+  28%      { transform: translateY(-30px); }   /* sobe */
+  52%      { transform: translateY(0); }       /* bate no chão */
+  66%      { transform: translateY(-12px); }   /* quica, com menos força */
+  80%      { transform: translateY(0); }
+  90%      { transform: translateY(-4px); }
 }
 @keyframes sug-ring {
   0%   { transform: scale(1);   opacity: 0.7; }
