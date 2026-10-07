@@ -243,7 +243,7 @@ export default function SugestaoButton() {
         <>
             {/* O wrapper carrega o quique; o botão, o hover/press. */}
             {/* Posição: borda direita, meio da altura. Camada 50 (flutuante leve), abaixo do chrome. */}
-            <div className="fixed right-3 top-1/2 -mt-4" style={{ zIndex: 50 }}>
+            <div className="fixed right-5 top-1/2 -mt-4 lg:right-10" style={{ zIndex: 50 }}>
             <div className="sug-btn-wrap">
                 <button
                     type="button"
