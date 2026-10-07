@@ -579,17 +579,17 @@
 }
 .sug-btn-balao {
   position: absolute;
-  right: calc(100% + 18px);
+  right: calc(100% + 14px);
   top: 50%;
-  margin-top: -20px;
-  height: 40px;
+  margin-top: -14px;
+  height: 28px;
   display: none;
   align-items: center;
-  padding: 0 14px;
-  border-radius: 14px;
+  padding: 0 10px;
+  border-radius: 10px;
   white-space: nowrap;
-  font-weight: 800;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 12px;
   pointer-events: none;
   transform-origin: right center;
   animation: sug-balao 9s ease-out infinite;
@@ -598,11 +598,11 @@
 .sug-btn-balao::after {   /* setinha apontando para o botão, à direita do balão */
   content: '';
   position: absolute;
-  right: -7px;
+  right: -5px;
   top: 50%;
-  width: 12px;
-  height: 12px;
-  margin-top: -6px;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
   background: inherit;
   border-right: 2px solid var(--accent, #EC7D23);
   border-top: 2px solid var(--accent, #EC7D23);

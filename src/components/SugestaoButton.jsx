@@ -271,9 +271,9 @@ export default function SugestaoButton() {
                 <span
                     className="sug-btn-balao"
                     aria-hidden="true"
-                    style={{ background: C.popover, color: C.ink, border: `2px solid ${C.accent}`, boxShadow: `0 8px 24px -8px ${tone(C.accentDeep, 0.45)}` }}
+                    style={{ background: C.popover, color: C.ink, border: `1.5px solid ${C.accent}`, boxShadow: `0 6px 16px -8px ${tone(C.accentDeep, 0.45)}` }}
                 >
-                    Tem uma ideia? Conta pra gente!
+                    Tem uma ideia?
                 </span>
             </div>
             </div>
