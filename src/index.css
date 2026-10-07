@@ -511,6 +511,36 @@
   transform-origin: top center;
 }
 
+/* ── Botão flutuante de sugestão (SugestaoFab) ───────────────── */
+/* Chama atenção em rajadas curtas (3 pulsos, menos de 5 s), não em loop
+   infinito: movimento permanente cansa e ofusca o conteúdo da página. Só
+   transform/opacity. O componente remonta os anéis (key) a cada rajada. */
+@keyframes sug-ring {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes sug-bulb {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20%      { transform: rotate(-14deg) scale(1.15); }
+  40%      { transform: rotate(12deg) scale(1.15); }
+  60%      { transform: rotate(-8deg) scale(1.1); }
+  80%      { transform: rotate(5deg) scale(1.05); }
+}
+.sug-fab-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--accent, #EC7D23);
+  pointer-events: none;
+  opacity: 0;
+  animation: sug-ring 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) 3 both;
+}
+.sug-fab-ring--2 { animation-delay: 0.45s; }
+.sug-fab-bulb {
+  display: inline-flex;
+  animation: sug-bulb 0.9s ease-in-out 1 both;
+}
+
 /* ── Elevation cards (dark mode border-top highlight) ────────── */
 .dark .card-elevated {
   border-top: 1px solid rgba(255, 255, 255, 0.04);

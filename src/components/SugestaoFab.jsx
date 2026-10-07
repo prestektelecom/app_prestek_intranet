@@ -1,4 +1,4 @@
-import { useState, useRef, useId } from 'react';
+import { useState, useRef, useId, useEffect } from 'react';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
@@ -225,20 +225,53 @@ function SugestaoModal({ onClose }) {
 // ─── Botão flutuante ────────────────────────────────────────────────────────
 // Camada 50 ("Flutuante leve"): abaixo do chrome (1000) e dos modais (1100).
 // No celular sobe acima da barra inferior; no desktop encosta no canto.
+// Chama atenção em rajadas curtas (index.css, `sug-fab-*`) até a pessoa abrir.
+
+// Quem já abriu o popup deixou de precisar do convite: para de chamar atenção.
+const CHAVE_VISTO = 'prestek:sugestao-fab-visto';
+const lerVisto = () => { try { return localStorage.getItem(CHAVE_VISTO) === '1'; } catch { return false; } };
+const gravarVisto = () => { try { localStorage.setItem(CHAVE_VISTO, '1'); } catch { /* sem storage: só volta a chamar atenção */ } };
+
+const PRIMEIRA_RAJADA_MS = 3000;   // deixa a página assentar antes de chamar atenção
+const INTERVALO_RAJADAS_MS = 45000;
+const DURACAO_RAJADA_MS = 4800;    // 3 pulsos de 1,5 s + atraso do 2º anel
 
 export default function SugestaoFab() {
     const C = useBentoTheme();
     const [aberto, setAberto] = useState(false);
+    // 0 = quieto; cada número novo remonta os anéis e reinicia a animação.
+    const [rajada, setRajada] = useState(0);
+    const [visto, setVisto] = useState(lerVisto);
+
+    useEffect(() => {
+        if (visto || aberto) return undefined;
+        let fim;
+        const disparar = () => {
+            if (document.visibilityState !== 'visible') return;
+            setRajada((n) => n + 1);
+            clearTimeout(fim);
+            fim = setTimeout(() => setRajada(0), DURACAO_RAJADA_MS);
+        };
+        const primeira = setTimeout(disparar, PRIMEIRA_RAJADA_MS);
+        const periodica = setInterval(disparar, INTERVALO_RAJADAS_MS);
+        return () => { clearTimeout(primeira); clearInterval(periodica); clearTimeout(fim); };
+    }, [visto, aberto]);
+
+    const abrir = () => {
+        setRajada(0);
+        setAberto(true);
+        if (!visto) { gravarVisto(); setVisto(true); }
+    };
 
     return (
         <>
             <button
                 type="button"
-                onClick={() => setAberto(true)}
+                onClick={abrir}
                 aria-haspopup="dialog"
                 aria-expanded={aberto}
                 aria-label="Enviar sugestão"
-                className={`fixed right-4 inline-flex h-12 min-w-[48px] items-center justify-center gap-2 rounded-full px-3 text-sm font-extrabold sm:px-5 lg:right-6 ${FOCO} bottom-[calc(var(--bottom-nav-h)+16px)] lg:bottom-6`}
+                className={`fixed right-4 inline-flex h-12 min-w-[48px] items-center justify-center gap-2 rounded-full px-3 text-sm font-extrabold transition-transform duration-200 ease-out hover:scale-105 active:scale-95 sm:px-5 lg:right-6 ${FOCO} bottom-[calc(var(--bottom-nav-h)+16px)] lg:bottom-6`}
                 style={{
                     zIndex: 50,
                     backgroundColor: C.accent,
@@ -246,7 +279,15 @@ export default function SugestaoFab() {
                     boxShadow: `0 10px 28px -6px ${tone(C.accentDeep, 0.5)}, 0 2px 6px ${tone(C.ink, 0.15)}`,
                 }}
             >
-                <Icons.Lightbulb />
+                {rajada > 0 && (
+                    <>
+                        <span key={`a${rajada}`} className="sug-fab-ring" aria-hidden="true" />
+                        <span key={`b${rajada}`} className="sug-fab-ring sug-fab-ring--2" aria-hidden="true" />
+                    </>
+                )}
+                <span key={`i${rajada}`} className={rajada > 0 ? 'sug-fab-bulb' : 'inline-flex'}>
+                    <Icons.Lightbulb />
+                </span>
                 <span className="hidden sm:inline">Sugerir</span>
             </button>
             {aberto && <SugestaoModal onClose={() => setAberto(false)} />}
