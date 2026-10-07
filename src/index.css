@@ -511,6 +511,104 @@
   transform-origin: top center;
 }
 
+/* ── Botão de sugestão no canto inferior direito (SugestaoButton) ─ */
+/* Fixo embaixo à direita, fora do Header (o backdrop-filter dele prende
+   elementos fixed), afastado da barra de rolagem. O efeito roda
+   em LOOP contínuo (pedido do Felix), ciclo de 3 s com respiro: quique, lâmpada
+   balançando, leque de raios saindo para a esquerda, anéis e um balão à
+   esquerda (visível ~5 s de cada 9 s; só de `sm` para cima, no celular ele
+   cobriria o conteúdo). Só transform/opacity. Com movimento reduzido a regra
+   global do index.css deixa o estado final: tudo parado e invisível, só o
+   ícone. */
+@keyframes sug-hop {
+  0%, 100% { transform: translateY(0); }
+  14%      { transform: translateY(-14px); }
+  26%      { transform: translateY(0); }
+  33%      { transform: translateY(-6px); }
+  40%      { transform: translateY(0); }
+  45%      { transform: translateY(-2px); }
+  50%      { transform: translateY(0); }
+}
+@keyframes sug-ring {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(2);   opacity: 0; }
+}
+@keyframes sug-bulb {
+  0%, 30%, 100% { transform: rotate(0deg) scale(1); }
+  5%  { transform: rotate(-16deg) scale(1.35); }
+  10% { transform: rotate(14deg) scale(1.35); }
+  15% { transform: rotate(-9deg) scale(1.2); }
+  20% { transform: rotate(5deg) scale(1.1); }
+}
+@keyframes sug-ray {   /* raio horizontal: gira em volta do centro e sai para a esquerda */
+  0%   { transform: rotate(var(--a)) translateX(-20px) scaleX(0.2); opacity: 0; }
+  35%  { opacity: 1; }
+  100% { transform: rotate(var(--a)) translateX(-34px) scaleX(1); opacity: 0; }
+}
+@keyframes sug-balao {
+  0%   { transform: translateX(12px) scale(0.6); opacity: 0; }
+  4%   { transform: translateX(0) scale(1.06); opacity: 1; }
+  6%   { transform: translateX(0) scale(1); opacity: 1; }
+  55%  { transform: translateX(0) scale(1); opacity: 1; }
+  60%  { transform: translateX(8px) scale(0.9); opacity: 0; }
+  100% { transform: translateX(8px) scale(0.9); opacity: 0; }
+}
+.sug-btn-wrap { position: relative; animation: sug-hop 3s cubic-bezier(0.28, 0.84, 0.42, 1) infinite; }
+.sug-btn-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 3px solid var(--accent, #EC7D23);
+  pointer-events: none;
+  opacity: 0;
+  animation: sug-ring 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+.sug-btn-ring--2 { animation-delay: 0.75s; }
+.sug-btn-bulb { display: inline-flex; animation: sug-bulb 3s ease-in-out infinite; }
+.sug-btn-ray {
+  position: absolute;
+  left: calc(50% - 7px);
+  top: calc(50% - 2px);
+  width: 14px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--accent, #EC7D23);
+  pointer-events: none;
+  opacity: 0;
+  animation: sug-ray 1.5s ease-out infinite;
+}
+.sug-btn-balao {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 50%;
+  margin-top: -14px;
+  height: 28px;
+  display: none;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 12px;
+  pointer-events: none;
+  transform-origin: right center;
+  animation: sug-balao 9s ease-out infinite;
+}
+@media (min-width: 640px) { .sug-btn-balao { display: flex; } }
+.sug-btn-balao::after {   /* setinha apontando para o botão, à direita do balão */
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
+  background: inherit;
+  border-right: 2px solid var(--accent, #EC7D23);
+  border-top: 2px solid var(--accent, #EC7D23);
+  transform: rotate(45deg);
+}
+
 /* ── Elevation cards (dark mode border-top highlight) ────────── */
 .dark .card-elevated {
   border-top: 1px solid rgba(255, 255, 255, 0.04);

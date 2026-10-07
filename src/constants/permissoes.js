@@ -14,6 +14,7 @@ export const CAPACIDADES = [
   { id: 'usuarios', rotulo: 'Usuários e responsáveis', descricao: 'Ver a lista de usuários e definir responsáveis, grupos e descrições de setor.' },
   { id: 'auditoria', rotulo: 'Auditoria', descricao: 'Consultar o registro de ações administrativas.' },
   { id: 'ti', rotulo: 'TI', descricao: 'Usar o cadastro de colaborador e as ferramentas de TI.' },
+  { id: 'sugestoes', rotulo: 'Sugestões', descricao: 'Ver todas as sugestões, mudar o status e responder.' },
 ]
 
 const ROTULO_POR_ID = Object.fromEntries(CAPACIDADES.map((c) => [c.id, c.rotulo]))

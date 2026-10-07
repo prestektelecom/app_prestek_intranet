@@ -8,6 +8,7 @@ import { canAccess, viewTitleFor } from './navigation'
 import { useProfileDisplay } from './hooks/useProfileDisplay'
 import { HeaderActionsProvider } from './contexts/HeaderActionsContext'
 import MobileBottomNav from './components/MobileBottomNav'
+import SugestaoButton from './components/SugestaoButton'
 import MobileMoreSheet from './components/MobileMoreSheet'
 import { normalizarUsuario } from './constants/permissoes'
 
@@ -235,6 +236,7 @@ export default function App() {
                         <Suspense fallback={<ViewLoading />}>{renderView()}</Suspense>
                     </div>
                 </div>
+                <SugestaoButton />
                 <MobileBottomNav
                     currentView={currentView}
                     setCurrentView={setCurrentView}

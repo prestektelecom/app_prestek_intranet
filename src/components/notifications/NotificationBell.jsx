@@ -121,16 +121,16 @@ export default function NotificationBell({ user, setCurrentView }) {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         style={{
-          width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.line}`, cursor: 'pointer',
+          width: 48, height: 48, borderRadius: 14, border: `1px solid ${C.line}`, cursor: 'pointer',
           background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'background .12s', boxShadow: 'var(--shadow-sm)',
         }}
       >
-        <span className={naoLidos > 0 ? 'bell-shake-hover' : ''} aria-hidden="true" style={{ position: 'relative', display: 'flex', color: C.ink2 }}>
+        <span className={`[&>svg]:h-6 [&>svg]:w-6 ${naoLidos > 0 ? 'bell-shake-hover' : ''}`} aria-hidden="true" style={{ position: 'relative', display: 'flex', color: C.ink2 }}>
           <Icons.Bell />
           {naoLidos > 0 && (
             <span style={{
-              position: 'absolute', top: -7, right: -8, minWidth: 18, height: 18, borderRadius: 999,
+              position: 'absolute', top: -9, right: -10, minWidth: 20, height: 20, borderRadius: 999,
               ...badgeStyle, border: `2px solid ${C.surface}`,
               fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', boxSizing: 'border-box',
