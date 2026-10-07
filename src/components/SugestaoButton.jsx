@@ -1,4 +1,4 @@
-import { useState, useRef, useId, useEffect } from 'react';
+import { useState, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
@@ -225,54 +225,24 @@ function SugestaoModal({ onClose }) {
 
 // ─── Botão no Header ────────────────────────────────────────────────────────
 // Mora ao lado do sino (Header.jsx), onde o olhar já vai, e herda a camada do
-// Header (1000); o popup abre na 1100. Chama atenção em rajadas curtas
-// (index.css, `sug-btn-*`) até a pessoa abrir.
-
-// Quem já abriu o popup deixou de precisar do convite: para de chamar atenção.
-const CHAVE_VISTO = 'prestek:sugestao-btn-visto';
-const lerVisto = () => { try { return localStorage.getItem(CHAVE_VISTO) === '1'; } catch { return false; } };
-const gravarVisto = () => { try { localStorage.setItem(CHAVE_VISTO, '1'); } catch { /* sem storage: só volta a chamar atenção */ } };
+// Header (1000); o popup abre na 1100. Chama atenção em loop contínuo
+// (index.css, `sug-btn-*`), ciclo de 3 s com respiro.
 
 // Leque de raios pela base: deslocamento horizontal (px) e inclinação (graus).
 const RAIOS = [
     { x: -20, a: -34 }, { x: -10, a: -17 }, { x: 0, a: 0 }, { x: 10, a: 17 }, { x: 20, a: 34 },
 ];
 
-const PRIMEIRA_RAJADA_MS = 1500;   // deixa a página assentar antes de chamar atenção
-const INTERVALO_RAJADAS_MS = 25000;
-const DURACAO_RAJADA_MS = 6500;    // 3 pulos de 1,6 s + 0,5 s de atraso + folga
-
 export default function SugestaoButton() {
     const C = useBentoTheme();
     const [aberto, setAberto] = useState(false);
-    // 0 = quieto; cada número novo remonta os anéis e reinicia a animação.
-    const [rajada, setRajada] = useState(0);
-    const [visto, setVisto] = useState(lerVisto);
 
-    useEffect(() => {
-        if (visto || aberto) return undefined;
-        let fim;
-        const disparar = () => {
-            if (document.visibilityState !== 'visible') return;
-            setRajada((n) => n + 1);
-            clearTimeout(fim);
-            fim = setTimeout(() => setRajada(0), DURACAO_RAJADA_MS);
-        };
-        const primeira = setTimeout(disparar, PRIMEIRA_RAJADA_MS);
-        const periodica = setInterval(disparar, INTERVALO_RAJADAS_MS);
-        return () => { clearTimeout(primeira); clearInterval(periodica); clearTimeout(fim); };
-    }, [visto, aberto]);
-
-    const abrir = () => {
-        setRajada(0);
-        setAberto(true);
-        if (!visto) { gravarVisto(); setVisto(true); }
-    };
+    const abrir = () => setAberto(true);
 
     return (
         <>
             {/* O wrapper carrega o quique; o botão, o hover/press. */}
-            <div className={`sug-btn-wrap ${rajada > 0 ? 'sug-btn-wrap--rajada' : ''}`} key={`w${rajada}`}>
+            <div className="sug-btn-wrap">
                 <button
                     type="button"
                     onClick={abrir}
@@ -287,29 +257,22 @@ export default function SugestaoButton() {
                         boxShadow: `0 4px 10px -4px ${tone(C.accentDeep, 0.55)}`,
                     }}
                 >
-                    {rajada > 0 && (
-                        <>
-                            <span className="sug-btn-ring" aria-hidden="true" />
-                            <span className="sug-btn-ring sug-btn-ring--2" aria-hidden="true" />
-                            {RAIOS.map((r, i) => (
-                                <span key={r.x} className="sug-btn-ray" aria-hidden="true" style={{ '--a': `${r.a}deg`, '--x': `${r.x}px`, animationDelay: `${0.7 + (i % 2) * 0.12}s` }} />
-                            ))}
-                        </>
-                    )}
-                    {rajada === 0 && <span className="sug-btn-halo" aria-hidden="true" />}
-                    <span className={rajada > 0 ? 'sug-btn-bulb' : 'sug-btn-bulb-idle'}>
+                    <span className="sug-btn-ring" aria-hidden="true" />
+                    <span className="sug-btn-ring sug-btn-ring--2" aria-hidden="true" />
+                    {RAIOS.map((r, i) => (
+                        <span key={r.x} className="sug-btn-ray" aria-hidden="true" style={{ '--a': `${r.a}deg`, '--x': `${r.x}px`, animationDelay: `${(i % 2) * 0.3}s` }} />
+                    ))}
+                    <span className="sug-btn-bulb">
                         <Icons.Lightbulb />
                     </span>
                 </button>
-                {rajada > 0 && (
-                    <span
-                        className="sug-btn-balao"
-                        aria-hidden="true"
-                        style={{ background: C.popover, color: C.ink, border: `2px solid ${C.accent}`, boxShadow: `0 8px 24px -8px ${tone(C.accentDeep, 0.45)}` }}
-                    >
-                        Tem uma ideia? Conta pra gente!
-                    </span>
-                )}
+                <span
+                    className="sug-btn-balao"
+                    aria-hidden="true"
+                    style={{ background: C.popover, color: C.ink, border: `2px solid ${C.accent}`, boxShadow: `0 8px 24px -8px ${tone(C.accentDeep, 0.45)}` }}
+                >
+                    Tem uma ideia? Conta pra gente!
+                </span>
             </div>
             {/* Portal no body: o Header tem backdrop-filter, que prende descendentes fixed dentro dele. */}
             {aberto && createPortal(<SugestaoModal onClose={() => setAberto(false)} />, document.body)}

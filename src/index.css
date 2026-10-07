@@ -512,30 +512,32 @@
 }
 
 /* ── Botão de sugestão no Header (SugestaoButton) ─────────────── */
-/* Fica ao lado do sino, onde o olhar já vai. Rajada de atenção (~6 s, depois
-   quieto): quique curto (o Header tem ~10 px de folga acima), lâmpada
-   balançando, leque de raios e anéis, e um balão abaixo convidando a clicar.
-   Só transform/opacity. O componente remonta tudo (key) a cada rajada; com
-   movimento reduzido a regra global deixa cada animação no estado final
-   (raios e anéis invisíveis, balão parado e legível). */
+/* Fica ao lado do sino, onde o olhar já vai. O efeito roda em LOOP contínuo
+   (pedido do Felix), num ciclo de 3 s com respiro: quique curto (o Header tem
+   ~10 px de folga acima), lâmpada balançando, leque de raios e anéis, e um
+   balão abaixo convidando a clicar (visível ~5 s de cada 9 s, para não ficar
+   sempre cobrindo a página). Só transform/opacity. Com movimento reduzido a
+   regra global do index.css roda cada animação uma vez em ~0 ms e deixa o
+   estado final: tudo parado e invisível, só o ícone. */
 @keyframes sug-hop {
   0%, 100% { transform: translateY(0); }
-  28%      { transform: translateY(-8px); }
-  52%      { transform: translateY(0); }
-  66%      { transform: translateY(-4px); }
-  80%      { transform: translateY(0); }
-  90%      { transform: translateY(-1px); }
+  14%      { transform: translateY(-8px); }
+  26%      { transform: translateY(0); }
+  33%      { transform: translateY(-4px); }
+  40%      { transform: translateY(0); }
+  45%      { transform: translateY(-1px); }
+  50%      { transform: translateY(0); }
 }
 @keyframes sug-ring {
   0%   { transform: scale(1);   opacity: 0.7; }
   100% { transform: scale(1.8); opacity: 0; }
 }
 @keyframes sug-bulb {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  20%      { transform: rotate(-16deg) scale(1.35); }
-  40%      { transform: rotate(14deg) scale(1.35); }
-  60%      { transform: rotate(-9deg) scale(1.2); }
-  80%      { transform: rotate(5deg) scale(1.1); }
+  0%, 30%, 100% { transform: rotate(0deg) scale(1); }
+  5%  { transform: rotate(-16deg) scale(1.35); }
+  10% { transform: rotate(14deg) scale(1.35); }
+  15% { transform: rotate(-9deg) scale(1.2); }
+  20% { transform: rotate(5deg) scale(1.1); }
 }
 @keyframes sug-ray {
   0%   { transform: rotate(calc(var(--a) * -1)) translateY(-8px) scaleY(0.2); opacity: 0; }
@@ -544,39 +546,13 @@
 }
 @keyframes sug-balao {
   0%   { transform: translateY(-10px) scale(0.6); opacity: 0; }
-  8%   { transform: translateY(0) scale(1.06); opacity: 1; }
-  12%  { transform: translateY(0) scale(1); opacity: 1; }
-  90%  { transform: translateY(0) scale(1); opacity: 1; }
+  4%   { transform: translateY(0) scale(1.06); opacity: 1; }
+  6%   { transform: translateY(0) scale(1); opacity: 1; }
+  55%  { transform: translateY(0) scale(1); opacity: 1; }
+  60%  { transform: translateY(-6px) scale(0.9); opacity: 0; }
   100% { transform: translateY(-6px) scale(0.9); opacity: 0; }
 }
-/* Vida própria do ícone, mesmo sem rajada e depois de a pessoa já ter aberto o
-   popup: a cada 8 s a lâmpada balança e um brilho "acende" atrás dela (~1 s de
-   movimento, o resto parado). Só transform/opacity. */
-@keyframes sug-idle-bulb {
-  0%, 14%, 100% { transform: rotate(0deg) scale(1); }
-  2%  { transform: rotate(-14deg) scale(1.25); }
-  5%  { transform: rotate(12deg) scale(1.25); }
-  8%  { transform: rotate(-8deg) scale(1.15); }
-  11% { transform: rotate(4deg) scale(1.05); }
-}
-@keyframes sug-idle-halo {
-  0%   { transform: scale(1);   opacity: 0; }
-  3%   { transform: scale(1.1); opacity: 0.5; }
-  14%  { transform: scale(1.9); opacity: 0; }
-  100% { transform: scale(1.9); opacity: 0; }
-}
-.sug-btn-bulb-idle { display: inline-flex; animation: sug-idle-bulb 8s ease-in-out 2.5s infinite; }
-.sug-btn-halo {
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  background: var(--accent, #EC7D23);
-  pointer-events: none;
-  opacity: 0;
-  animation: sug-idle-halo 8s ease-out 2.5s infinite;
-}
-.sug-btn-wrap { position: relative; }
-.sug-btn-wrap--rajada { animation: sug-hop 1.6s cubic-bezier(0.28, 0.84, 0.42, 1) 0.5s 3 both; }
+.sug-btn-wrap { position: relative; animation: sug-hop 3s cubic-bezier(0.28, 0.84, 0.42, 1) infinite; }
 .sug-btn-ring {
   position: absolute;
   inset: 0;
@@ -584,10 +560,10 @@
   border: 3px solid var(--accent, #EC7D23);
   pointer-events: none;
   opacity: 0;
-  animation: sug-ring 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s 4 both;
+  animation: sug-ring 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
 }
-.sug-btn-ring--2 { animation-delay: 0.9s; }
-.sug-btn-bulb { display: inline-flex; animation: sug-bulb 1s ease-in-out 0.5s 3 both; }
+.sug-btn-ring--2 { animation-delay: 0.75s; }
+.sug-btn-bulb { display: inline-flex; animation: sug-bulb 3s ease-in-out infinite; }
 .sug-btn-ray {   /* leque saindo pela base do botão, sobre o conteúdo da página */
   position: absolute;
   left: calc(50% + var(--x) - 2px);
@@ -598,7 +574,7 @@
   background: var(--accent, #EC7D23);
   pointer-events: none;
   opacity: 0;
-  animation: sug-ray 0.9s ease-out 0.7s 4 both;
+  animation: sug-ray 1.5s ease-out infinite;
 }
 .sug-btn-balao {
   position: absolute;
@@ -614,7 +590,7 @@
   font-size: 14px;
   pointer-events: none;
   transform-origin: top right;
-  animation: sug-balao 6s ease-out 0.5s 1 both;
+  animation: sug-balao 9s ease-out infinite;
 }
 .sug-btn-balao::after {   /* setinha apontando para o botão */
   content: '';
