@@ -14,7 +14,7 @@ Intranet React/Vite + Express/PG. Gestão por capacidade já existe (`gate('x')`
 - **Anti-spam:** máximo de 5 envios por usuário em 24 h, contado no banco (sobrevive a reinício, ao contrário de limitador em memória).
 - **Auditoria:** `sugestao_status` e `sugestao_resposta` com o id da sugestão; o texto da sugestão não vai para o log.
 - **Capacidade `sugestoes`:** entra em `CAPACIDADES` e em `src/constants/permissoes.js`; nenhuma mudança de modelo.
-- **Frontend (revisto em 2026-10-05):** `SugestaoButton.jsx` monta o botão (fixo na borda direita, no meio da altura, camada 50) e o popup (camada 1100, padrão do `TiSupportModal`: `useDismissable` + `makeTrapTab`). Montado no `App.jsx` (o `backdrop-filter` do Header prende elementos fixed). Decisão do Felix em 2026-10-07, após testar canto, Header e canto de novo: borda direita, meio da altura. A tela "Sugestões" e o item de menu da primeira versão foram removidos.
+- **Frontend (revisto em 2026-10-05):** `SugestaoButton.jsx` monta o botão (fixo no canto inferior direito, camada 50) e o popup (camada 1100, padrão do `TiSupportModal`: `useDismissable` + `makeTrapTab`). Montado no `App.jsx` (o `backdrop-filter` do Header prende elementos fixed). Decisão do Felix em 2026-10-07, após testar canto, Header e borda lateral: canto inferior direito, afastado da barra de rolagem. A tela "Sugestões" e o item de menu da primeira versão foram removidos.
 - **Alternativa rejeitada:** abrir chamado de TI no IXC por sugestão (polui a fila de suporte e depende de contrato válido, ver incidente de 2026-09-17).
 
 ## Risks / Trade-offs

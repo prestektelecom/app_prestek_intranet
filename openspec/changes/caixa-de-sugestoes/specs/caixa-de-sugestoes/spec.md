@@ -27,7 +27,7 @@ Ao gravar uma sugestão, o sistema SHALL enviar um e-mail com tipo, autor, títu
 - **THEN** a sugestão SHALL continuar gravada e o autor SHALL receber a confirmação normal
 
 ### Requirement: Botão lateral e popup de envio
-O portal SHALL exibir, para todo usuário logado, um botão rotulado "Enviar sugestão" fixo na borda direita, na altura do meio da tela, que abre um popup (`role="dialog"`, `aria-modal`) com o formulário. O popup SHALL fechar por Escape, clique fora, botão Fechar ou Cancelar, prender o foco enquanto aberto e devolvê-lo ao botão ao fechar. Após o envio, o popup SHALL mostrar a confirmação em vez do formulário.
+O portal SHALL exibir, para todo usuário logado, um botão rotulado "Enviar sugestão" fixo no canto inferior direito, acima da barra inferior no celular, que abre um popup (`role="dialog"`, `aria-modal`) com o formulário. O popup SHALL fechar por Escape, clique fora, botão Fechar ou Cancelar, prender o foco enquanto aberto e devolvê-lo ao botão ao fechar. Após o envio, o popup SHALL mostrar a confirmação em vez do formulário.
 
 #### Scenario: Abrir e enviar
 - **WHEN** o usuário clica no botão flutuante, preenche e envia

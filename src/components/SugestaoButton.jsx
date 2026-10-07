@@ -224,7 +224,7 @@ function SugestaoModal({ onClose }) {
 }
 
 // ─── Botão no Header ────────────────────────────────────────────────────────
-// Fixo na borda direita, no meio da altura (montado no App.jsx, não no Header:
+// Fixo no canto inferior direito (montado no App.jsx, não no Header:
 // o backdrop-filter do Header prende elementos fixed). Camada 50; o popup abre na 1100. Chama atenção em loop contínuo
 // (index.css, `sug-btn-*`), ciclo de 3 s com respiro.
 
@@ -242,8 +242,8 @@ export default function SugestaoButton() {
     return (
         <>
             {/* O wrapper carrega o quique; o botão, o hover/press. */}
-            {/* Posição: borda direita, meio da altura. Camada 50 (flutuante leve), abaixo do chrome. */}
-            <div className="fixed right-5 top-1/2 -mt-4 lg:right-10" style={{ zIndex: 50 }}>
+            {/* Posição: canto inferior direito (acima da barra inferior no celular). Camada 50 (flutuante leve), abaixo do chrome. */}
+            <div className="fixed right-5 bottom-[calc(var(--bottom-nav-h)+16px)] lg:right-10 lg:bottom-8" style={{ zIndex: 50 }}>
             <div className="sug-btn-wrap">
                 <button
                     type="button"

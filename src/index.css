@@ -511,9 +511,9 @@
   transform-origin: top center;
 }
 
-/* ── Botão de sugestão na borda direita (SugestaoButton) ──────── */
-/* Fixo na lateral direita, na altura do meio da tela: fora do Header (o
-   backdrop-filter dele prende elementos fixed) e longe do canto. O efeito roda
+/* ── Botão de sugestão no canto inferior direito (SugestaoButton) ─ */
+/* Fixo embaixo à direita, fora do Header (o backdrop-filter dele prende
+   elementos fixed), afastado da barra de rolagem. O efeito roda
    em LOOP contínuo (pedido do Felix), ciclo de 3 s com respiro: quique, lâmpada
    balançando, leque de raios saindo para a esquerda, anéis e um balão à
    esquerda (visível ~5 s de cada 9 s; só de `sm` para cima, no celular ele

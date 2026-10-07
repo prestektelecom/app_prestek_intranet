@@ -13,7 +13,7 @@
 
 ## 3. Frontend
 
-- [x] 3.1 `SugestaoButton.jsx` (borda direita, meio da altura): botão + popup com formulário e confirmação (substitui a view `Sugestoes`, removida)
+- [x] 3.1 `SugestaoButton.jsx` (canto inferior direito): botão + popup com formulário e confirmação (substitui a view `Sugestoes`, removida)
 - [x] 3.2 ~~Aba "Todas" para gestores~~ cortada (opção A): gestão só por e-mail; rotas seguem no backend sem interface
 - [x] 3.3 Rótulo da capacidade no Painel Admin (item de menu removido)
 - [x] 3.4 Textos em português; lista em cards (sem lista nem filtros); alvos de toque ≥ 44px
@@ -34,3 +34,4 @@
   - Posição lateral (2026-10-07, pedido do Felix: "mudar a posição para baixo", escolhida a borda direita no meio da altura): sai do Header, fixo na borda direita a 50% da altura (camada 50). Balão e raios saem para a esquerda; o balão só aparece de `sm` para cima (no celular cobriria o conteúdo). Quique de 14 px (sem a folga curta do Header). Verificado no app real com a API simulada, a 1366 e 390 px. Falta o app com dados reais.
   - Balão menor (2026-10-07, pedido do Felix): texto encurtado para "Tem uma ideia?", fonte de 14 para 12 px, altura de 40 para 28 px; caiu de ~270 para 113 px de largura. Verificado no app real com a API simulada.
   - Afastado da barra de rolagem (2026-10-07): `right-3` (12 px) encostava na barra de 15 px; agora `right-5` e `lg:right-10` (40 px da borda da tela, 25 px da barra no desktop). Medido no app real: o anel no pico ainda para a 9 px da barra.
+  - De volta ao canto inferior direito (2026-10-07, pedido do Felix: "é melhor ficar embaixo mesmo"): 40 px da borda e 32 px de baixo no desktop (25 px de folga até a barra de rolagem), `--bottom-nav-h` + 16 px no celular (27 px acima da barra inferior, medido). Verificado no app real com a API simulada, a 1366 e 390 px.
