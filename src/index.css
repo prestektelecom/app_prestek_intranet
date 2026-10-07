@@ -593,7 +593,7 @@
 .sug-btn-balao::after {   /* setinha apontando para o botão */
   content: '';
   position: absolute;
-  right: 22px;
+  right: 16px;
   top: -7px;
   width: 12px;
   height: 12px;

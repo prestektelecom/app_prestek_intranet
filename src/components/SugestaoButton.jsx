@@ -235,7 +235,7 @@ const gravarVisto = () => { try { localStorage.setItem(CHAVE_VISTO, '1'); } catc
 
 // Leque de raios pela base: deslocamento horizontal (px) e inclinação (graus).
 const RAIOS = [
-    { x: -30, a: -34 }, { x: -15, a: -17 }, { x: 0, a: 0 }, { x: 15, a: 17 }, { x: 30, a: 34 },
+    { x: -20, a: -34 }, { x: -10, a: -17 }, { x: 0, a: 0 }, { x: 10, a: 17 }, { x: 20, a: 34 },
 ];
 
 const PRIMEIRA_RAJADA_MS = 1500;   // deixa a página assentar antes de chamar atenção
@@ -279,11 +279,12 @@ export default function SugestaoButton() {
                     aria-haspopup="dialog"
                     aria-expanded={aberto}
                     aria-label="Enviar sugestão"
-                    className={`relative inline-flex h-11 min-w-[44px] items-center justify-center gap-2 rounded-full px-3 text-sm font-extrabold transition-transform duration-200 ease-out hover:scale-105 active:scale-95 sm:px-4 ${FOCO}`}
+                    // 32 px visíveis; o `after` estende a área de toque para 44 px (AGENTS.md, princípio 5).
+                    className={`relative inline-flex h-8 w-8 items-center justify-center rounded-full transition-transform duration-200 ease-out after:absolute after:-inset-1.5 after:content-[''] hover:scale-110 active:scale-95 ${FOCO}`}
                     style={{
                         backgroundColor: C.accent,
                         color: C.onAccent,
-                        boxShadow: `0 6px 16px -6px ${tone(C.accentDeep, 0.55)}`,
+                        boxShadow: `0 4px 10px -4px ${tone(C.accentDeep, 0.55)}`,
                     }}
                 >
                     {rajada > 0 && (
@@ -298,7 +299,6 @@ export default function SugestaoButton() {
                     <span className={rajada > 0 ? 'sug-btn-bulb' : 'inline-flex'}>
                         <Icons.Lightbulb />
                     </span>
-                    <span className="hidden sm:inline">Sugerir</span>
                 </button>
                 {rajada > 0 && (
                     <span
