@@ -296,7 +296,8 @@ export default function SugestaoButton() {
                             ))}
                         </>
                     )}
-                    <span className={rajada > 0 ? 'sug-btn-bulb' : 'inline-flex'}>
+                    {rajada === 0 && <span className="sug-btn-halo" aria-hidden="true" />}
+                    <span className={rajada > 0 ? 'sug-btn-bulb' : 'sug-btn-bulb-idle'}>
                         <Icons.Lightbulb />
                     </span>
                 </button>
