@@ -232,9 +232,14 @@ const CHAVE_VISTO = 'prestek:sugestao-fab-visto';
 const lerVisto = () => { try { return localStorage.getItem(CHAVE_VISTO) === '1'; } catch { return false; } };
 const gravarVisto = () => { try { localStorage.setItem(CHAVE_VISTO, '1'); } catch { /* sem storage: só volta a chamar atenção */ } };
 
-const PRIMEIRA_RAJADA_MS = 3000;   // deixa a página assentar antes de chamar atenção
-const INTERVALO_RAJADAS_MS = 45000;
-const DURACAO_RAJADA_MS = 4800;    // 3 pulsos de 1,5 s + atraso do 2º anel
+// Leque de raios pelo topo: deslocamento horizontal (px) e inclinação (graus).
+const RAIOS = [
+    { x: -40, a: -38 }, { x: -20, a: -19 }, { x: 0, a: 0 }, { x: 20, a: 19 }, { x: 40, a: 38 },
+];
+
+const PRIMEIRA_RAJADA_MS = 1500;   // deixa a página assentar antes de chamar atenção
+const INTERVALO_RAJADAS_MS = 25000;
+const DURACAO_RAJADA_MS = 6500;    // 3 pulos de 1,6 s + 0,5 s de atraso + folga
 
 export default function SugestaoFab() {
     const C = useBentoTheme();
@@ -265,31 +270,49 @@ export default function SugestaoFab() {
 
     return (
         <>
-            <button
-                type="button"
-                onClick={abrir}
-                aria-haspopup="dialog"
-                aria-expanded={aberto}
-                aria-label="Enviar sugestão"
-                className={`fixed right-4 inline-flex h-12 min-w-[48px] items-center justify-center gap-2 rounded-full px-3 text-sm font-extrabold transition-transform duration-200 ease-out hover:scale-105 active:scale-95 sm:px-5 lg:right-6 ${FOCO} bottom-[calc(var(--bottom-nav-h)+16px)] lg:bottom-6`}
-                style={{
-                    zIndex: 50,
-                    backgroundColor: C.accent,
-                    color: C.onAccent,
-                    boxShadow: `0 10px 28px -6px ${tone(C.accentDeep, 0.5)}, 0 2px 6px ${tone(C.ink, 0.15)}`,
-                }}
+            {/* O wrapper carrega a posição e o pulo; o botão, o hover/press. */}
+            <div
+                className={`fixed right-4 lg:right-6 bottom-[calc(var(--bottom-nav-h)+16px)] lg:bottom-6 ${rajada > 0 ? 'sug-fab-wrap' : ''}`}
+                key={`w${rajada}`}
+                style={{ zIndex: 50 }}
             >
-                {rajada > 0 && (
-                    <>
-                        <span key={`a${rajada}`} className="sug-fab-ring" aria-hidden="true" />
-                        <span key={`b${rajada}`} className="sug-fab-ring sug-fab-ring--2" aria-hidden="true" />
-                    </>
-                )}
-                <span key={`i${rajada}`} className={rajada > 0 ? 'sug-fab-bulb' : 'inline-flex'}>
-                    <Icons.Lightbulb />
-                </span>
-                <span className="hidden sm:inline">Sugerir</span>
-            </button>
+                <button
+                    type="button"
+                    onClick={abrir}
+                    aria-haspopup="dialog"
+                    aria-expanded={aberto}
+                    aria-label="Enviar sugestão"
+                    className={`relative inline-flex h-12 min-w-[48px] items-center justify-center gap-2 rounded-full px-3 text-sm font-extrabold transition-transform duration-200 ease-out hover:scale-105 active:scale-95 sm:px-5 ${FOCO}`}
+                    style={{
+                        backgroundColor: C.accent,
+                        color: C.onAccent,
+                        boxShadow: `0 10px 28px -6px ${tone(C.accentDeep, 0.5)}, 0 2px 6px ${tone(C.ink, 0.15)}`,
+                    }}
+                >
+                    {rajada > 0 && (
+                        <>
+                            <span className="sug-fab-ring" aria-hidden="true" />
+                            <span className="sug-fab-ring sug-fab-ring--2" aria-hidden="true" />
+                            {RAIOS.map((r, i) => (
+                                <span key={r.x} className="sug-fab-ray" aria-hidden="true" style={{ '--a': `${r.a}deg`, '--x': `${r.x}px`, animationDelay: `${0.7 + (i % 2) * 0.12}s` }} />
+                            ))}
+                        </>
+                    )}
+                    <span className={rajada > 0 ? 'sug-fab-bulb' : 'inline-flex'}>
+                        <Icons.Lightbulb />
+                    </span>
+                    <span className="hidden sm:inline">Sugerir</span>
+                    {rajada > 0 && (
+                        <span
+                            className="sug-fab-balao"
+                            aria-hidden="true"
+                            style={{ background: C.popover, color: C.ink, border: `2px solid ${C.accent}`, boxShadow: `0 8px 24px -8px ${tone(C.accentDeep, 0.45)}` }}
+                        >
+                            Tem uma ideia? Conta pra gente!
+                        </span>
+                    )}
+                </button>
+            </div>
             {aberto && <SugestaoModal onClose={() => setAberto(false)} />}
         </>
     );
