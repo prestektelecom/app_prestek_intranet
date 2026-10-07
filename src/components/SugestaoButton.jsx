@@ -1,4 +1,5 @@
 import { useState, useRef, useId, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useBentoTheme } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { tone } from '../utils/tone';
@@ -309,7 +310,8 @@ export default function SugestaoButton() {
                     </span>
                 )}
             </div>
-            {aberto && <SugestaoModal onClose={() => setAberto(false)} />}
+            {/* Portal no body: o Header tem backdrop-filter, que prende descendentes fixed dentro dele. */}
+            {aberto && createPortal(<SugestaoModal onClose={() => setAberto(false)} />, document.body)}
         </>
     );
 }
