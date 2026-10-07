@@ -511,26 +511,27 @@
   transform-origin: top center;
 }
 
-/* ── Botão de sugestão no Header (SugestaoButton) ─────────────── */
-/* Fica ao lado do sino, onde o olhar já vai. O efeito roda em LOOP contínuo
-   (pedido do Felix), num ciclo de 3 s com respiro: quique curto (o Header tem
-   ~10 px de folga acima), lâmpada balançando, leque de raios e anéis, e um
-   balão abaixo convidando a clicar (visível ~5 s de cada 9 s, para não ficar
-   sempre cobrindo a página). Só transform/opacity. Com movimento reduzido a
-   regra global do index.css roda cada animação uma vez em ~0 ms e deixa o
-   estado final: tudo parado e invisível, só o ícone. */
+/* ── Botão de sugestão na borda direita (SugestaoButton) ──────── */
+/* Fixo na lateral direita, na altura do meio da tela: fora do Header (o
+   backdrop-filter dele prende elementos fixed) e longe do canto. O efeito roda
+   em LOOP contínuo (pedido do Felix), ciclo de 3 s com respiro: quique, lâmpada
+   balançando, leque de raios saindo para a esquerda, anéis e um balão à
+   esquerda (visível ~5 s de cada 9 s; só de `sm` para cima, no celular ele
+   cobriria o conteúdo). Só transform/opacity. Com movimento reduzido a regra
+   global do index.css deixa o estado final: tudo parado e invisível, só o
+   ícone. */
 @keyframes sug-hop {
   0%, 100% { transform: translateY(0); }
-  14%      { transform: translateY(-8px); }
+  14%      { transform: translateY(-14px); }
   26%      { transform: translateY(0); }
-  33%      { transform: translateY(-4px); }
+  33%      { transform: translateY(-6px); }
   40%      { transform: translateY(0); }
-  45%      { transform: translateY(-1px); }
+  45%      { transform: translateY(-2px); }
   50%      { transform: translateY(0); }
 }
 @keyframes sug-ring {
   0%   { transform: scale(1);   opacity: 0.7; }
-  100% { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(2);   opacity: 0; }
 }
 @keyframes sug-bulb {
   0%, 30%, 100% { transform: rotate(0deg) scale(1); }
@@ -539,18 +540,18 @@
   15% { transform: rotate(-9deg) scale(1.2); }
   20% { transform: rotate(5deg) scale(1.1); }
 }
-@keyframes sug-ray {
-  0%   { transform: rotate(calc(var(--a) * -1)) translateY(-8px) scaleY(0.2); opacity: 0; }
+@keyframes sug-ray {   /* raio horizontal: gira em volta do centro e sai para a esquerda */
+  0%   { transform: rotate(var(--a)) translateX(-20px) scaleX(0.2); opacity: 0; }
   35%  { opacity: 1; }
-  100% { transform: rotate(calc(var(--a) * -1)) translateY(8px) scaleY(1); opacity: 0; }
+  100% { transform: rotate(var(--a)) translateX(-34px) scaleX(1); opacity: 0; }
 }
 @keyframes sug-balao {
-  0%   { transform: translateY(-10px) scale(0.6); opacity: 0; }
-  4%   { transform: translateY(0) scale(1.06); opacity: 1; }
-  6%   { transform: translateY(0) scale(1); opacity: 1; }
-  55%  { transform: translateY(0) scale(1); opacity: 1; }
-  60%  { transform: translateY(-6px) scale(0.9); opacity: 0; }
-  100% { transform: translateY(-6px) scale(0.9); opacity: 0; }
+  0%   { transform: translateX(12px) scale(0.6); opacity: 0; }
+  4%   { transform: translateX(0) scale(1.06); opacity: 1; }
+  6%   { transform: translateX(0) scale(1); opacity: 1; }
+  55%  { transform: translateX(0) scale(1); opacity: 1; }
+  60%  { transform: translateX(8px) scale(0.9); opacity: 0; }
+  100% { transform: translateX(8px) scale(0.9); opacity: 0; }
 }
 .sug-btn-wrap { position: relative; animation: sug-hop 3s cubic-bezier(0.28, 0.84, 0.42, 1) infinite; }
 .sug-btn-ring {
@@ -564,12 +565,12 @@
 }
 .sug-btn-ring--2 { animation-delay: 0.75s; }
 .sug-btn-bulb { display: inline-flex; animation: sug-bulb 3s ease-in-out infinite; }
-.sug-btn-ray {   /* leque saindo pela base do botão, sobre o conteúdo da página */
+.sug-btn-ray {
   position: absolute;
-  left: calc(50% + var(--x) - 2px);
-  top: calc(100% + 4px);
-  width: 4px;
-  height: 14px;
+  left: calc(50% - 7px);
+  top: calc(50% - 2px);
+  width: 14px;
+  height: 4px;
   border-radius: 9999px;
   background: var(--accent, #EC7D23);
   pointer-events: none;
@@ -578,10 +579,11 @@
 }
 .sug-btn-balao {
   position: absolute;
-  top: calc(100% + 16px);
-  right: -6px;
+  right: calc(100% + 18px);
+  top: 50%;
+  margin-top: -20px;
   height: 40px;
-  display: flex;
+  display: none;
   align-items: center;
   padding: 0 14px;
   border-radius: 14px;
@@ -589,18 +591,20 @@
   font-weight: 800;
   font-size: 14px;
   pointer-events: none;
-  transform-origin: top right;
+  transform-origin: right center;
   animation: sug-balao 9s ease-out infinite;
 }
-.sug-btn-balao::after {   /* setinha apontando para o botão */
+@media (min-width: 640px) { .sug-btn-balao { display: flex; } }
+.sug-btn-balao::after {   /* setinha apontando para o botão, à direita do balão */
   content: '';
   position: absolute;
-  right: 16px;
-  top: -7px;
+  right: -7px;
+  top: 50%;
   width: 12px;
   height: 12px;
+  margin-top: -6px;
   background: inherit;
-  border-left: 2px solid var(--accent, #EC7D23);
+  border-right: 2px solid var(--accent, #EC7D23);
   border-top: 2px solid var(--accent, #EC7D23);
   transform: rotate(45deg);
 }

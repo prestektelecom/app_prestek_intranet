@@ -13,7 +13,7 @@
 
 ## 3. Frontend
 
-- [x] 3.1 `SugestaoButton.jsx` (no Header): botão + popup com formulário e confirmação (substitui a view `Sugestoes`, removida)
+- [x] 3.1 `SugestaoButton.jsx` (borda direita, meio da altura): botão + popup com formulário e confirmação (substitui a view `Sugestoes`, removida)
 - [x] 3.2 ~~Aba "Todas" para gestores~~ cortada (opção A): gestão só por e-mail; rotas seguem no backend sem interface
 - [x] 3.3 Rótulo da capacidade no Painel Admin (item de menu removido)
 - [x] 3.4 Textos em português; lista em cards (sem lista nem filtros); alvos de toque ≥ 44px
@@ -31,3 +31,4 @@
   - Tamanhos (2026-10-07, pedido do Felix): o "Sugerir" virou um círculo laranja de 32 px, só com o ícone (área de toque de 44 px via `after`), e o sino de notificações cresceu de 44 para 48 px com ícone de 24 px, para o sino ser o elemento principal do Header. Popup movido para portal no `body` (o `backdrop-filter` do Header o cortava). Verificado no app real com a API simulada, no desktop e a 390 px. Falta o app com dados reais.
   - Animação própria do ícone (2026-10-07): a cada 8 s a lâmpada balança e um brilho laranja abre atrás dela (~1 s de movimento, o resto parado), sempre, inclusive depois de a pessoa já ter aberto o popup. Só transform/opacity; com `prefers-reduced-motion` a regra global a deixa parada. Verificado no app real com a API simulada (pico do brilho e repouso).
   - Loop contínuo (2026-10-07, pedido do Felix): o efeito completo (quique, lâmpada, raios, anéis e balão) roda em loop infinito, ciclo de 3 s com respiro (balão visível ~5 s a cada 9 s), sem parar depois do primeiro clique; some a lógica de rajadas, timers e `localStorage`. Verificado no app real: todas as animações com `iterations: Infinity` e quique a cada 3 s. Contrapartida a vigiar: movimento permanente cansa quem usa o dia todo (WCAG 2.2.2); com `prefers-reduced-motion` o ícone fica parado. Se incomodar, voltar às rajadas é um commit.
+  - Posição lateral (2026-10-07, pedido do Felix: "mudar a posição para baixo", escolhida a borda direita no meio da altura): sai do Header, fixo na borda direita a 50% da altura (camada 50). Balão e raios saem para a esquerda; o balão só aparece de `sm` para cima (no celular cobriria o conteúdo). Quique de 14 px (sem a folga curta do Header). Verificado no app real com a API simulada, a 1366 e 390 px. Falta o app com dados reais.

@@ -224,13 +224,13 @@ function SugestaoModal({ onClose }) {
 }
 
 // ─── Botão no Header ────────────────────────────────────────────────────────
-// Mora ao lado do sino (Header.jsx), onde o olhar já vai, e herda a camada do
-// Header (1000); o popup abre na 1100. Chama atenção em loop contínuo
+// Fixo na borda direita, no meio da altura (montado no App.jsx, não no Header:
+// o backdrop-filter do Header prende elementos fixed). Camada 50; o popup abre na 1100. Chama atenção em loop contínuo
 // (index.css, `sug-btn-*`), ciclo de 3 s com respiro.
 
-// Leque de raios pela base: deslocamento horizontal (px) e inclinação (graus).
+// Leque de raios para a esquerda: inclinação (graus) em relação ao eixo horizontal.
 const RAIOS = [
-    { x: -20, a: -34 }, { x: -10, a: -17 }, { x: 0, a: 0 }, { x: 10, a: 17 }, { x: 20, a: 34 },
+    { x: -2, a: -50 }, { x: -1, a: -25 }, { x: 0, a: 0 }, { x: 1, a: 25 }, { x: 2, a: 50 },
 ];
 
 export default function SugestaoButton() {
@@ -242,6 +242,8 @@ export default function SugestaoButton() {
     return (
         <>
             {/* O wrapper carrega o quique; o botão, o hover/press. */}
+            {/* Posição: borda direita, meio da altura. Camada 50 (flutuante leve), abaixo do chrome. */}
+            <div className="fixed right-3 top-1/2 -mt-4" style={{ zIndex: 50 }}>
             <div className="sug-btn-wrap">
                 <button
                     type="button"
@@ -260,7 +262,7 @@ export default function SugestaoButton() {
                     <span className="sug-btn-ring" aria-hidden="true" />
                     <span className="sug-btn-ring sug-btn-ring--2" aria-hidden="true" />
                     {RAIOS.map((r, i) => (
-                        <span key={r.x} className="sug-btn-ray" aria-hidden="true" style={{ '--a': `${r.a}deg`, '--x': `${r.x}px`, animationDelay: `${(i % 2) * 0.3}s` }} />
+                        <span key={r.x} className="sug-btn-ray" aria-hidden="true" style={{ '--a': `${r.a}deg`, animationDelay: `${(i % 2) * 0.3}s` }} />
                     ))}
                     <span className="sug-btn-bulb">
                         <Icons.Lightbulb />
@@ -273,6 +275,7 @@ export default function SugestaoButton() {
                 >
                     Tem uma ideia? Conta pra gente!
                 </span>
+            </div>
             </div>
             {/* Portal no body: o Header tem backdrop-filter, que prende descendentes fixed dentro dele. */}
             {aberto && createPortal(<SugestaoModal onClose={() => setAberto(false)} />, document.body)}

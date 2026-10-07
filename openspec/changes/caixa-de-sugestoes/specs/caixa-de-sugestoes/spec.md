@@ -26,8 +26,8 @@ Ao gravar uma sugestão, o sistema SHALL enviar um e-mail com tipo, autor, títu
 - **WHEN** `SMTP_HOST` não está configurado ou o servidor de e-mail falha
 - **THEN** a sugestão SHALL continuar gravada e o autor SHALL receber a confirmação normal
 
-### Requirement: Botão no Header e popup de envio
-O portal SHALL exibir, para todo usuário logado, um botão rotulado "Enviar sugestão" no Header, ao lado do sino, que abre um popup (`role="dialog"`, `aria-modal`) com o formulário. O popup SHALL fechar por Escape, clique fora, botão Fechar ou Cancelar, prender o foco enquanto aberto e devolvê-lo ao botão ao fechar. Após o envio, o popup SHALL mostrar a confirmação em vez do formulário.
+### Requirement: Botão lateral e popup de envio
+O portal SHALL exibir, para todo usuário logado, um botão rotulado "Enviar sugestão" fixo na borda direita, na altura do meio da tela, que abre um popup (`role="dialog"`, `aria-modal`) com o formulário. O popup SHALL fechar por Escape, clique fora, botão Fechar ou Cancelar, prender o foco enquanto aberto e devolvê-lo ao botão ao fechar. Após o envio, o popup SHALL mostrar a confirmação em vez do formulário.
 
 #### Scenario: Abrir e enviar
 - **WHEN** o usuário clica no botão flutuante, preenche e envia
@@ -35,7 +35,7 @@ O portal SHALL exibir, para todo usuário logado, um botão rotulado "Enviar sug
 
 #### Scenario: Celular
 - **WHEN** a tela é menor que `sm`
-- **THEN** o botão SHALL ficar só com o ícone, sem estourar o Header, e o popup SHALL abrir como folha ancorada embaixo
+- **THEN** o botão SHALL ficar só com o ícone, sem balão, e o popup SHALL abrir como folha ancorada embaixo
 
 ### Requirement: Rotas de gestão (sem interface)
 O backend SHALL manter `GET /api/sugestoes` e `PATCH /api/sugestoes/:id`, restritos a `is_admin` ou à capacidade `sugestoes` (lida do banco a cada requisição), com Auditoria `sugestao_status` e `sugestao_resposta`. Não há tela de gestão nesta change.
