@@ -16,6 +16,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Configuração `future.hoverOnlyWhenSupported` no `tailwind.config.js` para evitar estados de hover presos em telas de toque.
 
 ### Alterado
+- **Início** (`Dashboard.jsx`): a grade de widgets deixou de ser `react-grid-layout` (altura fixa por widget, breakpoint pela largura do contêiner) e passou a ser grade CSS de altura automática: 1 coluna no celular, 2 em `md` e 12 em `xl`. A fileira de KPIs não é mais espremida a ~150px por card em 1366px (o "+3%" saía cortado) e nenhum card corta conteúdo. Comunicados, Aniversariantes e Disponibilidade rolam dentro de um teto de altura. Atalhos Rápidos virou uma faixa de tiles na largura toda, no fim da tela. Removidos `react-grid-layout`, `react-resizable`, os dois CSS importados no `main.jsx` e o CSS do modo de edição já arquivado. Sem migration e sem variável nova no `.env`; precisa de `npm ci` e novo build.
 - `Header.jsx` e `Sidebar.jsx` refatorados para usar Tailwind com breakpoints responsivos.
 - `App.jsx` ajustado com padding inferior para `MobileBottomNav` e altura de viewport dinâmica (`h-dvh`).
 - Páginas adaptadas para mobile/tablet/desktop:
@@ -31,6 +32,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
   - `Configuracoes.jsx` — formulários empilhados em mobile e correção de padding inválido.
 
 ### Corrigido
+- **Próximo plantão no Início** (`GET /api/plantoes/meu-proximo`): a consulta comparava o id do funcionário por substring (`LIKE '%1%'`), então o funcionário 1 casava com 12, 21 etc. e podia ver o plantão de outra pessoa; agora compara o id inteiro de cada item da lista. Sem funcionário vinculado, devolve `proximo: null` em vez do plantão de qualquer um. No front, a data é formatada em UTC, como o `Schedule.jsx`, para não aparecer um dia antes quando a API envia meia-noite UTC. Sem migration e sem variável nova no `.env`; basta reiniciar o backend e refazer o build.
+- **Contraste no Início** (`Dashboard.jsx`): chips de tipo da lista de comunicados, rótulos "Encaminhadas" e "Agendadas", "Online" e o selo de versão usavam tokens de preenchimento como texto e ficavam entre 2,8:1 e 4,1:1; agora usam `-strong` (≥ 4,5:1). Chips do banner passam a ter fundo sólido com par de contraste (verde, azul, laranja e vermelho estavam entre 2,5:1 e 4,1:1). Novo token `--info-strong` nos cinco temas e `--success-strong` do Default Dark ajustado para #33BC88. Medido nos cinco temas: 122 textos, 0 abaixo de 4,5:1.
 - **Carrossel de comunicados do Início** (`Dashboard.jsx`): deixou de ser um `role="button"` com botões dentro (controle aninhado, WCAG 4.1.2). Agora é uma seção `carousel` em que o título é o botão de abrir (esticado sobre o card) e os controles são irmãos dele. Pontos de 8×8px viram alvos de 32×44px, ganha botão de pausa/retomar (WCAG 2.2.2) e a rotação já começa parada para quem usa movimento reduzido. Região viva muda para `polite` só quando a rotação está parada. Novos ícones `Pause` e `Play`. Sem migration e sem variável nova no `.env`; só novo build.
 - Áreas de toque de botões de ação em cards aumentadas para no mínimo 44×44px.
 - Carregamento da fonte Material Symbols com preload/fallback para evitar ícones como texto.
