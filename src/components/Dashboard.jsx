@@ -136,7 +136,7 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
               const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
               el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
             }}
-            className="mt-2.5 inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--success-soft)] px-3 py-1.5 text-[13px] text-foreground transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            className="relative mt-2.5 inline-flex max-w-full items-center gap-2 rounded-full before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']  bg-[var(--success-soft)] px-3 py-1.5 text-[13px] text-foreground transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
           >
             <span className="shrink-0 text-[var(--success-bento)]" aria-hidden="true"><Icons.Cake /></span>
             <span className="truncate">{fraseAniversariantes(aniversariantesHoje)}</span>
@@ -715,7 +715,7 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
           <h2 className={CARD_TITLE}>Comunicados</h2>
           <div className="mt-0.5 text-[13px] text-faint">Atualizações do setor</div>
         </div>
-        <button onClick={() => setCurrentView('announcements')} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent-dark)] hover:underline">
+        <button onClick={() => setCurrentView('announcements')} className="-my-3 -mr-2 inline-flex items-center gap-1 py-3 pr-2 text-[13px] font-semibold text-[var(--accent-dark)] hover:underline">
           Ver todos <Icons.ArrowR />
         </button>
       </div>
@@ -757,14 +757,14 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
                     setCurrentView('announcements');
                   }
                 }}
-                className={`flex min-h-20 max-h-20 shrink-0 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${tag.border}`}
+                className={`flex min-h-20 shrink-0 sm:max-h-20 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${tag.border}`}
               >
                 <div className="flex flex-1 flex-col justify-center gap-1 min-w-0 px-3 py-2">
-                  <div className="flex items-center gap-1.5 overflow-hidden">
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 overflow-hidden sm:flex-nowrap">
                     <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider leading-relaxed ${tag.chip}`}>
                       {tagLabel(it.tipo)}
                     </span>
-                    <span className="truncate text-[13px] font-semibold text-foreground">{it.titulo}</span>
+                    <span className="basis-full truncate text-[13px] font-semibold text-foreground sm:basis-auto">{it.titulo}</span>
                   </div>
                   <div
                     className="text-xs text-faint"
@@ -773,11 +773,11 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
                     {preview}
                   </div>
                 </div>
-                <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[140px]">
+                <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[84px] sm:max-w-[140px]">
                   <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[11px] text-faint">
                     {relativeTimeShort(it.criado_em)}
                   </div>
-                  <div title={it.departamento_autor || ''} className="truncate max-w-[140px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
+                  <div title={it.departamento_autor || ''} className="truncate max-w-[84px] sm:max-w-[140px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
                 </div>
               </div>
             );
