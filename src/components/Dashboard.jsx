@@ -240,7 +240,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
       <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
-      <div className={LABEL_MONO}>Próximo Plantão</div>
+      <h2 className={LABEL_MONO}>Próximo Plantão</h2>
       {plantaoError ? (
         <div className="mt-3 flex flex-col gap-2">
           <p className="m-0 text-[13px] leading-relaxed text-faint">
@@ -292,7 +292,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
       <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div>
         <div className="flex items-start justify-between gap-2">
-          <div className={LABEL_MONO}>Chamados no meu nome</div>
+          <h2 className={LABEL_MONO}>Chamados no meu nome</h2>
           {!osLoading && !osError && (
             <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)] animate-pulse'}`}>
               {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
