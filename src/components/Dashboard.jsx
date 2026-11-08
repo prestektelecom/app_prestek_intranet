@@ -235,7 +235,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
     ? (proximoPlantao.horario_inicio && proximoPlantao.horario_fim
         ? `${String(proximoPlantao.horario_inicio).slice(0, 5)} – ${String(proximoPlantao.horario_fim).slice(0, 5)}`
         : 'Horário a confirmar')
-    : 'Sem cobertura ativa';
+    : 'Você não está na escala';
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
