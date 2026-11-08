@@ -294,7 +294,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         <div className="flex items-start justify-between gap-2">
           <div className={LABEL_MONO}>Chamados no meu nome</div>
           {!osLoading && !osError && (
-            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)]'}`}>
+            <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)]'}`}>
               {allGood ? <><Icons.Check /> Tudo em dia</> : <><Icons.Alert /> {osCount} pendente{osCount !== 1 ? 's' : ''}</>}
             </span>
           )}
