@@ -377,7 +377,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         )}
 
         {semDados && (
-          <p className="mt-3 text-[12.5px] text-faint leading-relaxed">
+          <p className="mt-3 text-[13px] text-faint leading-relaxed">
             Seu usuário ainda não está vinculado a um colaborador, então não há chamados para mostrar. Fale com a TI.
           </p>
         )}
