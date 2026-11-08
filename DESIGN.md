@@ -326,6 +326,10 @@ Um diálogo novo sempre ganha `role="dialog"` (ou `"alertdialog"` para confirma�
 ### Named Rules
 **The Action Label Rule.** Um controle que executa uma ação (não que exibe um estado) nomeia a AÇÃO que o clique vai disparar, nunca o estado atual do que ele afeta. Achado no pior antipadrão de integridade do programa (Fase 15): um botão de privilégio de admin mostrava "Admin"/"Usuário" — o estado atual — em vez de "Conceder"/"Revogar" — o que o clique realmente faz.
 
+### Carrossel (banner de comunicados)
+
+Padrão APG, sem controle dentro de controle. A seção é `<section aria-roledescription="carousel">`, nunca `role="button"`. O único controle de "abrir" é o título: um `<button class="banner-link">` dentro do `h2`, esticado sobre o card por `after:absolute after:inset-0`, com o anel de foco na seção (`has-[.banner-link:focus-visible]`) para o recorte arredondado não cortá-lo. Pausar e escolher o slide são irmãos do título, no topo, sobre `z-20`; a meta do slide (chip e horário) é `pointer-events-none` para o clique passar para o card. Alvos de 44px de altura (pausa 44×44, pontos 32×44). Rotação automática sempre tem o botão de pausa (WCAG 2.2.2), pausa também no hover e no foco, e começa parada com `prefers-reduced-motion`. A região viva (`aria-live`) fica num contêiner estável: `off` com a rotação ligada, `polite` quando parada.
+
 ### Combobox
 Um combobox com sugestões (ex.: `CidadeCombobox.jsx`) usa o padrão ARIA Authoring Practices de foco virtual, não uma lista de `<button>` focáveis um a um: input com `role="combobox"` `aria-autocomplete="list"` sempre focado, opções como `<li role="option">` não-focáveis endereçadas por `aria-activedescendant`, e `onKeyDown` no input tratando ArrowUp/ArrowDown (com wraparound), Enter (seleciona) e Escape (fecha sem perder o foco do input). Seleção por mouse usa `onMouseDown` com `preventDefault()`, nunca `onClick` — evita a corrida com o `blur` nativo do input. Uma versão "ARIA incompleta" (papel de combobox presente mas sem teclado de verdade) engana mais um leitor de tela do que nenhum papel — não declare `role="combobox"`/`"listbox"`/`"menu"` sem implementar o conjunto inteiro.
 
