@@ -16,6 +16,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Configuração `future.hoverOnlyWhenSupported` no `tailwind.config.js` para evitar estados de hover presos em telas de toque.
 
 ### Alterado
+- **Início** (`Dashboard.jsx`): a grade de widgets deixou de ser `react-grid-layout` (altura fixa por widget, breakpoint pela largura do contêiner) e passou a ser grade CSS de altura automática: 1 coluna no celular, 2 em `md` e 12 em `xl`. A fileira de KPIs não é mais espremida a ~150px por card em 1366px (o "+3%" saía cortado) e nenhum card corta conteúdo. Comunicados, Aniversariantes e Disponibilidade rolam dentro de um teto de altura. Atalhos Rápidos virou uma faixa de tiles na largura toda, no fim da tela. Removidos `react-grid-layout`, `react-resizable`, os dois CSS importados no `main.jsx` e o CSS do modo de edição já arquivado. Sem migration e sem variável nova no `.env`; precisa de `npm ci` e novo build.
 - `Header.jsx` e `Sidebar.jsx` refatorados para usar Tailwind com breakpoints responsivos.
 - `App.jsx` ajustado com padding inferior para `MobileBottomNav` e altura de viewport dinâmica (`h-dvh`).
 - Páginas adaptadas para mobile/tablet/desktop:
