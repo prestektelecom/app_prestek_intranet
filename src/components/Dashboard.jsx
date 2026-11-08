@@ -225,7 +225,10 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
 function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, setCurrentView }) {
   const isTouchOnly = useTouchOnly();
   const dateStr = plantaoLoading ? '...' : (proximoPlantao
-    ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+    // `data` é uma data de calendário que a API serializa à meia-noite UTC.
+    // Sem `timeZone: 'UTC'` o navegador em Brasília (UTC-3) mostra o dia
+    // anterior; o Schedule.jsx já formata do mesmo jeito.
+    ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
     : 'Nenhum agendado');
   // Sem fallback inventado: o backend agora envia horario_inicio/horario_fim
   // (TIME, chega como "HH:MM:SS"). Se vier nulo, dizemos que não sabemos em

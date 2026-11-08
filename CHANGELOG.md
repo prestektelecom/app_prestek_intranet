@@ -31,6 +31,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
   - `Configuracoes.jsx` — formulários empilhados em mobile e correção de padding inválido.
 
 ### Corrigido
+- **Próximo plantão no Início** (`GET /api/plantoes/meu-proximo`): a consulta comparava o id do funcionário por substring (`LIKE '%1%'`), então o funcionário 1 casava com 12, 21 etc. e podia ver o plantão de outra pessoa; agora compara o id inteiro de cada item da lista. Sem funcionário vinculado, devolve `proximo: null` em vez do plantão de qualquer um. No front, a data é formatada em UTC, como o `Schedule.jsx`, para não aparecer um dia antes quando a API envia meia-noite UTC. Sem migration e sem variável nova no `.env`; basta reiniciar o backend e refazer o build.
 - Áreas de toque de botões de ação em cards aumentadas para no mínimo 44×44px.
 - Carregamento da fonte Material Symbols com preload/fallback para evitar ícones como texto.
 
