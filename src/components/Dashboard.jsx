@@ -330,19 +330,19 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
             ícone e o texto, não a cor: antes eram emoji em 4 cores, e o laranja de
             "Assumidas" disputava com o botão primário do mesmo card. */}
         {!osLoading && !osError && !allGood && (
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-2 max-[359px]:grid-cols-1 sm:grid-cols-4">
             {[
               { rotulo: 'Assumidas', Icone: Icons.Lightning, valor: assumidas },
               { rotulo: 'Encaminhadas', Icone: Icons.ArrowR, valor: encaminhadas },
               { rotulo: 'Agendadas', Icone: Icons.Calendar, valor: agendadas },
               { rotulo: 'Abertas', Icone: Icons.Ticket, valor: abertas },
             ].map(({ rotulo, Icone, valor }) => (
-              <div key={rotulo} className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-                <span className="flex items-center gap-1 font-mono text-[11px] font-bold uppercase tracking-wider text-faint" title={rotulo}>
-                  <span aria-hidden="true" className="shrink-0 [&>svg]:h-3 [&>svg]:w-3"><Icone /></span>
+              <div key={rotulo} className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised max-[359px]:flex-row max-[359px]:items-center max-[359px]:justify-between">
+                <span className="flex items-center gap-1 font-mono text-[11px] font-bold uppercase tracking-normal text-faint" title={rotulo}>
+                  <span aria-hidden="true" className="shrink-0 min-[360px]:max-[389px]:hidden [&>svg]:h-3 [&>svg]:w-3"><Icone /></span>
                   <span className="truncate">{rotulo}</span>
                 </span>
-                <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
+                <span className="mt-1 text-base font-extrabold text-foreground tabular-nums max-[359px]:mt-0">
                   {valor}
                 </span>
               </div>
