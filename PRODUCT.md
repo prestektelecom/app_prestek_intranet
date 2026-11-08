@@ -34,7 +34,7 @@ Não é um produto voltado ao mercado externo — não há concorrentes para se 
 - **Somente PT-BR:** não há internacionalização planejada; toda a interface e conteúdo permanecem em português do Brasil.
 - **Multi-unidade / multi-cidade:** design e funcionalidades precisam funcionar em várias unidades/regiões da Prestek, sem assumir uma única localidade.
 - Visibilidade por papel: algumas telas (Painel Admin, TI) são exclusivas de admin/TI e precisam continuar restritas.
-- O dashboard usa `react-grid-layout` para posicionar os widgets, mas o layout é fixo (`isDraggable`/`isResizable` desligados) — os usuários não podem reorganizá-lo hoje. Um modo de edição chegou a ser construído e arquivado (`openspec/changes/archive/2026-05-25-dashboard-drag-and-drop`) e os endpoints de backend (`/api/user/dashboard-layout`) continuam de pé, mas uma reescrita posterior do Dashboard não manteve a UI de edição. Decisão de 2026-09-11 (Fase 3 do Impeccable): documentar como está, não reativar por ora.
+- O dashboard usa uma grade CSS de altura automática (o `react-grid-layout` foi removido em 2026-11-08) e o layout é fixo — os usuários não podem reorganizá-lo hoje. Um modo de edição chegou a ser construído e arquivado (`openspec/changes/archive/2026-05-25-dashboard-drag-and-drop`) e os endpoints de backend (`/api/user/dashboard-layout`) continuam de pé, mas uma reescrita posterior do Dashboard não manteve a UI de edição. Decisão de 2026-09-11 (Fase 3 do Impeccable): documentar como está, não reativar por ora.
 
 ## Brand Commitments
 

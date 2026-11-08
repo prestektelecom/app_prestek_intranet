@@ -39,7 +39,7 @@ Localizados em `src/components/responsive/`:
 
 ## Dashboard
 
-O `react-grid-layout` gerencia layouts por breakpoint (`lg`, `md`, `sm`, `xs`, `xxs`). Os layouts são salvos no backend no formato objeto; o formato legado (array único) ainda é suportado para compatibilidade.
+O Dashboard usa uma grade CSS de altura automática: 1 coluna no celular, 2 em `md` e 12 em `xl` (a barra lateral já ocupa 248px, então o breakpoint largo é `xl`, não `lg`). Widget novo entra como filho da grade com `col-span` por breakpoint, sem altura fixa. O `react-grid-layout` foi removido em 2026-11-08; os endpoints `/api/user/dashboard-layout` seguem no backend, sem uso na interface.
 
 ## Quando criar uma change de responsividade
 

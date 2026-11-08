@@ -15,8 +15,6 @@ import '@fontsource/manrope/400.css'
 import '@fontsource/manrope/500.css'
 import '@fontsource/manrope/700.css'
 import '@fontsource/manrope/800.css'
-import 'react-grid-layout/css/styles.css'
-import 'react-resizable/css/styles.css'
 import App from './App.jsx'
 import { ThemeProvider } from './contexts/ThemeContext'
 
