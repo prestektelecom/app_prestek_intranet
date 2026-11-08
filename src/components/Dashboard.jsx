@@ -338,7 +338,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
               { rotulo: 'Abertas', Icone: Icons.Ticket, valor: abertas },
             ].map(({ rotulo, Icone, valor }) => (
               <div key={rotulo} className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-                <span className="flex items-center gap-1 font-mono text-[9.5px] font-bold uppercase tracking-wider text-faint" title={rotulo}>
+                <span className="flex items-center gap-1 font-mono text-[11px] font-bold uppercase tracking-wider text-faint" title={rotulo}>
                   <span aria-hidden="true" className="shrink-0 [&>svg]:h-3 [&>svg]:w-3"><Icone /></span>
                   <span className="truncate">{rotulo}</span>
                 </span>
