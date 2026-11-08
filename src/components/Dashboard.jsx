@@ -191,6 +191,7 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
 
   return (
     <div className="grid h-full grid-cols-1 gap-3.5 sm:grid-cols-3">
+      <h2 className="sr-only">Indicadores do setor</h2>
       <KpiCard
         label="Eficiência"
         value={efVal}
