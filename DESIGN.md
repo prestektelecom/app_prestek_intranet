@@ -60,6 +60,11 @@ typography:
     fontSize: "0.8125rem"
     fontWeight: 600
     lineHeight: 1.2
+  caption:
+    fontFamily: "Plus Jakarta Sans, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 500
+    lineHeight: 1.4
   overline:
     fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "0.6875rem"
@@ -212,6 +217,8 @@ Nos temas escuros o `accentDark` (#FDBA74) fica mais claro que o `accent`, o inv
 
 **The Muted Is Never Text Rule.** `C.muted`/`text-muted` (Azul Neblina, #8896A8) é SOMENTE para ícone inativo e placeholder — nunca para texto real abaixo de 14px. Reprova 4,5:1 em pelo menos um dos cinco temas sempre que usado como corpo de texto, label ou legenda; foi o achado mais repetido do programa inteiro (9+ das 15 fases de superfície encontraram e corrigiram essa mesma instância, sempre trocando por `C.ink2`/`text-faint`). Ao escrever um componente novo, texto secundário real usa `C.ink2` (JS) ou `text-faint` (CSS) desde o início.
 
+**The Strong Is Text Rule.** Os tokens `-bento` (`success`, `warning`, `danger`) são preenchimento e ícone (piso de 3:1). Texto sobre um fundo `-soft` ou sobre a superfície usa `-strong` (`text-[var(--danger-strong)]`), e o azul informativo em texto é `--info-strong` (#2563EB no claro, #60A5FA nos escuros). `--success-strong` do Default Dark é #33BC88, não o `-bento`, porque o `-bento` dava 4,49:1 sobre o fundo do pill "Hoje". Chip sobre imagem ou gradiente (banner de comunicados) não herda token de tema: usa fundo sólido fixo com par de 4,5:1 ou mais, sem alfa, porque o alfa depende do que está por baixo. Medido em 2026-11-08: 122 textos do Início, 0 abaixo do mínimo nos cinco temas.
+
 ## Typography
 
 **Display Font:** Manrope (com sans-serif do sistema)
@@ -226,6 +233,7 @@ Nos temas escuros o `accentDark` (#FDBA74) fica mais claro que o `accent`, o inv
 - **Title** (700, 18px / text-lg, 1.3): título de card e de modal. Plus Jakarta Sans.
 - **Body** (400, 14px / text-sm, 1.5): texto corrido, resumos, descrições. Medida confortável até 70ch.
 - **Label** (600, 13px, 1.2): botões, chips, itens de navegação, rótulos de formulário. Passa a 700 quando ativo.
+- **Caption** (500, 12px / text-xs, 1.4): metadados e texto de apoio (data, setor, dica, descrição de uma linha). Entre o corpo (14px) e o overline (11px); existe porque 11,5 / 12 / 12,5px apareciam espalhados pela tela sem papel.
 - **Overline** (700, 11px, 0.08em, caixa alta): eyebrows de seção, badges, "MENU" e "SISTEMA" na sidebar. Use com moderação; três por tela já é muito.
 - **Mono** (600, 13px): contadores, KPIs, protocolos e qualquer número que o olho compara com o vizinho.
 
@@ -238,7 +246,7 @@ Nos temas escuros o `accentDark` (#FDBA74) fica mais claro que o `accent`, o inv
 
 Shell fixo: header de 64px no topo e, abaixo, sidebar à esquerda com conteúdo rolável à direita. A sidebar tem dois estados, expandida (248px) e recolhida (72px), e some abaixo de `lg` (1024px), quando a navegação passa para a `MobileBottomNav` com cinco itens por frequência de uso (Início, Plantão, Comunicados, Chamados, Mais) e o sheet "Mais" com o restante. Os itens, rótulos e a restrição de admin vivem em um só lugar, `src/navigation.js`; o header mostra o título da view atual e, no celular, o avatar abre o sheet de perfil (tema e sair). Breakpoints são os do Tailwind (640, 768, 1024, 1280).
 
-Cada página monta o mesmo esqueleto (não há componente compartilhado para isso; o `PageShell` de `responsive/` nunca foi usado e foi removido): hero em gradiente laranja (título display em branco, subtítulo, busca ou KPIs), uma barra de filtros em chips com scroll horizontal no celular, e o conteúdo em grid de cards bento. O grid vai de 1 coluna no celular a 3 ou 4 em `lg`, com gap de 16 a 24px. O Dashboard usa `react-grid-layout` com widgets de altura fixa por linha.
+Cada página monta o mesmo esqueleto (não há componente compartilhado para isso; o `PageShell` de `responsive/` nunca foi usado e foi removido): hero em gradiente laranja (título display em branco, subtítulo, busca ou KPIs), uma barra de filtros em chips com scroll horizontal no celular, e o conteúdo em grid de cards bento. O grid vai de 1 coluna no celular a 3 ou 4 em `lg`, com gap de 16 a 24px. O Dashboard usa uma grade CSS de altura automática (1 coluna no celular, 2 em `md`, 12 em `xl`), em que cada linha tem a altura do maior card e nenhum widget tem altura fixa; listas longas (Comunicados, Aniversariantes, Disponibilidade) rolam dentro de um teto, sem esticar a linha.
 
 Ritmo de espaçamento em múltiplos de 4: 4, 8, 12, 16, 24, 32. Padding interno de card é 24px, gap entre elementos de um card é 14px, gap entre cards é 16 ou 24px. Chips têm 8px vertical e 14px horizontal; botões, 10px vertical e 20px horizontal.
 
@@ -324,6 +332,10 @@ Um diálogo novo sempre ganha `role="dialog"` (ou `"alertdialog"` para confirma�
 ### Named Rules
 **The Action Label Rule.** Um controle que executa uma ação (não que exibe um estado) nomeia a AÇÃO que o clique vai disparar, nunca o estado atual do que ele afeta. Achado no pior antipadrão de integridade do programa (Fase 15): um botão de privilégio de admin mostrava "Admin"/"Usuário" — o estado atual — em vez de "Conceder"/"Revogar" — o que o clique realmente faz.
 
+### Carrossel (banner de comunicados)
+
+Padrão APG, sem controle dentro de controle. A seção é `<section aria-roledescription="carousel">`, nunca `role="button"`. O único controle de "abrir" é o título: um `<button class="banner-link">` dentro do `h2`, esticado sobre o card por `after:absolute after:inset-0`, com o anel de foco na seção (`has-[.banner-link:focus-visible]`) para o recorte arredondado não cortá-lo. Pausar e escolher o slide são irmãos do título, no topo, sobre `z-20`; a meta do slide (chip e horário) é `pointer-events-none` para o clique passar para o card. Alvos de 44px de altura (pausa 44×44, pontos 32×44). Rotação automática sempre tem o botão de pausa (WCAG 2.2.2), pausa também no hover e no foco, e começa parada com `prefers-reduced-motion`. A região viva (`aria-live`) fica num contêiner estável: `off` com a rotação ligada, `polite` quando parada.
+
 ### Combobox
 Um combobox com sugestões (ex.: `CidadeCombobox.jsx`) usa o padrão ARIA Authoring Practices de foco virtual, não uma lista de `<button>` focáveis um a um: input com `role="combobox"` `aria-autocomplete="list"` sempre focado, opções como `<li role="option">` não-focáveis endereçadas por `aria-activedescendant`, e `onKeyDown` no input tratando ArrowUp/ArrowDown (com wraparound), Enter (seleciona) e Escape (fecha sem perder o foco do input). Seleção por mouse usa `onMouseDown` com `preventDefault()`, nunca `onClick` — evita a corrida com o `blur` nativo do input. Uma versão "ARIA incompleta" (papel de combobox presente mas sem teclado de verdade) engana mais um leitor de tela do que nenhum papel — não declare `role="combobox"`/`"listbox"`/`"menu"` sem implementar o conjunto inteiro.
 
@@ -353,4 +365,6 @@ Moldura extraída como `ui/HeroShell.jsx` na Fase 16 (`HeroShell` + `HERO_LABEL_
 - **Don't** hardcode `#9A3412` ou qualquer valor de um tema específico em código que roda nos cinco temas.
 - **Don't** use `C.muted`/`text-muted` para texto real (The Muted Is Never Text Rule) — só ícone inativo e placeholder.
 - **Don't** implemente Escape/foco/trap de Tab à mão num diálogo novo; use `useDismissable` + `makeTrapTab` (`hooks/useDismissable.js`).
+- **Don't** use emoji como ícone (⚠️ ⚡ 📅 🎂): não seguem o tema, o leitor de tela os lê pelo nome e saem do traço do conjunto. Ícone vem de `common/Icons.jsx` (traço de 1,7, `currentColor`); falta um? Adicione lá.
+- **Don't** escreva texto abaixo de 11px (o piso é o overline) nem tamanhos entre os degraus (11,5, 12,5, 13,5, 17px). Os degraus são 11, 12, 13, 14, 18, 20 e 30.
 - **Don't** use `window.confirm()`/`alert()` nativos para confirmar ou anunciar erro de uma ação — nem mesmo em ações reversíveis; um diálogo/toast do próprio sistema sempre existe para isso.

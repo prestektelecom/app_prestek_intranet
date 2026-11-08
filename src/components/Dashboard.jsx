@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
 import { resolveNomeSetor } from '../utils/resolveSetor'
 import { useComunicados } from '../hooks/useComunicados'
 import { relativeTimeShort } from '../utils/relativeTime'
@@ -12,15 +11,13 @@ import { GlowingEffect } from './ui/glowing-effect'
 import { useTouchOnly } from '../hooks/useTouchOnly'
 import { listarCargos, listarDepartamentosEmpresa } from '../utils/referenciaSetores'
 
-const ResponsiveReactGridLayout = WidthProvider(Responsive);
-
 /* ── Tokens utilitários do design system semântico (vars em index.css) ── */
-const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-faint'
+const LABEL_MONO = 'font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-faint'
 const CARD_TITLE = 'font-display text-xl font-bold tracking-tight text-foreground'
 const CARD = 'bento-hover-border flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm'
 // `min-h-[44px]`: sem isso os dois botões mediam ~35px, abaixo do piso de
 // toque (AGENTS.md, regra 5).
-const ACTION_BTN = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
+const ACTION_BTN = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[13px] font-semibold transition'
 // Ação primária de um card (fundo sólido no accent): NÃO herda `bg-surface`/
 // `border-border` de ACTION_BTN. As duas classes de fundo tinham a mesma
 // especificidade CSS e `bg-surface` sempre vencia na folha gerada — o botão
@@ -33,7 +30,7 @@ const ACTION_BTN = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start 
 // `hover:bg-primary-hover`: no claro, navy sobre `--primary-hover` cai para
 // 3,35:1 — o hover eleva com sombra (na chamada do componente), não escurece
 // o fundo, mesmo padrão do botão do NotFound.
-const ACTION_BTN_PRIMARY = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[12.5px] font-semibold text-[var(--on-accent)] shadow-md transition'
+const ACTION_BTN_PRIMARY = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[13px] font-semibold text-[var(--on-accent)] transition'
 
 function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
   const isTouchOnly = useTouchOnly();
@@ -60,7 +57,7 @@ function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor
         borderWidth={3}
       />
       <div className="relative z-10 flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-border bg-background p-4 shadow-sm">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1.5">
           <div className={LABEL_MONO}>{label}</div>
           {sub && (
             <div title={subTooltip} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${subClass} ${subTooltip ? 'cursor-help' : ''}`}>
@@ -118,7 +115,7 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">
-          Olá, {firstName} 👋
+          Olá, {firstName}
         </h1>
         <p className="mt-1 text-sm text-faint">
           {cargoName
@@ -137,7 +134,7 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
               const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
               el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
             }}
-            className="mt-2.5 inline-flex max-w-full items-center gap-2 rounded-full bg-[var(--success-soft)] px-3 py-1.5 text-[13px] text-foreground transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            className="relative mt-2.5 inline-flex max-w-full items-center gap-2 rounded-full before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']  bg-[var(--success-soft)] px-3 py-1.5 text-[13px] text-foreground transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
           >
             <span className="shrink-0 text-[var(--success-bento)]" aria-hidden="true"><Icons.Cake /></span>
             <span className="truncate">{fraseAniversariantes(aniversariantesHoje)}</span>
@@ -146,7 +143,7 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
         )}
       </div>
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-dark)]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-raised text-faint">
           <Icons.Clock />
         </div>
         <div className="leading-tight">
@@ -159,7 +156,8 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
 }
 
 function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry }) {
-  const efVal = eficienciaLoading ? '...' : eficiencia?.sem_dados ? 'N/A' : `${eficiencia?.eficiencia_atual ?? '–'}%`;
+  const temDados = Boolean(eficiencia) && !eficiencia.sem_dados;
+  const efVal = eficienciaLoading ? '...' : !eficiencia ? '–' : eficiencia.sem_dados ? 'N/A' : `${eficiencia.eficiencia_atual ?? '–'}%`;
   const efSub = !eficienciaLoading && eficiencia && !eficiencia.sem_dados && eficiencia.variacao !== null
     ? { text: `${eficiencia.variacao >= 0 ? '+' : ''}${eficiencia.variacao}%`, tone: eficiencia.variacao >= 0 ? 'success' : 'danger' }
     : null;
@@ -184,7 +182,7 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
         >
           <Icons.Refresh />
           Tentar novamente
@@ -194,7 +192,8 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
   }
 
   return (
-    <div className="grid h-full grid-cols-1 gap-3.5 md:grid-cols-3">
+    <div className="grid h-full grid-cols-1 gap-3.5 sm:grid-cols-3">
+      <h2 className="sr-only">Indicadores do setor</h2>
       <KpiCard
         label="Eficiência"
         value={efVal}
@@ -210,12 +209,12 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
         sub={eficiencia?.no_prazo_mes != null ? `${eficiencia.no_prazo_mes} no prazo` : null}
         subTone="success"
         sparkData={osFechadasSparkData}
-        sparkColor="var(--accent)"
+        sparkColor="var(--ink2)"
       />
       <KpiCard
         label="Sem SLA"
-        value={eficienciaLoading ? '...' : (eficiencia?.os_sem_prazo ?? 0)}
-        sub={eficiencia?.os_sem_prazo > 0 ? 'Atenção' : 'Ok'}
+        value={eficienciaLoading ? '...' : (temDados ? (eficiencia.os_sem_prazo ?? 0) : '–')}
+        sub={temDados ? (eficiencia.os_sem_prazo > 0 ? 'Atenção' : 'Ok') : null}
         subTone={eficiencia?.os_sem_prazo > 0 ? 'warning' : 'success'}
         sparkData={null}
       />
@@ -226,7 +225,10 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
 function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, setCurrentView }) {
   const isTouchOnly = useTouchOnly();
   const dateStr = plantaoLoading ? '...' : (proximoPlantao
-    ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+    // `data` é uma data de calendário que a API serializa à meia-noite UTC.
+    // Sem `timeZone: 'UTC'` o navegador em Brasília (UTC-3) mostra o dia
+    // anterior; o Schedule.jsx já formata do mesmo jeito.
+    ? new Date(proximoPlantao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
     : 'Nenhum agendado');
   // Sem fallback inventado: o backend agora envia horario_inicio/horario_fim
   // (TIME, chega como "HH:MM:SS"). Se vier nulo, dizemos que não sabemos em
@@ -235,41 +237,43 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
     ? (proximoPlantao.horario_inicio && proximoPlantao.horario_fim
         ? `${String(proximoPlantao.horario_inicio).slice(0, 5)} – ${String(proximoPlantao.horario_fim).slice(0, 5)}`
         : 'Horário a confirmar')
-    : 'Sem cobertura ativa';
+    : 'Você não está na escala';
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
       <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
-      <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
-      <div className={LABEL_MONO}>Próximo Plantão</div>
+      {/* md a xl o card ocupa a largura toda: vira uma faixa em linha. A partir de xl
+          (4 de 12 colunas) volta a ser coluna. */}
+      <div className="relative z-10 flex h-full flex-col justify-between gap-4 overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm md:flex-row md:items-center xl:flex-col xl:items-stretch">
+      <h2 className={LABEL_MONO}>Próximo Plantão</h2>
       {plantaoError ? (
-        <div className="mt-3 flex flex-col gap-2">
+        <div className="mt-3 flex flex-col gap-2 md:mt-0 xl:mt-3">
           <p className="m-0 text-[13px] leading-relaxed text-faint">
             Não foi possível carregar seu plantão.
           </p>
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+            className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
           >
             <Icons.Refresh />
             Tentar novamente
           </button>
         </div>
       ) : (
-        <div className="mt-3 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent-dark)]">
+        <div className="mt-3 flex items-center gap-3 md:mt-0 xl:mt-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-raised text-faint">
             <Icons.Clock />
           </div>
           <div>
-            <div className="text-[17px] font-bold tracking-tight text-foreground">{dateStr}</div>
-            <div className="mt-0.5 text-[12.5px] text-faint">{timeStr}</div>
+            <div className="text-lg font-bold tracking-tight text-foreground">{dateStr}</div>
+            <div className="mt-0.5 text-[13px] text-faint">{timeStr}</div>
           </div>
         </div>
       )}
       <button
         onClick={() => setCurrentView('schedule')}
-        className={`${ACTION_BTN} text-[var(--accent-dark)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]`}
+        className={`${ACTION_BTN} md:mt-0 md:self-center xl:mt-5 xl:self-start text-foreground hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)]`}
       >
         Ver plantões <Icons.ArrowR />
       </button>
@@ -281,6 +285,8 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
 function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurrentView }) {
   const isTouchOnly = useTouchOnly();
   const allGood = !osLoading && !osError && osCount === 0;
+  // Sem colaborador vinculado o fetch nem roda e osCount fica null: não é "0 pendentes".
+  const semDados = !osLoading && !osError && osCount == null;
 
   const assumidas = osStatusCount ? (osStatusCount.AS || 0) : 0;
   const encaminhadas = osStatusCount ? ((osStatusCount.EN || 0) + (osStatusCount.EX || 0)) : 0;
@@ -293,10 +299,10 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
       <div className="relative z-10 flex h-full flex-col justify-between overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <div>
         <div className="flex items-start justify-between gap-2">
-          <div className={LABEL_MONO}>Chamados no meu nome</div>
-          {!osLoading && !osError && (
-            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)] animate-pulse'}`}>
-              {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
+          <h2 className={LABEL_MONO}>Chamados no meu nome</h2>
+          {!osLoading && !osError && !semDados && (
+            <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)]'}`}>
+              {allGood ? <><Icons.Check /> Tudo em dia</> : <><Icons.Alert /> {osCount} pendente{osCount !== 1 ? 's' : ''}</>}
             </span>
           )}
         </div>
@@ -309,7 +315,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+              className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
               <Icons.Refresh />
               Tentar novamente
@@ -318,59 +324,48 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         ) : (
         <div className="mt-3 flex items-baseline gap-3">
           <div className="text-5xl font-extrabold leading-none tracking-tight text-foreground tabular-nums">
-            {osLoading ? '...' : osCount}
+            {osLoading ? '...' : (osCount ?? '–')}
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-bold text-foreground">Chamados</span>
-            <span className="text-[11.5px] text-faint">sob sua responsabilidade direta</span>
+            <span className="text-xs text-faint">sob sua responsabilidade direta</span>
           </div>
         </div>
         )}
 
-        {/* Detalhamento por Status (4 Mini KPIs) */}
-        {!osLoading && !osError && !allGood && (
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-dark)] truncate" title="Assumidas">
-                ⚡ Assumidas
-              </span>
-              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
-                {assumidas}
-              </span>
-            </div>
-
-            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-blue-500 dark:text-blue-400 truncate" title="Encaminhadas">
-                ➡️ Encaminhadas
-              </span>
-              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
-                {encaminhadas}
-              </span>
-            </div>
-
-            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--warning-bento)] truncate" title="Agendadas">
-                📅 Agendadas
-              </span>
-              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
-                {agendadas}
-              </span>
-            </div>
-
-            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-faint truncate" title="Abertas">
-                📋 Abertas
-              </span>
-              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
-                {abertas}
-              </span>
-            </div>
+        {/* Detalhamento por Status (4 Mini KPIs). O que diferencia cada um é o
+            ícone e o texto, não a cor: antes eram emoji em 4 cores, e o laranja de
+            "Assumidas" disputava com o botão primário do mesmo card. */}
+        {!osLoading && !osError && !semDados && !allGood && (
+          <div className="mt-4 grid grid-cols-2 gap-2 max-[359px]:grid-cols-1">
+            {[
+              { rotulo: 'Assumidas', Icone: Icons.Lightning, valor: assumidas },
+              { rotulo: 'Encaminhadas', Icone: Icons.ArrowR, valor: encaminhadas },
+              { rotulo: 'Agendadas', Icone: Icons.Calendar, valor: agendadas },
+              { rotulo: 'Abertas', Icone: Icons.Ticket, valor: abertas },
+            ].map(({ rotulo, Icone, valor }) => (
+              <div key={rotulo} className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised max-[359px]:flex-row max-[359px]:items-center max-[359px]:justify-between">
+                <span className="flex items-center gap-1 font-mono text-[11px] font-bold uppercase tracking-normal text-faint" title={rotulo}>
+                  <span aria-hidden="true" className="shrink-0 min-[360px]:max-[389px]:hidden [&>svg]:h-3 [&>svg]:w-3"><Icone /></span>
+                  <span className="truncate">{rotulo}</span>
+                </span>
+                <span className="mt-1 text-base font-extrabold text-foreground tabular-nums max-[359px]:mt-0">
+                  {valor}
+                </span>
+              </div>
+            ))}
           </div>
         )}
 
         {allGood && (
-          <p className="mt-3 text-[12.5px] text-faint leading-relaxed">
+          <p className="mt-3 text-[13px] text-faint leading-relaxed">
             Nenhum chamado pendente atribuído a você no momento.
+          </p>
+        )}
+
+        {semDados && (
+          <p className="mt-3 text-[13px] text-faint leading-relaxed">
+            Seu usuário ainda não está vinculado a um colaborador, então não há chamados para mostrar. Fale com a TI.
           </p>
         )}
       </div>
@@ -379,7 +374,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         onClick={() => setCurrentView('tickets')}
         className={`${ACTION_BTN_PRIMARY} hover:shadow-lg transition-transform active:scale-[0.98] mt-4`}
       >
-        Gerenciar Meus Chamados <Icons.ArrowR />
+        Ver meus chamados <Icons.ArrowR />
       </button>
       </div>
     </div>
@@ -400,6 +395,11 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  // Pausa pedida pelo usuário (botão do carrossel, WCAG 2.2.2). Quem pede
+  // movimento reduzido já começa com a rotação parada e pode ligá-la.
+  const [pausadoUsuario, setPausadoUsuario] = useState(
+    () => typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)
+  );
   const reduceMotion = useReducedMotion();
   const pausado = isHovered || isFocused;
   // Cronômetro com "tempo restante": pausar no hover/foco congela o relógio em
@@ -444,7 +444,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
   // tela (WCAG 2.2.2). Antes era setInterval fixo: clicar num dot não
   // reiniciava a contagem e o próximo avanço podia vir 1s depois.
   useEffect(() => {
-    if (slides.length <= 1 || pausado) return;
+    if (slides.length <= 1 || pausado || pausadoUsuario) return;
     inicioRef.current = Date.now();
     const t = setTimeout(() => {
       setCurrentIndex(prev => (prev + 1) % slides.length);
@@ -453,17 +453,21 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
       clearTimeout(t);
       restanteRef.current = Math.max(0, restanteRef.current - (Date.now() - inicioRef.current));
     };
-  }, [slides.length, pausado, currentIndex]);
+  }, [slides.length, pausado, pausadoUsuario, currentIndex]);
 
+  // O banner é sempre uma superfície escura (imagem ou gradiente + véu preto),
+  // nos cinco temas, então os chips têm cor fixa de propósito: fundo sólido
+  // (sem alfa, que dependeria da imagem por baixo) e par com ≥ 4,5:1. Antes
+  // eram -500/90 com texto branco: 2,5:1 (verde), 2,8:1 (laranja), 3,7:1 (azul).
   const TAG_STYLES = {
-    Urgente:    { chip: 'bg-red-500/90 text-white', label: 'URGENTE', bgFallback: 'bg-gradient-to-r from-red-950 via-rose-900 to-stone-900' },
-    Importante: { chip: 'bg-amber-500/90 text-stone-950', label: 'IMPORTANTE', bgFallback: 'bg-gradient-to-r from-amber-950 via-amber-900 to-stone-900' },
-    Aviso:      { chip: 'bg-amber-500/90 text-stone-950', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-amber-950 via-slate-900 to-stone-900' },
-    Geral:      { chip: 'bg-emerald-500/90 text-white', label: 'GERAL', bgFallback: 'bg-gradient-to-r from-emerald-950 via-slate-900 to-stone-900' },
-    Info:       { chip: 'bg-blue-500/90 text-white', label: 'INFO', bgFallback: 'bg-gradient-to-r from-blue-950 via-slate-900 to-stone-900' },
+    Urgente:    { chip: 'bg-red-700 text-white', label: 'URGENTE', bgFallback: 'bg-gradient-to-r from-red-950 via-rose-900 to-stone-900' },
+    Importante: { chip: 'bg-amber-500 text-stone-950', label: 'IMPORTANTE', bgFallback: 'bg-gradient-to-r from-amber-950 via-amber-900 to-stone-900' },
+    Aviso:      { chip: 'bg-amber-500 text-stone-950', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-amber-950 via-slate-900 to-stone-900' },
+    Geral:      { chip: 'bg-emerald-700 text-white', label: 'GERAL', bgFallback: 'bg-gradient-to-r from-emerald-950 via-slate-900 to-stone-900' },
+    Info:       { chip: 'bg-blue-700 text-white', label: 'INFO', bgFallback: 'bg-gradient-to-r from-blue-950 via-slate-900 to-stone-900' },
   };
 
-  const TAG_DEFAULT = { chip: 'bg-primary text-white', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-slate-900 via-slate-800 to-stone-900' };
+  const TAG_DEFAULT = { chip: 'bg-primary text-[var(--on-accent)]', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-slate-900 via-slate-800 to-stone-900' };
 
   function stripMarkdown(text) {
     if (!text) return '';
@@ -490,7 +494,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
         <button
           type="button"
           onClick={recarregar}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-background"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-background"
         >
           <Icons.Refresh />
           Tentar novamente
@@ -512,54 +516,56 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
     : { duration: 0.42, ease: [0.16, 1, 0.3, 1] };
   const transicaoSaida = { duration: reduceMotion ? 0.12 : 0.16, ease: [0.4, 0, 1, 1] };
 
+  const total = slides.length;
+  const atual = currentIndex % total;
+  const rotacaoLigada = total > 1 && !pausadoUsuario;
+  const abrirComunicados = () => setCurrentView && setCurrentView('announcements');
+
+  // Estrutura (padrão APG de carrossel): a seção não é um botão. O título é
+  // o único controle de "abrir" (um <button> dentro do h2, esticado sobre o
+  // card por um ::after) e os controles do carrossel — pausar e escolher o
+  // slide — são irmãos dele, não filhos. Antes eram <button> dentro de um
+  // role="button" (controle aninhado, WCAG 4.1.2) e os pontos mediam 8px.
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={`Comunicado em destaque: ${activeSlide.titulo}. Abrir comunicados`}
+    <section
+      aria-roledescription="carousel"
+      aria-label="Comunicados em destaque"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
-      onClick={() => setCurrentView && setCurrentView('announcements')}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          setCurrentView && setCurrentView('announcements');
-        }
-      }}
-      className="group relative mb-6 h-48 md:h-56 lg:h-64 w-full cursor-pointer overflow-hidden rounded-2xl border border-border/40 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.002] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
+      className="group relative mb-6 h-48 w-full rounded-2xl shadow-sm transition-shadow duration-150 hover:shadow-md md:h-56 lg:h-64 has-[.banner-link:focus-visible]:ring-2 has-[.banner-link:focus-visible]:ring-[var(--accent)] has-[.banner-link:focus-visible]:ring-offset-2 has-[.banner-link:focus-visible]:ring-offset-[var(--background)]"
     >
-      {/* Background Image / Fallback Gradient com Fade suave */}
-      {slides.map((slide, idx) => {
-        const isCurrent = idx === (currentIndex % slides.length);
-        const sTag = TAG_STYLES[slide.tipo] || TAG_DEFAULT;
-        const sImg = slide.imagem_url || slide.imagem || slide.foto || slide.capa || null;
-        return (
-          <div
-            key={slide.id || idx}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${isCurrent ? 'opacity-100 z-0' : 'opacity-0 z-[-1]'}`}
-          >
-            {sImg ? (
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
-                style={{ backgroundImage: `url(${sImg})` }}
-              />
-            ) : (
-              <div className={`absolute inset-0 ${sTag.bgFallback}`} />
-            )}
-          </div>
-        );
-      })}
+      {/* Fundo (imagem ou gradiente) + véu: decorativo. O recorte arredondado
+          vive aqui para o anel de foco da seção não ser cortado. */}
+      <div aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-2xl border border-border/40">
+        {slides.map((slide, idx) => {
+          const isCurrent = idx === atual;
+          const sTag = TAG_STYLES[slide.tipo] || TAG_DEFAULT;
+          const sImg = slide.imagem_url || slide.imagem || slide.foto || slide.capa || null;
+          return (
+            <div
+              key={slide.id || idx}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${isCurrent ? 'opacity-100 z-0' : 'opacity-0 z-[-1]'}`}
+            >
+              {sImg ? (
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+                  style={{ backgroundImage: `url(${sImg})` }}
+                />
+              ) : (
+                <div className={`absolute inset-0 ${sTag.bgFallback}`} />
+              )}
+            </div>
+          );
+        })}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10 transition-opacity duration-300 group-hover:from-black/95 group-hover:via-black/50" />
+      </div>
 
-      {/* Dark Overlay para legibilidade */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10 transition-opacity duration-300 group-hover:from-black/95 group-hover:via-black/50" />
-
-      {/* Conteúdo do Slide Ativo. O que muda por slide (chip, hora, título,
-          texto) anima com continuidade; o que persiste (dots) fica parado. */}
       <div className="relative z-10 flex h-full flex-col justify-between p-6 text-white md:p-8">
-        {/* Top bar: meta do slide à esquerda, navegação à direita */}
-        <div className="flex items-center justify-between gap-3">
+        {/* Barra do topo: meta do slide à esquerda (não recebe clique, deixa
+            passar para o card), controles à direita (alvos de 44px). */}
+        <div className="pointer-events-none relative z-20 flex items-center justify-between gap-3">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={slideKey}
@@ -569,82 +575,99 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
               exit={{ opacity: 0, transition: transicaoSaida }}
               transition={{ duration: 0.24 }}
             >
-              <span className={`inline-flex items-center rounded-lg px-2.5 py-1 font-mono text-[10px] font-extrabold uppercase tracking-widest shadow-sm ${tagInfo.chip}`}>
+              <span className={`inline-flex items-center rounded-lg px-2.5 py-1 font-mono text-[11px] font-extrabold uppercase tracking-wider shadow-sm ${tagInfo.chip}`}>
                 {tagInfo.label}
               </span>
               {activeSlide.criado_em && (
-                <span className="font-mono text-[11px] font-semibold text-white/70 backdrop-blur-sm bg-black/30 px-2.5 py-1 rounded-full border border-white/10">
+                <span className="hidden rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] font-semibold text-white/90 backdrop-blur-sm sm:inline-flex">
                   {relativeTimeShort(activeSlide.criado_em)}
                 </span>
               )}
             </motion.div>
           </AnimatePresence>
-          
-          <div className="flex shrink-0 items-center gap-3">
-            
-            {/* Dots de Navegação */}
-            {slides.length > 1 && (
-              <div className="flex items-center gap-1.5 backdrop-blur-sm bg-black/40 px-2 py-1 rounded-full border border-white/10">
+
+          {total > 1 && (
+            <div className="pointer-events-auto flex shrink-0 items-center rounded-full border border-white/10 bg-black/60 backdrop-blur-sm">
+              <button
+                type="button"
+                onClick={() => setPausadoUsuario(p => !p)}
+                aria-label={pausadoUsuario ? 'Retomar a rotação automática dos comunicados' : 'Pausar a rotação automática dos comunicados'}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-white/90 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white"
+              >
+                {pausadoUsuario ? <Icons.Play /> : <Icons.Pause />}
+              </button>
+              <div role="group" aria-label="Escolher comunicado" className="flex items-center pr-1">
                 {slides.map((_, i) => (
                   <button
                     key={i}
                     type="button"
-                    aria-label={`Comunicado ${i + 1} de ${slides.length}`}
-                    aria-current={i === (currentIndex % slides.length) ? 'true' : undefined}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentIndex(i);
-                    }}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    className={`relative h-2 overflow-hidden rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
-                      i === (currentIndex % slides.length) ? 'w-5 bg-white/35' : 'w-2 bg-white/40 hover:bg-white/70'
-                    }`}
-                    title={`Comunicado ${i + 1}`}
+                    aria-label={`Comunicado ${i + 1} de ${total}`}
+                    aria-current={i === atual ? 'true' : undefined}
+                    onClick={() => setCurrentIndex(i)}
+                    className="group/dot flex h-11 w-8 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white"
                   >
-                    {/* Barra de progresso do autoplay: o dot ativo enche em 6s e
-                        congela junto com o relógio no hover/foco. Com movimento
-                        reduzido (regra global do index.css) nasce cheio = o dot
-                        branco sólido de antes. Remonta a cada troca de slide
-                        porque muda de botão. */}
-                    {i === (currentIndex % slides.length) && (
-                      <span
-                        aria-hidden="true"
-                        className="comunicado-progresso absolute inset-0 origin-left rounded-full bg-white"
-                        style={{ animationDuration: `${AUTOPLAY_MS}ms`, animationPlayState: pausado ? 'paused' : 'running' }}
-                      />
-                    )}
+                    <span className={`relative block h-2 overflow-hidden rounded-full transition-all duration-300 ${
+                      i === atual ? 'w-5 bg-white/35' : 'w-2 bg-white/60 group-hover/dot:bg-white'
+                    }`}>
+                      {/* Barra de progresso do autoplay: o ponto ativo enche em
+                          6s e congela junto com o relógio no hover/foco. Com a
+                          rotação parada (botão ou movimento reduzido) fica cheio. */}
+                      {i === atual && (
+                        <span
+                          aria-hidden="true"
+                          className={`absolute inset-0 origin-left rounded-full bg-white ${rotacaoLigada ? 'comunicado-progresso' : ''}`}
+                          style={rotacaoLigada ? { animationDuration: `${AUTOPLAY_MS}ms`, animationPlayState: pausado ? 'paused' : 'running' } : undefined}
+                        />
+                      )}
+                    </span>
                   </button>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Título e Subtítulo: o momento autoral da troca. Sobe 10px ao entrar
-            e sai por cima, mais rápido — a leitura acompanha o fundo, que já
-            faz crossfade de 700ms. mode="wait" segura a entrada até a saída
-            terminar, então cliques rápidos nos dots não empilham textos. */}
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={slideKey}
-            className="max-w-3xl"
-            initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: reduceMotion ? 0 : -6, transition: transicaoSaida }}
-            transition={transicaoTexto}
-          >
-            <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white line-clamp-2 drop-shadow-md group-hover:text-white/95">
-              {activeSlide.titulo}
-            </h2>
-            {description && (
-              <p className="mt-2 text-xs md:text-sm font-medium text-white/80 line-clamp-2 drop-shadow">
-                {description}
-              </p>
-            )}
-          </motion.div>
-        </AnimatePresence>
+        {/* Título e subtítulo: o momento autoral da troca. Sobe 10px ao entrar
+            e sai por cima, mais rápido; mode="wait" segura a entrada até a
+            saída terminar. O contêiner é estável e carrega a região viva: com
+            a rotação ligada ela fica muda (senão leria um slide a cada 6s);
+            parada, anuncia a troca feita pelos pontos. */}
+        <div
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${atual + 1} de ${total}`}
+          aria-live={rotacaoLigada ? 'off' : 'polite'}
+          aria-atomic="true"
+          className="max-w-3xl"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={slideKey}
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reduceMotion ? 0 : -6, transition: transicaoSaida }}
+              transition={transicaoTexto}
+            >
+              <h2 className="text-xl font-extrabold tracking-tight text-white drop-shadow-md md:text-2xl lg:text-3xl">
+                <button
+                  type="button"
+                  onClick={abrirComunicados}
+                  className="banner-link w-full cursor-pointer text-left line-clamp-2 focus:outline-none after:absolute after:inset-0 after:content-['']"
+                >
+                  {activeSlide.titulo}
+                  <span className="sr-only"> — abrir comunicados</span>
+                </button>
+              </h2>
+              {description && (
+                <p className="mt-2 line-clamp-2 text-xs font-medium text-white/80 drop-shadow md:text-sm">
+                  {description}
+                </p>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -658,10 +681,10 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
   );
 
   const TAG_STYLES = {
-    Urgente:    { chip: 'bg-[var(--danger-soft)] text-[var(--danger-bento)]',   border: 'border-l-[var(--danger-bento)]' },
-    Importante: { chip: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]', border: 'border-l-[var(--warning-bento)]' },
-    Aviso:      { chip: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]', border: 'border-l-[var(--warning-bento)]' },
-    Geral:      { chip: 'bg-[var(--success-soft)] text-[var(--success-bento)]', border: 'border-l-[var(--success-bento)]' },
+    Urgente:    { chip: 'bg-[var(--danger-soft)] text-[var(--danger-strong)]',   border: 'border-l-[var(--danger-bento)]' },
+    Importante: { chip: 'bg-[var(--warning-soft)] text-[var(--warning-strong)]', border: 'border-l-[var(--warning-bento)]' },
+    Aviso:      { chip: 'bg-[var(--warning-soft)] text-[var(--warning-strong)]', border: 'border-l-[var(--warning-bento)]' },
+    Geral:      { chip: 'bg-[var(--success-soft)] text-[var(--success-strong)]', border: 'border-l-[var(--success-bento)]' },
     Info:       { chip: 'bg-[var(--accent-soft)] text-[var(--accent-dark)]',     border: 'border-l-[var(--accent)]' },
   };
   const TAG_FALLBACK = { chip: 'bg-surface-raised text-faint', border: 'border-l-[var(--border)]' };
@@ -709,21 +732,24 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
       <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
-      <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+      <div className="relative z-10 flex h-full min-h-[22rem] flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
       {/* Header da lista */}
       <div className="flex items-center justify-between px-6 pt-5">
         <div>
           <h2 className={CARD_TITLE}>Comunicados</h2>
-          <div className="mt-0.5 text-[12.5px] text-faint">Atualizações do setor</div>
+          <div className="mt-0.5 text-[13px] text-faint">Atualizações do setor</div>
         </div>
-        <button onClick={() => setCurrentView('announcements')} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent-dark)] hover:underline">
+        <button onClick={() => setCurrentView('announcements')} className="-my-3 -mr-2 inline-flex shrink-0 items-center gap-1 whitespace-nowrap py-3 pr-2 text-[13px] font-semibold text-[var(--accent-dark)] hover:underline">
           Ver todos <Icons.ArrowR />
         </button>
       </div>
 
       {/* Lista */}
-      <div className="relative mt-3 min-h-0 flex-1 px-6 pb-5">
-        <div className="custom-scrollbar flex h-full flex-col gap-2 overflow-y-auto pr-0.5">
+      {/* A lista é absoluta: não conta na altura da linha do grid (senão 30
+          comunicados esticariam o card); ela rola dentro da altura que o
+          vizinho (Chamados) e o piso do card definem. */}
+      <div className="relative mt-3 min-h-[14rem] flex-1">
+        <div className="custom-scrollbar absolute inset-x-6 bottom-5 top-0 flex flex-col gap-2 overflow-y-auto pr-0.5">
           {loading ? [1, 2, 3].map(i => (
             <div key={i} className="h-16 shrink-0 animate-pulse rounded-xl bg-surface-raised" />
           )) : erro ? (
@@ -732,7 +758,7 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
               <button
                 type="button"
                 onClick={recarregar}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
               >
                 <Icons.Refresh />
                 Tentar novamente
@@ -758,34 +784,34 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
                     setCurrentView('announcements');
                   }
                 }}
-                className={`flex min-h-20 max-h-20 shrink-0 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${tag.border}`}
+                className={`flex min-h-20 shrink-0 sm:max-h-20 cursor-pointer items-stretch overflow-hidden rounded-xl border-l-[3px] transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${tag.border}`}
               >
                 <div className="flex flex-1 flex-col justify-center gap-1 min-w-0 px-3 py-2">
-                  <div className="flex items-center gap-1.5 overflow-hidden">
-                    <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest leading-relaxed ${tag.chip}`}>
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 overflow-hidden sm:flex-nowrap">
+                    <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider leading-relaxed ${tag.chip}`}>
                       {tagLabel(it.tipo)}
                     </span>
-                    <span className="truncate text-[13.5px] font-semibold text-foreground">{it.titulo}</span>
+                    <span className="basis-full truncate text-[13px] font-semibold text-foreground sm:basis-auto">{it.titulo}</span>
                   </div>
                   <div
-                    className="text-[12px] text-faint"
+                    className="text-xs text-faint"
                     style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
                   >
                     {preview}
                   </div>
                 </div>
-                <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[140px]">
-                  <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[10.5px] text-faint">
+                <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[84px] sm:max-w-[140px]">
+                  <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[11px] text-faint">
                     {relativeTimeShort(it.criado_em)}
                   </div>
-                  <div title={it.departamento_autor || ''} className="truncate max-w-[140px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
+                  <div title={it.departamento_autor || ''} className="truncate max-w-[84px] sm:max-w-[140px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
                 </div>
               </div>
             );
           })}
         </div>
         {rest.length > 3 && (
-          <div className="pointer-events-none absolute inset-x-6 bottom-5 h-10 bg-gradient-to-t from-[var(--surface)] to-transparent" />
+          <div className="pointer-events-none absolute inset-x-6 bottom-5 h-10 bg-gradient-to-t from-[var(--background)] to-transparent" />
         )}
       </div>
       </div>
@@ -813,7 +839,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
       <GlowingEffect variant="brand" spread={40} glow={true} disabled={isTouchOnly} proximity={64} inactiveZone={0.01} borderWidth={3} />
       <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-xl border border-border bg-background p-6 shadow-sm">
       <h2 className={`${CARD_TITLE} mb-3.5`}>Atalhos Rápidos</h2>
-      <div className="custom-scrollbar flex flex-col gap-2 overflow-y-auto pr-1.5 py-0.5">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {atalhos.map(a => {
           const IconC = Icons[a.icon];
           return (
@@ -828,13 +854,13 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
                 else if (a.id === 'tickets') onSuporteTIClick();
                 else setCurrentView(a.id);
               }}
-              className={`flex min-h-[48px] w-full shrink-0 items-center gap-3.5 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+              className={`flex min-h-[48px] w-full items-center gap-3.5 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                 a.emBreve
                   ? 'cursor-not-allowed opacity-60'
                   : 'hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md'
               }`}
             >
-              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.emBreve ? 'bg-surface-raised text-faint' : 'bg-[var(--accent-soft)] text-[var(--accent)]'}`}>
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.emBreve ? 'bg-surface-raised text-faint' : 'bg-surface-raised text-foreground'}`}>
                 {IconC && <IconC />}
               </div>
               <div className="min-w-0 flex-1 flex flex-col gap-0.5">
@@ -901,7 +927,7 @@ function AvatarAniversariante({ nome, foto }) {
   const [erro, setErro] = useState(false);
   const src = erro ? null : resolveAvatarUrl(foto);
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-soft)] text-[13px] font-bold text-[var(--accent-dark)]">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-raised text-[13px] font-bold text-faint">
       {src
         ? <img src={src} alt="" className="h-full w-full object-cover" onError={() => setErro(true)} />
         : iniciais(nome)}
@@ -989,11 +1015,11 @@ function AniversariantesCard({ onAniversariantesHoje }) {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className={CARD_TITLE}>Aniversariantes</h2>
-          <div className="mt-0.5 text-[12.5px] text-faint">Próximos 7 dias</div>
+          <div className="mt-0.5 text-[13px] text-faint">Próximos 7 dias</div>
         </div>
-        <span className="text-lg">🎂</span>
+        <span aria-hidden="true" className="text-faint"><Icons.Cake /></span>
       </div>
-      <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
+      <div className="custom-scrollbar flex max-h-[19rem] min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
         {loading ? [1, 2, 3].map(i => (
           <div key={i} className="flex animate-pulse items-center gap-3 border-l-2 border-l-transparent px-2 py-1.5">
             <div className="h-9 w-9 rounded-full bg-surface-raised" />
@@ -1009,7 +1035,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
             <button
               type="button"
               onClick={carregarAniversariantes}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
               <Icons.Refresh />
               Tentar novamente
@@ -1029,7 +1055,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
               <AvatarAniversariante nome={c.funcionario_nome} foto={c.foto_perfil} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-semibold text-foreground">{nomeCurto(c.funcionario_nome)}</div>
-                <div className="truncate text-[11.5px] text-faint">
+                <div className="truncate text-xs text-faint">
                   {dataAniversarioExtenso(c.proximo)}{depto ? ` · ${depto}` : ''}
                 </div>
               </div>
@@ -1097,12 +1123,12 @@ function TeamBento() {
           {!loading && !erro && (
             <div className="mt-1 flex items-center gap-1.5">
               <span className="inline-block h-2 w-2 rounded-full bg-[var(--success-bento)]" />
-              <span className="text-[12.5px] text-faint"><strong className="font-semibold text-foreground">{totalOnline}</strong> online agora</span>
+              <span className="text-[13px] text-faint"><strong className="font-semibold text-foreground">{totalOnline}</strong> online agora</span>
             </div>
           )}
         </div>
       </div>
-      <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
+      <div className="custom-scrollbar flex max-h-[19rem] min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
         {loading ? [1, 2, 3, 4].map(i => (
           <div key={i} className="h-11 animate-pulse rounded-lg bg-surface-raised" />
         )) : erro ? (
@@ -1111,7 +1137,7 @@ function TeamBento() {
             <button
               type="button"
               onClick={fetchOnline}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
               <Icons.Refresh />
               Tentar novamente
@@ -1127,9 +1153,9 @@ function TeamBento() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-[13px] font-semibold text-foreground">{m.name}</div>
-              <div className="text-[11.5px] text-faint">{m.role}</div>
+              <div className="text-xs text-faint">{m.role}</div>
             </div>
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--success-bento)]">Online</span>
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--success-strong)]">Online</span>
           </div>
         ))}
       </div>
@@ -1137,61 +1163,6 @@ function TeamBento() {
     </div>
   );
 }
-
-const DEFAULT_LAYOUT_LG = [
-  { i: 'os', x: 0, y: 0, w: 6, h: 3 },
-  { i: 'comunicados', x: 6, y: 0, w: 6, h: 3 },
-  { i: 'setor', x: 0, y: 3, w: 6, h: 2 },
-  { i: 'plantao', x: 6, y: 3, w: 3, h: 2 },
-  { i: 'atalhos', x: 9, y: 3, w: 3, h: 4 },
-  { i: 'aniversariantes', x: 0, y: 5, w: 5, h: 2 },
-  { i: 'team', x: 5, y: 5, w: 4, h: 2 }
-];
-
-const DEFAULT_LAYOUTS = {
-  lg: DEFAULT_LAYOUT_LG,
-  md: [
-    { i: 'os', x: 0, y: 0, w: 6, h: 3 },
-    { i: 'comunicados', x: 6, y: 0, w: 6, h: 3 },
-    { i: 'setor', x: 0, y: 3, w: 6, h: 2 },
-    { i: 'plantao', x: 6, y: 3, w: 3, h: 2 },
-    { i: 'atalhos', x: 9, y: 3, w: 3, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 5, w: 5, h: 2 },
-    { i: 'team', x: 5, y: 5, w: 4, h: 2 }
-  ],
-  // Abaixo de md (768px) o SetorBento empilha os 3 KpiCards em coluna
-  // (~172px cada + gaps ≈ 544px), e o grid tem altura fixa em pixels
-  // (rowHeight 100 + margin 18): h:2 = 218px não cabe e, sem overflow,
-  // os cards vazavam por cima do Plantão. h:5 = 572px. O OsBento em xs/xxs
-  // quebra os mini-KPIs em 2 linhas e passa dos 336px de h:3 — sobe pra h:4.
-  sm: [
-    { i: 'os', x: 0, y: 0, w: 6, h: 3 },
-    { i: 'comunicados', x: 0, y: 3, w: 6, h: 3 },
-    { i: 'setor', x: 0, y: 6, w: 6, h: 5 },
-    { i: 'plantao', x: 0, y: 11, w: 3, h: 2 },
-    { i: 'atalhos', x: 3, y: 11, w: 3, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 13, w: 3, h: 2 },
-    { i: 'team', x: 0, y: 15, w: 3, h: 2 }
-  ],
-  xs: [
-    { i: 'os', x: 0, y: 0, w: 4, h: 4 },
-    { i: 'comunicados', x: 0, y: 4, w: 4, h: 3 },
-    { i: 'setor', x: 0, y: 7, w: 4, h: 5 },
-    { i: 'plantao', x: 0, y: 12, w: 4, h: 2 },
-    { i: 'atalhos', x: 0, y: 14, w: 4, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 18, w: 4, h: 2 },
-    { i: 'team', x: 0, y: 20, w: 4, h: 2 }
-  ],
-  xxs: [
-    { i: 'os', x: 0, y: 0, w: 2, h: 4 },
-    { i: 'comunicados', x: 0, y: 4, w: 2, h: 3 },
-    { i: 'setor', x: 0, y: 7, w: 2, h: 5 },
-    { i: 'plantao', x: 0, y: 12, w: 2, h: 2 },
-    { i: 'atalhos', x: 0, y: 14, w: 2, h: 4 },
-    { i: 'aniversariantes', x: 0, y: 18, w: 2, h: 2 },
-    { i: 'team', x: 0, y: 20, w: 2, h: 2 }
-  ]
-};
 
 export default function Dashboard({ setCurrentView, user }) {
   const [cargoName, setCargoName] = useState('');
@@ -1270,7 +1241,8 @@ export default function Dashboard({ setCurrentView, user }) {
   useEffect(() => { carregarEficiencia(); }, [carregarEficiencia]);
 
   const safeName = func.funcionario || user?.nome || 'Usuário';
-  const firstName = safeName.split(' ')[0] || 'Usuário';
+  // Nomes chegam do IXC em CAIXA ALTA; o resto da tela já passa por capitalizar().
+  const firstName = capitalizar(palavrasNome(safeName)[0] || 'Usuário');
 
   // Fonte única do comunicado em destaque, reportada pelo banner e consumida
   // pela lista logo abaixo — ver comentário em ComunicadoBanner/ComunicadosCard.
@@ -1284,48 +1256,42 @@ export default function Dashboard({ setCurrentView, user }) {
 
         <ComunicadoBanner setCurrentView={setCurrentView} onActiveChange={setDestaqueAtivoId} />
 
-        <ResponsiveReactGridLayout
-          className="layout"
-          layouts={DEFAULT_LAYOUTS}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 12, md: 12, sm: 6, xs: 4, xxs: 2 }}
-          rowHeight={100}
-          containerPadding={[0, 0]}
-          margin={[18, 18]}
-          isDraggable={false}
-          isResizable={false}
-          useCSSTransforms={true}
-        >
-          <div key="os">
+        {/* Grade CSS de altura automática. Antes era react-grid-layout com
+            rowHeight 100 e altura fixa por widget: o breakpoint dele vinha da
+            largura do contêiner (não da tela), a fileira de KPIs ficava em
+            metade da largura (~150px por card em 1366px) e o conteúdo era
+            cortado. Aqui cada linha tem a altura do maior card.
+            md: 2 colunas; xl: 12 colunas (a barra lateral já ocupa 248px). */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6 xl:grid-cols-12 [&>*]:h-full [&>*]:min-w-0">
+          <div className="xl:col-span-6">
             <OsBento osCount={osCount} osStatusCount={osStatusCount} osLoading={osLoading} osError={osError} onRetry={carregarOs} setCurrentView={setCurrentView} />
           </div>
-          <div key="comunicados">
+          <div className="xl:col-span-6">
             <ComunicadosCard setCurrentView={setCurrentView} destaqueAtivoId={destaqueAtivoId} />
           </div>
-          <div key="setor">
+          <div className="md:col-span-2 xl:col-span-8">
             <SetorBento eficiencia={eficiencia} eficienciaLoading={eficienciaLoading} eficienciaError={eficienciaError} onRetry={carregarEficiencia} />
           </div>
-          <div key="plantao">
+          <div className="md:col-span-2 xl:col-span-4">
             <PlantaoBento proximoPlantao={proximoPlantao} plantaoLoading={plantaoLoading} plantaoError={plantaoError} onRetry={carregarPlantao} setCurrentView={setCurrentView} />
           </div>
-          <div key="atalhos">
-            <AtalhosCard setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
-          </div>
-          <div key="aniversariantes" id="widget-aniversariantes">
+          <div id="widget-aniversariantes" className="xl:col-span-6">
             <AniversariantesCard onAniversariantesHoje={setAniversariantesHoje} />
           </div>
-          <div key="team">
+          <div className="xl:col-span-6">
             <TeamBento />
           </div>
-        </ResponsiveReactGridLayout>
-
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-[11.5px] tracking-wide text-faint">
-          <span>© 2026 Prestek Telecom · Portal Interno · Confidencial.</span>
-          <div className="flex gap-5">
-            <a href="#" className="text-inherit no-underline hover:text-foreground">Política de Privacidade</a>
-            <a href="#" className="text-inherit no-underline hover:text-foreground">Diretrizes Internas</a>
-            <span className="text-[var(--success-bento)]">● v1.0.0</span>
+          <div className="md:col-span-2 xl:col-span-12">
+            <AtalhosCard setCurrentView={setCurrentView} onSuporteTIClick={() => setIsTiModalOpen(true)} />
           </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-xs tracking-wide text-faint">
+          {/* Sem links "Política de Privacidade" / "Diretrizes Internas" nem selo de
+              versão: os links eram href="#" (rolavam ao topo e sujavam a URL, contra a
+              decisão de 2026-09-10 de não ter link sem destino) e o "v1.0.0" não batia
+              com o package.json. Volta quando houver página e fonte real da versão. */}
+          <span>© {new Date().getFullYear()} Prestek Telecom · Portal Interno · Confidencial.</span>
         </div>
       </div>
 
