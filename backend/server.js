@@ -1834,13 +1834,24 @@ app.get('/api/plantoes/meu-proximo/:usuarioId', async (req, res) => {
         const userRes = await pool.query('SELECT funcionario_id FROM usuarios_perfil WHERE usuario_id = $1', [usuarioId]);
         const funcionarioId = userRes.rows[0]?.funcionario_id;
 
+        // Sem vínculo com um funcionário não há plantão a mostrar. Antes o
+        // id vazio virava `LIKE '%%'` e devolvia o plantão de qualquer pessoa.
+        if (funcionarioId === null || funcionarioId === undefined || funcionarioId === '') {
+            return res.json({ sucesso: true, proximo: null });
+        }
+
+        // n1_id, n2_id e gerente_id guardam uma lista separada por vírgula
+        // ("12,15"). Compara o id inteiro de cada item: o `LIKE '%1%'` antigo
+        // fazia o funcionário 1 casar com 12, 21, 15,16 etc.
         const result = await pool.query(`
             SELECT data, horario_inicio, horario_fim, n1_id, n2_id, gerente_id FROM plantoes
-            WHERE (n1_id::text LIKE '%' || $1 || '%' OR n2_id::text LIKE '%' || $1 || '%' OR gerente_id::text LIKE '%' || $1 || '%')
+            WHERE ($1::text = ANY(string_to_array(replace(COALESCE(n1_id::text, ''), ' ', ''), ','))
+                OR $1::text = ANY(string_to_array(replace(COALESCE(n2_id::text, ''), ' ', ''), ','))
+                OR $1::text = ANY(string_to_array(replace(COALESCE(gerente_id::text, ''), ' ', ''), ',')))
               AND data >= CURRENT_DATE
             ORDER BY data ASC
             LIMIT 1;
-        `, [funcionarioId || '']);
+        `, [String(funcionarioId)]);
         
         if (result.rows.length === 0) {
             return res.json({ sucesso: true, proximo: null });
