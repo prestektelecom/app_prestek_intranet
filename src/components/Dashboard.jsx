@@ -339,7 +339,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
             </div>
 
             <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-blue-500 dark:text-blue-400 truncate" title="Encaminhadas">
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--info-strong)] truncate" title="Encaminhadas">
                 ➡️ Encaminhadas
               </span>
               <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
@@ -348,7 +348,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
             </div>
 
             <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--warning-bento)] truncate" title="Agendadas">
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--warning-strong)] truncate" title="Agendadas">
                 📅 Agendadas
               </span>
               <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
@@ -454,15 +454,19 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
     };
   }, [slides.length, pausado, currentIndex]);
 
+  // O banner é sempre uma superfície escura (imagem ou gradiente + véu preto),
+  // nos cinco temas, então os chips têm cor fixa de propósito: fundo sólido
+  // (sem alfa, que dependeria da imagem por baixo) e par com ≥ 4,5:1. Antes
+  // eram -500/90 com texto branco: 2,5:1 (verde), 2,8:1 (laranja), 3,7:1 (azul).
   const TAG_STYLES = {
-    Urgente:    { chip: 'bg-red-500/90 text-white', label: 'URGENTE', bgFallback: 'bg-gradient-to-r from-red-950 via-rose-900 to-stone-900' },
-    Importante: { chip: 'bg-amber-500/90 text-stone-950', label: 'IMPORTANTE', bgFallback: 'bg-gradient-to-r from-amber-950 via-amber-900 to-stone-900' },
-    Aviso:      { chip: 'bg-amber-500/90 text-stone-950', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-amber-950 via-slate-900 to-stone-900' },
-    Geral:      { chip: 'bg-emerald-500/90 text-white', label: 'GERAL', bgFallback: 'bg-gradient-to-r from-emerald-950 via-slate-900 to-stone-900' },
-    Info:       { chip: 'bg-blue-500/90 text-white', label: 'INFO', bgFallback: 'bg-gradient-to-r from-blue-950 via-slate-900 to-stone-900' },
+    Urgente:    { chip: 'bg-red-700 text-white', label: 'URGENTE', bgFallback: 'bg-gradient-to-r from-red-950 via-rose-900 to-stone-900' },
+    Importante: { chip: 'bg-amber-500 text-stone-950', label: 'IMPORTANTE', bgFallback: 'bg-gradient-to-r from-amber-950 via-amber-900 to-stone-900' },
+    Aviso:      { chip: 'bg-amber-500 text-stone-950', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-amber-950 via-slate-900 to-stone-900' },
+    Geral:      { chip: 'bg-emerald-700 text-white', label: 'GERAL', bgFallback: 'bg-gradient-to-r from-emerald-950 via-slate-900 to-stone-900' },
+    Info:       { chip: 'bg-blue-700 text-white', label: 'INFO', bgFallback: 'bg-gradient-to-r from-blue-950 via-slate-900 to-stone-900' },
   };
 
-  const TAG_DEFAULT = { chip: 'bg-primary text-white', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-slate-900 via-slate-800 to-stone-900' };
+  const TAG_DEFAULT = { chip: 'bg-primary text-[var(--on-accent)]', label: 'AVISO', bgFallback: 'bg-gradient-to-r from-slate-900 via-slate-800 to-stone-900' };
 
   function stripMarkdown(text) {
     if (!text) return '';
@@ -572,7 +576,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
                 {tagInfo.label}
               </span>
               {activeSlide.criado_em && (
-                <span className="font-mono text-[11px] font-semibold text-white/70 backdrop-blur-sm bg-black/30 px-2.5 py-1 rounded-full border border-white/10">
+                <span className="font-mono text-[11px] font-semibold text-white/90 backdrop-blur-sm bg-black/60 px-2.5 py-1 rounded-full border border-white/10">
                   {relativeTimeShort(activeSlide.criado_em)}
                 </span>
               )}
@@ -657,10 +661,10 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
   );
 
   const TAG_STYLES = {
-    Urgente:    { chip: 'bg-[var(--danger-soft)] text-[var(--danger-bento)]',   border: 'border-l-[var(--danger-bento)]' },
-    Importante: { chip: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]', border: 'border-l-[var(--warning-bento)]' },
-    Aviso:      { chip: 'bg-[var(--warning-soft)] text-[var(--warning-bento)]', border: 'border-l-[var(--warning-bento)]' },
-    Geral:      { chip: 'bg-[var(--success-soft)] text-[var(--success-bento)]', border: 'border-l-[var(--success-bento)]' },
+    Urgente:    { chip: 'bg-[var(--danger-soft)] text-[var(--danger-strong)]',   border: 'border-l-[var(--danger-bento)]' },
+    Importante: { chip: 'bg-[var(--warning-soft)] text-[var(--warning-strong)]', border: 'border-l-[var(--warning-bento)]' },
+    Aviso:      { chip: 'bg-[var(--warning-soft)] text-[var(--warning-strong)]', border: 'border-l-[var(--warning-bento)]' },
+    Geral:      { chip: 'bg-[var(--success-soft)] text-[var(--success-strong)]', border: 'border-l-[var(--success-bento)]' },
     Info:       { chip: 'bg-[var(--accent-soft)] text-[var(--accent-dark)]',     border: 'border-l-[var(--accent)]' },
   };
   const TAG_FALLBACK = { chip: 'bg-surface-raised text-faint', border: 'border-l-[var(--border)]' };
@@ -1149,7 +1153,7 @@ function TeamBento() {
               <div className="truncate text-[13px] font-semibold text-foreground">{m.name}</div>
               <div className="text-[11.5px] text-faint">{m.role}</div>
             </div>
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--success-bento)]">Online</span>
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--success-strong)]">Online</span>
           </div>
         ))}
       </div>
@@ -1344,7 +1348,7 @@ export default function Dashboard({ setCurrentView, user }) {
           <div className="flex gap-5">
             <a href="#" className="text-inherit no-underline hover:text-foreground">Política de Privacidade</a>
             <a href="#" className="text-inherit no-underline hover:text-foreground">Diretrizes Internas</a>
-            <span className="text-[var(--success-bento)]">● v1.0.0</span>
+            <span className="text-[var(--success-strong)]">● v1.0.0</span>
           </div>
         </div>
       </div>

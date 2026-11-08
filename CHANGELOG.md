@@ -31,6 +31,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
   - `Configuracoes.jsx` — formulários empilhados em mobile e correção de padding inválido.
 
 ### Corrigido
+- **Contraste no Início** (`Dashboard.jsx`): chips de tipo da lista de comunicados, rótulos "Encaminhadas" e "Agendadas", "Online" e o selo de versão usavam tokens de preenchimento como texto e ficavam entre 2,8:1 e 4,1:1; agora usam `-strong` (≥ 4,5:1). Chips do banner passam a ter fundo sólido com par de contraste (verde, azul, laranja e vermelho estavam entre 2,5:1 e 4,1:1). Novo token `--info-strong` nos cinco temas e `--success-strong` do Default Dark ajustado para #33BC88. Medido nos cinco temas: 122 textos, 0 abaixo de 4,5:1.
 - Áreas de toque de botões de ação em cards aumentadas para no mínimo 44×44px.
 - Carregamento da fonte Material Symbols com preload/fallback para evitar ícones como texto.
 
