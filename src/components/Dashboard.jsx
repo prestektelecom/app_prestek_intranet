@@ -575,7 +575,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
               exit={{ opacity: 0, transition: transicaoSaida }}
               transition={{ duration: 0.24 }}
             >
-              <span className={`inline-flex items-center rounded-lg px-2.5 py-1 font-mono text-[10px] font-extrabold uppercase tracking-widest shadow-sm ${tagInfo.chip}`}>
+              <span className={`inline-flex items-center rounded-lg px-2.5 py-1 font-mono text-[11px] font-extrabold uppercase tracking-wider shadow-sm ${tagInfo.chip}`}>
                 {tagInfo.label}
               </span>
               {activeSlide.criado_em && (
