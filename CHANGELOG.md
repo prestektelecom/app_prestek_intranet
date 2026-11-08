@@ -31,6 +31,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
   - `Configuracoes.jsx` — formulários empilhados em mobile e correção de padding inválido.
 
 ### Corrigido
+- **Carrossel de comunicados do Início** (`Dashboard.jsx`): deixou de ser um `role="button"` com botões dentro (controle aninhado, WCAG 4.1.2). Agora é uma seção `carousel` em que o título é o botão de abrir (esticado sobre o card) e os controles são irmãos dele. Pontos de 8×8px viram alvos de 32×44px, ganha botão de pausa/retomar (WCAG 2.2.2) e a rotação já começa parada para quem usa movimento reduzido. Região viva muda para `polite` só quando a rotação está parada. Novos ícones `Pause` e `Play`. Sem migration e sem variável nova no `.env`; só novo build.
 - Áreas de toque de botões de ação em cards aumentadas para no mínimo 44×44px.
 - Carregamento da fonte Material Symbols com preload/fallback para evitar ícones como texto.
 

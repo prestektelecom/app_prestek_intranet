@@ -399,6 +399,11 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  // Pausa pedida pelo usuário (botão do carrossel, WCAG 2.2.2). Quem pede
+  // movimento reduzido já começa com a rotação parada e pode ligá-la.
+  const [pausadoUsuario, setPausadoUsuario] = useState(
+    () => typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)
+  );
   const reduceMotion = useReducedMotion();
   const pausado = isHovered || isFocused;
   // Cronômetro com "tempo restante": pausar no hover/foco congela o relógio em
@@ -443,7 +448,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
   // tela (WCAG 2.2.2). Antes era setInterval fixo: clicar num dot não
   // reiniciava a contagem e o próximo avanço podia vir 1s depois.
   useEffect(() => {
-    if (slides.length <= 1 || pausado) return;
+    if (slides.length <= 1 || pausado || pausadoUsuario) return;
     inicioRef.current = Date.now();
     const t = setTimeout(() => {
       setCurrentIndex(prev => (prev + 1) % slides.length);
@@ -452,7 +457,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
       clearTimeout(t);
       restanteRef.current = Math.max(0, restanteRef.current - (Date.now() - inicioRef.current));
     };
-  }, [slides.length, pausado, currentIndex]);
+  }, [slides.length, pausado, pausadoUsuario, currentIndex]);
 
   const TAG_STYLES = {
     Urgente:    { chip: 'bg-red-500/90 text-white', label: 'URGENTE', bgFallback: 'bg-gradient-to-r from-red-950 via-rose-900 to-stone-900' },
@@ -511,54 +516,56 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
     : { duration: 0.42, ease: [0.16, 1, 0.3, 1] };
   const transicaoSaida = { duration: reduceMotion ? 0.12 : 0.16, ease: [0.4, 0, 1, 1] };
 
+  const total = slides.length;
+  const atual = currentIndex % total;
+  const rotacaoLigada = total > 1 && !pausadoUsuario;
+  const abrirComunicados = () => setCurrentView && setCurrentView('announcements');
+
+  // Estrutura (padrão APG de carrossel): a seção não é um botão. O título é
+  // o único controle de "abrir" (um <button> dentro do h2, esticado sobre o
+  // card por um ::after) e os controles do carrossel — pausar e escolher o
+  // slide — são irmãos dele, não filhos. Antes eram <button> dentro de um
+  // role="button" (controle aninhado, WCAG 4.1.2) e os pontos mediam 8px.
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={`Comunicado em destaque: ${activeSlide.titulo}. Abrir comunicados`}
+    <section
+      aria-roledescription="carousel"
+      aria-label="Comunicados em destaque"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
-      onClick={() => setCurrentView && setCurrentView('announcements')}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          setCurrentView && setCurrentView('announcements');
-        }
-      }}
-      className="group relative mb-6 h-48 md:h-56 lg:h-64 w-full cursor-pointer overflow-hidden rounded-2xl border border-border/40 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.002] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
+      className="group relative mb-6 h-48 w-full rounded-2xl shadow-xl transition-shadow duration-150 hover:shadow-2xl md:h-56 lg:h-64 has-[.banner-link:focus-visible]:ring-2 has-[.banner-link:focus-visible]:ring-[var(--accent)] has-[.banner-link:focus-visible]:ring-offset-2 has-[.banner-link:focus-visible]:ring-offset-[var(--background)]"
     >
-      {/* Background Image / Fallback Gradient com Fade suave */}
-      {slides.map((slide, idx) => {
-        const isCurrent = idx === (currentIndex % slides.length);
-        const sTag = TAG_STYLES[slide.tipo] || TAG_DEFAULT;
-        const sImg = slide.imagem_url || slide.imagem || slide.foto || slide.capa || null;
-        return (
-          <div
-            key={slide.id || idx}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${isCurrent ? 'opacity-100 z-0' : 'opacity-0 z-[-1]'}`}
-          >
-            {sImg ? (
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
-                style={{ backgroundImage: `url(${sImg})` }}
-              />
-            ) : (
-              <div className={`absolute inset-0 ${sTag.bgFallback}`} />
-            )}
-          </div>
-        );
-      })}
+      {/* Fundo (imagem ou gradiente) + véu: decorativo. O recorte arredondado
+          vive aqui para o anel de foco da seção não ser cortado. */}
+      <div aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-2xl border border-border/40">
+        {slides.map((slide, idx) => {
+          const isCurrent = idx === atual;
+          const sTag = TAG_STYLES[slide.tipo] || TAG_DEFAULT;
+          const sImg = slide.imagem_url || slide.imagem || slide.foto || slide.capa || null;
+          return (
+            <div
+              key={slide.id || idx}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${isCurrent ? 'opacity-100 z-0' : 'opacity-0 z-[-1]'}`}
+            >
+              {sImg ? (
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+                  style={{ backgroundImage: `url(${sImg})` }}
+                />
+              ) : (
+                <div className={`absolute inset-0 ${sTag.bgFallback}`} />
+              )}
+            </div>
+          );
+        })}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10 transition-opacity duration-300 group-hover:from-black/95 group-hover:via-black/50" />
+      </div>
 
-      {/* Dark Overlay para legibilidade */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10 transition-opacity duration-300 group-hover:from-black/95 group-hover:via-black/50" />
-
-      {/* Conteúdo do Slide Ativo. O que muda por slide (chip, hora, título,
-          texto) anima com continuidade; o que persiste (dots) fica parado. */}
       <div className="relative z-10 flex h-full flex-col justify-between p-6 text-white md:p-8">
-        {/* Top bar: meta do slide à esquerda, navegação à direita */}
-        <div className="flex items-center justify-between gap-3">
+        {/* Barra do topo: meta do slide à esquerda (não recebe clique, deixa
+            passar para o card), controles à direita (alvos de 44px). */}
+        <div className="pointer-events-none relative z-20 flex items-center justify-between gap-3">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={slideKey}
@@ -572,78 +579,95 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
                 {tagInfo.label}
               </span>
               {activeSlide.criado_em && (
-                <span className="font-mono text-[11px] font-semibold text-white/70 backdrop-blur-sm bg-black/30 px-2.5 py-1 rounded-full border border-white/10">
+                <span className="hidden rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] font-semibold text-white/90 backdrop-blur-sm sm:inline-flex">
                   {relativeTimeShort(activeSlide.criado_em)}
                 </span>
               )}
             </motion.div>
           </AnimatePresence>
-          
-          <div className="flex shrink-0 items-center gap-3">
-            
-            {/* Dots de Navegação */}
-            {slides.length > 1 && (
-              <div className="flex items-center gap-1.5 backdrop-blur-sm bg-black/40 px-2 py-1 rounded-full border border-white/10">
+
+          {total > 1 && (
+            <div className="pointer-events-auto flex shrink-0 items-center rounded-full border border-white/10 bg-black/60 backdrop-blur-sm">
+              <button
+                type="button"
+                onClick={() => setPausadoUsuario(p => !p)}
+                aria-label={pausadoUsuario ? 'Retomar a rotação automática dos comunicados' : 'Pausar a rotação automática dos comunicados'}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-white/90 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white"
+              >
+                {pausadoUsuario ? <Icons.Play /> : <Icons.Pause />}
+              </button>
+              <div role="group" aria-label="Escolher comunicado" className="flex items-center pr-1">
                 {slides.map((_, i) => (
                   <button
                     key={i}
                     type="button"
-                    aria-label={`Comunicado ${i + 1} de ${slides.length}`}
-                    aria-current={i === (currentIndex % slides.length) ? 'true' : undefined}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentIndex(i);
-                    }}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    className={`relative h-2 overflow-hidden rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
-                      i === (currentIndex % slides.length) ? 'w-5 bg-white/35' : 'w-2 bg-white/40 hover:bg-white/70'
-                    }`}
-                    title={`Comunicado ${i + 1}`}
+                    aria-label={`Comunicado ${i + 1} de ${total}`}
+                    aria-current={i === atual ? 'true' : undefined}
+                    onClick={() => setCurrentIndex(i)}
+                    className="group/dot flex h-11 w-8 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white"
                   >
-                    {/* Barra de progresso do autoplay: o dot ativo enche em 6s e
-                        congela junto com o relógio no hover/foco. Com movimento
-                        reduzido (regra global do index.css) nasce cheio = o dot
-                        branco sólido de antes. Remonta a cada troca de slide
-                        porque muda de botão. */}
-                    {i === (currentIndex % slides.length) && (
-                      <span
-                        aria-hidden="true"
-                        className="comunicado-progresso absolute inset-0 origin-left rounded-full bg-white"
-                        style={{ animationDuration: `${AUTOPLAY_MS}ms`, animationPlayState: pausado ? 'paused' : 'running' }}
-                      />
-                    )}
+                    <span className={`relative block h-2 overflow-hidden rounded-full transition-all duration-300 ${
+                      i === atual ? 'w-5 bg-white/35' : 'w-2 bg-white/60 group-hover/dot:bg-white'
+                    }`}>
+                      {/* Barra de progresso do autoplay: o ponto ativo enche em
+                          6s e congela junto com o relógio no hover/foco. Com a
+                          rotação parada (botão ou movimento reduzido) fica cheio. */}
+                      {i === atual && (
+                        <span
+                          aria-hidden="true"
+                          className={`absolute inset-0 origin-left rounded-full bg-white ${rotacaoLigada ? 'comunicado-progresso' : ''}`}
+                          style={rotacaoLigada ? { animationDuration: `${AUTOPLAY_MS}ms`, animationPlayState: pausado ? 'paused' : 'running' } : undefined}
+                        />
+                      )}
+                    </span>
                   </button>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Título e Subtítulo: o momento autoral da troca. Sobe 10px ao entrar
-            e sai por cima, mais rápido — a leitura acompanha o fundo, que já
-            faz crossfade de 700ms. mode="wait" segura a entrada até a saída
-            terminar, então cliques rápidos nos dots não empilham textos. */}
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={slideKey}
-            className="max-w-3xl"
-            initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: reduceMotion ? 0 : -6, transition: transicaoSaida }}
-            transition={transicaoTexto}
-          >
-            <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white line-clamp-2 drop-shadow-md group-hover:text-white/95">
-              {activeSlide.titulo}
-            </h2>
-            {description && (
-              <p className="mt-2 text-xs md:text-sm font-medium text-white/80 line-clamp-2 drop-shadow">
-                {description}
-              </p>
-            )}
-          </motion.div>
-        </AnimatePresence>
+        {/* Título e subtítulo: o momento autoral da troca. Sobe 10px ao entrar
+            e sai por cima, mais rápido; mode="wait" segura a entrada até a
+            saída terminar. O contêiner é estável e carrega a região viva: com
+            a rotação ligada ela fica muda (senão leria um slide a cada 6s);
+            parada, anuncia a troca feita pelos pontos. */}
+        <div
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${atual + 1} de ${total}`}
+          aria-live={rotacaoLigada ? 'off' : 'polite'}
+          aria-atomic="true"
+          className="max-w-3xl"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={slideKey}
+              initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reduceMotion ? 0 : -6, transition: transicaoSaida }}
+              transition={transicaoTexto}
+            >
+              <h2 className="text-xl font-extrabold tracking-tight text-white drop-shadow-md md:text-2xl lg:text-3xl">
+                <button
+                  type="button"
+                  onClick={abrirComunicados}
+                  className="banner-link block w-full cursor-pointer text-left line-clamp-2 focus:outline-none after:absolute after:inset-0 after:content-['']"
+                >
+                  {activeSlide.titulo}
+                  <span className="sr-only"> — abrir comunicados</span>
+                </button>
+              </h2>
+              {description && (
+                <p className="mt-2 line-clamp-2 text-xs font-medium text-white/80 drop-shadow md:text-sm">
+                  {description}
+                </p>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
