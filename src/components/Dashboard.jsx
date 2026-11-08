@@ -652,7 +652,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
                 <button
                   type="button"
                   onClick={abrirComunicados}
-                  className="banner-link block w-full cursor-pointer text-left line-clamp-2 focus:outline-none after:absolute after:inset-0 after:content-['']"
+                  className="banner-link w-full cursor-pointer text-left line-clamp-2 focus:outline-none after:absolute after:inset-0 after:content-['']"
                 >
                   {activeSlide.titulo}
                   <span className="sr-only"> — abrir comunicados</span>
