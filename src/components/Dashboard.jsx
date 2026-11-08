@@ -534,7 +534,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
-      className="group relative mb-6 h-48 w-full rounded-2xl shadow-xl transition-shadow duration-150 hover:shadow-2xl md:h-56 lg:h-64 has-[.banner-link:focus-visible]:ring-2 has-[.banner-link:focus-visible]:ring-[var(--accent)] has-[.banner-link:focus-visible]:ring-offset-2 has-[.banner-link:focus-visible]:ring-offset-[var(--background)]"
+      className="group relative mb-6 h-48 w-full rounded-2xl shadow-sm transition-shadow duration-150 hover:shadow-md md:h-56 lg:h-64 has-[.banner-link:focus-visible]:ring-2 has-[.banner-link:focus-visible]:ring-[var(--accent)] has-[.banner-link:focus-visible]:ring-offset-2 has-[.banner-link:focus-visible]:ring-offset-[var(--background)]"
     >
       {/* Fundo (imagem ou gradiente) + véu: decorativo. O recorte arredondado
           vive aqui para o anel de foco da seção não ser cortado. */}
