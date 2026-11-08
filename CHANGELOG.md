@@ -31,6 +31,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
   - `Configuracoes.jsx` — formulários empilhados em mobile e correção de padding inválido.
 
 ### Corrigido
+- **Textos e rodapé do Início** (`Dashboard.jsx`): a saudação passa a mostrar o primeiro nome com iniciais maiúsculas ("Olá, Felix", antes "Olá, FELIX" quando o IXC manda em caixa alta). O rodapé perde os links "Política de Privacidade" e "Diretrizes Internas" (eram `href="#"`, rolavam ao topo e sujavam a URL) e o selo "v1.0.0" (não batia com o `package.json`, que está em 0.1.0); o ano vem do relógio em vez de "2026" fixo. O botão "Gerenciar Meus Chamados" vira "Ver meus chamados", o nome do menu, porque só abre a lista. Usuário sem colaborador vinculado deixa de ver "⚠️ null pendentes" e passa a ver uma explicação; os KPIs do setor mostram "–" em vez de "–%" e de "0 · Ok" quando não há dado. Sem migration e sem variável nova no `.env`; só novo build.
 - Áreas de toque de botões de ação em cards aumentadas para no mínimo 44×44px.
 - Carregamento da fonte Material Symbols com preload/fallback para evitar ícones como texto.
 
