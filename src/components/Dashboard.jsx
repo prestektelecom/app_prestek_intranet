@@ -14,12 +14,12 @@ import { useTouchOnly } from '../hooks/useTouchOnly'
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 /* ── Tokens utilitários do design system semântico (vars em index.css) ── */
-const LABEL_MONO = 'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-faint'
+const LABEL_MONO = 'font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-faint'
 const CARD_TITLE = 'font-display text-xl font-bold tracking-tight text-foreground'
 const CARD = 'bento-hover-border flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm'
 // `min-h-[44px]`: sem isso os dois botões mediam ~35px, abaixo do piso de
 // toque (AGENTS.md, regra 5).
-const ACTION_BTN = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[12.5px] font-semibold transition'
+const ACTION_BTN = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border border-border bg-surface px-3 py-2 text-[13px] font-semibold transition'
 // Ação primária de um card (fundo sólido no accent): NÃO herda `bg-surface`/
 // `border-border` de ACTION_BTN. As duas classes de fundo tinham a mesma
 // especificidade CSS e `bg-surface` sempre vencia na folha gerada — o botão
@@ -32,7 +32,7 @@ const ACTION_BTN = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start 
 // `hover:bg-primary-hover`: no claro, navy sobre `--primary-hover` cai para
 // 3,35:1 — o hover eleva com sombra (na chamada do componente), não escurece
 // o fundo, mesmo padrão do botão do NotFound.
-const ACTION_BTN_PRIMARY = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[12.5px] font-semibold text-[var(--on-accent)] shadow-md transition'
+const ACTION_BTN_PRIMARY = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[13px] font-semibold text-[var(--on-accent)] shadow-md transition'
 
 function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
   const isTouchOnly = useTouchOnly();
@@ -183,7 +183,7 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
         >
           <Icons.Refresh />
           Tentar novamente
@@ -249,7 +249,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+            className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
           >
             <Icons.Refresh />
             Tentar novamente
@@ -261,8 +261,8 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
             <Icons.Clock />
           </div>
           <div>
-            <div className="text-[17px] font-bold tracking-tight text-foreground">{dateStr}</div>
-            <div className="mt-0.5 text-[12.5px] text-faint">{timeStr}</div>
+            <div className="text-lg font-bold tracking-tight text-foreground">{dateStr}</div>
+            <div className="mt-0.5 text-[13px] text-faint">{timeStr}</div>
           </div>
         </div>
       )}
@@ -308,7 +308,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+              className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
               <Icons.Refresh />
               Tentar novamente
@@ -321,7 +321,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-bold text-foreground">Chamados</span>
-            <span className="text-[11.5px] text-faint">sob sua responsabilidade direta</span>
+            <span className="text-xs text-faint">sob sua responsabilidade direta</span>
           </div>
         </div>
         )}
@@ -368,7 +368,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         )}
 
         {allGood && (
-          <p className="mt-3 text-[12.5px] text-faint leading-relaxed">
+          <p className="mt-3 text-[13px] text-faint leading-relaxed">
             Nenhum chamado pendente atribuído a você no momento.
           </p>
         )}
@@ -489,7 +489,7 @@ function ComunicadoBanner({ setCurrentView, onActiveChange }) {
         <button
           type="button"
           onClick={recarregar}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-background"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-background"
         >
           <Icons.Refresh />
           Tentar novamente
@@ -713,7 +713,7 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
       <div className="flex items-center justify-between px-6 pt-5">
         <div>
           <h2 className={CARD_TITLE}>Comunicados</h2>
-          <div className="mt-0.5 text-[12.5px] text-faint">Atualizações do setor</div>
+          <div className="mt-0.5 text-[13px] text-faint">Atualizações do setor</div>
         </div>
         <button onClick={() => setCurrentView('announcements')} className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent-dark)] hover:underline">
           Ver todos <Icons.ArrowR />
@@ -731,7 +731,7 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
               <button
                 type="button"
                 onClick={recarregar}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
               >
                 <Icons.Refresh />
                 Tentar novamente
@@ -761,20 +761,20 @@ function ComunicadosCard({ setCurrentView, destaqueAtivoId }) {
               >
                 <div className="flex flex-1 flex-col justify-center gap-1 min-w-0 px-3 py-2">
                   <div className="flex items-center gap-1.5 overflow-hidden">
-                    <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest leading-relaxed ${tag.chip}`}>
+                    <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider leading-relaxed ${tag.chip}`}>
                       {tagLabel(it.tipo)}
                     </span>
-                    <span className="truncate text-[13.5px] font-semibold text-foreground">{it.titulo}</span>
+                    <span className="truncate text-[13px] font-semibold text-foreground">{it.titulo}</span>
                   </div>
                   <div
-                    className="text-[12px] text-faint"
+                    className="text-xs text-faint"
                     style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
                   >
                     {preview}
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 px-3 py-2 text-right max-w-[140px]">
-                  <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[10.5px] text-faint">
+                  <div title={formatFullDate(it.criado_em)} className="cursor-help whitespace-nowrap font-mono text-[11px] text-faint">
                     {relativeTimeShort(it.criado_em)}
                   </div>
                   <div title={it.departamento_autor || ''} className="truncate max-w-[140px] text-[11px] text-faint">{it.departamento_autor || ''}</div>
@@ -1010,7 +1010,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className={CARD_TITLE}>Aniversariantes</h2>
-          <div className="mt-0.5 text-[12.5px] text-faint">Próximos 7 dias</div>
+          <div className="mt-0.5 text-[13px] text-faint">Próximos 7 dias</div>
         </div>
         <span className="text-lg">🎂</span>
       </div>
@@ -1030,7 +1030,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
             <button
               type="button"
               onClick={carregarAniversariantes}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
               <Icons.Refresh />
               Tentar novamente
@@ -1050,7 +1050,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
               <AvatarAniversariante nome={c.funcionario_nome} foto={c.foto_perfil} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-semibold text-foreground">{nomeCurto(c.funcionario_nome)}</div>
-                <div className="truncate text-[11.5px] text-faint">
+                <div className="truncate text-xs text-faint">
                   {dataAniversarioExtenso(c.data_nascimento)}{depto ? ` · ${depto}` : ''}
                 </div>
               </div>
@@ -1117,7 +1117,7 @@ function TeamBento() {
           {!loading && !erro && (
             <div className="mt-1 flex items-center gap-1.5">
               <span className="inline-block h-2 w-2 rounded-full bg-[var(--success-bento)]" />
-              <span className="text-[12.5px] text-faint"><strong className="font-semibold text-foreground">{totalOnline}</strong> online agora</span>
+              <span className="text-[13px] text-faint"><strong className="font-semibold text-foreground">{totalOnline}</strong> online agora</span>
             </div>
           )}
         </div>
@@ -1131,7 +1131,7 @@ function TeamBento() {
             <button
               type="button"
               onClick={fetchOnline}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:bg-surface-raised"
             >
               <Icons.Refresh />
               Tentar novamente
@@ -1147,7 +1147,7 @@ function TeamBento() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-[13px] font-semibold text-foreground">{m.name}</div>
-              <div className="text-[11.5px] text-faint">{m.role}</div>
+              <div className="text-xs text-faint">{m.role}</div>
             </div>
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--success-bento)]">Online</span>
           </div>
@@ -1339,7 +1339,7 @@ export default function Dashboard({ setCurrentView, user }) {
           </div>
         </ResponsiveReactGridLayout>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-[11.5px] tracking-wide text-faint">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-xs tracking-wide text-faint">
           <span>© 2026 Prestek Telecom · Portal Interno · Confidencial.</span>
           <div className="flex gap-5">
             <a href="#" className="text-inherit no-underline hover:text-foreground">Política de Privacidade</a>

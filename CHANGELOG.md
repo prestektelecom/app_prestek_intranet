@@ -16,6 +16,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Configuração `future.hoverOnlyWhenSupported` no `tailwind.config.js` para evitar estados de hover presos em telas de toque.
 
 ### Alterado
+- **Escala tipográfica do Início** (`Dashboard.jsx`): o piso de texto passa a ser 11px (havia 9, 9,5 e 10px) e os tamanhos soltos (10,5 / 11,5 / 12 / 12,5 / 13,5 / 17px) se encaixam nos degraus 11, 12, 13, 14 e 18px. `DESIGN.md` ganha o papel **Caption** (12px) e a regra "nada abaixo de 11px". Texto de botões e dicas curtas sobe de 12,5 para 13px. Sem migration e sem variável nova no `.env`; só novo build.
 - `Header.jsx` e `Sidebar.jsx` refatorados para usar Tailwind com breakpoints responsivos.
 - `App.jsx` ajustado com padding inferior para `MobileBottomNav` e altura de viewport dinâmica (`h-dvh`).
 - Páginas adaptadas para mobile/tablet/desktop:
