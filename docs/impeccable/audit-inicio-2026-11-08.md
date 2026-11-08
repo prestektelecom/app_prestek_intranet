@@ -3,18 +3,18 @@
 Data: 2026-11-08 · Alvo: `src/components/Dashboard.jsx` (tela Início) e o que ela chama no backend.
 Evidência: `impeccable detect --json` (9 avisos de fonte, exit 0), medições no navegador (Playwright, API simulada, nada tocou a produção), axe-core 4.9.1, leitura do IXC e do banco só em modo leitura, contraste calculado a partir dos tokens do `index.css`.
 
-Este audit abriu 8 Pull Requests (#9 a #16) e foi fechado com um polish. **Nenhum estava mesclado quando esta nota foi escrita.** Nota anterior da tela: ver [[audit-dashboard-2026-09-11]] (12/20).
+Este audit abriu 8 Pull Requests (#9 a #16) e foi fechado com um polish. **Nenhum estava mesclado quando esta nota foi escrita**, então a `main` ainda tem o código antigo; a reauditoria foi feita sobre o **conjunto dos PRs juntos** (merge local descartável, conflitos resolvidos à mão), que é o código que a `main` terá depois do merge. Nota anterior da tela: ver [[audit-dashboard-2026-09-11]] (12/20).
 
 ## Placar
 
-| # | Dimensão | Antes | Depois (estimado) | O que mudou |
+| # | Dimensão | Antes | Depois (medido no conjunto) | O que mudou |
 |---|---|---|---|---|
 | 1 | Acessibilidade | 2 | 4 | carrossel sem controle aninhado e com pausa, contraste, títulos nos cards; axe em 0 nos 5 temas |
-| 2 | Desempenho | 3 | 3 | 19 → 11 requisições, aba oculta não consulta; o bundle geral continua com aviso de chunk > 500 kB |
+| 2 | Desempenho | 3 | 4 | 19 → 11 requisições, aba oculta não consulta, chunk do Início de 122,5 para 61,4 KB (gzip 36,2 → 17,6) |
 | 3 | Temas | 3 | 4 | texto usa tokens `-strong`, novo `--info-strong`, 122 textos medidos nos 5 temas sem falha |
-| 4 | Responsivo | 2 | 3 | grade CSS de altura automática, nada cortado de 390 a 1920 px; toque real não testado |
+| 4 | Responsivo | 2 | 3 | grade CSS de altura automática, nada cortado nem truncado em 17 larguras de 320 a 1366 px; fica em 3 porque os pontos do carrossel têm 32 px de largura e toque real não foi testado |
 | 5 | Integridade | 2 | 3 | data do plantão, id do plantão, links mortos, versão inventada, emojis; sobram decisões de produto |
-| | **Total** | **12/20** | **17/20** | **depois** é autoavaliação: rodar `/impeccable audit inicio` depois do merge confirma |
+| | **Total** | **12/20** | **18/20** | faixa Excelente (18 a 20). Rodar `/impeccable audit inicio` na `main` depois do merge deve dar o mesmo |
 
 ## Achados e onde foram corrigidos
 
@@ -30,6 +30,7 @@ Este audit abriu 8 Pull Requests (#9 a #16) e foi fechado com um polish. **Nenhu
 | P2 | Início baixava a lista de 169 funcionários (60 KB, com a data de nascimento completa) para mostrar 3 aniversariantes, e as listas de setores eram pedidas 10 vezes | #16 |
 | P2 | Saudação "Olá, FELIX", usuário sem vínculo via "⚠️ null pendentes", KPIs "–%" e "Ok" sem dado | #13 |
 | P3 | Polish: título do banner em 3 linhas, selo quebrando, "Sem cobertura ativa", alvos de 20 e 32 px, título de comunicado com 52 px no celular, cards sem título | #10, #12, #13, #14, #15 |
+| P2 | Reauditoria do conjunto: com o texto a 11 px, o rótulo "Encaminhadas" era cortado a 360 e 390 px (e a 320 px, o critério de reflow do WCAG); "Ver todos" quebrava em duas linhas a 320 px | #14, #15 |
 
 ## Medições antes e depois
 
@@ -42,8 +43,10 @@ Este audit abriu 8 Pull Requests (#9 a #16) e foi fechado com um polish. **Nenhu
 | Emojis no Início | 7 | 0 |
 | Laranja da marca em repouso | ~25 elementos em 8 grupos | 3 (botão de Chamados, "Ver todos" e a seta) |
 | Menor fonte | 9 px | 11 px |
+| Chunk do Início (produção) | 122,5 KB (gzip 36,2) | 61,4 KB (gzip 17,6) |
+| Larguras testadas sem corte, truncamento de rótulo nem rolagem horizontal | falhava a 1366 px | 17, de 320 a 1366 px |
 | axe-core (5 temas, WCAG 2.2 AA + boas práticas) | não medido | 0 violações |
-| Textos abaixo do contraste (5 temas) | vários (valores calculados) | 0 de 122 |
+| Textos abaixo do contraste (5 temas) | vários (valores calculados) | 0 de 109 a 122 (varia com o estado da tela) |
 
 ## Decisões que continuam com o Felix
 
@@ -60,6 +63,7 @@ Implantação: o #10 remove duas dependências (`npm ci`) e o #16 cria a rota `G
 ## Limites
 
 - Sem leitor de tela real (NVDA, VoiceOver), sem toque real e sem Safari.
+- Fora do escopo do Início, visto na reauditoria a 320 px: os rótulos da barra inferior do celular ("Comunicados" e "Chamados") se encostam. É do `MobileBottomNav`, não do Início.
 - O corpo da rota `/api/aniversariantes` em `server.js` só passou por `node --check`: o serviço atrás dela foi testado ao vivo contra o IXC e o banco reais (`node scripts/testar-aniversariantes.mjs --ao-vivo`), mas o servidor não foi subido (inicia tarefas que gravam no banco e não há staging).
 - Os pontos do carrossel têm 32 px de largura (44 de altura): passa o WCAG 2.5.8, fica abaixo da convenção de 44×44 do `AGENTS.md`.
 - Informações só em `title` (explicação da variação, data completa de um comunicado) continuam sem alternativa para toque.
