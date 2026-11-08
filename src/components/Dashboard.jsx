@@ -327,7 +327,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
 
         {/* Detalhamento por Status (4 Mini KPIs) */}
         {!osLoading && !osError && !allGood && (
-          <div className="mt-4 grid grid-cols-2 gap-2 2xl:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
               <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-dark)] truncate" title="Assumidas">
                 ⚡ Assumidas
