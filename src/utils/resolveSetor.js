@@ -1,3 +1,5 @@
+import { listarCargos, listarDepartamentos, listarDepartamentosEmpresa } from './referenciaSetores.js'
+
 /**
  * Resolve o nome do setor de um funcionário.
  * Prioridade: nome_grupo (usuarios_grupo) > empresa_setor > departamento > su_ticket_setor > fallback
@@ -6,16 +8,13 @@ export async function resolveNomeSetor(safeDepto, safeRole, nomeGrupo) {
     if (nomeGrupo) return nomeGrupo;
     if (!safeDepto && !safeRole) return 'Colaborador';
 
-    const [resDept, resCargo, resDeptEmp] = await Promise.all([
-        fetch('/api/departamentos').catch(() => null),
-        fetch('/api/cargos').catch(() => null),
-        fetch('/api/departamentos-empresa').catch(() => null)
+    // Listas compartilhadas e guardadas por 5 min (utils/referenciaSetores.js):
+    // o Início e a barra lateral perguntavam as mesmas 3 rotas cada um por si.
+    const [departamentos, cargos, deptosEmpresa] = await Promise.all([
+        listarDepartamentos(),
+        listarCargos(),
+        listarDepartamentosEmpresa(),
     ]);
-
-    let departamentos = [], cargos = [], deptosEmpresa = [];
-    if (resDept?.ok)   { const d = await resDept.json();   if (d.sucesso) departamentos = d.departamentos || []; }
-    if (resCargo?.ok)  { const d = await resCargo.json();  if (d.sucesso) cargos        = d.cargos        || []; }
-    if (resDeptEmp?.ok){ const d = await resDeptEmp.json();if (d.sucesso) deptosEmpresa = d.departamentos || []; }
 
     if (safeDepto) {
         const foundCargo   = cargos.find(c => String(c.id).trim() === String(safeDepto).trim());
