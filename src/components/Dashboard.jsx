@@ -1153,7 +1153,7 @@ function TeamBento() {
               <div className="truncate text-[13px] font-semibold text-foreground">{m.name}</div>
               <div className="text-[11.5px] text-faint">{m.role}</div>
             </div>
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--success-strong)]">Online</span>
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--success-strong)]">Online</span>
           </div>
         ))}
       </div>
