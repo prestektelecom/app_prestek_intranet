@@ -16,6 +16,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Configuração `future.hoverOnlyWhenSupported` no `tailwind.config.js` para evitar estados de hover presos em telas de toque.
 
 ### Alterado
+- **Início mais leve** (`Dashboard.jsx`, backend): o cartão de aniversariantes passa a usar a nova rota `GET /api/aniversariantes?dias=7`, que devolve só quem faz aniversário nos próximos dias (cerca de 370 bytes, sem o ano de nascimento nem o e-mail), em vez de baixar `/api/colaboradores` inteiro (~60 KB, com a data de nascimento completa dos 169 funcionários, e uma ida de segundos ao IXC a cada abertura). A lista de funcionários fica em cache de 10 min no servidor, com a busca em andamento compartilhada. As listas de setores (`/api/cargos`, `/api/departamentos-empresa`, `/api/departamentos`) são buscadas uma vez e compartilhadas por 5 min (`utils/referenciaSetores.js`), o cartão de disponibilidade não refaz a consulta quando elas chegam, e comunicados e disponibilidade param de consultar com a aba oculta (e atualizam ao voltar). O carregamento do Início cai de 19 para 11 requisições. **Implantação: reiniciar o backend (`pm2 restart prestek-backend`) antes de publicar o novo build do front**, senão o cartão de aniversariantes mostra erro. Sem migration e sem variável nova no `.env`.
 - `Header.jsx` e `Sidebar.jsx` refatorados para usar Tailwind com breakpoints responsivos.
 - `App.jsx` ajustado com padding inferior para `MobileBottomNav` e altura de viewport dinâmica (`h-dvh`).
 - Páginas adaptadas para mobile/tablet/desktop:

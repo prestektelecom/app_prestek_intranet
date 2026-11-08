@@ -21,6 +21,7 @@ import { CAPACIDADES, carregarAcesso, requerPermissao } from './middleware/permi
 import { enviarEmailSugestao } from './services/emailSugestao.js'
 import { TIPOS, STATUS, LIMITES, validarEnvio, validarGestao, filtroValido } from './services/sugestoes.js'
 import { aplicarAjustes, SETORES_SEM_AJUSTE_PROPRIO } from './services/equipeSetor.js'
+import { buscarAniversariantes } from './services/aniversariantes.js'
 
 // Gates de rota. `adminAuth` = só is_admin; `gate('x')` = is_admin OU a
 // capacidade x (ver openspec/changes/permissoes-por-capacidade/design.md).
@@ -1182,6 +1183,22 @@ app.get('/api/colaboradores', async (req, res) => {
     } catch (err) {
         console.error('Erro ao buscar colaboradores no IXC:', err.message);
         return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar colaboradores.' });
+    }
+});
+
+// ─── Rota: Aniversariantes dos próximos dias (Início) ───────────────────────
+// Antes o Início baixava /api/colaboradores inteiro (todos os funcionários, com a
+// data de nascimento completa, ~60 KB e uma ida ao IXC de ~4,6 s) para achar 3 ou
+// 4 pessoas. Agora o servidor filtra: cache de 10 min da lista, e o navegador
+// recebe só quem faz aniversário na janela, sem o ano de nascimento. A regra e a
+// busca moram em services/aniversariantes.js.
+app.get('/api/aniversariantes', async (req, res) => {
+    try {
+        const aniversariantes = await buscarAniversariantes({ dias: req.query.dias, pool, ixcListar, cacheGet, cacheSet });
+        return res.json({ sucesso: true, aniversariantes });
+    } catch (err) {
+        console.error('Erro ao buscar aniversariantes:', err.message);
+        return res.status(500).json({ sucesso: false, erro: 'Erro interno ao buscar aniversariantes.' });
     }
 });
 
