@@ -33,6 +33,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Corrigido
 - **Próximo plantão no Início** (`GET /api/plantoes/meu-proximo`): a consulta comparava o id do funcionário por substring (`LIKE '%1%'`), então o funcionário 1 casava com 12, 21 etc. e podia ver o plantão de outra pessoa; agora compara o id inteiro de cada item da lista. Sem funcionário vinculado, devolve `proximo: null` em vez do plantão de qualquer um. No front, a data é formatada em UTC, como o `Schedule.jsx`, para não aparecer um dia antes quando a API envia meia-noite UTC. Sem migration e sem variável nova no `.env`; basta reiniciar o backend e refazer o build.
+- **Contraste no Início** (`Dashboard.jsx`): chips de tipo da lista de comunicados, rótulos "Encaminhadas" e "Agendadas", "Online" e o selo de versão usavam tokens de preenchimento como texto e ficavam entre 2,8:1 e 4,1:1; agora usam `-strong` (≥ 4,5:1). Chips do banner passam a ter fundo sólido com par de contraste (verde, azul, laranja e vermelho estavam entre 2,5:1 e 4,1:1). Novo token `--info-strong` nos cinco temas e `--success-strong` do Default Dark ajustado para #33BC88. Medido nos cinco temas: 122 textos, 0 abaixo de 4,5:1.
 - Áreas de toque de botões de ação em cards aumentadas para no mínimo 44×44px.
 - Carregamento da fonte Material Symbols com preload/fallback para evitar ícones como texto.
 

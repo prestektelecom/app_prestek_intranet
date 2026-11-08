@@ -212,6 +212,8 @@ Nos temas escuros o `accentDark` (#FDBA74) fica mais claro que o `accent`, o inv
 
 **The Muted Is Never Text Rule.** `C.muted`/`text-muted` (Azul Neblina, #8896A8) é SOMENTE para ícone inativo e placeholder — nunca para texto real abaixo de 14px. Reprova 4,5:1 em pelo menos um dos cinco temas sempre que usado como corpo de texto, label ou legenda; foi o achado mais repetido do programa inteiro (9+ das 15 fases de superfície encontraram e corrigiram essa mesma instância, sempre trocando por `C.ink2`/`text-faint`). Ao escrever um componente novo, texto secundário real usa `C.ink2` (JS) ou `text-faint` (CSS) desde o início.
 
+**The Strong Is Text Rule.** Os tokens `-bento` (`success`, `warning`, `danger`) são preenchimento e ícone (piso de 3:1). Texto sobre um fundo `-soft` ou sobre a superfície usa `-strong` (`text-[var(--danger-strong)]`), e o azul informativo em texto é `--info-strong` (#2563EB no claro, #60A5FA nos escuros). `--success-strong` do Default Dark é #33BC88, não o `-bento`, porque o `-bento` dava 4,49:1 sobre o fundo do pill "Hoje". Chip sobre imagem ou gradiente (banner de comunicados) não herda token de tema: usa fundo sólido fixo com par de 4,5:1 ou mais, sem alfa, porque o alfa depende do que está por baixo. Medido em 2026-11-08: 122 textos do Início, 0 abaixo do mínimo nos cinco temas.
+
 ## Typography
 
 **Display Font:** Manrope (com sans-serif do sistema)

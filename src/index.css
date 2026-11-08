@@ -101,6 +101,7 @@
   --success-strong:  #10603E;
   --warning-strong:  #7A5300;
   --danger-strong:   #B02121;
+  --info-strong:    #2563EB; /* texto azul informativo: 4,9:1 (claro) e 6,6:1+ (escuros) sobre o fundo dos mini-KPIs */
   /* Pares de badge preenchido (11px bold, 4,5:1 em todo tema) e texto
      sobre o accent. Espelham `useBentoTheme.js`; mude os dois lados. */
   --danger-fill:     #B02121;
@@ -180,12 +181,13 @@
   --warning-soft:    rgba(250, 204, 21, 0.15);
   --danger-bento:    #FF6B6B;
   --danger-soft:     rgba(255, 107, 107, 0.15);
-  --success-strong:  var(--success-bento);
+  --success-strong:  #33BC88; /* 5:1 sobre success-soft + surface-raised; o -bento (#2DB37F) dava 4,49:1 */
   --warning-strong:  var(--warning-bento);
   /* -bento é preenchimento gráfico (piso 3:1); texto precisa de 4,5:1 e o
      alias direto media 4,50:1 sobre danger-soft — no limite. Tom próprio
      com folga real (Fase 16, achado da auditoria global). */
   --danger-strong:   #FF8A8A;
+  --info-strong:    #60A5FA; /* texto azul informativo: 4,9:1 (claro) e 6,6:1+ (escuros) sobre o fundo dos mini-KPIs */
   --danger-fill:     #FF6B6B;
   --on-danger:       #0B1B2E;
   --warning-fill:    #FACC15;
@@ -266,6 +268,7 @@
   --success-strong:  var(--success-bento);
   --warning-strong:  var(--warning-bento);
   --danger-strong:   #FF5C7A; /* texto: 5,4:1 sobre danger-soft no vidro */
+  --info-strong:    #60A5FA; /* texto azul informativo: 4,9:1 (claro) e 6,6:1+ (escuros) sobre o fundo dos mini-KPIs */
   --danger-fill:     #FF2A54;
   --on-danger:       #0B1B2E;
   --warning-fill:    #FACC15;
@@ -345,6 +348,7 @@
      3,57:1 como texto sobre danger-soft. Tom próprio com folga real
      (Fase 16, achado da auditoria global). */
   --danger-strong:   #FF7AB8;
+  --info-strong:    #60A5FA; /* texto azul informativo: 4,9:1 (claro) e 6,6:1+ (escuros) sobre o fundo dos mini-KPIs */
   --danger-fill:     #FF4DA0;
   --on-danger:       #0B1B2E;
   --warning-fill:    #FACC15;
@@ -429,6 +433,7 @@
      puro do AMOLED não perdoa vermelho saturado). Tom próprio com folga real
      (Fase 16, achado da auditoria global). */
   --danger-strong:   #FF6E6E;
+  --info-strong:    #60A5FA; /* texto azul informativo: 4,9:1 (claro) e 6,6:1+ (escuros) sobre o fundo dos mini-KPIs */
   --danger-fill:     #D50000;
   --on-danger:       #FFFFFF;
   --warning-fill:    #FACC15;
