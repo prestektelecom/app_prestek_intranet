@@ -32,7 +32,7 @@ const ACTION_BTN = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start 
 // `hover:bg-primary-hover`: no claro, navy sobre `--primary-hover` cai para
 // 3,35:1 — o hover eleva com sombra (na chamada do componente), não escurece
 // o fundo, mesmo padrão do botão do NotFound.
-const ACTION_BTN_PRIMARY = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[12.5px] font-semibold text-[var(--on-accent)] shadow-md transition'
+const ACTION_BTN_PRIMARY = 'mt-5 inline-flex min-h-[44px] items-center gap-1 self-start rounded-lg border-none bg-primary px-3 py-2 text-[12.5px] font-semibold text-[var(--on-accent)] transition'
 
 function KpiCard({ label, value, sub, subTone, subTooltip, sparkData, sparkColor }) {
   const isTouchOnly = useTouchOnly();
@@ -117,7 +117,7 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">
-          Olá, {firstName} 👋
+          Olá, {firstName}
         </h1>
         <p className="mt-1 text-sm text-faint">
           {cargoName
@@ -145,7 +145,7 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
         )}
       </div>
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-dark)]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-raised text-faint">
           <Icons.Clock />
         </div>
         <div className="leading-tight">
@@ -209,7 +209,7 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
         sub={eficiencia?.no_prazo_mes != null ? `${eficiencia.no_prazo_mes} no prazo` : null}
         subTone="success"
         sparkData={osFechadasSparkData}
-        sparkColor="var(--accent)"
+        sparkColor="var(--ink2)"
       />
       <KpiCard
         label="Sem SLA"
@@ -257,7 +257,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
         </div>
       ) : (
         <div className="mt-3 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent-dark)]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-raised text-faint">
             <Icons.Clock />
           </div>
           <div>
@@ -268,7 +268,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
       )}
       <button
         onClick={() => setCurrentView('schedule')}
-        className={`${ACTION_BTN} text-[var(--accent-dark)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)]`}
+        className={`${ACTION_BTN} text-foreground hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-dark)]`}
       >
         Ver plantões <Icons.ArrowR />
       </button>
@@ -294,8 +294,8 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         <div className="flex items-start justify-between gap-2">
           <div className={LABEL_MONO}>Chamados no meu nome</div>
           {!osLoading && !osError && (
-            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)] animate-pulse'}`}>
-              {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)]'}`}>
+              {allGood ? <><Icons.Check /> Tudo em dia</> : <><Icons.Alert /> {osCount} pendente{osCount !== 1 ? 's' : ''}</>}
             </span>
           )}
         </div>
@@ -326,44 +326,27 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         </div>
         )}
 
-        {/* Detalhamento por Status (4 Mini KPIs) */}
+        {/* Detalhamento por Status (4 Mini KPIs). O que diferencia cada um é o
+            ícone e o texto, não a cor: antes eram emoji em 4 cores, e o laranja de
+            "Assumidas" disputava com o botão primário do mesmo card. */}
         {!osLoading && !osError && !allGood && (
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-dark)] truncate" title="Assumidas">
-                ⚡ Assumidas
-              </span>
-              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
-                {assumidas}
-              </span>
-            </div>
-
-            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-blue-500 dark:text-blue-400 truncate" title="Encaminhadas">
-                ➡️ Encaminhadas
-              </span>
-              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
-                {encaminhadas}
-              </span>
-            </div>
-
-            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--warning-bento)] truncate" title="Agendadas">
-                📅 Agendadas
-              </span>
-              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
-                {agendadas}
-              </span>
-            </div>
-
-            <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-faint truncate" title="Abertas">
-                📋 Abertas
-              </span>
-              <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
-                {abertas}
-              </span>
-            </div>
+            {[
+              { rotulo: 'Assumidas', Icone: Icons.Lightning, valor: assumidas },
+              { rotulo: 'Encaminhadas', Icone: Icons.ArrowR, valor: encaminhadas },
+              { rotulo: 'Agendadas', Icone: Icons.Calendar, valor: agendadas },
+              { rotulo: 'Abertas', Icone: Icons.Ticket, valor: abertas },
+            ].map(({ rotulo, Icone, valor }) => (
+              <div key={rotulo} className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
+                <span className="flex items-center gap-1 font-mono text-[9.5px] font-bold uppercase tracking-wider text-faint" title={rotulo}>
+                  <span aria-hidden="true" className="shrink-0 [&>svg]:h-3 [&>svg]:w-3"><Icone /></span>
+                  <span className="truncate">{rotulo}</span>
+                </span>
+                <span className="mt-1 text-base font-extrabold text-foreground tabular-nums">
+                  {valor}
+                </span>
+              </div>
+            ))}
           </div>
         )}
 
@@ -833,7 +816,7 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
                   : 'hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md'
               }`}
             >
-              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.emBreve ? 'bg-surface-raised text-faint' : 'bg-[var(--accent-soft)] text-[var(--accent)]'}`}>
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.emBreve ? 'bg-surface-raised text-faint' : 'bg-surface-raised text-foreground'}`}>
                 {IconC && <IconC />}
               </div>
               <div className="min-w-0 flex-1 flex flex-col gap-0.5">
@@ -919,7 +902,7 @@ function AvatarAniversariante({ nome, foto }) {
   const [erro, setErro] = useState(false);
   const src = erro ? null : resolveAvatarUrl(foto);
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-soft)] text-[13px] font-bold text-[var(--accent-dark)]">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-raised text-[13px] font-bold text-faint">
       {src
         ? <img src={src} alt="" className="h-full w-full object-cover" onError={() => setErro(true)} />
         : iniciais(nome)}
@@ -1012,7 +995,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
           <h2 className={CARD_TITLE}>Aniversariantes</h2>
           <div className="mt-0.5 text-[12.5px] text-faint">Próximos 7 dias</div>
         </div>
-        <span className="text-lg">🎂</span>
+        <span aria-hidden="true" className="text-faint"><Icons.Cake /></span>
       </div>
       <div className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
         {loading ? [1, 2, 3].map(i => (

@@ -16,6 +16,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Configuração `future.hoverOnlyWhenSupported` no `tailwind.config.js` para evitar estados de hover presos em telas de toque.
 
 ### Alterado
+- **Início mais calmo** (`Dashboard.jsx`): o laranja da marca deixa de aparecer em ícones e fundos decorativos (relógio do cabeçalho, ícone do plantão, ícones dos atalhos, iniciais dos aniversariantes, sparkline de "OS Fechadas", rótulo "Assumidas") e fica só nas ações, como o botão "Gerenciar Meus Chamados" e o link "Ver todos"; no hover dos atalhos e do "Ver plantões" ele volta como resposta. Os 7 emojis (👋 ⚠️ ⚡ ➡️ 📅 📋 🎂) viram ícones desenhados do conjunto `Icons.jsx` (novo `Alert`), e os 4 mini-KPIs de chamados diferenciam-se por ícone e texto, não por quatro cores. O selo de pendentes deixa de pulsar sem parar e o botão primário perde a sombra em repouso. Sem migration e sem variável nova no `.env`; só novo build.
 - `Header.jsx` e `Sidebar.jsx` refatorados para usar Tailwind com breakpoints responsivos.
 - `App.jsx` ajustado com padding inferior para `MobileBottomNav` e altura de viewport dinâmica (`h-dvh`).
 - Páginas adaptadas para mobile/tablet/desktop:
