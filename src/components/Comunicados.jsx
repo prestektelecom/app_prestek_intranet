@@ -3,7 +3,7 @@ import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { useComunicados } from '../hooks/useComunicados';
 import { relativeTimeShort } from '../utils/relativeTime';
-import { fundoHero } from './ui/heroGradiente';
+import { fundoHero, HERO_VIA } from './ui/heroGradiente';
 import HeroSearchInput from './ui/HeroSearchInput';
 
 // Nenhum dos dois modais abaixo tinha role/aria-modal/gerenciamento de foco —
@@ -242,6 +242,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Todas'}
                             onClick={() => setFiltro('Todas')}
                             color={C.accent}
+                            textColor={C.accentDark}
                         />
                         <ChipButton
                             label="Urgente"
@@ -249,6 +250,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Urgente'}
                             onClick={() => setFiltro('Urgente')}
                             color={C.danger}
+                            textColor={C.dangerStrong}
                         />
                         <ChipButton
                             label="Importante"
@@ -256,6 +258,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Importante'}
                             onClick={() => setFiltro('Importante')}
                             color={C.warning}
+                            textColor={C.warningStrong}
                         />
                         <ChipButton
                             label="Geral"
@@ -263,6 +266,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Geral'}
                             onClick={() => setFiltro('Geral')}
                             color={C.success}
+                            textColor={C.successStrong}
                         />
                     </div>
 
@@ -480,8 +484,13 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kp
     );
 }
 
-function ChipButton({ label, count, active, onClick, color }) {
+// `color` desenha borda e halo (componente, 3:1); `textColor` é o tom -Strong
+// do mesmo semântico, o único que passa 4,5:1 como texto e como fundo da
+// contagem. A contagem ativa usa texto escuro nos temas escuros (onde o
+// -Strong é o tom claro) e a superfície clara no tema claro.
+function ChipButton({ label, count, active, onClick, color, textColor }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const [hover, setHover] = useState(false);
     const rgb = hexToRgb(color);
 
@@ -497,7 +506,7 @@ function ChipButton({ label, count, active, onClick, color }) {
                 padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
                 border: active ? `1.5px solid ${color}` : `1.5px solid ${C.line}`,
                 background: active ? `rgba(${rgb}, 0.12)` : (hover ? C.surfaceSoft : C.surface),
-                color: active ? color : (hover ? C.ink : C.ink2),
+                color: active ? textColor : (hover ? C.ink : C.ink2),
                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                 fontWeight: active ? 700 : 500, fontSize: 13,
                 transition: 'all 0.15s',
@@ -506,8 +515,8 @@ function ChipButton({ label, count, active, onClick, color }) {
         >
             <span>{label}</span>
             <span style={{
-                background: active ? color : C.surfaceSoft,
-                color: active ? C.onAccent : C.ink2,
+                background: active ? textColor : C.surfaceSoft,
+                color: active ? (isDark ? C.onAccent : C.surface) : C.ink2,
                 fontSize: 11, fontWeight: 700,
                 padding: '1px 7px', borderRadius: 999,
                 fontFamily: '"JetBrains Mono", monospace',
@@ -594,7 +603,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                             title={formatFullDate(item.criado_em)}
                             style={{
                                 fontSize: 11,
-                                color: C.muted,
+                                color: C.ink2,
                                 fontFamily: '"JetBrains Mono", monospace',
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -722,7 +731,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                     <span style={{
                         fontSize: 11,
                         fontWeight: 700,
-                        color: C.muted,
+                        color: C.ink2,
                         fontFamily: '"JetBrains Mono", monospace',
                         letterSpacing: '0.04em',
                         textTransform: 'uppercase'
@@ -825,7 +834,7 @@ function ErrorState({ onRetry }) {
                     borderRadius: 10,
                     border: 'none',
                     background: C.accent,
-                    color: 'white',
+                    color: C.onAccent,
                     fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                     fontWeight: 700,
                     fontSize: 13,
@@ -836,8 +845,8 @@ function ErrorState({ onRetry }) {
                     transition: 'all 0.15s',
                     boxShadow: `0 4px 12px rgba(${hexToRgb(C.accent)}, 0.2)`
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = C.accentDark; }}
-                onMouseLeave={e => { e.currentTarget.style.background = C.accent; }}
+                onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.06)'; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
             >
                 <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 18, lineHeight: 1 }}>refresh</span>
                 Tentar novamente
@@ -958,7 +967,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
             }}>
                 {/* Header do Modal com Gradiente */}
                 <div style={{
-                    background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accent})`,
+                    background: `linear-gradient(120deg, ${C.accentDeep}, ${HERO_VIA})`,
                     padding: '20px 24px',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -1005,7 +1014,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                 {/* Form do Modal */}
                 <form onSubmit={onSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div>
-                        <label htmlFor="com-titulo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-titulo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Título do Aviso *
                         </label>
                         <input
@@ -1023,7 +1032,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
 
                     <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 16 }}>
                         <div>
-                            <label htmlFor="com-tipo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            <label htmlFor="com-tipo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Tipo *
                             </label>
                             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -1056,7 +1065,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="com-depto" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            <label htmlFor="com-depto" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Depto. Autor *
                             </label>
                             <input
@@ -1074,7 +1083,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label htmlFor="com-descricao" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-descricao" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Mensagem/Descrição *
                         </label>
                         <textarea
@@ -1095,7 +1104,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label htmlFor="com-imagem" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-imagem" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             URL da Imagem de Capa (Opcional)
                         </label>
                         <input
@@ -1111,7 +1120,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label htmlFor="com-link" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-link" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Link Adicional (Opcional)
                         </label>
                         <input
@@ -1179,8 +1188,8 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                                 gap: 6,
                                 boxShadow: `0 4px 12px rgba(${hexToRgb(C.accent)}, 0.2)`
                             }}
-                            onMouseEnter={e => { if (!isSubmitting) { e.currentTarget.style.background = C.accentDark; } }}
-                            onMouseLeave={e => { if (!isSubmitting) { e.currentTarget.style.background = C.accent; } }}
+                            onMouseEnter={e => { if (!isSubmitting) { e.currentTarget.style.filter = 'brightness(1.06)'; } }}
+                            onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
                         >
                             {isSubmitting ? (
                                 <>
@@ -1308,8 +1317,8 @@ function DeleteModal({ onClose, onConfirm }) {
                             padding: '10px 22px',
                             borderRadius: 10,
                             border: 'none',
-                            background: C.danger,
-                            color: 'white',
+                            background: C.dangerFill,
+                            color: C.onDanger,
                             fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                             fontWeight: 700,
                             fontSize: 13,
@@ -1317,8 +1326,8 @@ function DeleteModal({ onClose, onConfirm }) {
                             transition: 'all 0.15s',
                             boxShadow: `0 4px 12px rgba(${hexToRgb(C.danger)}, 0.2)`
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232, 69, 69, 0.85)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = C.danger; }}
+                        onMouseEnter={e => { e.currentTarget.style.filter = C.onDanger === '#FFFFFF' ? 'brightness(0.92)' : 'brightness(1.08)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
                     >
                         Sim, excluir!
                     </button>
