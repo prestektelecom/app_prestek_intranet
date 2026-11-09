@@ -287,7 +287,6 @@ export default function Comunicados({ user, setCurrentView }) {
                                 color: C.ink,
                                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                                 cursor: 'pointer',
-                                outline: 'none',
                                 transition: 'all 0.15s',
                                 appearance: 'none',
                                 WebkitAppearance: 'none'
@@ -502,7 +501,6 @@ function ChipButton({ label, count, active, onClick, color }) {
                 fontWeight: active ? 700 : 500, fontSize: 13,
                 transition: 'all 0.15s',
                 boxShadow: active ? `0 0 0 3px rgba(${rgb}, 0.12)` : 'none',
-                outline: 'none'
             }}
         >
             <span>{label}</span>
@@ -815,7 +813,6 @@ function ErrorState({ onRetry }) {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 6,
-                    outline: 'none',
                     transition: 'all 0.15s',
                     boxShadow: `0 4px 12px rgba(${hexToRgb(C.accent)}, 0.2)`
                 }}
@@ -872,7 +869,6 @@ function EmptyState({ busca, filtro, onClear }) {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: 6,
-                        outline: 'none',
                         transition: 'all 0.15s'
                     }}
                     onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
@@ -907,7 +903,6 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
         fontSize: 14,
         color: C.ink,
         fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-        outline: 'none',
         transition: 'all 0.15s',
         boxShadow: focusedInput === name ? `0 0 0 3px rgba(${hexToRgb(C.accent)}, 0.15)` : 'none'
     });
@@ -1130,7 +1125,6 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                                 fontSize: 13,
                                 cursor: 'pointer',
                                 transition: 'all 0.15s',
-                                outline: 'none'
                             }}
                             onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
                             onMouseLeave={e => { e.currentTarget.style.background = C.surface; }}
@@ -1155,7 +1149,6 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: 6,
-                                outline: 'none',
                                 boxShadow: `0 4px 12px rgba(${hexToRgb(C.accent)}, 0.2)`
                             }}
                             onMouseEnter={e => { if (!isSubmitting) { e.currentTarget.style.background = C.accentDark; } }}
@@ -1275,7 +1268,6 @@ function DeleteModal({ onClose, onConfirm }) {
                             fontSize: 13,
                             cursor: 'pointer',
                             transition: 'all 0.15s',
-                            outline: 'none'
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
                         onMouseLeave={e => { e.currentTarget.style.background = C.surface; }}
@@ -1295,7 +1287,6 @@ function DeleteModal({ onClose, onConfirm }) {
                             fontSize: 13,
                             cursor: 'pointer',
                             transition: 'all 0.15s',
-                            outline: 'none',
                             boxShadow: `0 4px 12px rgba(${hexToRgb(C.danger)}, 0.2)`
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232, 69, 69, 0.85)'; }}
