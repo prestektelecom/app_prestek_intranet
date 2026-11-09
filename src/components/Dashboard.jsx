@@ -9,6 +9,7 @@ import { resolveAvatarUrl, AVATAR_PNGS } from '../utils/avatarPngs'
 import TiSupportModal from './TiSupportModal'
 import { GlowingEffect } from './ui/glowing-effect'
 import { useTouchOnly } from '../hooks/useTouchOnly'
+import { listarCargos, listarDepartamentosEmpresa } from '../utils/referenciaSetores'
 
 /* ── Tokens utilitários do design system semântico (vars em index.css) ── */
 const LABEL_MONO = 'font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-faint'
@@ -875,36 +876,17 @@ function AtalhosCard({ setCurrentView, onSuporteTIClick }) {
   );
 }
 
-function proximoAniversario(dataNascimento) {
-  if (!dataNascimento) return null;
-  const iso = String(dataNascimento).slice(0, 10);
-  const partes = iso.split('-').map(Number);
-  if (partes.length !== 3 || !partes[1] || !partes[2]) return null;
-  const [, mes, dia] = partes;
-  const hoje = new Date();
-  const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-  let proximo = new Date(hoje.getFullYear(), mes - 1, dia);
-  if (proximo < inicioHoje) proximo = new Date(hoje.getFullYear() + 1, mes - 1, dia);
-  return proximo;
-}
-
-function diasAteAniversario(dataNascimento) {
-  const proximo = proximoAniversario(dataNascimento);
-  if (!proximo) return null;
-  const hoje = new Date();
-  const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-  return Math.round((proximo - inicioHoje) / 86400000);
-}
-
 const DIAS_SEMANA_CURTO = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
-// Data do próximo aniversário por extenso, ex: "seg, 04/08"
-function dataAniversarioExtenso(dataNascimento) {
-  const proximo = proximoAniversario(dataNascimento);
-  if (!proximo) return '';
-  const dia = String(proximo.getDate()).padStart(2, '0');
-  const mes = String(proximo.getMonth() + 1).padStart(2, '0');
-  return `${DIAS_SEMANA_CURTO[proximo.getDay()]}, ${dia}/${mes}`;
+// Data do próximo aniversário por extenso, ex: "seg, 04/08". Recebe o
+// 'YYYY-MM-DD' que o servidor já calculou (/api/aniversariantes), que não
+// carrega o ano de nascimento.
+function dataAniversarioExtenso(proximoISO) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(proximoISO || ''));
+  if (!m) return '';
+  // Construída com ano/mês/dia locais: o dia da semana não depende do fuso.
+  const data = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return `${DIAS_SEMANA_CURTO[data.getDay()]}, ${m[3]}/${m[2]}`;
 }
 
 // Partículas de ligação não contam como sobrenome ("Vitor Santos da Silva" -> "Vitor Silva")
@@ -962,18 +944,16 @@ function useDeptoMap() {
   const [mapa, setMapa] = useState({});
   useEffect(() => {
     let vivo = true;
-    const ler = (url, campo, rotulo) => fetch(url)
-      .then(r => r.json())
-      .then(d => (d.sucesso ? (d[campo] || []).map(x => [String(x.id), x[rotulo]]) : []))
-      .catch(() => []);
-    Promise.all([
-      ler('/api/cargos', 'cargos', 'setor'),
-      ler('/api/departamentos-empresa', 'departamentos', 'departamento'),
-    ]).then(([setores, departamentos]) => {
+    // Listas compartilhadas (utils/referenciaSetores.js): os dois cartões e o
+    // título pediam as mesmas rotas cada um por si.
+    Promise.all([listarCargos(), listarDepartamentosEmpresa()]).then(([setores, departamentos]) => {
       if (!vivo) return;
       const m = {};
       // Reserva primeiro, empresa_setor por cima: o que casa de verdade vence.
-      [...departamentos, ...setores].forEach(([id, nome]) => { if (nome) m[id] = nome; });
+      [
+        ...departamentos.map(x => [String(x.id), x.departamento]),
+        ...setores.map(x => [String(x.id), x.setor]),
+      ].forEach(([id, nome]) => { if (nome) m[id] = nome; });
       setMapa(m);
     });
     return () => { vivo = false; };
@@ -992,15 +972,14 @@ function AniversariantesCard({ onAniversariantesHoje }) {
   const carregarAniversariantes = useCallback(() => {
     setLoading(true);
     setErro(false);
-    fetch('/api/colaboradores')
+    // O servidor filtra e ordena (próximos 7 dias): antes o navegador baixava a
+    // lista inteira de funcionários, com a data de nascimento completa, e
+    // calculava aqui.
+    fetch('/api/aniversariantes?dias=7')
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(d => {
         if (!d.sucesso) { setErro(true); return; }
-        const proximos = (d.colaboradores || [])
-          .map(c => ({ ...c, dias: diasAteAniversario(c.data_nascimento) }))
-          .filter(c => c.dias !== null && c.dias <= 7)
-          .sort((a, b) => a.dias - b.dias);
-        setAniversariantes(proximos);
+        setAniversariantes(d.aniversariantes || []);
       })
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
@@ -1077,7 +1056,7 @@ function AniversariantesCard({ onAniversariantesHoje }) {
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-semibold text-foreground">{nomeCurto(c.funcionario_nome)}</div>
                 <div className="truncate text-xs text-faint">
-                  {dataAniversarioExtenso(c.data_nascimento)}{depto ? ` · ${depto}` : ''}
+                  {dataAniversarioExtenso(c.proximo)}{depto ? ` · ${depto}` : ''}
                 </div>
               </div>
               <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${iminente ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-surface-raised text-faint'}`}>
@@ -1094,14 +1073,13 @@ function AniversariantesCard({ onAniversariantesHoje }) {
 
 function TeamBento() {
   const isTouchOnly = useTouchOnly();
-  const [members, setMembers] = useState([]);
-  // Contagem real: `members` é cortado em 7 pra lista; o cabeçalho dizia
-  // "7 online agora" com 12 pessoas online.
-  const [totalOnline, setTotalOnline] = useState(0);
+  // Lista crua de quem está online; o nome do setor é derivado abaixo. Antes o
+  // `deptoMap` era dependência do fetch, então a chegada das listas de setores
+  // refazia a consulta e reiniciava o intervalo (2 requisições no carregamento).
+  const [online, setOnline] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
   const deptoMap = useDeptoMap();
-
 
   const fetchOnline = useCallback(async () => {
     setErro(false);
@@ -1109,29 +1087,31 @@ function TeamBento() {
       const res = await fetch('/api/colaboradores/online');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      if (data.sucesso) {
-        const lista = data.colaboradores || [];
-        setTotalOnline(lista.length);
-        setMembers(
-          lista.slice(0, 7).map(m => ({
-            id: m.id,
-            name: m.nome || m.funcionario || 'Colaborador',
-            role: deptoMap[String(m.id_departamento)] || m.id_funcao || '',
-            foto: resolveAvatarUrl(m.foto_perfil) || AVATAR_PNGS[(m.id || 0) % AVATAR_PNGS.length],
-          }))
-        );
-      } else {
-        setErro(true);
-      }
+      if (data.sucesso) setOnline(data.colaboradores || []);
+      else setErro(true);
     } catch (_) { setErro(true); }
     finally { setLoading(false); }
-  }, [deptoMap]);
+  }, []);
 
   useEffect(() => {
     fetchOnline();
-    const id = setInterval(fetchOnline, 30000);
-    return () => clearInterval(id);
+    // Aba oculta não precisa saber quem está online a cada 30s: pula o ciclo e
+    // atualiza na hora ao voltar para a aba.
+    const id = setInterval(() => { if (!document.hidden) fetchOnline(); }, 30000);
+    const aoVoltar = () => { if (!document.hidden) fetchOnline(); };
+    document.addEventListener('visibilitychange', aoVoltar);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', aoVoltar); };
   }, [fetchOnline]);
+
+  // Contagem real: a lista é cortada em 7; o cabeçalho dizia "7 online agora"
+  // com 12 pessoas online.
+  const totalOnline = online.length;
+  const members = useMemo(() => online.slice(0, 7).map(m => ({
+    id: m.id,
+    name: m.nome || m.funcionario || 'Colaborador',
+    role: deptoMap[String(m.id_departamento)] || m.id_funcao || '',
+    foto: resolveAvatarUrl(m.foto_perfil) || AVATAR_PNGS[(m.id || 0) % AVATAR_PNGS.length],
+  })), [online, deptoMap]);
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">

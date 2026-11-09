@@ -50,17 +50,25 @@ async function carregar() {
   return store.inflight;
 }
 
+function aoVoltarParaAba() {
+  if (!document.hidden) carregar();
+}
+
 function subscribe(fn) {
   store.listeners.add(fn);
   if (store.listeners.size === 1) {
     carregar();
-    store.timer = setInterval(carregar, POLL_MS);
+    // Aba oculta não precisa de comunicado novo a cada 30s: pula o ciclo e, ao
+    // voltar para a aba, atualiza na hora em vez de esperar o próximo.
+    store.timer = setInterval(() => { if (!document.hidden) carregar(); }, POLL_MS);
+    document.addEventListener('visibilitychange', aoVoltarParaAba);
   }
   return () => {
     store.listeners.delete(fn);
     if (store.listeners.size === 0 && store.timer) {
       clearInterval(store.timer);
       store.timer = null;
+      document.removeEventListener('visibilitychange', aoVoltarParaAba);
     }
   };
 }
