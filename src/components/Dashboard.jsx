@@ -155,7 +155,8 @@ function DashboardHeader({ firstName, cargoName, aniversariantesHoje = [] }) {
 }
 
 function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry }) {
-  const efVal = eficienciaLoading ? '...' : eficiencia?.sem_dados ? 'N/A' : `${eficiencia?.eficiencia_atual ?? '–'}%`;
+  const temDados = Boolean(eficiencia) && !eficiencia.sem_dados;
+  const efVal = eficienciaLoading ? '...' : !eficiencia ? '–' : eficiencia.sem_dados ? 'N/A' : `${eficiencia.eficiencia_atual ?? '–'}%`;
   const efSub = !eficienciaLoading && eficiencia && !eficiencia.sem_dados && eficiencia.variacao !== null
     ? { text: `${eficiencia.variacao >= 0 ? '+' : ''}${eficiencia.variacao}%`, tone: eficiencia.variacao >= 0 ? 'success' : 'danger' }
     : null;
@@ -211,8 +212,8 @@ function SetorBento({ eficiencia, eficienciaLoading, eficienciaError, onRetry })
       />
       <KpiCard
         label="Sem SLA"
-        value={eficienciaLoading ? '...' : (eficiencia?.os_sem_prazo ?? 0)}
-        sub={eficiencia?.os_sem_prazo > 0 ? 'Atenção' : 'Ok'}
+        value={eficienciaLoading ? '...' : (temDados ? (eficiencia.os_sem_prazo ?? 0) : '–')}
+        sub={temDados ? (eficiencia.os_sem_prazo > 0 ? 'Atenção' : 'Ok') : null}
         subTone={eficiencia?.os_sem_prazo > 0 ? 'warning' : 'success'}
         sparkData={null}
       />
@@ -235,7 +236,7 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
     ? (proximoPlantao.horario_inicio && proximoPlantao.horario_fim
         ? `${String(proximoPlantao.horario_inicio).slice(0, 5)} – ${String(proximoPlantao.horario_fim).slice(0, 5)}`
         : 'Horário a confirmar')
-    : 'Sem cobertura ativa';
+    : 'Você não está na escala';
 
   return (
     <div className="relative h-full rounded-[1.25rem] border border-border p-2 md:rounded-[1.5rem] md:p-3 bg-surface shadow-sm">
@@ -283,6 +284,8 @@ function PlantaoBento({ proximoPlantao, plantaoLoading, plantaoError, onRetry, s
 function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurrentView }) {
   const isTouchOnly = useTouchOnly();
   const allGood = !osLoading && !osError && osCount === 0;
+  // Sem colaborador vinculado o fetch nem roda e osCount fica null: não é "0 pendentes".
+  const semDados = !osLoading && !osError && osCount == null;
 
   const assumidas = osStatusCount ? (osStatusCount.AS || 0) : 0;
   const encaminhadas = osStatusCount ? ((osStatusCount.EN || 0) + (osStatusCount.EX || 0)) : 0;
@@ -296,7 +299,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
       <div>
         <div className="flex items-start justify-between gap-2">
           <div className={LABEL_MONO}>Chamados no meu nome</div>
-          {!osLoading && !osError && (
+          {!osLoading && !osError && !semDados && (
             <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${allGood ? 'bg-[var(--success-soft)] text-[var(--success-strong)]' : 'bg-[var(--warning-soft)] text-[var(--warning-strong)] animate-pulse'}`}>
               {allGood ? <><Icons.Check /> Tudo em dia</> : `⚠️ ${osCount} pendente${osCount !== 1 ? 's' : ''}`}
             </span>
@@ -320,7 +323,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         ) : (
         <div className="mt-3 flex items-baseline gap-3">
           <div className="text-5xl font-extrabold leading-none tracking-tight text-foreground tabular-nums">
-            {osLoading ? '...' : osCount}
+            {osLoading ? '...' : (osCount ?? '–')}
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-bold text-foreground">Chamados</span>
@@ -330,7 +333,7 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
         )}
 
         {/* Detalhamento por Status (4 Mini KPIs) */}
-        {!osLoading && !osError && !allGood && (
+        {!osLoading && !osError && !semDados && !allGood && (
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="flex flex-col rounded-xl border border-border/60 bg-surface-raised/60 p-2 transition-colors hover:bg-surface-raised">
               <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[var(--accent-dark)] truncate" title="Assumidas">
@@ -375,13 +378,19 @@ function OsBento({ osCount, osStatusCount, osLoading, osError, onRetry, setCurre
             Nenhum chamado pendente atribuído a você no momento.
           </p>
         )}
+
+        {semDados && (
+          <p className="mt-3 text-[13px] text-faint leading-relaxed">
+            Seu usuário ainda não está vinculado a um colaborador, então não há chamados para mostrar. Fale com a TI.
+          </p>
+        )}
       </div>
 
       <button
         onClick={() => setCurrentView('tickets')}
         className={`${ACTION_BTN_PRIMARY} hover:shadow-lg transition-transform active:scale-[0.98] mt-4`}
       >
-        Gerenciar Meus Chamados <Icons.ArrowR />
+        Ver meus chamados <Icons.ArrowR />
       </button>
       </div>
     </div>
@@ -1269,7 +1278,8 @@ export default function Dashboard({ setCurrentView, user }) {
   useEffect(() => { carregarEficiencia(); }, [carregarEficiencia]);
 
   const safeName = func.funcionario || user?.nome || 'Usuário';
-  const firstName = safeName.split(' ')[0] || 'Usuário';
+  // Nomes chegam do IXC em CAIXA ALTA; o resto da tela já passa por capitalizar().
+  const firstName = capitalizar(palavrasNome(safeName)[0] || 'Usuário');
 
   // Fonte única do comunicado em destaque, reportada pelo banner e consumida
   // pela lista logo abaixo — ver comentário em ComunicadoBanner/ComunicadosCard.
@@ -1314,12 +1324,11 @@ export default function Dashboard({ setCurrentView, user }) {
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 font-mono text-[11.5px] tracking-wide text-faint">
-          <span>© 2026 Prestek Telecom · Portal Interno · Confidencial.</span>
-          <div className="flex gap-5">
-            <a href="#" className="text-inherit no-underline hover:text-foreground">Política de Privacidade</a>
-            <a href="#" className="text-inherit no-underline hover:text-foreground">Diretrizes Internas</a>
-            <span className="text-[var(--success-strong)]">● v1.0.0</span>
-          </div>
+          {/* Sem links "Política de Privacidade" / "Diretrizes Internas" nem selo de
+              versão: os links eram href="#" (rolavam ao topo e sujavam a URL, contra a
+              decisão de 2026-09-10 de não ter link sem destino) e o "v1.0.0" não batia
+              com o package.json. Volta quando houver página e fonte real da versão. */}
+          <span>© {new Date().getFullYear()} Prestek Telecom · Portal Interno · Confidencial.</span>
         </div>
       </div>
 
