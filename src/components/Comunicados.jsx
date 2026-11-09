@@ -242,7 +242,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Todas'}
                             onClick={() => setFiltro('Todas')}
                             color={C.accent}
-                            textColor={C.accentDark}
+                            textColor={C.bg === BENTO_LIGHT.bg ? C.accentDeep : C.accentDark}
                         />
                         <ChipButton
                             label="Urgente"
@@ -961,6 +961,12 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                 boxShadow: '0 24px 64px rgba(11, 27, 46, 0.25)',
                 width: '100%',
                 maxWidth: 520,
+                // Altura limitada à janela: o corpo do formulário rola e o
+                // cabeçalho e o rodapé ficam à vista (celular na horizontal,
+                // zoom de 200%, teclado aberto).
+                maxHeight: 'calc(100dvh - 32px)',
+                display: 'flex',
+                flexDirection: 'column',
                 overflow: 'hidden',
                 border: `1px solid ${C.line}`,
                 animation: 'card-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both'
@@ -969,6 +975,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                 <div style={{
                     background: `linear-gradient(120deg, ${C.accentDeep}, ${HERO_VIA})`,
                     padding: '20px 24px',
+                    flexShrink: 0,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center'
@@ -1012,7 +1019,8 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                 </div>
 
                 {/* Form do Modal */}
-                <form onSubmit={onSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                    <div style={{ padding: '24px 24px 8px', display: 'flex', flexDirection: 'column', gap: 16, flex: 1, minHeight: 0, overflowY: 'auto' }}>
                     <div>
                         <label htmlFor="com-titulo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Título do Aviso *
@@ -1135,15 +1143,17 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                         />
                     </div>
 
+                    </div>
+
+                    {/* Rodapé fixo: o erro de salvar fica junto dos botões, à
+                        vista mesmo com o corpo do formulário rolado. */}
+                    <div style={{ flexShrink: 0, padding: '16px 24px 24px', borderTop: `1px solid ${C.line}`, display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {erro && (
                         <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.dangerStrong }}>{erro}</p>
                     )}
 
                     {/* Botões do Rodapé */}
                     <div style={{
-                        marginTop: 8,
-                        paddingTop: 16,
-                        borderTop: `1px solid ${C.line}`,
                         display: 'flex',
                         justifyContent: 'end',
                         gap: 12
@@ -1204,6 +1214,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                             )}
                         </button>
                     </div>
+                    </div>
                 </form>
             </div>
             <style>{`
@@ -1253,7 +1264,8 @@ function DeleteModal({ onClose, onConfirm }) {
                 boxShadow: '0 24px 64px rgba(11, 27, 46, 0.25)',
                 width: '100%',
                 maxWidth: 400,
-                overflow: 'hidden',
+                maxHeight: 'calc(100dvh - 32px)',
+                overflowY: 'auto',
                 border: `1px solid rgba(${hexToRgb(C.danger)}, 0.3)`,
                 padding: '24px',
                 textAlign: 'center',
