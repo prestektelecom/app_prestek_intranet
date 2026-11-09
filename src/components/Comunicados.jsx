@@ -276,6 +276,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             pointerEvents: 'none'
                         }}>filter_list</span>
                         <select
+                            aria-label="Ordenar comunicados"
                             value={ordenacao}
                             onChange={(e) => setOrdenacao(e.target.value)}
                             style={{
@@ -973,6 +974,8 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                             transition: 'all 0.15s'
                         }}
                         className="min-w-[44px] min-h-[44px]"
+                        type="button"
+                        aria-label="Fechar"
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
                     >
@@ -983,12 +986,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                 {/* Form do Modal */}
                 <form onSubmit={onSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-titulo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Título do Aviso *
                         </label>
                         <input
                             required
                             type="text"
+                            id="com-titulo"
                             value={formData.titulo}
                             onChange={e => setFormData({ ...formData, titulo: e.target.value })}
                             onFocus={() => setFocusedInput('titulo')}
@@ -1000,12 +1004,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
 
                     <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 16 }}>
                         <div>
-                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            <label htmlFor="com-tipo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Tipo *
                             </label>
                             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                                 <select
                                     required
+                                    id="com-tipo"
                                     value={formData.tipo}
                                     onChange={e => setFormData({ ...formData, tipo: e.target.value })}
                                     onFocus={() => setFocusedInput('tipo')}
@@ -1032,12 +1037,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                             </div>
                         </div>
                         <div>
-                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            <label htmlFor="com-depto" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Depto. Autor *
                             </label>
                             <input
                                 required
                                 type="text"
+                                id="com-depto"
                                 value={formData.departamento_autor}
                                 onChange={e => setFormData({ ...formData, departamento_autor: e.target.value })}
                                 onFocus={() => setFocusedInput('depto')}
@@ -1049,12 +1055,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-descricao" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Mensagem/Descrição *
                         </label>
                         <textarea
                             required
                             rows="4"
+                            id="com-descricao"
                             value={formData.descricao}
                             onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                             onFocus={() => setFocusedInput('descricao')}
@@ -1069,11 +1076,12 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-imagem" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             URL da Imagem de Capa (Opcional)
                         </label>
                         <input
                             type="url"
+                            id="com-imagem"
                             value={formData.imagem_url}
                             onChange={e => setFormData({ ...formData, imagem_url: e.target.value })}
                             onFocus={() => setFocusedInput('imagem_url')}
@@ -1084,11 +1092,12 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-link" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Link Adicional (Opcional)
                         </label>
                         <input
                             type="url"
+                            id="com-link"
                             value={formData.link_opcional}
                             onChange={e => setFormData({ ...formData, link_opcional: e.target.value })}
                             onFocus={() => setFocusedInput('link')}
