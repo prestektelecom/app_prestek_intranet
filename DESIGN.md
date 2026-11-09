@@ -60,6 +60,11 @@ typography:
     fontSize: "0.8125rem"
     fontWeight: 600
     lineHeight: 1.2
+  caption:
+    fontFamily: "Plus Jakarta Sans, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 500
+    lineHeight: 1.4
   overline:
     fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "0.6875rem"
@@ -228,6 +233,7 @@ Nos temas escuros o `accentDark` (#FDBA74) fica mais claro que o `accent`, o inv
 - **Title** (700, 18px / text-lg, 1.3): título de card e de modal. Plus Jakarta Sans.
 - **Body** (400, 14px / text-sm, 1.5): texto corrido, resumos, descrições. Medida confortável até 70ch.
 - **Label** (600, 13px, 1.2): botões, chips, itens de navegação, rótulos de formulário. Passa a 700 quando ativo.
+- **Caption** (500, 12px / text-xs, 1.4): metadados e texto de apoio (data, setor, dica, descrição de uma linha). Entre o corpo (14px) e o overline (11px); existe porque 11,5 / 12 / 12,5px apareciam espalhados pela tela sem papel.
 - **Overline** (700, 11px, 0.08em, caixa alta): eyebrows de seção, badges, "MENU" e "SISTEMA" na sidebar. Use com moderação; três por tela já é muito.
 - **Mono** (600, 13px): contadores, KPIs, protocolos e qualquer número que o olho compara com o vizinho.
 
@@ -360,4 +366,5 @@ Moldura extraída como `ui/HeroShell.jsx` na Fase 16 (`HeroShell` + `HERO_LABEL_
 - **Don't** use `C.muted`/`text-muted` para texto real (The Muted Is Never Text Rule) — só ícone inativo e placeholder.
 - **Don't** implemente Escape/foco/trap de Tab à mão num diálogo novo; use `useDismissable` + `makeTrapTab` (`hooks/useDismissable.js`).
 - **Don't** use emoji como ícone (⚠️ ⚡ 📅 🎂): não seguem o tema, o leitor de tela os lê pelo nome e saem do traço do conjunto. Ícone vem de `common/Icons.jsx` (traço de 1,7, `currentColor`); falta um? Adicione lá.
+- **Don't** escreva texto abaixo de 11px (o piso é o overline) nem tamanhos entre os degraus (11,5, 12,5, 13,5, 17px). Os degraus são 11, 12, 13, 14, 18, 20 e 30.
 - **Don't** use `window.confirm()`/`alert()` nativos para confirmar ou anunciar erro de uma ação — nem mesmo em ações reversíveis; um diálogo/toast do próprio sistema sempre existe para isso.
