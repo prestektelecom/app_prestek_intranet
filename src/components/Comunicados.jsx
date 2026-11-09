@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useLayoutEffect } from 'react';
 import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { useComunicados } from '../hooks/useComunicados';
@@ -521,10 +521,29 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
     const C = useBentoTheme();
     const [hover, setHover] = useState(false);
     const [expandido, setExpandido] = useState(false);
+    const [excede, setExcede] = useState(false);
+    const textoRef = useRef(null);
     const typeMeta = getTypeMeta(C);
     const meta = typeMeta[item.tipo] || typeMeta.Geral;
     const rgb = hexToRgb(meta.color);
     const descricaoLimpa = limparAsteriscos(item.descricao);
+
+    // O corte é em linhas (4), não em caracteres: texto colado do WhatsApp tem
+    // muitas quebras, e 8 linhas curtas (~160 caracteres) eram cortadas sem
+    // "Ler mais". Mede o que foi cortado de fato e remede quando a largura do
+    // card muda. Expandido, não remede: o botão fica para "Ler menos".
+    useLayoutEffect(() => {
+        const el = textoRef.current;
+        if (!el) return undefined;
+        const medir = () => {
+            if (!expandido) setExcede(el.scrollHeight > el.clientHeight + 1);
+        };
+        medir();
+        if (typeof ResizeObserver === 'undefined') return undefined;
+        const ro = new ResizeObserver(medir);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [expandido, descricaoLimpa]);
 
     return (
         <div
@@ -653,13 +672,12 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                 {/* Descrição / Conteúdo — comunicados chegam como texto colado de
                     WhatsApp, às vezes com centenas de palavras; trunca por padrão
                     para não quebrar a escaneabilidade do feed. */}
-                <p style={{
+                <p ref={textoRef} style={{
                     margin: '0 0 8px 0',
                     fontSize: 14,
                     color: C.ink2,
                     lineHeight: 1.6,
                     whiteSpace: 'pre-wrap',
-                    flex: 1,
                     ...(expandido ? {} : {
                         display: '-webkit-box',
                         WebkitLineClamp: 4,
@@ -669,9 +687,10 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                 }}>
                     {descricaoLimpa}
                 </p>
-                {descricaoLimpa.length > 220 && (
+                {(excede || expandido) && (
                     <button
                         type="button"
+                        aria-expanded={expandido}
                         onClick={() => setExpandido(v => !v)}
                         style={{
                             alignSelf: 'flex-start',
