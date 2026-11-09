@@ -32,6 +32,15 @@
         "value": "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
         "createdAt": "2026-09-18T23:55:22.985Z",
         "reason": "user confirmed: réplica pedida do efeito 'mercury-drop' (squish líquido do botão) do componente Neural Access/Mercury enviado pelo usuário — overshoot é a identidade visual do efeito, não um easing padrão esquecido"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "src/components/Dashboard.jsx"
+        ],
+        "createdAt": "2026-11-09T01:18:42.959Z",
+        "reason": "Claude, 2026-11-08: text-stone-950 (#0c0a09) é quase preto sobre amber-500, ~9:1; escolhido no PR #11 para corrigir 2,8:1 do branco; axe e medição de contraste nos 5 temas sem falhas"
       }
     ]
   }

@@ -27,6 +27,7 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 - Produção: destino do deploy definido em 2026-10-03: `/home/antonio/app_prestek_intranet` (servidor `201.150.48.6`, usuário `antonio`, sem root). Antes constava `/root/prestek_intranet`. A senha nunca vai para nota ou arquivo: trocar por chave SSH.
 - Repositório: `prestektelecom/app_prestek_intranet` (privado, na organização; antes `felixskmarcio/prestek_intranet`). O `gh` está instalado e logado como `prestektelecom`; o Claude envia só branches de trabalho e abre o PR, e o push na `main` e o merge são do Felix.
 - Servidor (Debian 10, sem root, sem `sudo` sem senha): **não tem `git` do sistema**. O git 2.20 foi extraído de `.deb` em `~/local/usr/bin`, e o `pm2` está em `~/local/bin`; nenhum dos dois está no `PATH` (o `~/.bashrc` não foi alterado). O servidor lê o GitHub por chave de deploy `~/.ssh/prestek_deploy2` (somente leitura). Para atualizar: exportar `PATH="$HOME/local/usr/bin:$HOME/local/bin:$PATH"`, `GIT_EXEC_PATH="$HOME/local/usr/lib/git-core"`, `GIT_TEMPLATE_DIR="$HOME/local/usr/share/git-core/templates"` e `GIT_SSH_COMMAND="ssh -i ~/.ssh/prestek_deploy2 -o IdentitiesOnly=yes"`, depois `git pull origin main`. Esta máquina entra no servidor por chave SSH (`id_ed25519` em `authorized_keys` do `antonio`).
+- API do IXC: desde 2026-11-08 o backend usa o usuário de API `IXC_USER_ID=117` (antes 222, que o IXC passou a recusar). A troca vale em `backend/.env`, local e no servidor, e exige `pm2 restart prestek-backend`. Sintoma de token recusado no login: "Falha ao comunicar com o sistema." (502). O token fica só nos `.env`, nunca em nota. No servidor sobrou um `backend/.env.bak` com o token antigo, para apagar.
 - Cliente placeholder de chamados internos de TI na IXC: `id_cliente = 681` ("escritório
   Prestek"). Tem **40 logins** (uma unidade/filial da Prestek por login, ex.: `igrejanova`,
   `piacabucu`, `canabrava`) — NÃO tem um login só. O usado para abrir chamado de TI é
@@ -83,6 +84,8 @@ responsividade em `AGENTS.md`, design em `DESIGN.md`.
 ## Pendências
 
 > **Lista única e atual: `PENDENCIAS_PRODUCAO.md`.** O histórico detalhado (itens concluídos, decisões do programa Impeccable, decisões de segurança e o diário de sessões) está em [[MEMORIA-historico]].
+
+- [ ] **Audit do Início (2026-11-08): PRs #9 a #17 mesclados na `main` em 2026-11-08, falta publicar.** No servidor: `git pull`, `npm ci` (o #10 removeu 2 dependências), `pm2 restart prestek-backend` (o #16 cria a rota `/api/aniversariantes`) e refazer o build do front. Decisões do Felix pendentes: (1) fileira de 3 KPIs do setor aparece vazia ("N/A / – / –") para quem não é técnico no IXC; (2) atalhos "Em breve" (Holerite, Ponto, Férias); (3) número do WhatsApp da Reservar Sala fixo no código. Detalhe, placar (12 → 18/20, medido em 2026-11-08 no conjunto dos PRs, antes do merge; a `main` final compila e o conteúdo é o mesmo) e limites em `docs/impeccable/audit-inicio-2026-11-08.md`. Rodar `/impeccable audit inicio` depois do merge.
 
 **Item em standby cujo detalhe só existe aqui:**
 
