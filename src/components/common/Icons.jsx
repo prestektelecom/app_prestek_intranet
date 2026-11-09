@@ -29,6 +29,7 @@ export const Icons = {
   TrendUp: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l7-7 4 4 7-7M21 7v4h-4"/></svg>,
   Refresh: () => <svg width="16" height="16" viewBox="0 0 24 24" {...sk}><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>,
   Cake: () => <svg width="16" height="16" viewBox="0 0 24 24" {...sk}><path d="M4 21h16"/><path d="M5 21v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6"/><path d="M5 16c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0"/><path d="M8 13V9M12 13V8M16 13V9"/><path d="M8 9c0-1.2.8-2 1-3M12 8c0-1.2.8-2 1-3M16 9c0-1.2.8-2 1-3"/></svg>,
+  Alert: () => <svg width="14" height="14" viewBox="0 0 24 24" {...sk}><path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>,
   Pause: () => <svg width="18" height="18" viewBox="0 0 24 24" {...sk}><rect x="6" y="5" width="3.5" height="14" rx="1"/><rect x="14.5" y="5" width="3.5" height="14" rx="1"/></svg>,
   Play: () => <svg width="18" height="18" viewBox="0 0 24 24" {...sk}><path d="M7 4.5v15l12-7.5z"/></svg>,
   More: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>,

@@ -359,4 +359,5 @@ Moldura extraída como `ui/HeroShell.jsx` na Fase 16 (`HeroShell` + `HERO_LABEL_
 - **Don't** hardcode `#9A3412` ou qualquer valor de um tema específico em código que roda nos cinco temas.
 - **Don't** use `C.muted`/`text-muted` para texto real (The Muted Is Never Text Rule) — só ícone inativo e placeholder.
 - **Don't** implemente Escape/foco/trap de Tab à mão num diálogo novo; use `useDismissable` + `makeTrapTab` (`hooks/useDismissable.js`).
+- **Don't** use emoji como ícone (⚠️ ⚡ 📅 🎂): não seguem o tema, o leitor de tela os lê pelo nome e saem do traço do conjunto. Ícone vem de `common/Icons.jsx` (traço de 1,7, `currentColor`); falta um? Adicione lá.
 - **Don't** use `window.confirm()`/`alert()` nativos para confirmar ou anunciar erro de uma ação — nem mesmo em ações reversíveis; um diálogo/toast do próprio sistema sempre existe para isso.
