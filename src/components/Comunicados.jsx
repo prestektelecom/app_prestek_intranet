@@ -1,9 +1,9 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useLayoutEffect } from 'react';
 import { useBentoTheme, BENTO_LIGHT } from '../hooks/useBentoTheme';
 import { useDismissable, makeTrapTab } from '../hooks/useDismissable';
 import { useComunicados } from '../hooks/useComunicados';
 import { relativeTimeShort } from '../utils/relativeTime';
-import { fundoHero } from './ui/heroGradiente';
+import { fundoHero, HERO_VIA } from './ui/heroGradiente';
 import HeroSearchInput from './ui/HeroSearchInput';
 
 // Nenhum dos dois modais abaixo tinha role/aria-modal/gerenciamento de foco —
@@ -242,6 +242,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Todas'}
                             onClick={() => setFiltro('Todas')}
                             color={C.accent}
+                            textColor={C.bg === BENTO_LIGHT.bg ? C.accentDeep : C.accentDark}
                         />
                         <ChipButton
                             label="Urgente"
@@ -249,6 +250,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Urgente'}
                             onClick={() => setFiltro('Urgente')}
                             color={C.danger}
+                            textColor={C.dangerStrong}
                         />
                         <ChipButton
                             label="Importante"
@@ -256,6 +258,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Importante'}
                             onClick={() => setFiltro('Importante')}
                             color={C.warning}
+                            textColor={C.warningStrong}
                         />
                         <ChipButton
                             label="Geral"
@@ -263,6 +266,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             active={filtro === 'Geral'}
                             onClick={() => setFiltro('Geral')}
                             color={C.success}
+                            textColor={C.successStrong}
                         />
                     </div>
 
@@ -276,6 +280,7 @@ export default function Comunicados({ user, setCurrentView }) {
                             pointerEvents: 'none'
                         }}>filter_list</span>
                         <select
+                            aria-label="Ordenar comunicados"
                             value={ordenacao}
                             onChange={(e) => setOrdenacao(e.target.value)}
                             style={{
@@ -287,7 +292,6 @@ export default function Comunicados({ user, setCurrentView }) {
                                 color: C.ink,
                                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                                 cursor: 'pointer',
-                                outline: 'none',
                                 transition: 'all 0.15s',
                                 appearance: 'none',
                                 WebkitAppearance: 'none'
@@ -480,8 +484,13 @@ function HeroBanner({ busca, setBusca, kpiTotal, kpiUrgentes, kpiImportantes, kp
     );
 }
 
-function ChipButton({ label, count, active, onClick, color }) {
+// `color` desenha borda e halo (componente, 3:1); `textColor` é o tom -Strong
+// do mesmo semântico, o único que passa 4,5:1 como texto e como fundo da
+// contagem. A contagem ativa usa texto escuro nos temas escuros (onde o
+// -Strong é o tom claro) e a superfície clara no tema claro.
+function ChipButton({ label, count, active, onClick, color, textColor }) {
     const C = useBentoTheme();
+    const isDark = C.bg !== BENTO_LIGHT.bg;
     const [hover, setHover] = useState(false);
     const rgb = hexToRgb(color);
 
@@ -497,18 +506,17 @@ function ChipButton({ label, count, active, onClick, color }) {
                 padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
                 border: active ? `1.5px solid ${color}` : `1.5px solid ${C.line}`,
                 background: active ? `rgba(${rgb}, 0.12)` : (hover ? C.surfaceSoft : C.surface),
-                color: active ? color : (hover ? C.ink : C.ink2),
+                color: active ? textColor : (hover ? C.ink : C.ink2),
                 fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                 fontWeight: active ? 700 : 500, fontSize: 13,
                 transition: 'all 0.15s',
                 boxShadow: active ? `0 0 0 3px rgba(${rgb}, 0.12)` : 'none',
-                outline: 'none'
             }}
         >
             <span>{label}</span>
             <span style={{
-                background: active ? color : C.surfaceSoft,
-                color: active ? C.onAccent : C.ink2,
+                background: active ? textColor : C.surfaceSoft,
+                color: active ? (isDark ? C.onAccent : C.surface) : C.ink2,
                 fontSize: 11, fontWeight: 700,
                 padding: '1px 7px', borderRadius: 999,
                 fontFamily: '"JetBrains Mono", monospace',
@@ -522,10 +530,29 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
     const C = useBentoTheme();
     const [hover, setHover] = useState(false);
     const [expandido, setExpandido] = useState(false);
+    const [excede, setExcede] = useState(false);
+    const textoRef = useRef(null);
     const typeMeta = getTypeMeta(C);
     const meta = typeMeta[item.tipo] || typeMeta.Geral;
     const rgb = hexToRgb(meta.color);
     const descricaoLimpa = limparAsteriscos(item.descricao);
+
+    // O corte é em linhas (4), não em caracteres: texto colado do WhatsApp tem
+    // muitas quebras, e 8 linhas curtas (~160 caracteres) eram cortadas sem
+    // "Ler mais". Mede o que foi cortado de fato e remede quando a largura do
+    // card muda. Expandido, não remede: o botão fica para "Ler menos".
+    useLayoutEffect(() => {
+        const el = textoRef.current;
+        if (!el) return undefined;
+        const medir = () => {
+            if (!expandido) setExcede(el.scrollHeight > el.clientHeight + 1);
+        };
+        medir();
+        if (typeof ResizeObserver === 'undefined') return undefined;
+        const ro = new ResizeObserver(medir);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [expandido, descricaoLimpa]);
 
     return (
         <div
@@ -576,7 +603,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                             title={formatFullDate(item.criado_em)}
                             style={{
                                 fontSize: 11,
-                                color: C.muted,
+                                color: C.ink2,
                                 fontFamily: '"JetBrains Mono", monospace',
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -654,13 +681,12 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                 {/* Descrição / Conteúdo — comunicados chegam como texto colado de
                     WhatsApp, às vezes com centenas de palavras; trunca por padrão
                     para não quebrar a escaneabilidade do feed. */}
-                <p style={{
+                <p ref={textoRef} style={{
                     margin: '0 0 8px 0',
                     fontSize: 14,
                     color: C.ink2,
                     lineHeight: 1.6,
                     whiteSpace: 'pre-wrap',
-                    flex: 1,
                     ...(expandido ? {} : {
                         display: '-webkit-box',
                         WebkitLineClamp: 4,
@@ -670,9 +696,10 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                 }}>
                     {descricaoLimpa}
                 </p>
-                {descricaoLimpa.length > 220 && (
+                {(excede || expandido) && (
                     <button
                         type="button"
+                        aria-expanded={expandido}
                         onClick={() => setExpandido(v => !v)}
                         style={{
                             alignSelf: 'flex-start',
@@ -704,7 +731,7 @@ function ComunicadoCard({ item, isAdmin, onEdit, onDelete, animDelay }) {
                     <span style={{
                         fontSize: 11,
                         fontWeight: 700,
-                        color: C.muted,
+                        color: C.ink2,
                         fontFamily: '"JetBrains Mono", monospace',
                         letterSpacing: '0.04em',
                         textTransform: 'uppercase'
@@ -807,7 +834,7 @@ function ErrorState({ onRetry }) {
                     borderRadius: 10,
                     border: 'none',
                     background: C.accent,
-                    color: 'white',
+                    color: C.onAccent,
                     fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                     fontWeight: 700,
                     fontSize: 13,
@@ -815,12 +842,11 @@ function ErrorState({ onRetry }) {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 6,
-                    outline: 'none',
                     transition: 'all 0.15s',
                     boxShadow: `0 4px 12px rgba(${hexToRgb(C.accent)}, 0.2)`
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = C.accentDark; }}
-                onMouseLeave={e => { e.currentTarget.style.background = C.accent; }}
+                onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.06)'; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
             >
                 <span style={{ fontFamily: '"Material Symbols Outlined"', fontSize: 18, lineHeight: 1 }}>refresh</span>
                 Tentar novamente
@@ -872,7 +898,6 @@ function EmptyState({ busca, filtro, onClear }) {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: 6,
-                        outline: 'none',
                         transition: 'all 0.15s'
                     }}
                     onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
@@ -907,7 +932,6 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
         fontSize: 14,
         color: C.ink,
         fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-        outline: 'none',
         transition: 'all 0.15s',
         boxShadow: focusedInput === name ? `0 0 0 3px rgba(${hexToRgb(C.accent)}, 0.15)` : 'none'
     });
@@ -937,14 +961,21 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                 boxShadow: '0 24px 64px rgba(11, 27, 46, 0.25)',
                 width: '100%',
                 maxWidth: 520,
+                // Altura limitada à janela: o corpo do formulário rola e o
+                // cabeçalho e o rodapé ficam à vista (celular na horizontal,
+                // zoom de 200%, teclado aberto).
+                maxHeight: 'calc(100dvh - 32px)',
+                display: 'flex',
+                flexDirection: 'column',
                 overflow: 'hidden',
                 border: `1px solid ${C.line}`,
                 animation: 'card-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both'
             }}>
                 {/* Header do Modal com Gradiente */}
                 <div style={{
-                    background: `linear-gradient(120deg, ${C.accentDeep}, ${C.accent})`,
+                    background: `linear-gradient(120deg, ${C.accentDeep}, ${HERO_VIA})`,
                     padding: '20px 24px',
+                    flexShrink: 0,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center'
@@ -978,6 +1009,8 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                             transition: 'all 0.15s'
                         }}
                         className="min-w-[44px] min-h-[44px]"
+                        type="button"
+                        aria-label="Fechar"
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
                     >
@@ -986,14 +1019,16 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                 </div>
 
                 {/* Form do Modal */}
-                <form onSubmit={onSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                    <div style={{ padding: '24px 24px 8px', display: 'flex', flexDirection: 'column', gap: 16, flex: 1, minHeight: 0, overflowY: 'auto' }}>
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-titulo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Título do Aviso *
                         </label>
                         <input
                             required
                             type="text"
+                            id="com-titulo"
                             value={formData.titulo}
                             onChange={e => setFormData({ ...formData, titulo: e.target.value })}
                             onFocus={() => setFocusedInput('titulo')}
@@ -1005,12 +1040,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
 
                     <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 16 }}>
                         <div>
-                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            <label htmlFor="com-tipo" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Tipo *
                             </label>
                             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                                 <select
                                     required
+                                    id="com-tipo"
                                     value={formData.tipo}
                                     onChange={e => setFormData({ ...formData, tipo: e.target.value })}
                                     onFocus={() => setFocusedInput('tipo')}
@@ -1037,12 +1073,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                             </div>
                         </div>
                         <div>
-                            <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                            <label htmlFor="com-depto" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                                 Depto. Autor *
                             </label>
                             <input
                                 required
                                 type="text"
+                                id="com-depto"
                                 value={formData.departamento_autor}
                                 onChange={e => setFormData({ ...formData, departamento_autor: e.target.value })}
                                 onFocus={() => setFocusedInput('depto')}
@@ -1054,12 +1091,13 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-descricao" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Mensagem/Descrição *
                         </label>
                         <textarea
                             required
                             rows="4"
+                            id="com-descricao"
                             value={formData.descricao}
                             onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                             onFocus={() => setFocusedInput('descricao')}
@@ -1074,11 +1112,12 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-imagem" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             URL da Imagem de Capa (Opcional)
                         </label>
                         <input
                             type="url"
+                            id="com-imagem"
                             value={formData.imagem_url}
                             onChange={e => setFormData({ ...formData, imagem_url: e.target.value })}
                             onFocus={() => setFocusedInput('imagem_url')}
@@ -1089,11 +1128,12 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.muted, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
+                        <label htmlFor="com-link" style={{ display: 'block', textTransform: 'uppercase', fontSize: 11, fontWeight: 700, color: C.ink2, marginBottom: 6, fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em' }}>
                             Link Adicional (Opcional)
                         </label>
                         <input
                             type="url"
+                            id="com-link"
                             value={formData.link_opcional}
                             onChange={e => setFormData({ ...formData, link_opcional: e.target.value })}
                             onFocus={() => setFocusedInput('link')}
@@ -1103,15 +1143,17 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                         />
                     </div>
 
+                    </div>
+
+                    {/* Rodapé fixo: o erro de salvar fica junto dos botões, à
+                        vista mesmo com o corpo do formulário rolado. */}
+                    <div style={{ flexShrink: 0, padding: '16px 24px 24px', borderTop: `1px solid ${C.line}`, display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {erro && (
                         <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.dangerStrong }}>{erro}</p>
                     )}
 
                     {/* Botões do Rodapé */}
                     <div style={{
-                        marginTop: 8,
-                        paddingTop: 16,
-                        borderTop: `1px solid ${C.line}`,
                         display: 'flex',
                         justifyContent: 'end',
                         gap: 12
@@ -1130,7 +1172,6 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                                 fontSize: 13,
                                 cursor: 'pointer',
                                 transition: 'all 0.15s',
-                                outline: 'none'
                             }}
                             onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
                             onMouseLeave={e => { e.currentTarget.style.background = C.surface; }}
@@ -1155,11 +1196,10 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: 6,
-                                outline: 'none',
                                 boxShadow: `0 4px 12px rgba(${hexToRgb(C.accent)}, 0.2)`
                             }}
-                            onMouseEnter={e => { if (!isSubmitting) { e.currentTarget.style.background = C.accentDark; } }}
-                            onMouseLeave={e => { if (!isSubmitting) { e.currentTarget.style.background = C.accent; } }}
+                            onMouseEnter={e => { if (!isSubmitting) { e.currentTarget.style.filter = 'brightness(1.06)'; } }}
+                            onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
                         >
                             {isSubmitting ? (
                                 <>
@@ -1173,6 +1213,7 @@ function CrudModal({ editingId, formData, setFormData, isSubmitting, erro, onClo
                                 </>
                             )}
                         </button>
+                    </div>
                     </div>
                 </form>
             </div>
@@ -1223,7 +1264,8 @@ function DeleteModal({ onClose, onConfirm }) {
                 boxShadow: '0 24px 64px rgba(11, 27, 46, 0.25)',
                 width: '100%',
                 maxWidth: 400,
-                overflow: 'hidden',
+                maxHeight: 'calc(100dvh - 32px)',
+                overflowY: 'auto',
                 border: `1px solid rgba(${hexToRgb(C.danger)}, 0.3)`,
                 padding: '24px',
                 textAlign: 'center',
@@ -1275,7 +1317,6 @@ function DeleteModal({ onClose, onConfirm }) {
                             fontSize: 13,
                             cursor: 'pointer',
                             transition: 'all 0.15s',
-                            outline: 'none'
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = C.surfaceSoft; }}
                         onMouseLeave={e => { e.currentTarget.style.background = C.surface; }}
@@ -1288,18 +1329,17 @@ function DeleteModal({ onClose, onConfirm }) {
                             padding: '10px 22px',
                             borderRadius: 10,
                             border: 'none',
-                            background: C.danger,
-                            color: 'white',
+                            background: C.dangerFill,
+                            color: C.onDanger,
                             fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                             fontWeight: 700,
                             fontSize: 13,
                             cursor: 'pointer',
                             transition: 'all 0.15s',
-                            outline: 'none',
                             boxShadow: `0 4px 12px rgba(${hexToRgb(C.danger)}, 0.2)`
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(232, 69, 69, 0.85)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = C.danger; }}
+                        onMouseEnter={e => { e.currentTarget.style.filter = C.onDanger === '#FFFFFF' ? 'brightness(0.92)' : 'brightness(1.08)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
                     >
                         Sim, excluir!
                     </button>
