@@ -41,9 +41,11 @@ export default function ModalShell({ title, onClose, onSave, isSaving = false, s
                 aria-modal="true"
                 aria-labelledby={tituloId}
                 onKeyDown={trapTab}
-                className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl duration-200 animate-in fade-in zoom-in"
+                // Altura limitada à janela: o corpo rola e cabeçalho e rodapé
+                // ficam à vista (celular na horizontal, zoom de 200%, teclado aberto).
+                className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl duration-200 animate-in fade-in zoom-in"
             >
-                <div className="border-b border-border p-6">
+                <div className="shrink-0 border-b border-border p-6">
                     <div className="flex items-center justify-between">
                         <h3 id={tituloId} className="text-lg font-bold text-foreground">{title}</h3>
                         <button
@@ -59,9 +61,9 @@ export default function ModalShell({ title, onClose, onSave, isSaving = false, s
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4 p-6">{children}</div>
+                <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">{children}</div>
 
-                <div className="flex justify-end gap-3 border-t border-border bg-background p-6">
+                <div className="flex shrink-0 justify-end gap-3 border-t border-border bg-background p-6">
                     <button
                         type="button"
                         onClick={onClose}
