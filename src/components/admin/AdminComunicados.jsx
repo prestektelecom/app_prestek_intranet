@@ -359,11 +359,11 @@ export default function AdminComunicados({ adminEmail }) {
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby={COMUNICADO_MODAL_TITULO_ID}
-                        className="w-full max-w-[520px] overflow-hidden rounded-2xl border shadow-2xl"
+                        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border shadow-2xl"
                         style={{ background: C.surface, borderColor: C.line }}
                     >
                         <div
-                            className="flex items-center justify-between px-5 py-4 text-white"
+                            className="flex shrink-0 items-center justify-between px-5 py-4 text-white"
                             style={{ background: `linear-gradient(120deg, ${C.accentDeep}, #C2410C)` }}
                         >
                             <h2 id={COMUNICADO_MODAL_TITULO_ID} className="font-display flex items-center gap-2 text-xl font-bold">
@@ -374,7 +374,8 @@ export default function AdminComunicados({ adminEmail }) {
                                 <span className="material-symbols-outlined text-xl">close</span>
                             </button>
                         </div>
-                        <form onSubmit={salvar} className="flex flex-col gap-4 p-5">
+                        <form onSubmit={salvar} className="flex min-h-0 flex-1 flex-col">
+                            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-5 pb-2">
                             <div>
                                 <label htmlFor="admin-comunicado-titulo" className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>Título *</label>
                                 <input id="admin-comunicado-titulo" required value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} onFocus={() => setFocusedInput('titulo')} onBlur={() => setFocusedInput(null)} style={getInputStyle('titulo')} />
@@ -401,12 +402,16 @@ export default function AdminComunicados({ adminEmail }) {
                                 <label htmlFor="admin-comunicado-link" className="mb-1 block text-[11px] font-bold uppercase tracking-wider" style={{ color: C.ink2 }}>Link Adicional (Opcional)</label>
                                 <input id="admin-comunicado-link" type="url" value={form.link_opcional} onChange={e => setForm({ ...form, link_opcional: e.target.value })} onFocus={() => setFocusedInput('link')} onBlur={() => setFocusedInput(null)} style={getInputStyle('link')} />
                             </div>
+                            </div>
+                            {/* Rodapé fixo: o erro de salvar fica junto dos botões, à vista
+                                mesmo com o corpo do formulário rolado. */}
+                            <div className="flex shrink-0 flex-col gap-3 border-t px-5 pb-5 pt-4" style={{ borderColor: C.line }}>
                             {erroModal && (
                                 <p role="alert" className="text-sm font-semibold" style={{ color: C.dangerStrong }}>
                                     {erroModal}
                                 </p>
                             )}
-                            <div className="flex justify-end gap-3 border-t pt-4" style={{ borderColor: C.line }}>
+                            <div className="flex justify-end gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setModalAberto(false)}
@@ -425,6 +430,7 @@ export default function AdminComunicados({ adminEmail }) {
                                 >
                                     {salvando ? 'Salvando...' : 'Salvar'}
                                 </button>
+                            </div>
                             </div>
                         </form>
                     </div>
