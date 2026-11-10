@@ -368,14 +368,20 @@ app.post('/api/comunicados', gate('comunicados'), async (req, res) => {
 app.put('/api/comunicados/:id', gate('comunicados'), async (req, res) => {
     const { id } = req.params;
     const { titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url } = req.body;
+    // O Painel Admin não tem o campo de imagem e não envia a chave. Sem esta
+    // checagem, `imagem_url || null` apagava a capa a cada edição feita por lá
+    // (e o slide do Início perdia a foto). Chave ausente = manter; chave
+    // presente e vazia = remover (é o que a tela Comunicados envia ao limpar).
+    const atualizaImagem = Object.prototype.hasOwnProperty.call(req.body, 'imagem_url');
 
     try {
         const query = `
             UPDATE comunicados
-            SET titulo = $1, descricao = $2, tipo = $3, departamento_autor = $4, link_opcional = $5, imagem_url = $6
+            SET titulo = $1, descricao = $2, tipo = $3, departamento_autor = $4, link_opcional = $5,
+                imagem_url = CASE WHEN $8::boolean THEN $6::text ELSE imagem_url END
             WHERE id = $7 RETURNING *;
         `;
-        const result = await pool.query(query, [titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url || null, id]);
+        const result = await pool.query(query, [titulo, descricao, tipo, departamento_autor, link_opcional, imagem_url || null, id, atualizaImagem]);
         if (result.rows.length === 0) return res.status(404).json({ sucesso: false, erro: 'Comunicado não encontrado.' });
         return res.json({ sucesso: true, comunicado: result.rows[0] });
     } catch (err) {
