@@ -117,6 +117,11 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
         boxShadow: `0 32px 80px ${tone(C.accentDeep, 0.18)}, 0 4px 16px ${tone(C.ink, 0.08)}`,
         width: '100%',
         maxWidth: 520,
+        // Altura limitada à janela: o corpo rola e o cabeçalho fica à vista
+        // (celular na horizontal, zoom de 200%, teclado aberto).
+        maxHeight: 'calc(100dvh - 32px)',
+        display: 'flex',
+        flexDirection: 'column',
         overflow: 'hidden',
         fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
         color: C.ink,
@@ -125,6 +130,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
         {/* Header */}
         <div style={{
           padding: '20px 24px',
+          flexShrink: 0,
           borderBottom: `1px solid ${C.line}`,
           background: C.surfaceSoft,
           display: 'flex',
@@ -173,7 +179,7 @@ export default function TiSupportModal({ isOpen, onClose, user }) {
         </div>
 
         {/* Body */}
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: '24px', overflowY: 'auto', minHeight: 0 }}>
           {isSuccess ? (
             // ─── Tela de Sucesso ──────────────────────────────────────────────
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
