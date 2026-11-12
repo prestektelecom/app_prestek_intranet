@@ -9,6 +9,7 @@
 // conteúdo, sem <main> nem container — a casca é responsabilidade do Ti.jsx.
 
 import CadastroColaborador from './CadastroColaborador';
+import AuditoriaTv from './AuditoriaTv';
 
 export const FERRAMENTAS_TI = [
     {
@@ -18,6 +19,14 @@ export const FERRAMENTAS_TI = [
         descricao: 'Ficha de registro em PDF vira payload do IXC, conferido antes de gravar.',
         somenteAdmin: true,
         Component: CadastroColaborador,
+    },
+    {
+        id: 'auditoria-tv',
+        label: 'Auditoria de TV',
+        icon: 'live_tv',
+        descricao: 'Cruza assinaturas de TV, contratos e produtos cobrados para achar divergências. Somente leitura.',
+        somenteAdmin: true,
+        Component: AuditoriaTv,
     },
 ];
 

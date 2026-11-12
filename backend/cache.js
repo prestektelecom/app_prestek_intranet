@@ -80,5 +80,8 @@ export const TTL = {
     // frio custa ~20s: três das cinco listas são derivadas de varreduras
     // completas (funcionarios, usuarios, planejamento_analitico). São cadastros
     // que mudam quando alguém é contratado, não de minuto em minuto.
+    // Auditoria de TV: cruza 3 tabelas (~62 mil linhas), ~40s a frio. 10 min basta
+    // para uma conferência manual; o botão "Atualizar" da tela ignora o cache.
+    TI_AUDITORIA_TV: parseInt(process.env.CACHE_TTL_TI_AUDITORIA_TV || '600') * 1000, // 10 min
     TI_TAXONOMIAS: parseInt(process.env.CACHE_TTL_TI_TAXONOMIAS || '21600') * 1000, // 6 horas
 };
