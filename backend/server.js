@@ -5186,7 +5186,7 @@ app.post('/api/ti/colaborador/criar', gate('ti'), async (_req, res) => {
 // Cruza tv_usuarios × cliente_contrato × vd_contratos_produtos. Não chama a API
 // de nenhuma plataforma de TV e não grava nada no IXC. `?atualizar=1` ignora o
 // cache; a coleta fria leva ~40s, por isso o resultado é cacheado por 10 min.
-app.get('/api/ti/auditoria-tv', adminAuth, async (req, res) => {
+app.get('/api/ti/auditoria-tv', gate('ti'), async (req, res) => {
     const CHAVE = 'ti:auditoria-tv';
     try {
         if (req.query.atualizar !== '1') {
