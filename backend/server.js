@@ -12,6 +12,7 @@ import { cacheGet, cacheSet, cacheInvalidate, TTL } from './cache.js'
 // Cliente IXC — fetchIXC/ixcHeaders/paginarIXC saíram daqui para services/ixc.js
 // sem alteração de comportamento; ixcListar é novo.
 import { fetchIXC, ixcHeaders, paginarIXC, ixcListar, listarWflProcessosAtivos, resolverAssuntoWorkflow } from './services/ixc.js'
+import { auditarTv } from './services/auditoriaTv.js'
 import { carregarTaxonomias } from './services/ixcTaxonomias.js'
 import { extrairTextoPdf } from './services/extrairTextoPdf.js'
 import { extrairCampos } from './services/fichaParser.js'
@@ -5179,6 +5180,32 @@ app.post('/api/ti/colaborador/criar', gate('ti'), async (_req, res) => {
         sucesso: false,
         erro: 'Gravação real ainda não implementada — use /api/ti/colaborador/dry-run para simular. Ver o comentário acima desta rota em server.js para o algoritmo planejado.',
     });
+});
+
+// ─── Auditoria de assinaturas de TV (somente leitura) ──────────────
+// Cruza tv_usuarios × cliente_contrato × vd_contratos_produtos. Não chama a API
+// de nenhuma plataforma de TV e não grava nada no IXC. `?atualizar=1` ignora o
+// cache; a coleta fria leva ~40s, por isso o resultado é cacheado por 10 min.
+app.get('/api/ti/auditoria-tv', gate('ti'), async (req, res) => {
+    const CHAVE = 'ti:auditoria-tv';
+    try {
+        if (req.query.atualizar !== '1') {
+            const cache = cacheGet(CHAVE);
+            if (cache.hit) return res.json({ sucesso: true, ...cache.data, doCache: true });
+        }
+        const resultado = await auditarTv();
+        const payload = { ...resultado, geradoEm: new Date().toISOString() };
+        cacheSet(CHAVE, payload, TTL.TI_AUDITORIA_TV);
+        return res.json({ sucesso: true, ...payload, doCache: false });
+    } catch (e) {
+        console.error('[ti/auditoria-tv] Erro:', e.message);
+        // Só repassa a mensagem quando ela é nossa (err.curado); o resto pode
+        // trazer URL/host do IXC.
+        return res.status(502).json({
+            sucesso: false,
+            erro: e.curado ? e.message : 'Falha ao consultar o IXC para a auditoria de TV.',
+        });
+    }
 });
 
 // ─── Health Check ────────────────────────────────────────────────
